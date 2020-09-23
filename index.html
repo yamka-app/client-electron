@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self';">
+
+    <title>Order</title>
+
+    <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
+    <link rel="stylesheet" type="text/css" href="switch.css">
+    <link rel="stylesheet" type="text/css" href="main.css">
+  </head>
+  <body>
+    <div id="floating-box-bg" class="darken-bg" style="display: none;">
+      <div id="floating-box">
+        <label id="floating-box-header" style="font-size: 15px;">TITLE</label>
+        <br>
+        <label id="floating-box-text">Text</label>
+
+        <button id="floating-box-ok" class="accent-button fill-width" style="margin-top: 20px;">OK</button>
+      </div>
+    </div>
+
+    <table id="capital-layout" style="border: none; border-spacing: 0; height: 100vh; width: 100vw">
+      <tr style="height: fit-content"><td style="padding: 0; vertical-align: top;">
+        <div id="title-bar">
+          <div id="title-text">ORDER</div>
+          <div id="title-status"></div>
+
+          <div id="title-bar-buttons">
+            <img src="icons/dark.png" style="margin-bottom: 1px;"/>
+            <label class="switch" style="margin-left: 0; margin-top: 2px;">
+              <input id="theme-switch" type="checkbox">
+              <span class="slider round"></span>
+            </label>
+            <img src="icons/light.png" style="margin-right: 5px; margin-bottom: 1px;"/>
+
+            <button class="title-bar-button" id="minimize-button"><img src="icons/minimize.png"/></button>
+            <button class="title-bar-button" id="maximize-button"><img src="icons/maximize.png"/></button>
+            <button class="title-bar-button" id="close-button"><img src="icons/close.png"/></button>
+          </div>
+        </div>
+      </td></tr>
+
+      <tr style="display: none;" id="main-layout-container"><td style="padding: 0">
+        <div id="user-settings-bg" class="darken-bg" style="display: none;">
+          <div id="user-settings">
+            <div id="user-settings-sidebar">
+              <button id="user-settings-exit" class="menu-exit"></button>
+
+              <input id= "user-settings-section-profile-sel" type="radio" name="user-settings-sections" class="settings-radio" checked="checked"/>
+              <label for="user-settings-section-profile-sel" class="settings-section-sel">PROFILE</label>
+
+              <input id= "user-settings-section-notifications-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
+              <label for="user-settings-section-notifications-sel" class="settings-section-sel">NOTIFICATIONS</label>
+
+              <input id= "user-settings-section-content-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
+              <label for="user-settings-section-content-sel" class="settings-section-sel">CONTENT</label>
+
+              <input id= "user-settings-section-appearance-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
+              <label for="user-settings-section-appearance-sel" class="settings-section-sel">APPEARANCE</label>
+
+              <input id= "user-settings-section-about-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
+              <label for="user-settings-section-about-sel" class="settings-section-sel">ABOUT ORDER</label>
+
+              <input id= "user-settings-section-logout-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
+              <label for="user-settings-section-logout-sel" class="settings-section-sel" style="color: var(--danger);">LOG OUT</label>
+            </div>
+
+            <div id="user-settings-section-profile" class="settings-section user-settings-section">
+              <div id="self-profile-settings" class="settings-subsection">
+                <span class="settings-subsection-title">PROFILE</span>
+                <div class="flex-row">
+                  <div id="self-avatar-change-container">
+                    <img id="self-avatar-huge" class="user-avatar-huge"/>
+                    <div id="self-avatar-change">CHANGE</div>
+                  </div>
+                  <div id="self-profile-settings-inputs">
+                    <div class="self-profile-setting-input-container">
+                      USERNAME
+                      <div>
+                        <input id="self-name-change"/>
+                        <abbr title="You can't change your tag"><label id="self-tag-settings" class="user-tag"></abbr></label>
+                      </div>
+                    </div>
+
+                    <div class="self-profile-setting-input-container">
+                      STATUS
+                      <span id="self-status-switch" class="radio-switch" style="margin-top: 5px">
+                        <span class="radio-switch-section">
+                          <img src="./icons/online.png"/>
+                          <input id= "self-status-online" type="radio" name="self-status-sel" class="hidden-radio" checked="checked"/>
+                          <label for="self-status-online" class="status-sel">ONLINE</label>
+                        </span>
+                        <span class="radio-switch-section">
+                          <img src="./icons/offline.png"/>
+                          <input id= "self-status-offline" type="radio" name="self-status-sel" class="hidden-radio"/>
+                          <label for="self-status-offline" class="status-sel">OFFLINE</label>
+                        </span>
+                        <span class="radio-switch-section">
+                          <img src="./icons/sleep.png"/>
+                          <input id= "self-status-sleep" type="radio" name="self-status-sel" class="hidden-radio"/>
+                          <label for="self-status-sleep" class="status-sel">SLEEPING</label>
+                        </span>
+                        <span class="radio-switch-section">
+                          <img src="./icons/dnd.png"/>
+                          <input id= "self-status-dnd" type="radio" name="self-status-sel" class="hidden-radio"/>
+                          <label for="self-status-dnd" class="status-sel">DO NOT DISTURB</label>
+                        </span>
+                      </span>
+                      <span id="self-status-explainer">Status explainer</span>
+
+                      <div class="self-profile-setting-input-container">
+                        STATUS TEXT
+                        <input id="self-status-text-change"/>
+                      </div>
+
+                      <div class="self-profile-setting-input-container">
+                        TIP: PRESS ENTER IN INPUT FIELDS TO SAVE CHANGES
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="self-auth-settings" class="settings-subsection">
+                <span class="settings-subsection-title">AUTHENTICATION</span>
+                <div class="self-profile-setting-input-container">
+                  E-MAIL
+                  <input id="self-email-change"/>
+                </div>
+                <div class="self-profile-setting-input-container">
+                  <span class="flex-row">
+                    2FA IS
+                    <span id="self-mfa-enable-status" style="margin-left: 5px;">DISABLED</span>
+                  </span>
+                  <button id="self-mfa-toggle-button" class="danger-button" style="width: fit-content;">ENABLE 2FA</button>
+                </div>
+              </div>
+
+              <!--
+              <label class="setting">
+                SHID
+                <label class="switch right" style="margin-left: 0;">
+                  <input id="switch-1" type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </label>
+
+              <div class="settings-separator"></div>
+              
+              <label class="setting">
+                FARD
+                <label class="switch right" style="margin-left: 0;">
+                  <input id="fard-switch" type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </label>
+              -->
+            </div>
+
+            <div id="user-settings-section-about" class="settings-section user-settings-section" style="display: none;">
+              <img src="./logo.png" style="width: 64px; height: 64px; margin-bottom: 10px;"/>
+              <p style="font-size: 20px;">ABOUT</p>
+              ORDER is a messaging app that does not track you, does not have ads,
+              does not impose age restrictions, does not ban people or groups and
+              provides deep group and user privacy customizations.
+              All clients are free software distributed under the MIT license.
+              <br>
+              <button id="view-on-github" class="accent-button">View source code and/or contribute on GitHub</button>
+              <button id="donate" class="accent-button">Donate money to project development</button>
+              <br>
+
+              <p style="font-size: 20px;">TECHNOLOGIES USED</p>
+              Linux, Windows and macOS clients: Electron
+              <br>
+              Backend: .NET Core, Apache Cassandra
+              <br>
+              Website: nginx
+
+              <p style="font-size: 20px;">CREATED BY</p>
+              portasynthinca3
+
+              <p style="font-size: 20px;">CREDITS</p>
+              Thanks to:
+              <br>
+              Andrey Hayrnasov (Dazaika) for suggesting a VPS
+              <br>
+              Sasha Kulichkov (hetyh) for setting up the VPS
+            </div>
+          </div>
+        </div>
+
+        <div id="mfa-qr-banner-bg" class="darken-bg" style="display: none;">
+          <div id="mfa-qr-banner">
+            <span style="margin-bottom: 20px;">2FA QR CODE</span>
+            <div id="mfa-qr-placeholder" style="margin-bottom: 20px;"></div>
+            <span>Scan this code in your code generating app (i.e. Google Authenticator or Authy) on your phone</span>
+            <button id="mfa-qr-ok" class="accent-button fill-width">OK</button>
+          </div>
+        </div>
+
+        <table id="main-layout"><tbody><tr>
+          <td id="central-field">
+
+          </td>
+          <td id="member-list-sidebar">
+
+          </td>
+          <td id="channel-list-sidebar"><table style="border: none; border-spacing: 0; height: 100%; width: 100%">
+            <tr><td id="channel-list-bar">
+
+            </td></tr>
+            <tr><td id="user-info-bar">
+              <div class="user-avatar-container">
+                <img id="self-avatar" class="user-avatar"/>
+                <img id="self-status" class="user-online"/>
+              </div>
+
+              <div class="flex-row user-nickname">
+                <span id="self-nickname">nickname</span>
+                <span id="self-tag" class="user-tag">#11111</span>
+              </div>
+
+              <span id="self-status-text" class="user-status">status text</span>
+            </td></tr>
+          </table></td>
+          <td id="group-list-sidebar">
+
+          </td>
+        </tr></tbody></table>
+      </td></tr>
+
+      <tr style="height: fit-content"><td style="padding: 0"><div id="login-form" style="display: show;">
+        E-MAIL
+        <br>
+        <span class="input-container"><input id="login-email" style="margin-bottom: 10px;" class="fill-width"/></span>
+        <br>
+  
+        <span style="padding-top: 10px;">PASSWORD</span>
+        <br>
+        <span class="input-container" class="fill-width"><input id="login-password" type="password" class="fill-width"/></span>
+        <br>
+  
+        <button id="login-button" class="accent-button fill-width">LOGIN</button>
+        <button id="login-register-button" class="fill-width">REGISTER</button>
+      </div></td></tr>
+
+      <tr style="height: fit-content"><td style="padding: 0"><div id="mfa-form" style="display: none;">
+        2FA CODE
+        <br>
+        <span class="input-container"><input id="login-mfa-code" style="margin-bottom: 10px;" class="fill-width"/></span>
+        <br>
+  
+        <button id="mfa-login-button" class="accent-button fill-width">LOGIN</button>
+      </div></td></tr>
+
+      <tr style="height: fit-content"><td style="padding: 0"><div id="register-form" style="display: none;">
+        USERNAME
+        <label id="username-required" style="color: #aa3a3a; display: none;">REQUIRED</label>
+        <br>
+        <span class="input-container"><input id="register-username" style="margin-bottom: 10px;" class="fill-width"/></span>
+        <br>
+  
+        <span style="padding-top: 10px;">E-MAIL</span>
+        <label id="email-required" style="color: #aa3a3a; display: none;">INVALID</label>
+        <br>
+        <span class="input-container"><input id="register-email" style="margin-bottom: 10px;" class="fill-width"/></span>
+        <br>
+  
+        <span style="padding-top: 10px;">PASSWORD</span>
+        <label id="password-strength-text" style="color: #3a3a3a"></label>
+        <br>
+        <progress id="password-strength-meter" value="0" max="3" class="fill-width password-weak"></progress>
+        <br>
+        <span class="input-container"><input id="register-password" type="password" class="fill-width"/></span>
+        <br>
+  
+        <button id="register-button" class="accent-button fill-width">REGISTER</button>
+        <button id="register-back-button" class="fill-width">BACK</button>
+      </div></td></tr>
+      
+    </table>
+
+    <script type="text/javascript" src="./node_modules/qrcode-generator/qrcode.js"></script>
+    <script src='./renderer.js'></script>
+  </body>
+</html>

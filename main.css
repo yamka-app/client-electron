@@ -1,0 +1,680 @@
+@font-face {
+    font-family: RobotoBold;
+    src: url(fonts/Roboto-Bold.ttf)
+}
+
+@font-face {
+    font-family: Roboto;
+    src: url(fonts/Roboto-Regular.ttf)
+}
+
+@keyframes appear {
+    0%   { transform: scale(0.0); }
+    1%   { transform: scale(0.5); }
+    75%  { transform: scale(1.05); }
+    100% { transform: scale(1.0); }
+}
+
+@keyframes disappear {
+    0%   { transform: scale(1.0); }
+    99%  { transform: scale(0.5); }
+    100% { transform: scale(0.0); }
+}
+
+body {
+    padding: 0px;
+    margin: 0px;
+
+    background-color: var(--shade-1);
+    color: var(--foreground);
+
+    font-family: RobotoBold;
+
+    user-select: none;
+
+    /*background: url('./bg.png');
+    background-size: cover;*/
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+}
+*::-webkit-scrollbar-track {
+    background: #00000000;
+}
+*::-webkit-scrollbar-thumb {
+    background-color: var(--shade-7);
+    border-radius: 5px;
+}
+
+p {
+    margin: 5px 0 5px 0;
+}
+
+#title-bar {
+    -webkit-app-region: drag;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    vertical-align: middle;
+    background-color: var(--shade-1);
+    padding: none;
+    margin: 0px;
+}
+
+#title-text, #title-status {
+    font-size: 12px;
+    color: var(--foreground);
+}
+#title-text {
+    position: fixed;
+    top: 0px;
+    left: 6px;
+}
+#title-status {
+    margin-left: 10px;
+}
+
+#title-bar-buttons {
+    -webkit-app-region: no-drag;
+    position: fixed;
+    top: 0px;
+    right: 2px;
+}
+
+.title-bar-button {
+    background-color: Transparent;
+    background-repeat: no-repeat;
+    border: none;
+    overflow: hidden;
+    outline: none;
+    color: var(--shade-6);
+    cursor: pointer;
+
+    font-family: RobotoBold;
+    font-size: 16px;
+
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+#floating-box {
+    z-index: 1000;
+    position: fixed;
+
+    width: 300px;
+    height: fit-content;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+
+    border-radius: 5px;
+    background-color: var(--shade-3);
+
+    font-family: RobotoBold;
+    font-size: 10px;
+    padding: 20px;
+}
+
+#login-form, #mfa-form, #register-form {
+    margin: auto;
+    width: 320px;
+    height: fit-content;
+    padding: 20px;
+
+    border: none;
+    border-radius: 5px;
+
+    font-family: RobotoBold;
+    font-size: 10px;
+    background-color: var(--shade-3-trans);
+}
+
+input {
+    outline: none !important;
+
+    box-sizing:border-box;
+    margin-top: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    height: 30px;
+
+    background-color: var(--shade-3);
+    border-radius: 3px;
+    border: 1px solid var(--shade-7);
+    transition: border-color 0.1s;
+
+    color: var(--foreground);
+    font-family: RobotoBold;
+    font-size: 12px;
+}
+input:hover {
+    border: 1px solid var(--accent-dim);
+    transition: border-color 0.1s;
+    box-shadow: none;
+}
+input:focus {
+    border: 1px solid var(--accent);
+    transition: border-color 0.1s;
+    box-shadow: none;
+}
+
+.fill-width {
+    width: 100%;
+}
+
+button:not(.title-bar-button):not(.menu-exit) {
+    outline: none !important;
+    box-shadow: none;
+
+    margin-top: 10px;
+    height: 30px;
+
+    background-color: var(--shade-5);
+    border-radius: 3px;
+    border: none;
+    transition: background-color 0.1s;
+    transition: border 0.1s;
+    transition: color 0.1s;
+
+    color: var(--foreground);
+    font-family: RobotoBold;
+    font-size: 12px;
+
+    cursor: pointer;
+}
+button:not(.title-bar-button):not(.menu-exit):hover {
+    background-color: var(--shade-7);
+}
+
+button.accent-button:not(.title-bar-button):not(.menu-exit) {
+    background-color: var(--accent);
+}
+button.accent-button:not(.title-bar-button):not(.menu-exit):hover {
+    background-color: var(--accent-dim);
+}
+button.accent-button:not(.title-bar-button):not(.menu-exit):active {
+    background-color: var(--accent-dim-2);
+}
+
+button.danger-button:not(.title-bar-button):not(.menu-exit) {
+    background-color: #00000000;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+button.danger-button:not(.title-bar-button):not(.menu-exit):hover {
+    background-color: #00000000;
+    border: 1px solid var(--danger-dim-1);
+    color: var(--danger-dim-1);
+}
+button.danger-button:not(.title-bar-button):not(.menu-exit):active {
+    background-color: #00000000;
+    border: 1px solid var(--danger-dim-2);
+    color: var(--danger-dim-2);
+}
+
+button.apply-button:not(.title-bar-button):not(.menu-exit) {
+    background-color: #00000000;
+    border: 1px solid var(--apply);
+    color: var(--apply);
+}
+button.apply-button:not(.title-bar-button):not(.menu-exit):hover {
+    background-color: #00000000;
+    border: 1px solid var(--apply-dim-1);
+    color: var(--apply-dim-1);
+}
+button.apply-button:not(.title-bar-button):not(.menu-exit):active {
+    background-color: #00000000;
+    border: 1px solid var(--apply-dim-2);
+    color: var(--apply-dim-2);
+}
+
+progress {
+    margin-top: 5px;
+    height: 5px;
+
+    border: none;
+}
+progress::-webkit-progress-bar {
+    background: var(--shade-7);
+    border-radius: 2px;
+}
+progress.password-weak::-webkit-progress-value {
+    background: var(--red);
+}
+progress.password-medium::-webkit-progress-value {
+    background: var(--yellow);
+}
+progress.password-strong::-webkit-progress-value {
+    background: var(--green);
+}
+progress::-webkit-progress-value {
+    transition: width 0.1s ease,
+                color 0.1s ease;
+    border-radius: 2px;
+}
+
+.input-container {
+    box-sizing:border-box;
+    
+    width: 100%;
+}
+
+label {
+    margin-left: 5px;
+}
+
+#main-layout {
+    border: none;
+    width: 100%;
+    height: 100%;
+    border-spacing: 0;
+    padding: 0;
+}
+
+#group-list-sidebar {
+    background-color: var(--shade-1);
+    width: 50px;
+    padding: 0;
+}
+
+#channel-list-sidebar {
+    background-color: var(--shade-2);
+    width: 200px;
+    padding: 0;
+}
+
+#user-info-bar {
+    background-color: var(--shade-1);
+    height: 48px;
+    width: 100%;
+    padding: 0;
+    position: relative;
+}
+
+#central-field {
+    background-color: var(--shade-3);
+    padding: 0;
+}
+
+#member-list-sidebar {
+    background-color: var(--shade-1);
+    width: 200px;
+    padding: 0;
+}
+
+.user-avatar-container {
+    margin-left: 8px;
+    margin-top: 8px;
+    position: relative;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+
+    -webkit-mask-image: url('./icons/ava-mask.png');
+    mask-image: url('./icons/ava-mask.png');
+
+    cursor: pointer;
+}
+
+.user-avatar-huge {
+    width: 64px;
+    height: 64px;
+
+    border-radius: 32px;
+
+    cursor: pointer;
+}
+
+.user-online {
+    width: 9px;
+    height: 9px;
+    position: absolute;
+    top: 21px;
+    left: 21px;
+}
+
+.user-nickname {
+    font-size: 12px;
+    font-family: RobotoBold;
+
+    position: absolute;
+    left: 44px;
+    top: 12px;
+
+    cursor: pointer;
+}
+
+.user-tag {
+    color: var(--foreground-1);
+    font-family: RobotoBold;
+    font-size: 12px;
+}
+
+.user-status {
+    font-size: 12px;
+    font-family: Roboto;
+
+    position: absolute;
+    left: 44px;
+    top: 28px;
+}
+
+
+
+.darken-bg {
+    position: fixed;
+
+    width: 100%;
+    top: 20px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 500;
+
+    margin: auto;
+
+    background-color: #0000007a;
+}
+
+#user-settings {
+    width: 70vw;
+    height: 75vh;
+
+    margin: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+
+    background-color: var(--shade-3);
+    border-radius: 5px;
+    box-shadow: 0 0 10px var(--shadow);
+
+    display: flex;
+    flex-direction: row;
+}
+
+#user-settings-sidebar {
+    width: 20%;
+    margin: 0;
+
+    top: 0;
+    bottom: 0;
+
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-right: 20px;
+
+    background-color: var(--shade-4);
+    border-radius: 5px 0 0 5px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-section-sel {
+    right: 0;
+    margin-top: 20px;
+    text-align: right;
+    width: 100%;
+
+    color: var(--foreground-1);
+    transition: color 0.1s ease;
+    font-family: RobotoBold;
+    font-size: 12px;
+
+    cursor: pointer;
+}
+.settings-section-sel:hover{
+    color: var(--foreground-2);
+}
+
+input[type="radio"].settings-radio {
+    display: none;
+}
+input[type="radio"].settings-radio:checked + label {
+    color: var(--foreground);
+}
+
+.settings-section {
+    box-sizing: border-box;
+
+    width: 100%;
+    margin: 0;
+
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    color: var(--foreground);
+    font-family: RobotoBold;
+    font-size: 12px;
+
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.setting {
+    margin: 10px;
+}
+
+.settings-separator {
+    box-sizing: border-box;
+
+    width: 100%;
+    height: 1px;
+
+    margin: 5px auto 5px auto;
+
+    background-color: var(--shade-7);
+}
+
+.settings-subsection {
+    box-sizing: border-box;
+
+    width: 100%;
+    height: fit-content;
+
+    margin-bottom: 20px;
+    padding: 20px;
+
+    background-color: var(--shade-4);
+    border-radius: 5px;
+    box-shadow: 0 0 10px var(--shadow);
+
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-subsection-title {
+    margin-bottom: 20px;
+}
+
+#self-avatar-change-container {
+    position: relative;
+    display: table;
+}
+#self-avatar-change {
+    width: 64px;
+    height: 64px;
+
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 500;
+
+    background-color: black;
+    opacity: 0;
+    transition: opacity 0.25s;
+    border-radius: 32px;
+
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: none;
+}
+.user-avatar-huge:hover + #self-avatar-change {
+    opacity: 0.75;
+}
+
+#self-profile-settings-inputs {
+    width: 100%;
+
+    margin-left: 20px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.self-profile-setting-input-container {
+    width: 100%;
+
+    margin-top: 5px;
+
+    display: flex;
+    flex-direction: column;
+
+    color: var(--foreground-1);
+}
+
+#self-name-change, #self-email-change, #self-status-text-change {
+    width: 50%;
+
+    margin-bottom: 10px;
+}
+
+
+
+.menu-exit {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+
+    outline: none !important;
+    box-shadow: none;
+
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+
+    background: url('./icons/close.png');
+    background-size: 12px;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    border: 2px solid #505050;
+    transition: border 0.1s ease;
+
+    cursor: pointer;
+
+    transform: scale(0.7);
+}
+.menu-exit:hover {
+    border: 2px solid #707070;
+}
+
+
+
+.appearing {
+    animation: appear 0.2s ease;
+}
+.disappearing {
+    animation: disappear 0.2s ease;
+}
+
+
+
+.right {
+    float: right;
+}
+
+
+
+.radio-switch {
+    height: fit-content;
+    width: fit-content;
+
+    padding: 5px;
+
+    background-color: var(--shade-3);
+    border: 1px solid var(--shade-7);
+    border-radius: 5px;
+
+    color: var(--foreground-1);
+    transition: color 0.25s;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+.radio-switch-section {
+    margin: 5px;
+}
+input[type="radio"].hidden-radio {
+    display: none;
+}
+input[type="radio"].hidden-radio:checked + label {
+    color: var(--foreground);
+    transition: color 0.25s;
+}
+.status-sel:hover {
+    color: var(--foreground-2);
+    transition: color 0.25s;
+    cursor: pointer;
+}
+
+#self-status-explainer {
+    margin-top: 5px;
+}
+
+#self-mfa-enable-status {
+    color: var(--foreground);
+}
+
+
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+
+
+#mfa-qr-banner {
+    width: fit-content;
+    height: fit-content;
+
+    margin: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+
+    padding: 20px;
+
+    background-color: var(--shade-3);
+    border-radius: 5px;
+    box-shadow: 0 0 10px var(--shadow);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    font-family: RobotoBold;
+    font-size: 12px;
+}

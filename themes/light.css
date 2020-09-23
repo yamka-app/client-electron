@@ -1,0 +1,32 @@
+:root {
+    --accent: #f47a3e;
+    --accent-dim: #c06132;
+    --accent-dim-2: #b35a2e;
+
+    --danger: #e41e1e;
+    --danger-dim-1: #b61818;
+    --danger-dim-2: #8a1010;
+
+    --apply: #2ac02a;
+    --apply-dim-1: #1d861d;
+    --apply-dim-2: #146414;
+
+    --red: #e41e1e;
+    --yellow: #c7c72c;
+    --green: #2ac02a;
+    
+    --shade-1: #efefef;
+    --shade-2: #e5e5e5;
+    --shade-3: #dfdfdf;
+    --shade-3-trans: #dfdfdfbf;
+    --shade-4: #cfcfcf;
+    --shade-5: #c5c5c5;
+    --shade-6: #bfbfbf;
+    --shade-7: #afafaf;
+    
+    --foreground-1: #474747;
+    --foreground-2: #2b2b2b;
+    --foreground: #000000;
+    
+    --shadow: #00000052;
+}
