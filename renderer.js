@@ -1,22 +1,24 @@
+const escapeHTML = require('escape-html')
+
 const emailRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|'(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*')@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 
 // All entities known to the client
-var entityCache = []
+var entityCache = {}
 // All blobs known to the client
-var blobCache = []
+var blobCache = {}
 
-// Upload end triggers
-var ulEndTriggers = []
-// Download end triggers
-var dlEndTriggers = []
+// Operation finish triggers
+var endCallbacks = []
+
+// The group and channel the user's in
+var viewingGroup = 0
+var viewingChan = 0
 
 function _rendererFunc() {
-    const { ipcRenderer, remote } = require('electron')
+    const { ipcRenderer, remote, shell } = require('electron')
     const { BrowserWindow, dialog } = remote
     const path = require('path')
-
-    // Try to connect
-    ipcSend({'action': 'webprot.connect'})
+    const escapeHtml = require('escape-html')
 
     // Get the browser window
     var window = BrowserWindow.getFocusedWindow()
@@ -62,22 +64,26 @@ function _rendererFunc() {
 
     // Functions to upload and download blobs
     function upload(path, onEnd) {
-        var idx = ulEndTriggers.length
-        ulEndTriggers[idx] = onEnd
+        var idx = endCallbacks.length
+        endCallbacks[idx] = onEnd
         ipcSend({
             'action': 'webprot.blob-ul',
             'path': path,
             'operId': idx
         })
     }
-    function download(id, onEnd) {
-        var idx = ulEndTriggers.length
-        dlEndTriggers[idx] = onEnd
-        ipcSend({
-            'action': 'webprot.blob-dl',
-            'id': id,
-            'operId': idx
-        })
+    function download(id, onEnd, onPreviewAvailable) {
+        if(blobCache[id] == undefined) {
+            ipcSend({
+                'action': 'webprot.blob-dl',
+                'id': id,
+                'operId': regCallback(onEnd),
+                'previewOperId': regCallback(onPreviewAvailable)
+            })
+        } else {
+            if(onEnd != undefined)
+                onEnd(blobCache[id])
+        }
     }
 
     // Functions to show and hide elements
@@ -134,13 +140,18 @@ function _rendererFunc() {
     }
 
     // Functions to update info about self
+    function statusStr(status) {
+        return ['offline', 'online', 'sleep', 'dnd'][status]
+    }
+    function statusIconPath(status) {
+        return path.join(__dirname, 'icons/' + statusStr(status) + '.png')
+    }
     function updateSelfStatus(status) {
         // Update the icon in the user bar
-        var statusStr = ['offline', 'online', 'sleep', 'dnd'][status]
-        document.getElementById('self-status').src = path.join(__dirname, 'icons/' + statusStr + '.png')
+        document.getElementById('self-status').src = statusIconPath(status)
 
         // Update the switch in the user settings
-        document.getElementById('self-status-' + statusStr).checked = 'checked'
+        document.getElementById('self-status-' + statusStr(status)).checked = 'checked'
 
         // Update the explainer below the switch
         var explainer = [
@@ -152,17 +163,19 @@ function _rendererFunc() {
         document.getElementById('self-status-explainer').innerHTML = explainer
     }
     function updateSelfStatusText(statusText) {
-        document.getElementById('self-status-text').innerHTML = statusText
+        document.getElementById('self-status-text').innerHTML = escapeHtml(statusText)
         document.getElementById('self-status-text-change').value = statusText
     }
     function updateSelfName(name) {
         document.getElementById('self-name-change').value = name
-        document.getElementById('self-nickname').innerHTML = name
+        document.getElementById('self-nickname').innerHTML = escapeHtml(name)
+    }
+    function formatTag(tag) {
+        return '#' + String(tag).padStart(5, '0')
     }
     function updateSelfTag(tag) {
-        const tagStr = '#' + String(tag).padStart(5, '0')
-        document.getElementById('self-tag').innerHTML = tagStr
-        document.getElementById('self-tag-settings').innerHTML = tagStr
+        document.getElementById('self-tag').innerHTML = escapeHtml(formatTag(tag))
+        document.getElementById('self-tag-settings').innerHTML = escapeHtml(formatTag(tag))
     }
     function updateSelfEmail(email) {
         document.getElementById('self-email-change').value = email
@@ -218,8 +231,185 @@ function _rendererFunc() {
         remote.getGlobal('webprotState').self.mfaEnabled = mfaStatus
         sendSelfValue('mfaEnabled', mfaStatus)
     }
+
+    // Registers a callback
+    function regCallback(cb) {
+        if(cb == undefined)
+            return undefined
+        
+        var idx = endCallbacks.length
+        endCallbacks[idx] = cb
+        return idx
+    }
+
+    // Requests entities
+    function reqEntities(ents, dontUseCached, cb) {
+        if(ents.length == 0)
+            return
+
+        if(dontUseCached) {
+            ipcSend({
+                'action': 'webprot.entity-get',
+                'entities': ents,
+                'operId': regCallback(cb)
+            })
+        } else {
+            var remaining_ents = []
+            for(var i = 0; i < ents.length; i++)
+                if(entityCache[ents[i].id] == undefined)
+                    remaining_ents.push(ents[i])
+            if(remaining_ents.length > 0) {
+                ipcSend({
+                    'action': 'webprot.entity-get',
+                    'entities': remaining_ents,
+                    'operId': regCallback(cb)
+                })
+            } else {
+                if(cb != undefined)
+                    cb()
+            }
+        }
+    }
+
+    // Updates all information about a user in the app
+    function updateUser(id) {
+        const user = entityCache[id]
+        // Update avatars
+        const avas = document.getElementsByClassName('user-avatar-' + id)
+        if(avas.length > 0) {
+            download(user.avaBlob, (blob) => {
+                for(const ava of avas)
+                    ava.src = 'file://' + blob.path
+            })
+        }
+
+        // Update statuses
+        const statuses = document.getElementsByClassName('user-online-' + id)
+        for(const status of statuses)
+            status.src = statusIconPath(user.status)
+
+        // Update nicknames and tags
+        const nicknames = document.getElementsByClassName('user-nickname-' + id)
+        const tags = document.getElementsByClassName('user-tag-' + id)
+        for(const name of nicknames)
+            name.innerHTML = escapeHtml(user.name)
+        for(const tag of tags)
+            tag.innerHTML = escapeHtml(formatTag(user.tag))
+
+        // Update status texts
+        const statusTexts = document.getElementsByClassName('user-status-' + id)
+        for(st of statusTexts)
+            st.innerHTML = escapeHtml(user.statusText)
+    }
+
+    // Creates an element that should be placed in the member list
+    function createUserSummary(id, friend) {
+        var elm = document.createElement('div')
+        elm.classList.add('user-summary')
+
+        var avaContainer = document.createElement('div')
+        avaContainer.classList.add('user-avatar-container')
+        elm.appendChild(avaContainer)
+
+        var ava = document.createElement('img')
+        ava.classList.add('user-avatar')
+        ava.classList.add('user-avatar-' + id)
+        avaContainer.appendChild(ava)
+
+        var status = document.createElement('img')
+        status.classList.add('user-online')
+        status.classList.add('user-online-' + id)
+        avaContainer.appendChild(status)
+
+        var statusText = document.createElement('span')
+        statusText.classList.add('user-status')
+        statusText.classList.add('user-status-' + id)
+        elm.appendChild(statusText)
+
+        var nicknameContainer = document.createElement('div')
+        nicknameContainer.classList.add('flex-row')
+        nicknameContainer.classList.add('user-nickname-container')
+        elm.appendChild(nicknameContainer)
+
+        var nickname = document.createElement('span')
+        nickname.classList.add('user-nickname')
+        nickname.classList.add('user-nickname-' + id)
+        nicknameContainer.appendChild(nickname)
+
+        var tag = document.createElement('span')
+        tag.classList.add('user-tag')
+        tag.classList.add('user-tag-' + id)
+        nicknameContainer.appendChild(tag)
+
+        if(friend) {
+            var friendRemoveBtn = document.createElement('button')
+            friendRemoveBtn.classList.add('hover-show-button')
+            friendRemoveBtn.classList.add('icon-button')
+            friendRemoveBtn.classList.add('friend-remove-button')
+            elm.appendChild(friendRemoveBtn)
+
+            var friendRemoveImg = document.createElement('img')
+            friendRemoveImg.src = path.join(__dirname, 'icons/friend_remove.png')
+            friendRemoveBtn.appendChild(friendRemoveImg)
+        }
+
+        return elm
+    }
+
+    // Updates the member list in the sidebar
+    function updMemberList() {
+        const memberList = document.getElementById('member-list-bar')
+
+        // Remove all previous members
+        while(memberList.firstChild)
+            memberList.removeChild(memberList.firstChild)
+
+        // Group 0 = own direct messages
+        if(viewingGroup == 0) {
+            const self = remote.getGlobal('webprotState').self
+            var userIds = []
+            var users = []
+
+            switch(viewingChan) {
+                case 0: // all my friends are watching, I can hear them talking
+                case 1: // online friends
+                    userIds = self.friends
+                    break
+                case 2: // pending in requests
+                    userIds = self.pendingIn
+                    break
+                case 3: // pending out requests
+                    userIds = self.pendingOut
+                    break
+                case 4: // blocked people
+                    userIds = self.pendingOut
+                    break
+            }
+
+            // Request users
+            userIds.forEach(id => {
+                users.push({
+                    'type': 'user',
+                    'id': id
+                })
+            })
+
+            // Create summaries for each one and append them to the member list
+            reqEntities(users, false, () => {
+                userIds.forEach(id => {
+                    var add = true
+                    if(viewingChan == 1 && entityCache[id].status == 0) // don't add offline friends if we only want to see online ones
+                        add = false
+                    if(add) {
+                        memberList.appendChild(createUserSummary(id, true))
+                        updateUser(id)
+                    }
+                })
+            })
+        }
+    }
     
-    // Packet receive handler
+    // Packet reception handler
     function ipcRecv(evt, arg) {
         if(arg.type != 'webprot.status')
             console.log('%c[RECEIVED]', 'color: #bb0000; font-weight: bold;', arg)
@@ -229,8 +419,8 @@ function _rendererFunc() {
                 break
 
             case 'webprot.2fa-required':
-                document.getElementById('login-form').style = 'display: none;'
-                document.getElementById('mfa-form').style = 'display: show;'
+                hideElm(document.getElementById('login-form'))
+                showElm(document.getElementById('mfa-form'))
 
                 document.getElementById('mfa-login-button').addEventListener('click', (e) => {
                     ipcSend({
@@ -245,7 +435,7 @@ function _rendererFunc() {
                 // Show the main UI
                 hideElm(document.getElementById('login-form'))
                 hideElm(document.getElementById('mfa-form'))
-                hideElm(document.getElementById('register-form'))
+                hideElm(document.getElementById('signup-form'))
                 showElm(document.getElementById('main-layout-container'))
 
                 // Request info about self
@@ -260,9 +450,18 @@ function _rendererFunc() {
                 document.getElementById('login-email').value = ''
                 document.getElementById('login-password').value = ''
                 document.getElementById('login-mfa-code').value = ''
-                document.getElementById('register-username').value = ''
-                document.getElementById('register-email').value = ''
-                document.getElementById('register-password').value = ''
+                document.getElementById('signup-username').value = ''
+                document.getElementById('signup-email').value = ''
+                document.getElementById('signup-password').value = ''
+
+                // Reset all caches
+                entityCache = {}
+                blobCache = {}
+                endCallbacks = []
+
+                // Reset the view
+                viewingGroup = 0
+                viewingChan = 0
                 break
 
             case 'webprot.login-err':
@@ -270,9 +469,9 @@ function _rendererFunc() {
                 document.getElementById('login-password').value = ''
                 break
 
-            case 'webprot.register-err':
-                showBox('REGISTER ERROR', arg.message)
-                document.getElementById('register-password').value = ''
+            case 'webprot.signup-err':
+                showBox('SIGNUP ERROR', arg.message)
+                document.getElementById('signup-password').value = ''
                 break
 
             case 'webprot.outdated':
@@ -286,35 +485,43 @@ function _rendererFunc() {
             case 'webprot.entities':
                 arg.entities.forEach((entity) => {
                     // Add entities to the entity list
-                    entityCache.push(entity)
+                    entityCache[entity.id] = entity
 
-                    // Update info about self if needed
+                    // Update info about self
                     if(entity.id == remote.getGlobal('webprotState').self.id) {
                         updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled)
+
                         // Request self avatar
                         download(entity.avaBlob, (blob) => {
                             updateSelfAva(blob.path)
                         })
+
+                        // Update DM list
+                        updMemberList()
                     }
+
+                    // Update info about other users
+                    if(entity.type == 'user')
+                        updateUser(entity.id)
                 })
                 break
 
             case 'webprot.dl-end':
                 // Add the blob to the blob cache
                 var blob = arg.state.info
-                blobCache.push(blob)
+                blobCache[blob.id] = blob
 
-                // Trigger the downpload end trigger
-                dlEndTriggers[arg.state.operId](blob)
+                // Trigger the download end trigger
+                endCallbacks[arg.state.operId](blob)
                 break
 
             case 'webprot.ul-end':
                 // Add the blob to the blob cache
                 var blob = arg.state.info
-                blobCache.push(blob)
+                blobCache[blob.id] = blob
 
                 // Trigger the upload end trigger
-                ulEndTriggers[arg.state.operId](blob.id)
+                endCallbacks[arg.state.operId](blob.id)
                 break
 
             case 'webprot.mfa-secret':
@@ -326,9 +533,11 @@ function _rendererFunc() {
                                + '&issuer=Order'
                 var qr = qrcode(10, 'L')
                 qr.addData(qrString)
-                // Generate the code itself
+
+                // Generate the code
                 qr.make()
                 document.getElementById('mfa-qr-placeholder').innerHTML = qr.createSvgTag(3)
+
                 // Show the banner
                 triggerAppear(document.getElementById('mfa-qr-banner'), true)
                 break
@@ -337,6 +546,16 @@ function _rendererFunc() {
                 // Store the token
                 localStorage.setItem('contToken', arg.token)
                 break
+
+            case 'webprot.completion-notification':
+                // Call the callback
+                var cb = endCallbacks[arg.operId]
+                cb()
+
+                // Remove the element
+                delete endCallbacks[endCallbacks.indexOf(cb)]
+                if(endCallbacks.every(x => x == undefined))
+                    endCallbacks = []
         }
     }
     ipcRenderer.on('message', ipcRecv)
@@ -366,22 +585,22 @@ function _rendererFunc() {
         })
     })
 
-    document.getElementById('login-register-button').addEventListener('click', (e) => {
-        document.getElementById('register-form').style = 'display: show;'
+    document.getElementById('login-signup-button').addEventListener('click', (e) => {
+        document.getElementById('signup-form').style = 'display: show;'
         document.getElementById('login-form').style = 'display: none;'
     })
 
-    // Add listeners to register controls
-    document.getElementById('register-back-button').addEventListener('click', (e) => {
+    // Add listeners to signup controls
+    document.getElementById('signup-back-button').addEventListener('click', (e) => {
         document.getElementById('login-form').style = 'display: show;'
-        document.getElementById('register-form').style = 'display: none;'
+        document.getElementById('signup-form').style = 'display: none;'
     })
 
-    document.getElementById('register-password').addEventListener('input', (e) => {
+    document.getElementById('signup-password').addEventListener('input', (e) => {
         // Reference components
         var strongRegex = new RegExp('^(?=.{10,})(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\\W).*$', 'g')
         var mediumRegex = new RegExp('^(?=.{8,})(((?=.*[A-Z])(?=.*[a-z]))|((?=.*[A-Z])(?=.*[0-9]))|((?=.*[a-z])(?=.*[0-9]))).*$', 'g')
-        var password = document.getElementById('register-password').value
+        var password = document.getElementById('signup-password').value
         var passwordStrengthText = document.getElementById('password-strength-text')
         var passwordStrengthMeter = document.getElementById('password-strength-meter')
 
@@ -412,11 +631,11 @@ function _rendererFunc() {
         }
     })
 
-    document.getElementById('register-button').addEventListener('click', (e) => {
+    document.getElementById('signup-button').addEventListener('click', (e) => {
         // Check everything
-        var username = document.getElementById('register-username').value
-        var email = document.getElementById('register-email').value
-        var password = document.getElementById('register-password').value
+        var username = document.getElementById('signup-username').value
+        var email = document.getElementById('signup-email').value
+        var password = document.getElementById('signup-password').value
         var proceed = true;
         var passwordStrengthText = document.getElementById('password-strength-text')
 
@@ -442,7 +661,7 @@ function _rendererFunc() {
 
         if(proceed) {
             ipcSend({
-                'action': 'webprot.register',
+                'action': 'webprot.signup',
                 'email': email,
                 'name': username,
                 'password': password
@@ -540,6 +759,38 @@ function _rendererFunc() {
         else
             document.getElementById('theme-css').href = 'themes/dark.css'
     })
+
+    // "About Order" buttons
+    document.getElementById('view-on-github').addEventListener('click', (e) => {
+        shell.openExternal("https://github.com/ordermsg")
+    })
+
+    // Friend control buttons
+    document.getElementById('friends-all').addEventListener('click', (e) => {
+        viewingGroup = 0
+        viewingChan  = 0
+        updMemberList()
+    })
+    document.getElementById('friends-online').addEventListener('click', (e) => {
+        viewingGroup = 0
+        viewingChan  = 1
+        updMemberList()
+    })
+    document.getElementById('friends-pending-in').addEventListener('click', (e) => {
+        viewingGroup = 0
+        viewingChan  = 2
+        updMemberList()
+    })
+    document.getElementById('friends-pending-out').addEventListener('click', (e) => {
+        viewingGroup = 0
+        viewingChan  = 3
+        updMemberList()
+    })
+    document.getElementById('friends-blocked').addEventListener('click', (e) => {
+        viewingGroup = 0
+        viewingChan  = 4
+        updMemberList()
+    })
 }
 
-_rendererFunc()
+window.addEventListener('load', _rendererFunc)

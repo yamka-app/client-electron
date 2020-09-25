@@ -1,3 +1,5 @@
+@charset "UTF-8"; 
+
 @font-face {
     font-family: RobotoBold;
     src: url(fonts/Roboto-Bold.ttf)
@@ -118,7 +120,7 @@ p {
     padding: 20px;
 }
 
-#login-form, #mfa-form, #register-form {
+#login-form, #mfa-form, #signup-form {
     margin: auto;
     width: 320px;
     height: fit-content;
@@ -178,6 +180,7 @@ button:not(.title-bar-button):not(.menu-exit) {
     transition: background-color 0.1s;
     transition: border 0.1s;
     transition: color 0.1s;
+    transition: background-color 0.1s;
 
     color: var(--foreground);
     font-family: RobotoBold;
@@ -231,6 +234,24 @@ button.apply-button:not(.title-bar-button):not(.menu-exit):active {
     color: var(--apply-dim-2);
 }
 
+button.icon-button:not(.title-bar-button):not(.menu-exit) {
+    background-color: #00000000;
+    border: none;
+    margin: 0;
+    transition: filter 0.1s ease;
+}
+button.icon-button:not(.title-bar-button):not(.menu-exit):hover {
+    filter: brightness(1.5);
+}
+
+*       > button.hover-show-button:not(.title-bar-button):not(.menu-exit) {
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+*:hover > button.hover-show-button:not(.title-bar-button):not(.menu-exit) {
+    opacity: 1;
+}
+
 progress {
     margin-top: 5px;
     height: 5px;
@@ -275,7 +296,7 @@ label {
 }
 
 #group-list-sidebar {
-    background-color: var(--shade-1);
+    background-color: var(--shade-2);
     width: 50px;
     padding: 0;
 }
@@ -287,7 +308,7 @@ label {
 }
 
 #user-info-bar {
-    background-color: var(--shade-1);
+    background-color: var(--shade-2);
     height: 48px;
     width: 100%;
     padding: 0;
@@ -305,12 +326,27 @@ label {
     padding: 0;
 }
 
+#member-list-friend-header {
+    background-color: var(--shade-2);
+
+    font-family: RobotoBold;
+    font-size: 12px;
+    
+    width: 200px;
+    padding: 0 10px 0 10px;
+    position: relative;
+
+    align-items: center;
+}
+#friend-add {
+    margin-left: 5px;
+}
+
 .user-avatar-container {
     margin-left: 8px;
     margin-top: 8px;
     position: relative;
 }
-
 .user-avatar {
     width: 32px;
     height: 32px;
@@ -320,7 +356,6 @@ label {
 
     cursor: pointer;
 }
-
 .user-avatar-huge {
     width: 64px;
     height: 64px;
@@ -329,7 +364,6 @@ label {
 
     cursor: pointer;
 }
-
 .user-online {
     width: 9px;
     height: 9px;
@@ -338,17 +372,27 @@ label {
     left: 21px;
 }
 
-.user-nickname {
+.user-nickname-container {
     font-size: 12px;
     font-family: RobotoBold;
 
     position: absolute;
     left: 44px;
-    top: 12px;
+    top: 18px;
 
     cursor: pointer;
 }
+.user-status:not(:empty) ~ .user-nickname-container {
+    top: 12px;
+}
+.user-nickname {
+    display: inline-block;
+    max-width: 110px;
 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .user-tag {
     color: var(--foreground-1);
     font-family: RobotoBold;
@@ -356,12 +400,43 @@ label {
 }
 
 .user-status {
-    font-size: 12px;
-    font-family: Roboto;
+    display: inline-block;
+    max-width: 145px;
 
     position: absolute;
     left: 44px;
     top: 28px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+    font-size: 12px;
+    font-family: Roboto;
+}
+
+.user-summary {
+    position: relative;
+
+    height: 48px;
+
+    margin: 4px;
+    padding: 0;
+
+    background-color: var(--shade-1);
+    border-radius: 5px;
+    transition: background-color 0.1s ease;
+
+    cursor: pointer;
+}
+.user-summary:hover {
+    background-color: var(--shade-2);
+}
+
+.friend-remove-button {
+    position: absolute;
+    right: 0px;
+    top: 10px;
 }
 
 
@@ -648,6 +723,10 @@ input[type="radio"].hidden-radio:checked + label {
 .flex-row {
     display: flex;
     flex-direction: row;
+}
+.flex-col {
+    display: flex;
+    flex-direction: column;
 }
 
 

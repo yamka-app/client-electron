@@ -96,7 +96,8 @@ var webprotState = {
     'selfRequestId': -1,
     'self': {},
 
-    'blobStates' : []
+    'blobStates' : [],
+    'reqStates': []
 }
 
 global.webprotState = webprotState
@@ -151,14 +152,14 @@ function webprotSendBytes(bytes) {
     }
 
     console.log('Sending:', bytes)
-    webprotState.socket.write(bytes);
-    webprotState.seqId++
+    webprotState.socket.write(bytes)
 }
 
 function webprotSendPacket(packet) {
     var type = 0
     var data = null
-    // Fill the data based on the packet type
+
+    // Fill data based on the packet type
     switch(packet.type) {
         case 'login':
             type = 1
@@ -169,7 +170,7 @@ function webprotSendPacket(packet) {
             ])
             break
 
-        case 'register':
+        case 'signup':
             type = 5
             data = Buffer.concat([
                 webprotEncNum(webprotSettings.version, 2),
@@ -288,7 +289,19 @@ function webprotSendPacket(packet) {
             })
             data = Buffer.concat(concatArr)
             break
+
+        case 'manage-contacts':
+            type = 13
+            var contact_types = ['friend', 'blocked', 'pending-in', 'pending-out']
+            var actions = ['add', 'remove']
+            data = Buffer.concat([
+                webprotEncNum(contact_types.indexOf(packet.contact_type), 1),
+                webprotEncNum(actions.indexOf(packet.action), 1),
+                webprotEncNum(packet.id, 8)
+            ])
+            break
     }
+
     // Mash everything into one buffer
     var buf = Buffer.concat([
         webprotEncNum(data.length, 4),
@@ -297,18 +310,30 @@ function webprotSendPacket(packet) {
         webprotEncNum((packet.replyTo != undefined) ? packet.replyTo : 0, 4),
         data
     ])
+
     // Compress the data
     var compressed = buf.length >= webprotSettings.compressionThreshold
     if(compressed)
         buf = zlib.gzipSync(buf, {})
+
     // Add a compression header
     buf = Buffer.concat([
         webprotEncNum(compressed ? 1 : 0, 1),
         webprotEncNum(buf.length, 4),
         buf
     ])
+
+    // Add a request state
+    if(packet.operId != undefined) {
+        webprotState.reqStates.push({
+            'seqId': webprotState.seqId,
+            'operId': packet.operId
+        })
+    }
+
     // Send the resulting buffer
-    webprotSendBytes(buf)
+    webprotSendBytes(buf, webprotState.seqId++)
+
     // Reset the connection if we were logged out
     if(packet.type == 'login' && packet.email == '___@logout@___') {
         webprotState.connected = false
@@ -320,6 +345,7 @@ function webprotSendPacket(packet) {
         webprotState.selfRequestId = -1
         webprotState.seqId = 0
         webprotState.blobStates.length = 0
+        webprotState.reqStates.length = 0
     }
 }
 
@@ -343,23 +369,26 @@ function webprotData(bytes) {
             var msg = webprotDecStr(data.slice(2))
             var type_str = ''
             switch(code) {
-                case 4:
-                    type_str = '2fa_required'
-                    // Start pinging the server every 15s (it will close the connection if no packets are sent for 30s)
-                    webprotState.sendPings = true
+                case 1:
+                    type_str = 'outdated'
+                    break
+                case 2:
+                    type_str = 'invalid-conn-state'
                     break
                 case 3:
                     type_str = 'login-err'
                     break
-                case 6:
-                    type_str = 'register-err'
+                case 4:
+                    type_str = '2fa-required'
+                    // Start pinging the server every 15s (it will close the connection if no packets are sent for 30s)
+                    webprotState.sendPings = true
                     break
                 case 5:
                     type_str = 'login-success'
                     webprotState.sendPings = true
                     break
-                case 1:
-                    type_str = 'outdated'
+                case 6:
+                    type_str = 'signup-err'
                     break
                 case 7:
                     type_str = 'rate-limit'
@@ -370,14 +399,25 @@ function webprotData(bytes) {
                 case 9:
                     type_str = 'blob-too-large'
                     break
-                case 9:
+                case 10:
                     type_str = 'permission-denied'
                     break
                 case 11:
                     type_str = 'invalid-cont-token'
                     break
+                case 12:
+                    type_str = 'user-not-pending'
+                    break
+                case 13:
+                    type_str = 'cont-act-not-applicable'
+                    break
+                default:
+                    type_str = 'unknown-status-code'
+                    break
             }
-            mainWindow.webContents.send('message', {'type': 'webprot.' + type_str, 'message': msg})
+            ipcSend({
+                'type': 'webprot.' + type_str, 'message': msg
+            })
             break
 
         case 7: // entities
@@ -475,7 +515,9 @@ function webprotData(bytes) {
             if(replyTo == webprotState.selfRequestId)
                 webprotState.self = entities[0]
 
-            mainWindow.webContents.send('message', {'type': 'webprot.entities', 'entities': entities})
+            ipcSend({
+                'type': 'webprot.entities', 'entities': entities
+            })
             break
 
         case 9: // blob get/put response
@@ -524,7 +566,7 @@ function webprotData(bytes) {
                     var status = bytes[0]
                     if(status != 0) {
                         blobState.state = 'error'
-                        mainWindow.webContents.send('message', {
+                        ipcSend({
                             'type': 'webprot.status',
                             'message': 'Blob download/upload error'
                         })
@@ -562,11 +604,11 @@ function webprotData(bytes) {
                         webprotState.blobStates = webprotState.blobStates.filter(elm => elm != blobState)
 
                         blobState.state = 'finished'
-                        mainWindow.webContents.send('message', {
+                        ipcSend({
                             'type': 'webprot.status',
                             'message': 'Blob download finished'
                         })
-                        mainWindow.webContents.send('message', {
+                        ipcSend({
                             'type': 'webprot.dl-end',
                             'state': blobState
                         })
@@ -582,11 +624,11 @@ function webprotData(bytes) {
 
                     blobState.state = 'finished'
                     blobState.info.id = id
-                    mainWindow.webContents.send('message', {
+                    ipcSend({
                         'type': 'webprot.status',
                         'message': 'Blob upload finished'
                     })
-                    mainWindow.webContents.send('message', {
+                    ipcSend({
                         'type': 'webprot.ul-end',
                         'state': blobState
                     })
@@ -595,13 +637,31 @@ function webprotData(bytes) {
             break
 
         case 10: // generated MFA secret
-            mainWindow.webContents.send('message', {'type': 'webprot.mfa-secret', 'secret': webprotDecStr(data)})
+            ipcSend({
+                'type': 'webprot.mfa-secret', 'secret': webprotDecStr(data)
+            })
             break
 
         case 12: // generated continuation token
-            mainWindow.webContents.send('message', {'type': 'webprot.cont-token', 'token': webprotDecStr(data)})
+            ipcSend({
+                'type': 'webprot.cont-token', 'token': webprotDecStr(data)
+            })
             break
     }
+
+    // Send an operation completion notification
+    var operState = webprotState.reqStates.find(x => x.seqId == replyTo)
+    if(operState != undefined) {
+        ipcSend({
+            'type': 'webprot.completion-notification',
+            'operId': operState.operId
+        })
+        webprotState.reqStates.splice(webprotState.reqStates.indexOf(operState), 1)
+    }
+}
+
+function ipcSend(data) {
+    mainWindow.webContents.send('message', data)
 }
 
 function webprotConnect() {
@@ -617,7 +677,9 @@ function webprotConnect() {
         webprotState.socket.destroy()
     // Initiate a TLS connection to the server
     console.log('Connecting to ' + webprotSettings.host + ':' + webprotSettings.port)
-    mainWindow.webContents.send('message', {'type': 'webprot.status', 'message': 'Connecting'})
+    ipcSend({
+        'type': 'webprot.status', 'message': 'Connecting'
+    })
     var timeStart = new Date().getTime();
     webprotState.socket = tls.connect({
         'host': webprotSettings.host,
@@ -626,7 +688,7 @@ function webprotConnect() {
         // We have connected
         var timeEnd = new Date().getTime();
         console.log('Connected in', timeEnd - timeStart, 'ms');
-        mainWindow.webContents.send('message', {
+        ipcSend({
             'type': 'webprot.status',
             'message': 'Connected in ' + (timeEnd - timeStart) + ' ms'
         })
@@ -648,7 +710,9 @@ function webprotConnect() {
         webprotState.connecting = false
         webprotState.sendPings = false
         console.log('Disconnected')
-        mainWindow.webContents.send('message', {'type': 'webprot.status', 'message': 'Disconnected'})
+        ipcSend({
+            'type': 'webprot.status', 'message': 'Disconnected'
+        })
     })
     webprotState.socket.on('error', (error) => {
         webprotState.connected = false
@@ -664,12 +728,14 @@ ipcMain.on('asynchronous-message', (event, arg) => {
     } else if(arg.action == 'webprot.login') {
         webprotSendPacket({
             'type': 'login',
+            'operId': arg.operId,
             'email': arg.email,
             'password': arg.password
         })
-    } else if(arg.action == 'webprot.register') {
+    } else if(arg.action == 'webprot.signup') {
         webprotSendPacket({
-            'type': 'register',
+            'type': 'signup',
+            'operId': arg.operId,
             'email': arg.email,
             'name': arg.name,
             'password': arg.password
@@ -677,6 +743,7 @@ ipcMain.on('asynchronous-message', (event, arg) => {
     } else if(arg.action == 'webprot.entity-get') {
         webprotSendPacket({
             'type': 'entity-get',
+            'operId': arg.operId,
             'entities': arg.entities
         })
     } else if(arg.action == 'webprot.blob-dl') {
@@ -688,14 +755,17 @@ ipcMain.on('asynchronous-message', (event, arg) => {
             'received': 0,
             'operId': arg.operId
         })
+
         // Get blob info
         webprotSendPacket({
             'type': 'blob-get',
-            'id': arg.id
+            'id': arg.id,
+            'operId': arg.previewOperId
         })
     } else if(arg.action == 'webprot.blob-ul') {
         // Get file length
         var len = fs.statSync(arg.path).size
+        
         // Create a new state object
         webprotState.blobStates.push({
             'id': 0,
@@ -706,9 +776,11 @@ ipcMain.on('asynchronous-message', (event, arg) => {
             'sent': 0,
             'operId': arg.operId
         })
+
         // Get upload token
         webprotSendPacket({
             'type': 'blob-put',
+            'operId': arg.operId,
             'name': arg.path,
             'length': len
         })

@@ -24,7 +24,7 @@
     <table id="capital-layout" style="border: none; border-spacing: 0; height: 100vh; width: 100vw">
       <tr style="height: fit-content"><td style="padding: 0; vertical-align: top;">
         <div id="title-bar">
-          <div id="title-text">ORDER</div>
+          <div id="title-text">ORDER - ALPHA PREVIEW</div>
           <div id="title-status"></div>
 
           <div id="title-bar-buttons">
@@ -137,26 +137,6 @@
                   <button id="self-mfa-toggle-button" class="danger-button" style="width: fit-content;">ENABLE 2FA</button>
                 </div>
               </div>
-
-              <!--
-              <label class="setting">
-                SHID
-                <label class="switch right" style="margin-left: 0;">
-                  <input id="switch-1" type="checkbox">
-                  <span class="slider round"></span>
-                </label>
-              </label>
-
-              <div class="settings-separator"></div>
-              
-              <label class="setting">
-                FARD
-                <label class="switch right" style="margin-left: 0;">
-                  <input id="fard-switch" type="checkbox">
-                  <span class="slider round"></span>
-                </label>
-              </label>
-              -->
             </div>
 
             <div id="user-settings-section-about" class="settings-section user-settings-section" style="display: none;">
@@ -204,27 +184,41 @@
           <td id="central-field">
 
           </td>
-          <td id="member-list-sidebar">
+
+          <td id="channel-list-sidebar">
 
           </td>
-          <td id="channel-list-sidebar"><table style="border: none; border-spacing: 0; height: 100%; width: 100%">
-            <tr><td id="channel-list-bar">
+
+          <td id="member-list-sidebar"><table style="border: none; border-spacing: 0; height: 100%; width: 100%">
+            <tr style="height: fit-content;"><td id="member-list-friend-header" class="flex-row">
+              FRIENDS
+              <button id="friends-all"         class="icon-button"><img src="icons/friend.png"/></button>
+              <button id="friends-online"      class="icon-button"><img src="icons/friend_online.png"/></button>
+              <button id="friends-pending-in"  class="icon-button"><img src="icons/friend_pending_in.png"/></button>
+              <button id="friends-pending-out" class="icon-button"><img src="icons/friend_pending_out.png"/></button>
+              <button id="friends-blocked"     class="icon-button"><img src="icons/ban.png"/></button>
+
+              <button id="friend-add"          class="icon-button"><img src="icons/friend_add.png"/></button>
+            </td></tr>
+
+            <tr><td id="member-list-bar" class="flex-col">
 
             </td></tr>
+
             <tr><td id="user-info-bar">
               <div class="user-avatar-container">
                 <img id="self-avatar" class="user-avatar"/>
                 <img id="self-status" class="user-online"/>
               </div>
 
-              <div class="flex-row user-nickname">
-                <span id="self-nickname">nickname</span>
+              <span id="self-status-text" class="user-status">status text</span>
+              <div class="flex-row user-nickname-container">
+                <span id="self-nickname" class="user-nickname">nickname</span>
                 <span id="self-tag" class="user-tag">#11111</span>
               </div>
-
-              <span id="self-status-text" class="user-status">status text</span>
             </td></tr>
           </table></td>
+          
           <td id="group-list-sidebar">
 
           </td>
@@ -243,7 +237,7 @@
         <br>
   
         <button id="login-button" class="accent-button fill-width">LOGIN</button>
-        <button id="login-register-button" class="fill-width">REGISTER</button>
+        <button id="login-signup-button" class="fill-width">SIGN UP</button>
       </div></td></tr>
 
       <tr style="height: fit-content"><td style="padding: 0"><div id="mfa-form" style="display: none;">
@@ -255,17 +249,17 @@
         <button id="mfa-login-button" class="accent-button fill-width">LOGIN</button>
       </div></td></tr>
 
-      <tr style="height: fit-content"><td style="padding: 0"><div id="register-form" style="display: none;">
+      <tr style="height: fit-content"><td style="padding: 0"><div id="signup-form" style="display: none;">
         USERNAME
         <label id="username-required" style="color: #aa3a3a; display: none;">REQUIRED</label>
         <br>
-        <span class="input-container"><input id="register-username" style="margin-bottom: 10px;" class="fill-width"/></span>
+        <span class="input-container"><input id="signup-username" style="margin-bottom: 10px;" class="fill-width"/></span>
         <br>
   
         <span style="padding-top: 10px;">E-MAIL</span>
         <label id="email-required" style="color: #aa3a3a; display: none;">INVALID</label>
         <br>
-        <span class="input-container"><input id="register-email" style="margin-bottom: 10px;" class="fill-width"/></span>
+        <span class="input-container"><input id="signup-email" style="margin-bottom: 10px;" class="fill-width"/></span>
         <br>
   
         <span style="padding-top: 10px;">PASSWORD</span>
@@ -273,11 +267,11 @@
         <br>
         <progress id="password-strength-meter" value="0" max="3" class="fill-width password-weak"></progress>
         <br>
-        <span class="input-container"><input id="register-password" type="password" class="fill-width"/></span>
+        <span class="input-container"><input id="signup-password" type="password" class="fill-width"/></span>
         <br>
   
-        <button id="register-button" class="accent-button fill-width">REGISTER</button>
-        <button id="register-back-button" class="fill-width">BACK</button>
+        <button id="signup-button" class="accent-button fill-width">SIGN UP</button>
+        <button id="signup-back-button" class="fill-width">BACK</button>
       </div></td></tr>
       
     </table>
