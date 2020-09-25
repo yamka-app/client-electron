@@ -300,12 +300,15 @@ function webprotSendPacket(packet) {
                 webprotEncNum(packet.id, 8)
             ])
             break
+
+        case 'search-user':
+            type = 14
+            data = webprotEncStr(packet.name)
     }
 
     // Mash everything into one buffer
     var buf = Buffer.concat([
-        webprotEncNum(data.length, 4),
-        webprotEncNum(type, 2),
+        webprotEncNum(type, 1),
         webprotEncNum(webprotState.seqId, 4),
         webprotEncNum((packet.replyTo != undefined) ? packet.replyTo : 0, 4),
         data
@@ -358,15 +361,15 @@ function webprotData(bytes) {
     if(compressed)
         bytes = zlib.gunzipSync(bytes)
     // Separate the packet type and actual data
-    var type = webprotDecNum(bytes.slice(4, 6), 2)
-    var seqId = webprotDecNum(bytes.slice(6, 10), 4)
-    var replyTo = webprotDecNum(bytes.slice(10, 14), 4)
-    var data = bytes.slice(14)
+    var type = webprotDecNum(bytes.slice(0, 1), 1)
+    var seqId = webprotDecNum(bytes.slice(1, 5), 4)
+    var replyTo = webprotDecNum(bytes.slice(5, 9), 4)
+    var payload = bytes.slice(9)
     // Do something based on the packet type
     switch(type) {
         case 4: // status
-            var code = webprotDecNum(data.slice(0, 2), 2)
-            var msg = webprotDecStr(data.slice(2))
+            var code = webprotDecNum(payload.slice(0, 2), 2)
+            var msg = webprotDecStr(payload.slice(2))
             var type_str = ''
             switch(code) {
                 case 1:
@@ -422,12 +425,12 @@ function webprotData(bytes) {
 
         case 7: // entities
             var entities = []
-            var entityCount = webprotDecNum(data.slice(0, 2), 2)
+            var entityCount = webprotDecNum(payload.slice(0, 2), 2)
             var pos = 2
             for(var e = 0; e < entityCount; e++) {
                 var entity = {}
 
-                var entityType = webprotDecNum(data.slice(pos, pos + 2), 2)
+                var entityType = webprotDecNum(payload.slice(pos, pos + 2), 2)
                 pos += 2
                 switch(entityType) {
                     case 1:
@@ -437,72 +440,72 @@ function webprotData(bytes) {
                         entity.type = 'unknown'
                         break
                 }
-                var fieldCount = webprotDecNum(data.slice(pos, pos + 2), 2)
+                var fieldCount = webprotDecNum(payload.slice(pos, pos + 2), 2)
                 pos += 2
 
                 for(var f = 0; f < fieldCount; f++) {
-                    var fieldType = webprotDecNum(data.slice(pos, pos + 2), 2)
+                    var fieldType = webprotDecNum(payload.slice(pos, pos + 2), 2)
                     pos += 2
 
                     switch(fieldType) {
                         case 0: // id
-                            entity.id = webprotDecNum(data.slice(pos, pos + 8), 8)
+                            entity.id = webprotDecNum(payload.slice(pos, pos + 8), 8)
                             pos += 8
                             break
                         case 1: // email
-                            entity.email = webprotDecStr(data.slice(pos))
-                            pos += webprotDecNum(data.slice(pos, pos + 2), 2) + 2
+                            entity.email = webprotDecStr(payload.slice(pos))
+                            pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
                             break
                         case 2: // name
-                            entity.name = webprotDecStr(data.slice(pos))
-                            pos += webprotDecNum(data.slice(pos, pos + 2), 2) + 2
+                            entity.name = webprotDecStr(payload.slice(pos))
+                            pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
                             break
                         case 3: // tag
-                            entity.tag = webprotDecNum(data.slice(pos, pos + 4), 4)
+                            entity.tag = webprotDecNum(payload.slice(pos, pos + 4), 4)
                             pos += 4
                             break
                         case 4: // status
-                            entity.status = webprotDecNum(data.slice(pos, pos + 1), 1)
+                            entity.status = webprotDecNum(payload.slice(pos, pos + 1), 1)
                             pos += 1
                             break
                         case 5: // status text
-                            entity.statusText = webprotDecStr(data.slice(pos))
-                            pos += webprotDecNum(data.slice(pos, pos + 2), 2) + 2
+                            entity.statusText = webprotDecStr(payload.slice(pos))
+                            pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
                             break
                         case 6: // settings
                             entity.settings = []
-                            var settingsKeys = webprotDecNum(data.slice(pos, pos + 2), 2)
+                            var settingsKeys = webprotDecNum(payload.slice(pos, pos + 2), 2)
                             pos += 2
                             for(var k = 0; k < settingsKeys; k++) {
-                                var key = webprotDecStr(data.slice(pos))
-                                pos += webprotDecNum(data.slice(pos, pos + 2), 2) + 2
-                                var val = webprotDecStr(data.slice(pos))
-                                pos += webprotDecNum(data.slice(pos, pos + 2), 2) + 2
+                                var key = webprotDecStr(payload.slice(pos))
+                                pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+                                var val = webprotDecStr(payload.slice(pos))
+                                pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
                                 entity.settings.push({ key: val })
                             }
                             break
                         case 7: // avatar blob id
-                            entity.avaBlob = webprotDecNum(data.slice(pos, pos + 8), 8)
+                            entity.avaBlob = webprotDecNum(payload.slice(pos, pos + 8), 8)
                             pos += 8
                             break
                         case 8: // MFA enable status
-                            entity.mfaEnabled = webprotDecNum(data.slice(pos, pos + 1), 1) > 0
+                            entity.mfaEnabled = webprotDecNum(payload.slice(pos, pos + 1), 1) > 0
                             pos += 1
                             break
                         case 9: // friend list
-                            entity.friends = webprotDecNumList(data.slice(pos), 8)
+                            entity.friends = webprotDecNumList(payload.slice(pos), 8)
                             pos += 2 + (entity.friends.length * 8)
                             break
                         case 10: // blocklist
-                            entity.blocked = webprotDecNumList(data.slice(pos), 8)
+                            entity.blocked = webprotDecNumList(payload.slice(pos), 8)
                             pos += 2 + (entity.blocked.length * 8)
                             break
                         case 11: // pending in
-                            entity.pendingIn = webprotDecNumList(data.slice(pos), 8)
+                            entity.pendingIn = webprotDecNumList(payload.slice(pos), 8)
                             pos += 2 + (entity.pendingIn.length * 8)
                             break
                         case 12: // pending out
-                            entity.pendingOut = webprotDecNumList(data.slice(pos), 8)
+                            entity.pendingOut = webprotDecNumList(payload.slice(pos), 8)
                             pos += 2 + (entity.pendingOut.length * 8)
                             break
                     }
@@ -522,12 +525,12 @@ function webprotData(bytes) {
 
         case 9: // blob get/put response
             var pos = 0
-            var id = webprotDecNum(data.slice(pos, pos + 8), 8); pos += 8
-            var name = webprotDecStr(data.slice(pos)); pos += webprotDecNum(data.slice(pos, pos + 2), 2) + 2
-            var size = webprotDecStr(data.slice(pos)); pos += webprotDecNum(data.slice(pos, pos + 2), 2) + 2
-            var preview = webprotDecStr(data.slice(pos)); pos += webprotDecNum(data.slice(pos, pos + 2), 2) + 2
-            var hash = data.slice(pos, pos + 32)
-            var token = data.slice(pos + 32, pos + 64)
+            var id = webprotDecNum(payload.slice(pos, pos + 8), 8); pos += 8
+            var name = webprotDecStr(payload.slice(pos)); pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+            var size = webprotDecStr(payload.slice(pos)); pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+            var preview = webprotDecStr(payload.slice(pos)); pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+            var hash = payload.slice(pos, pos + 32)
+            var token = payload.slice(pos + 32, pos + 64)
 
             // Update blob state
             var blobState = webprotState.blobStates.find(x => x.id == id)
@@ -638,13 +641,13 @@ function webprotData(bytes) {
 
         case 10: // generated MFA secret
             ipcSend({
-                'type': 'webprot.mfa-secret', 'secret': webprotDecStr(data)
+                'type': 'webprot.mfa-secret', 'secret': webprotDecStr(payload)
             })
             break
 
         case 12: // generated continuation token
             ipcSend({
-                'type': 'webprot.cont-token', 'token': webprotDecStr(data)
+                'type': 'webprot.cont-token', 'token': webprotDecStr(payload)
             })
             break
     }
