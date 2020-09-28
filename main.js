@@ -69,7 +69,7 @@ app.whenReady().then(() => {
             'type': 'ping',
             'payload': 123
         })
-    }, 15000)
+    }, 5000)
 })
 
 app.on('window-all-closed', () => {
@@ -91,7 +91,7 @@ var webprotState = {
     'connecting' : false,
     'sendPings' : false,
     'socket': null,
-    'seqId': 0,
+    'seqId': 1,
     'queue': [],
     'selfRequestId': -1,
     'self': {},
@@ -194,6 +194,12 @@ function webprotSendPacket(packet) {
                     case 'user':
                         numType = 1
                         break
+                    case 'channel':
+                        numType = 2
+                        break
+                    case 'group':
+                        numType = 3
+                        break
                     default:
                         numType = 0
                         break
@@ -295,7 +301,7 @@ function webprotSendPacket(packet) {
             var contact_types = ['friend', 'blocked', 'pending-in', 'pending-out']
             var actions = ['add', 'remove']
             data = Buffer.concat([
-                webprotEncNum(contact_types.indexOf(packet.contact_type), 1),
+                webprotEncNum(contact_types.indexOf(packet.contactType), 1),
                 webprotEncNum(actions.indexOf(packet.action), 1),
                 webprotEncNum(packet.id, 8)
             ])
@@ -304,6 +310,7 @@ function webprotSendPacket(packet) {
         case 'search-user':
             type = 14
             data = webprotEncStr(packet.name)
+            break
     }
 
     // Mash everything into one buffer
@@ -436,6 +443,9 @@ function webprotData(bytes) {
                     case 1:
                         entity.type = 'user'
                         break
+                    case 2:
+                        entity.type = 'channel'
+                        break
                     default:
                         entity.type = 'unknown'
                         break
@@ -446,68 +456,96 @@ function webprotData(bytes) {
                 for(var f = 0; f < fieldCount; f++) {
                     var fieldType = webprotDecNum(payload.slice(pos, pos + 2), 2)
                     pos += 2
-
-                    switch(fieldType) {
-                        case 0: // id
-                            entity.id = webprotDecNum(payload.slice(pos, pos + 8), 8)
-                            pos += 8
-                            break
-                        case 1: // email
-                            entity.email = webprotDecStr(payload.slice(pos))
-                            pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
-                            break
-                        case 2: // name
-                            entity.name = webprotDecStr(payload.slice(pos))
-                            pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
-                            break
-                        case 3: // tag
-                            entity.tag = webprotDecNum(payload.slice(pos, pos + 4), 4)
-                            pos += 4
-                            break
-                        case 4: // status
-                            entity.status = webprotDecNum(payload.slice(pos, pos + 1), 1)
-                            pos += 1
-                            break
-                        case 5: // status text
-                            entity.statusText = webprotDecStr(payload.slice(pos))
-                            pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
-                            break
-                        case 6: // settings
-                            entity.settings = []
-                            var settingsKeys = webprotDecNum(payload.slice(pos, pos + 2), 2)
-                            pos += 2
-                            for(var k = 0; k < settingsKeys; k++) {
-                                var key = webprotDecStr(payload.slice(pos))
+                    if(entity.type == 'user') {
+                        switch(fieldType) {
+                            case 0: // id
+                                entity.id = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 1: // email
+                                entity.email = webprotDecStr(payload.slice(pos))
                                 pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
-                                var val = webprotDecStr(payload.slice(pos))
+                                break
+                            case 2: // name
+                                entity.name = webprotDecStr(payload.slice(pos))
                                 pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
-                                entity.settings.push({ key: val })
-                            }
-                            break
-                        case 7: // avatar blob id
-                            entity.avaBlob = webprotDecNum(payload.slice(pos, pos + 8), 8)
-                            pos += 8
-                            break
-                        case 8: // MFA enable status
-                            entity.mfaEnabled = webprotDecNum(payload.slice(pos, pos + 1), 1) > 0
-                            pos += 1
-                            break
-                        case 9: // friend list
-                            entity.friends = webprotDecNumList(payload.slice(pos), 8)
-                            pos += 2 + (entity.friends.length * 8)
-                            break
-                        case 10: // blocklist
-                            entity.blocked = webprotDecNumList(payload.slice(pos), 8)
-                            pos += 2 + (entity.blocked.length * 8)
-                            break
-                        case 11: // pending in
-                            entity.pendingIn = webprotDecNumList(payload.slice(pos), 8)
-                            pos += 2 + (entity.pendingIn.length * 8)
-                            break
-                        case 12: // pending out
-                            entity.pendingOut = webprotDecNumList(payload.slice(pos), 8)
-                            pos += 2 + (entity.pendingOut.length * 8)
-                            break
+                                break
+                            case 3: // tag
+                                entity.tag = webprotDecNum(payload.slice(pos, pos + 4), 4)
+                                pos += 4
+                                break
+                            case 4: // status
+                                entity.status = webprotDecNum(payload.slice(pos, pos + 1), 1)
+                                pos += 1
+                                break
+                            case 5: // status text
+                                entity.statusText = webprotDecStr(payload.slice(pos))
+                                pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+                                break
+                            case 6: // settings
+                                entity.settings = []
+                                var settingsKeys = webprotDecNum(payload.slice(pos, pos + 2), 2)
+                                pos += 2
+                                for(var k = 0; k < settingsKeys; k++) {
+                                    var key = webprotDecStr(payload.slice(pos))
+                                    pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+                                    var val = webprotDecStr(payload.slice(pos))
+                                    pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+                                    entity.settings.push({ key: val })
+                                }
+                                break
+                            case 7: // avatar blob id
+                                entity.avaBlob = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 8: // MFA enable status
+                                entity.mfaEnabled = webprotDecNum(payload.slice(pos, pos + 1), 1) > 0
+                                pos += 1
+                                break
+                            case 9: // friend list
+                                entity.friends = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.friends.length * 8)
+                                break
+                            case 10: // blocklist
+                                entity.blocked = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.blocked.length * 8)
+                                break
+                            case 11: // pending in
+                                entity.pendingIn = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.pendingIn.length * 8)
+                                break
+                            case 12: // pending out
+                                entity.pendingOut = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.pendingOut.length * 8)
+                                break
+                            case 13: // channels
+                                entity.channels = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.channels.length * 8)
+                                break
+                            case 14: // groups
+                                entity.groups = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.groups.length * 8)
+                                break
+                        }
+                    } else if(entity.type == 'channel') {
+                        switch(fieldType) {
+                            case 0: // id
+                                entity.id = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 1: // name
+                                entity.name = webprotDecStr(payload.slice(pos))
+                                pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+                                break
+                            case 2: // members
+                                entity.members = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.members.length * 8)
+                                break
+                            case 3: // group
+                                entity.group = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                        }
                     }
                 }
 
@@ -515,7 +553,7 @@ function webprotData(bytes) {
             }
 
             // If the reply ID of this packet matches the packet ID of self-info request, save self-info
-            if(replyTo == webprotState.selfRequestId)
+            if(replyTo == webprotState.selfRequestId && replyTo != 0)
                 webprotState.self = entities[0]
 
             ipcSend({
@@ -550,7 +588,7 @@ function webprotData(bytes) {
             } else {
                 // Set the path (when uploading)
                 blobState.info.path = blobState.path
-                blobState.file = fs.createReadStream(blobState.info.path, {})
+                blobState.file = fs.readFileSync(blobState.path)
             }
 
             // Connect to the blob server
@@ -577,16 +615,33 @@ function webprotData(bytes) {
                         blobState.state = (blobState.info.id == 0) ? 'uploading' : 'awaitingLength'
                         if(blobState.state != 'uploading')
                             return
+
                         // Pump data
                         blobState.info.length = blobState.length
-                        blobState.file.on('data', data => {
-                            blobState.socket.write(data)
-                            blobState.sent += data.length
-                            blobState.progress = blobState.sent / blobState.info.length
-                        })
-                        blobState.file.on('end', () => {
-                            blobState.state = 'awaitingId'
-                        })
+                        function sendChunk(from) {
+                            // Send a chunk
+                            const chunk = blobState.file.slice(from, from + 10240)
+                            blobState.socket.write(chunk, (err) => {
+                                // Count number of bytes sent
+                                blobState.sent += chunk.length
+                                // Send a progress info if needed
+                                if(blobState.progressOperId != undefined) {
+                                    ipcSend({
+                                        'type': 'webprot.ul-progress',
+                                        'operId': blobState.progressOperId,
+                                        'progress': blobState.sent,
+                                        'max': blobState.info.length
+                                    })
+                                }
+                                // Either send the next chunk or read the ID
+                                if(blobState.sent == blobState.info.length)
+                                    blobState.state = 'awaitingId'
+                                else
+                                    sendChunk(blobState.sent)
+                            })
+                        }
+                        // Send the first chunk
+                        sendChunk(0)
                     }
                 } else if(blobState.state == 'awaitingLength') {
                     // It's length
@@ -619,10 +674,9 @@ function webprotData(bytes) {
                 } else if(blobState.state == 'awaitingId') {
                     // It's the ID of the uploaded blob
                     var id = webprotDecNum(bytes, 8)
-                    blobState.file.close()
-                    blobState.file = null
+                    delete blobState.file
                     blobState.socket.end()
-                    blobState.socket = null
+                    delete blobState.socket
                     webprotState.blobStates = webprotState.blobStates.filter(elm => elm != blobState)
 
                     blobState.state = 'finished'
@@ -672,7 +726,7 @@ function webprotConnect() {
         return
     webprotState.connecting = true
     webprotState.sendPings = false
-    webprotState.seqId = 0
+    webprotState.seqId = 1
     webprotState.selfRequestId = -1
     webprotState.self = {}
     // Close the existing connection if it is open
@@ -756,14 +810,14 @@ ipcMain.on('asynchronous-message', (event, arg) => {
             'state': 'awaitingInfo',
             'progress': 0,
             'received': 0,
-            'operId': arg.operId
+            'operId': arg.blobOperId
         })
 
         // Get blob info
         webprotSendPacket({
             'type': 'blob-get',
             'id': arg.id,
-            'operId': arg.previewOperId
+            'operId': arg.operId
         })
     } else if(arg.action == 'webprot.blob-ul') {
         // Get file length
@@ -777,10 +831,11 @@ ipcMain.on('asynchronous-message', (event, arg) => {
             'state': 'awaitingUploadToken',
             'progress': 0,
             'sent': 0,
-            'operId': arg.operId
+            'operId': arg.blobOperId,
+            'progressOperId': arg.progressOperId,
         })
 
-        // Get upload token
+        // Get the upload token
         webprotSendPacket({
             'type': 'blob-put',
             'operId': arg.operId,
@@ -791,6 +846,20 @@ ipcMain.on('asynchronous-message', (event, arg) => {
         webprotSendPacket({
             'type': 'entities',
             'entities': arg.entities
+        })
+    } else if(arg.action == 'webprot.manage-contacts') {
+        webprotSendPacket({
+            'type': 'manage-contacts',
+            'operId': arg.operId,
+            'contactType': arg.contactType,
+            'action': arg.method,
+            'id': arg.id
+        })
+    } else if(arg.action == 'webprot.search-user') {
+        webprotSendPacket({
+            'type': 'search-user',
+            'operId': arg.operId,
+            'name': arg.name
         })
     }
 })

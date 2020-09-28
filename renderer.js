@@ -2,10 +2,12 @@ const escapeHTML = require('escape-html')
 
 const emailRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|'(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*')@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 
-// All entities known to the client
+// Cached entities and blobs
 var entityCache = {}
-// All blobs known to the client
 var blobCache = {}
+
+// Input message sections
+var msgSections = []
 
 // Operation finish triggers
 var endCallbacks = []
@@ -13,10 +15,12 @@ var endCallbacks = []
 // The group and channel the user's in
 var viewingGroup = 0
 var viewingChan = 0
+var viewingContactGroup = 0
 
 function _rendererFunc() {
     const { ipcRenderer, remote, shell } = require('electron')
     const { BrowserWindow, dialog } = remote
+    const fs = remote.require('fs')
     const path = require('path')
     const escapeHtml = require('escape-html')
 
@@ -33,7 +37,7 @@ function _rendererFunc() {
         })
     }
 
-    // Function to open a specific user settings tab
+    // Open a specific user settings tab
     function showUserSettingsTab(name) {
         // "Log out" is not really a tab
         if(name == 'user-settings-section-logout') {
@@ -62,14 +66,13 @@ function _rendererFunc() {
         document.getElementById(name + '-sel').checked = true
     }
 
-    // Functions to upload and download blobs
-    function upload(path, onEnd) {
-        var idx = endCallbacks.length
-        endCallbacks[idx] = onEnd
+    // Upload and download blobs
+    function upload(path, onEnd, onProgressMade) {
         ipcSend({
             'action': 'webprot.blob-ul',
             'path': path,
-            'operId': idx
+            'blobOperId': regCallback(onEnd),
+            'progressOperId': regCallback(onProgressMade)
         })
     }
     function download(id, onEnd, onPreviewAvailable) {
@@ -77,7 +80,7 @@ function _rendererFunc() {
             ipcSend({
                 'action': 'webprot.blob-dl',
                 'id': id,
-                'operId': regCallback(onEnd),
+                'blobOperId': regCallback(onEnd),
                 'previewOperId': regCallback(onPreviewAvailable)
             })
         } else {
@@ -86,15 +89,26 @@ function _rendererFunc() {
         }
     }
 
-    // Functions to show and hide elements
+    // Adjust the height of a TextArea
+    function adjTaHeight() {
+        this.rows = Math.min(this.value.split(/\r\n|\r|\n/).length, 10)
+    }
+
+    // Show and hide elements
     function showElm(element) {
         element.style.display = ''
     }
     function hideElm(element) {
         element.style.display = 'none'
     }
+    function toggleElm(element) {
+        if(element.style.display == 'none')
+            showElm(element)
+        else
+            hideElm(element)
+    }
 
-    // Functions to apply "appear" and "disappear" animations (optionally hiding and whowing the parent element)
+    // Apply "appear" and "disappear" animations (optionally hiding and whowing the parent element)
     function triggerAppear(element, affectParent) {
         if(affectParent)
             showElm(element.parentElement)
@@ -102,7 +116,6 @@ function _rendererFunc() {
         element.classList.remove('disappearing')
         element.classList.add('appearing')
     }
-
     function triggerDisappear(element, affectParent) {
         if(affectParent)
             setTimeout(() => hideElm(element.parentElement), 200);
@@ -111,18 +124,17 @@ function _rendererFunc() {
         element.classList.add('disappearing')
     }
 
-    // Functions to show and hide the user settings panel
+    // Show and hide the user settings panel
     function showUserSettings() {
         // Reset to the profile tab
         showUserSettingsTab('user-settings-section-profile')
         triggerAppear(document.getElementById('user-settings'), true)
     }
-
     function hideUserSettings() {
         triggerDisappear(document.getElementById('user-settings'), true)
     }
 
-    // Function to show a floating box
+    // Show a floating box
     function showBox(header, text) {
         document.getElementById('floating-box-header').innerHTML = header
         document.getElementById('floating-box-text').innerHTML = text
@@ -133,13 +145,13 @@ function _rendererFunc() {
         })
     }
 
-    // Function to send a data packet
+    // Send a data packet
     function ipcSend(data) {
         console.log('%c[SENDING]', 'color: #00bb00; font-weight: bold;', data)
         ipcRenderer.send('asynchronous-message', data)
     }
 
-    // Functions to update info about self
+    // Update info about self
     function statusStr(status) {
         return ['offline', 'online', 'sleep', 'dnd'][status]
     }
@@ -197,7 +209,7 @@ function _rendererFunc() {
         updateSelfMfaStatus(mfaEnabled)
     }
 
-    // Functions to change info about self
+    // Change info about self
     function sendSelfValue(key, val) {
         entity = {
             'type': 'user',
@@ -303,9 +315,11 @@ function _rendererFunc() {
     }
 
     // Creates an element that should be placed in the member list
-    function createUserSummary(id, friend) {
+    function createUserSummary(id, special) {
+        // Elements applied to all users
         var elm = document.createElement('div')
         elm.classList.add('user-summary')
+        elm.classList.add('user-summary-' + id)
 
         var avaContainer = document.createElement('div')
         avaContainer.classList.add('user-avatar-container')
@@ -341,22 +355,66 @@ function _rendererFunc() {
         tag.classList.add('user-tag-' + id)
         nicknameContainer.appendChild(tag)
 
-        if(friend) {
+        // Special users (friends, pending, blocked)
+        if(special != undefined) {
             var friendRemoveBtn = document.createElement('button')
             friendRemoveBtn.classList.add('hover-show-button')
             friendRemoveBtn.classList.add('icon-button')
             friendRemoveBtn.classList.add('friend-remove-button')
+            friendRemoveBtn.addEventListener('click', (e) => {
+                ipcSend({
+                    'action': 'webprot.manage-contacts',
+                    'contactType': special,
+                    'method': 'remove',
+                    'id': id
+                })
+            })
             elm.appendChild(friendRemoveBtn)
 
             var friendRemoveImg = document.createElement('img')
             friendRemoveImg.src = path.join(__dirname, 'icons/friend_remove.png')
             friendRemoveBtn.appendChild(friendRemoveImg)
         }
+        // Pending in users (add an accept button)
+        if(special == 'pending-in') {
+            var friendAcceptBtn = document.createElement('button')
+            friendAcceptBtn.classList.add('hover-show-button')
+            friendAcceptBtn.classList.add('icon-button')
+            friendAcceptBtn.classList.add('friend-accept-button')
+            friendAcceptBtn.addEventListener('click', (e) => {
+                ipcSend({
+                    'action': 'webprot.manage-contacts',
+                    'contactType': 'friend',
+                    'method': 'add',
+                    'id': id
+                })
+            })
+            elm.appendChild(friendAcceptBtn)
+
+            var friendAcceptImg = document.createElement('img')
+            friendAcceptImg.src = path.join(__dirname, 'icons/approve.png')
+            friendAcceptBtn.appendChild(friendAcceptImg)
+        }
+        // Friends (open DMs when clicked)
+        if(special == 'friend') {
+            elm.addEventListener('click', (e) => {
+                // Determine which channel we should switch to
+                for(const chanId of remote.getGlobal('webprotState').self.channels) {
+                    reqEntities([{'type':'channel', 'id':chanId}], false, () => {
+                        const members = entityCache[chanId].members
+                        if(members.length == 2 && members.every(mId => mId == id || mId == remote.getGlobal('webprotState').self.id)) {
+                            viewingChan = chanId
+                            updLayout()
+                        }
+                    })
+                }
+            })
+        }
 
         return elm
     }
 
-    // Updates the member list in the sidebar
+    // Updates the member list sidebar
     function updMemberList() {
         const memberList = document.getElementById('member-list-bar')
 
@@ -364,13 +422,13 @@ function _rendererFunc() {
         while(memberList.firstChild)
             memberList.removeChild(memberList.firstChild)
 
+        // Determine what users should end up in the member list
+        var userIds = []
         // Group 0 = own direct messages
         if(viewingGroup == 0) {
             const self = remote.getGlobal('webprotState').self
-            var userIds = []
-            var users = []
 
-            switch(viewingChan) {
+            switch(viewingContactGroup) {
                 case 0: // all my friends are watching, I can hear them talking
                 case 1: // online friends
                     userIds = self.friends
@@ -382,36 +440,175 @@ function _rendererFunc() {
                     userIds = self.pendingOut
                     break
                 case 4: // blocked people
-                    userIds = self.pendingOut
+                    userIds = self.blocked
                     break
             }
+        }
 
-            // Request users
-            userIds.forEach(id => {
-                users.push({
-                    'type': 'user',
-                    'id': id
-                })
-            })
-
+        // Request users
+        const users = userIds.map(id => { return { 'type':'user', 'id':id } })
+        reqEntities(users, false, () => {
             // Create summaries for each one and append them to the member list
-            reqEntities(users, false, () => {
-                userIds.forEach(id => {
+            userIds.forEach(id => {
+                if(viewingGroup == 0) { // special case for DMs
                     var add = true
-                    if(viewingChan == 1 && entityCache[id].status == 0) // don't add offline friends if we only want to see online ones
+                    if(viewingContactGroup == 1 && entityCache[id].status == 0) // don't add offline friends if we only want to see online ones
                         add = false
                     if(add) {
-                        memberList.appendChild(createUserSummary(id, true))
+                        memberList.appendChild(createUserSummary(
+                            id, ['friend', 'friend', 'pending-in', 'pending-out', 'blocked'][viewingContactGroup]
+                        ))
                         updateUser(id)
                     }
-                })
+                } else {
+                    memberList.appendChild(createUserSummary(id))
+                }
             })
+        })
+    }
+
+    // Creates an input message section
+    function createInputSection(type, id, removeCb, filename, fileSize) {
+        const section = document.createElement('div')
+        section.classList.add('message-section', 'message-section-' + type, 'flex-row', 'message-section-' + id)
+        section.id = 'message-section-' + id
+
+        const removeBtn = document.createElement('button')
+        removeBtn.classList.add('icon-button')
+        section.appendChild(removeBtn)
+        removeBtn.addEventListener('click', removeCb)
+
+        const removeImg = document.createElement('img')
+        removeImg.src = path.join(__dirname, 'icons/remove_section.png')
+        removeBtn.appendChild(removeImg)
+
+        var typeElm
+
+        switch(type) {
+            case 'text':
+                typeElm = document.createElement('textarea')
+                typeElm.classList.add('message-input', 'fill-width')
+                typeElm.placeholder = 'Text section'
+                typeElm.rows = 1
+                typeElm.oninput = adjTaHeight
+                break
+            case 'file':
+                typeElm = document.createElement('div')
+                typeElm.classList.add('message-file-section', 'flex-col')
+
+                var readableSize = ''
+                if(fileSize < 1024)
+                    readableSize = fileSize + ' B'
+                else if(fileSize >= 1024 * 1024)
+                    readableSize = (fileSize / (1024 * 1024)).toFixed(2) + ' MiB'
+                else if(fileSize >= 1024)
+                    readableSize = (fileSize / 1024).toFixed(2) + ' KiB'
+
+                const headerSpan = document.createElement('span')
+                headerSpan.innerHTML = 'File (' + readableSize + '):'
+                headerSpan.classList.add('message-file-header-span')
+                typeElm.appendChild(headerSpan)
+
+                const nameSpan = document.createElement('code')
+                nameSpan.innerHTML = escapeHtml(filename)
+                typeElm.appendChild(nameSpan)
+
+                const progress = document.createElement('progress')
+                progress.classList.add('fill-width')
+                typeElm.appendChild(progress)
+                progress.max = 100
+                progress.value = 0 
+                break
+            case 'code':
+                typeElm = document.createElement('textarea')
+                typeElm.classList.add('code-input', 'fill-width')
+                typeElm.placeholder = 'Code section'
+                typeElm.rows = 1
+                typeElm.oninput = adjTaHeight
+                typeElm.spellcheck = false
+                break
         }
+        section.appendChild(typeElm)
+
+        // Append the section
+        const container = document.getElementById('message-input-container')
+        container.insertBefore(section, container.lastChild)
+
+        // Play an animation
+        triggerAppear(section)
+
+        msgSections.push({ 'type':type, 'typeElm':typeElm, 'elm':section })
+    }
+
+    // Removes an input message section
+    function removeInputSection(id) {
+        // Find the element
+        const elm = document.getElementById('message-section-' + id)
+        // Remove it
+        for(var i = 0; i < msgSections.length; i++) {
+            if(msgSections[i].elm == elm) {
+                msgSections.splice(i, 1);
+                break
+            }
+        }
+        triggerDisappear(elm)
+        setTimeout(() => elm.remove(), 200)
+
+        // If there are no elements left, create an empty one
+        if(msgSections.length == 0)
+            resetMsgInput()
+    }
+
+    // Resets the message input field
+    function resetMsgInput() {
+        const container = document.getElementById('message-input-container')
+
+        // Remove all sections
+        for(var i = container.children.length - 1; i >= 0; i--) {
+            const child = container.children[i]
+            if(child.id != 'message-section-add-btns')
+                child.remove()
+        }
+
+        msgSections = []
+
+        // Add a default section
+        const id = msgSections.length
+        createInputSection('text', id, () => {
+            removeInputSection(id)
+        })
+    }
+
+    // Updates the message area
+    function updMessageArea() {
+
+    }
+
+    // Updates the layout: member list, messages, etc.
+    function updLayout() {
+        console.log('Updating layout, gId=' + viewingGroup + ', cId=' + viewingChan + ', cgId=' + viewingContactGroup)
+
+        // Show or hide the friend hedaer
+        const friendHeader = document.getElementById('member-list-friend-header')
+        if(viewingGroup == 0)
+            showElm(friendHeader)
+        else
+            hideElm(friendHeader)
+
+        // Show or hide the channel list
+        const channelList = document.getElementById('channel-list-sidebar')
+        if(viewingGroup == 0)
+            hideElm(channelList)
+        else
+            showElm(channelList)
+
+        updMemberList()
+        updMessageArea()
     }
     
     // Packet reception handler
     function ipcRecv(evt, arg) {
-        if(arg.type != 'webprot.status')
+        if(arg.type != 'webprot.status' && arg.type != 'webprot.ul-progress')
             console.log('%c[RECEIVED]', 'color: #bb0000; font-weight: bold;', arg)
         switch(arg.type) {
             case 'webprot.status':
@@ -462,6 +659,8 @@ function _rendererFunc() {
                 // Reset the view
                 viewingGroup = 0
                 viewingChan = 0
+                viewingContactGroup = 0
+                resetMsgInput()
                 break
 
             case 'webprot.login-err':
@@ -489,6 +688,7 @@ function _rendererFunc() {
 
                     // Update info about self
                     if(entity.id == remote.getGlobal('webprotState').self.id) {
+                        remote.getGlobal('webprotState').self = entity
                         updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled)
 
                         // Request self avatar
@@ -497,7 +697,7 @@ function _rendererFunc() {
                         })
 
                         // Update DM list
-                        updMemberList()
+                        updLayout()
                     }
 
                     // Update info about other users
@@ -522,6 +722,11 @@ function _rendererFunc() {
 
                 // Trigger the upload end trigger
                 endCallbacks[arg.state.operId](blob.id)
+                break
+
+            case 'webprot.ul-progress':
+                // Call the callback
+                endCallbacks[arg.operId](arg.progress, arg.max)
                 break
 
             case 'webprot.mfa-secret':
@@ -553,7 +758,7 @@ function _rendererFunc() {
                 cb()
 
                 // Remove the element
-                delete endCallbacks[endCallbacks.indexOf(cb)]
+                delete endCallbacks[arg.operId]
                 if(endCallbacks.every(x => x == undefined))
                     endCallbacks = []
         }
@@ -768,28 +973,84 @@ function _rendererFunc() {
     // Friend control buttons
     document.getElementById('friends-all').addEventListener('click', (e) => {
         viewingGroup = 0
-        viewingChan  = 0
-        updMemberList()
+        viewingContactGroup = 0
+        updLayout()
     })
     document.getElementById('friends-online').addEventListener('click', (e) => {
         viewingGroup = 0
-        viewingChan  = 1
-        updMemberList()
+        viewingContactGroup = 1
+        updLayout()
     })
     document.getElementById('friends-pending-in').addEventListener('click', (e) => {
         viewingGroup = 0
-        viewingChan  = 2
-        updMemberList()
+        viewingContactGroup = 2
+        updLayout()
     })
     document.getElementById('friends-pending-out').addEventListener('click', (e) => {
         viewingGroup = 0
-        viewingChan  = 3
-        updMemberList()
+        viewingContactGroup = 3
+        updLayout()
     })
     document.getElementById('friends-blocked').addEventListener('click', (e) => {
         viewingGroup = 0
-        viewingChan  = 4
-        updMemberList()
+        viewingContactGroup = 4
+        updLayout()
+    })
+    document.getElementById('friend-add').addEventListener('click', (e) => {
+        toggleElm(document.getElementById('user-search-bar'))
+    })
+    document.getElementById('friend-add-commit').addEventListener('click', (e) => {
+        ipcSend({
+            'action': 'webprot.search-user',
+            'name': document.getElementById('user-search-input').value,
+        })
+    })
+
+    // Message section buttons
+    document.getElementById('message-text-section-button').addEventListener('click', (e) => {
+        const id = msgSections.length
+        createInputSection('text', id, () => {
+            removeInputSection(id)
+        })
+    })
+    document.getElementById('message-file-section-button').addEventListener('click', (e) => {
+        // Select the file
+        var filePath = dialog.showOpenDialogSync(window, {
+            properties: ['openFile'],
+            filters: [
+                { name: 'All files', extensions: ['*'] },
+                { name: 'Images', extensions: ['jpg', 'png', 'gif', 'bmp'] },
+                { name: 'Videos', extensions: ['mp4', 'mkv', 'avi'] },
+                { name: 'Audio', extensions: ['mp3', 'wav', 'flac'] }
+            ]
+        })
+        // Don't continue if the user decided not to
+        if(filePath == undefined)
+            return
+        filePath = filePath[0]
+
+        // Add the section
+        const id = msgSections.length
+        createInputSection('file', id, () => {
+            removeInputSection(id)
+        }, filePath, fs.statSync(filePath).size)
+
+        const fileProgressBar = msgSections[id].typeElm.getElementsByTagName('progress')[0]
+
+        // Upload the file
+        upload(filePath, (blobId) => {
+            msgSections[id].blobId = blobId
+            fileProgressBar.remove()
+        }, (progress, max) => {
+            fileProgressBar.max = max
+            fileProgressBar.value = progress
+        })
+    })
+    document.getElementById('message-code-section-button').addEventListener('click', (e) => {
+        const id = msgSections.length
+        createInputSection('code', id, () => {
+            removeInputSection(id)
+        })
     })
 }
 

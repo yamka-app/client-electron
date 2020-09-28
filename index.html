@@ -2,13 +2,16 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; script-src 'unsafe-inline' 'self';">
 
     <title>Order</title>
 
     <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
     <link rel="stylesheet" type="text/css" href="switch.css">
     <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script type="text/javascript" src="./node_modules/qrcode-generator/qrcode.js"></script>
+    <script src='./renderer.js'></script>
   </head>
   <body>
     <div id="floating-box-bg" class="darken-bg" style="display: none;">
@@ -182,11 +185,48 @@
 
         <table id="main-layout"><tbody><tr>
           <td id="central-field">
+            <table id="messages-layout">
+              <tr><td id="message-list" class="flex-col">
+                <!-- All messages reside here -->
+              </td></tr>
+              <tr style="height: fit-content;">
+                <td id="message-input-container" class="input-container">
+                  <!-- Message sections -->
+                  <!--
+                  <div class="message-section flex-row">
+                    <button id="message-section-remove-button" class="icon-button"><img src="icons/remove_section.png"></button>
+                    <textarea class="fill-width message-input" placeholder="Text section #1" rows="1" oninput="adjTaHeight(this)"></textarea>
+                  </div>
 
+                  <div class="message-section flex-row">
+                    <button id="message-section-remove-button" class="icon-button"><img src="icons/remove_section.png"></button>
+                    <div class="message-file-section flex-col">
+                      <span>filename.png</span>
+                      <span class="fg-1">filename.png</span>
+                    </div>
+                  </div>
+
+                  <div class="message-section flex-row">
+                    <button id="message-section-remove-button" class="icon-button"><img src="icons/remove_section.png"></button>
+                    <textarea class="fill-width code-input" placeholder="Code section #1" rows="1" oninput="adjTaHeight(this)"></textarea>
+                  </div>
+                  -->
+                  <!-- Message section add buttons -->
+                  <div id="message-section-add-btns" class="flex-row">
+                    <button id="message-text-section-button" class="icon-button"><img src="icons/add_text.png"></button>
+                    <button id="message-file-section-button" class="icon-button"><img src="icons/add_file.png"></button>
+                    <button id="message-code-section-button" class="icon-button"><img src="icons/add_code.png"></button>
+                  </div>
+                </td>
+                <td>
+                  <button id="message-send-button" class="icon-button"><img src="icons/send.png"></button>
+                </td>
+              </tr>
+            </table>
           </td>
 
           <td id="channel-list-sidebar">
-
+            <!-- All channels reside here -->
           </td>
 
           <td id="member-list-sidebar"><table style="border: none; border-spacing: 0; height: 100%; width: 100%">
@@ -201,8 +241,13 @@
               <button id="friend-add"          class="icon-button"><img src="icons/friend_add.png"/></button>
             </td></tr>
 
-            <tr><td id="member-list-bar" class="flex-col">
+            <tr style="height: fit-content;"><td class="input-container" id="user-search-bar" style="display: none;">
+              <input id="user-search-input" class="fill-width" placeholder="username#00000"/>
+              <button id="friend-add-commit" class="apply-button fill-width">ADD FRIEND</button>
+            </td></tr>
 
+            <tr><td id="member-list-bar" class="flex-col">
+              <!-- All members reside here -->
             </td></tr>
 
             <tr><td id="user-info-bar">
@@ -220,7 +265,7 @@
           </table></td>
           
           <td id="group-list-sidebar">
-
+            <!-- All group icons reside here -->
           </td>
         </tr></tbody></table>
       </td></tr>
@@ -275,8 +320,5 @@
       </div></td></tr>
       
     </table>
-
-    <script type="text/javascript" src="./node_modules/qrcode-generator/qrcode.js"></script>
-    <script src='./renderer.js'></script>
   </body>
 </html>

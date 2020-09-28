@@ -134,6 +134,7 @@ p {
     background-color: var(--shade-3-trans);
 }
 
+textarea,
 input {
     outline: none !important;
 
@@ -141,7 +142,6 @@ input {
     margin-top: 5px;
     padding-left: 5px;
     padding-right: 5px;
-    height: 30px;
 
     background-color: var(--shade-3);
     border-radius: 3px;
@@ -151,6 +151,12 @@ input {
     color: var(--foreground);
     font-family: RobotoBold;
     font-size: 12px;
+}
+textarea {
+    resize: none;
+}
+input {
+    height: 30px;
 }
 input:hover {
     border: 1px solid var(--accent-dim);
@@ -262,6 +268,14 @@ progress::-webkit-progress-bar {
     background: var(--shade-7);
     border-radius: 2px;
 }
+progress::-webkit-progress-value {
+    transition: width 0.1s ease,
+                color 0.1s ease;
+    border-radius: 2px;
+}
+progress.password-strong::-webkit-progress-value {
+    background: var(--green);
+}
 progress.password-weak::-webkit-progress-value {
     background: var(--red);
 }
@@ -271,14 +285,9 @@ progress.password-medium::-webkit-progress-value {
 progress.password-strong::-webkit-progress-value {
     background: var(--green);
 }
-progress::-webkit-progress-value {
-    transition: width 0.1s ease,
-                color 0.1s ease;
-    border-radius: 2px;
-}
 
 .input-container {
-    box-sizing:border-box;
+    box-sizing: border-box;
     
     width: 100%;
 }
@@ -326,7 +335,7 @@ label {
     padding: 0;
 }
 
-#member-list-friend-header {
+#member-list-friend-header, #user-search-bar {
     background-color: var(--shade-2);
 
     font-family: RobotoBold;
@@ -337,6 +346,9 @@ label {
     position: relative;
 
     align-items: center;
+}
+#user-search-bar {
+    padding: 0 10px 10px 10px;
 }
 #friend-add {
     margin-left: 5px;
@@ -433,10 +445,14 @@ label {
     background-color: var(--shade-2);
 }
 
-.friend-remove-button {
+.friend-remove-button,
+.friend-accept-button {
     position: absolute;
     right: 0px;
     top: 10px;
+}
+.friend-accept-button {
+    right: 24px;
 }
 
 
@@ -756,4 +772,68 @@ input[type="radio"].hidden-radio:checked + label {
 
     font-family: RobotoBold;
     font-size: 12px;
+}
+
+
+#central-field {
+    position: relative;
+    height: 100%;
+}
+
+#messages-layout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 100%;
+    width: 100%;
+}
+
+#message-input-container {
+    height: fit-content;
+    width: 100%;
+    padding: 5px;
+
+    border-radius: 5px 5px 0 0;
+    background-color: var(--shade-5);
+}
+
+textarea.message-input {
+    border: none;
+    background: none;
+
+    font-family: Roboto;
+}
+textarea.code-input {
+    font-family: monospace;
+    border: none;
+    background: var(--shade-1);
+    border-radius: 5px;
+
+    padding-top: 5px;
+}
+
+#message-send-button {
+    margin: 5px;
+}
+
+.message-file-section {
+    background: var(--shade-1);
+    border: none;
+    border-radius: 5px;
+
+    min-width: 200px;
+
+    padding: 5px;
+
+    font-family: Roboto;
+    font-size: 12px;
+}
+.message-file-header-span {
+    color: var(--foreground-1);
+}
+
+span.fg-1 {
+    color: var(--foreground-1)
 }
