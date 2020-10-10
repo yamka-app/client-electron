@@ -2,14 +2,17 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; script-src 'unsafe-inline' 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline'; img-src 'self' https://twemoji.maxcdn.com/ data:; script-src 'self' https://twemoji.maxcdn.com/;">
 
     <title>Order</title>
 
     <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
     <link rel="stylesheet" type="text/css" href="switch.css">
+    <link rel="stylesheet" type="text/css" href="settings.css">
     <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="stylesheet" href="./node_modules/highlight.js/styles/a11y-dark.css">
 
+    <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript" src="./node_modules/qrcode-generator/qrcode.js"></script>
     <script src='./renderer.js'></script>
   </head>
@@ -24,6 +27,28 @@
       </div>
     </div>
 
+    <div id="floating-message-bg" class="darken-bg" style="display: none;">
+      <div id="floating-message">
+        <!--The floating message will be here-->
+      </div>
+    </div>
+
+    <div id="floating-image-bg" class="darken-bg" style="display: none;">
+      <!--The floating image will be here-->
+    </div>
+
+    <div id="group-create-box-bg" class="darken-bg" style="display: none;">
+      <div id="group-create-box" class="flex-col">
+        <span>CREATE A GROUP</span>
+        <input id="group-create-name" class="fill-width" placeholder="Name"/>
+        <button id="group-create-ok" class="accent-button fill-width">CREATE</button>
+
+        <span>JOIN A GROUP</span>
+        <input id="group-join-code" class="fill-width" placeholder="Invite code"/>
+        <button id="group-join-ok" class="fill-width">JOIN</button>
+      </div>
+    </div>
+
     <table id="capital-layout" style="border: none; border-spacing: 0; height: 100vh; width: 100vw">
       <tr style="height: fit-content"><td style="padding: 0; vertical-align: top;">
         <div id="title-bar">
@@ -33,7 +58,7 @@
           <div id="title-bar-buttons">
             <img src="icons/dark.png" style="margin-bottom: 1px;"/>
             <label class="switch" style="margin-left: 0; margin-top: 2px;">
-              <input id="theme-switch" type="checkbox">
+              <input id="theme-switch" type="checkbox"/>
               <span class="slider round"></span>
             </label>
             <img src="icons/light.png" style="margin-right: 5px; margin-bottom: 1px;"/>
@@ -155,21 +180,78 @@
               <br>
 
               <p style="font-size: 20px;">TECHNOLOGIES USED</p>
-              Linux, Windows and macOS clients: Electron
-              <br>
-              Backend: .NET Core, Apache Cassandra
-              <br>
+              Linux, Windows and macOS clients: Electron<br>
+              Backend: .NET Core, Apache Cassandra<br>
               Website: nginx
 
               <p style="font-size: 20px;">CREATED BY</p>
               portasynthinca3
 
               <p style="font-size: 20px;">CREDITS</p>
-              Thanks to:
-              <br>
-              Andrey Hayrnasov (Dazaika) for suggesting a VPS
-              <br>
+              Thanks to:<br>
+              Twitter for providing Twemoji<br>
+              Andrey Hayrnasov (Dazaika) for suggesting a VPS<br>
               Sasha Kulichkov (hetyh) for setting up the VPS
+            </div>
+          </div>
+        </div>
+
+        <div id="group-settings-bg" class="darken-bg" style="display: none;">
+          <div id="group-settings">
+            <div id="group-settings-sidebar">
+              <button id="group-settings-exit" class="menu-exit"></button>
+
+              <input id= "group-settings-section-general-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
+              <label for="group-settings-section-general-sel" class="settings-section-sel">GENERAL</label>
+
+              <input id= "group-settings-section-roles-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
+              <label for="group-settings-section-roles-sel" class="settings-section-sel">ROLES</label>
+
+              <input id= "group-settings-section-channels-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
+              <label for="group-settings-section-channels-sel" class="settings-section-sel">CHANNELS</label>
+
+              <input id= "group-settings-section-invites-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
+              <label for="group-settings-section-invites-sel" class="settings-section-sel">INVITES</label>
+
+              <input id= "group-settings-section-delete-sel" type="radio" name="group-settings-sections" class="settings-radio"/>
+              <label for="group-settings-section-delete-sel" class="settings-section-sel" style="color: var(--danger);">DELETE GROUP</label>
+            </div>
+
+            <div id="group-settings-section-general" class="settings-section group-settings-section">
+              <div id="group-general-settings" class="settings-subsection">
+                <span class="settings-subsection-title">GENERAL</span>
+                <div class="flex-row">
+                  <div id="group-icon-change-container">
+                    <img id="group-icon-huge" class="group-icon-huge"/>
+                    <div id="group-icon-change">CHANGE</div>
+                  </div>
+                  <div id="group-settings-inputs">
+                    <div class="group-setting-input-container">
+                      NAME
+                      <input id="group-name-change"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="group-settings-section-channels" class="settings-section group-settings-section">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title">CHANNELS</span>
+                <div class="flex-row">
+                  <div class="flex-col">
+                    <div id="group-settings-channel-list" class="flex-col"></div>
+                    <button id="channel-add-button" class="fill-width">+</button>
+                  </div>
+                  <div id="group-settings-channel-settings" class="flex-col">
+                    <div class="group-setting-input-container">
+                      NAME
+                      <input id="channel-name-change"/>
+                    </div>
+                    <button id="channel-remove-button" class="danger-button">DELETE CHANNEL</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -184,49 +266,63 @@
         </div>
 
         <table id="main-layout"><tbody><tr>
-          <td id="central-field">
-            <table id="messages-layout">
-              <tr><td id="message-list" class="flex-col">
-                <!-- All messages reside here -->
-              </td></tr>
-              <tr style="height: fit-content;">
-                <td id="message-input-container" class="input-container">
-                  <!-- Message sections -->
-                  <!--
-                  <div class="message-section flex-row">
-                    <button id="message-section-remove-button" class="icon-button"><img src="icons/remove_section.png"></button>
-                    <textarea class="fill-width message-input" placeholder="Text section #1" rows="1" oninput="adjTaHeight(this)"></textarea>
-                  </div>
-
-                  <div class="message-section flex-row">
-                    <button id="message-section-remove-button" class="icon-button"><img src="icons/remove_section.png"></button>
-                    <div class="message-file-section flex-col">
-                      <span>filename.png</span>
-                      <span class="fg-1">filename.png</span>
-                    </div>
-                  </div>
-
-                  <div class="message-section flex-row">
-                    <button id="message-section-remove-button" class="icon-button"><img src="icons/remove_section.png"></button>
-                    <textarea class="fill-width code-input" placeholder="Code section #1" rows="1" oninput="adjTaHeight(this)"></textarea>
-                  </div>
-                  -->
-                  <!-- Message section add buttons -->
-                  <div id="message-section-add-btns" class="flex-row">
-                    <button id="message-text-section-button" class="icon-button"><img src="icons/add_text.png"></button>
-                    <button id="message-file-section-button" class="icon-button"><img src="icons/add_file.png"></button>
-                    <button id="message-code-section-button" class="icon-button"><img src="icons/add_code.png"></button>
-                  </div>
-                </td>
-                <td>
-                  <button id="message-send-button" class="icon-button"><img src="icons/send.png"></button>
-                </td>
-              </tr>
-            </table>
+          <td id="group-list-sidebar-container">
+            <div id="group-list-sidebar" class="flex-col">
+              <div id="group-icon-home" class="group-icon icon-button cg-button"><img src="icons/home.png"/></div>
+              <div class="group-icon-separator"></div>
+              <div id="group-list" class="flex-col">
+                <!--Group icons reside here-->
+              </div>
+              <div id="insert-groups-before" class="group-icon-separator"></div>
+              <div id="group-icon-add" class="group-icon icon-button cg-button"><img src="icons/group_add.png"/></div>
+            </div>
           </td>
 
           <td id="channel-list-sidebar">
-            <!-- All channels reside here -->
+            <div id="channel-list-container" class="flex-col">
+              <div id="channel-list-header">
+                <!--The server name resides here-->
+              </div>
+              <div id="channel-list" class="flex-col">
+                <!--Channels reside here-->
+              </div>
+            </div>
+          </td>
+
+          <td id="central-field">
+            <div id="message-layout" class="flex-col">
+              <div id="message-layout-header" class="flex-row">
+                <span id="channel-name"></span>
+              </div>
+
+              <div id="message-scroll-area">
+                <div id="message-area" class="flex-col">
+                  <!-- Messages reside here -->
+                  <div id="message-area-header" style="display: none">
+                    <p>You've reached the start of this channel</p>
+                  </div>
+                  <div id="message-area-explainer">
+                    <p>It's quite quiet here...</p>
+                    <p>Find a few friends, click on them in the right bar and have a chat!</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="message-input-popup" class="flex-row">
+                <div id="message-input-container" class="input-container">
+                  <!-- Message sections reside here -->
+                  <div id="message-section-add-btns" class="flex-row">
+                    <button id="message-text-section-button"  class="icon-button cg-button"><img src="icons/add_text.png"></button>
+                    <button id="message-file-section-button"  class="icon-button cg-button"><img src="icons/add_file.png"></button>
+                    <button id="message-code-section-button"  class="icon-button cg-button"><img src="icons/add_code.png"></button>
+                    <button id="message-quote-section-button" class="icon-button cg-button"><img src="icons/add_quote.png"></button>
+                  </div>
+                </div>
+                <div>
+                  <button id="message-send-button" class="icon-button cg-button"><img src="icons/send.png"></button>
+                </div>
+              </div>
+            </div>
           </td>
 
           <td id="member-list-sidebar"><table style="border: none; border-spacing: 0; height: 100%; width: 100%">
@@ -246,6 +342,10 @@
               <button id="friend-add-commit" class="apply-button fill-width">ADD FRIEND</button>
             </td></tr>
 
+            <tr style="height: fit-content;"><td id="member-list-friend-type">
+              ALL FRIENDS
+            </td></tr>
+
             <tr><td id="member-list-bar" class="flex-col">
               <!-- All members reside here -->
             </td></tr>
@@ -263,10 +363,6 @@
               </div>
             </td></tr>
           </table></td>
-          
-          <td id="group-list-sidebar">
-            <!-- All group icons reside here -->
-          </td>
         </tr></tbody></table>
       </td></tr>
 

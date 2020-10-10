@@ -5,7 +5,10 @@ const path = require('path')
 const tmp = require('tmp')
 const zlib = require('zlib')
 
-if (require('electron-squirrel-startup')) return app.quit();
+const configPath = path.join(__dirname, "_order_config.json")
+var config = {}
+
+if (require('electron-squirrel-startup')) return app.quit()
 
 var mainWindow = null
 var tray = null
@@ -25,26 +28,43 @@ function createWindow() {
             maximizable: true,
             frame: false,
             transparent: true,
-            width: 1280,
-            height: 720,
             minWidth: 1000,
             minHeight: 600,
             webPreferences: {
                 nodeIntegration: true,
                 enableRemoteModule: true
-            }
+            },
+            width:  (config && config.bounds) ? config.bounds.width  : 1280,
+            height: (config && config.bounds) ? config.bounds.height : 720
         })
         //mainWindow.maximize()
         mainWindow.loadFile('index.html')
-
         windowCreated = true
+
+        // Write configuration when closing
+        mainWindow.on('close', (e) => {
+            config.bounds = mainWindow.getBounds()
+            fs.writeFileSync(configPath, JSON.stringify(config))
+        })
     } else {
         mainWindow.show()
         //mainWindow.hide()
     }
 }
 
-app.whenReady().then(() => {
+app.on('ready', () => {
+    // Read config
+    try {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+    catch(e) {
+        // Default config
+        config = {
+            width: 1280,
+            height: 720
+        }
+    }
+
     // Create the window
     createWindow()
 
@@ -107,11 +127,18 @@ function webprotEncNum(val, bytes) {
 
     for (var i = byteArray.length - 1; i >= 0; i--) {
         var byte = val & 0xff
-        byteArray[i] = byte
+        byteArray[i] = val
         val = (val - byte) / 256
     }
 
     return Buffer.from(byteArray)
+}
+
+function webprotEncNumList(val, bytes) {
+    var concatArr = [ webprotEncNum(val.length, 2) ]
+    for(const num in val)
+        concatArr.push(webprotEncNum(num, bytes))
+    return Buffer.concat(concatArr)
 }
 
 function webprotDecNum(byteArray) {
@@ -187,29 +214,28 @@ function webprotSendPacket(packet) {
 
         case 'entity-get':
             type = 6
-            var concatArr = [webprotEncNum(packet.entities.length, 2)]
+            var concatArr = [ webprotEncNum(packet.entities.length, 2) ]
             for(var i = 0; i < packet.entities.length; i++) {
-                var numType = 0
-                switch(packet.entities[i].type) {
-                    case 'user':
-                        numType = 1
-                        break
-                    case 'channel':
-                        numType = 2
-                        break
-                    case 'group':
-                        numType = 3
-                        break
-                    default:
-                        numType = 0
-                        break
-                }
-                concatArr.push(Buffer.concat([
+                const entity = packet.entities[i]
+                const numType = { 'user': 1, 'channel': 2, 'group': 3, 'message': 4 }[entity.type]
+                concatArr.push(
                     webprotEncNum(numType, 2),
-                    webprotEncNum(packet.entities[i].id, 8)
-                ]))
+                    webprotEncNum(entity.id, 8)
+                )
+                // Pagination
+                if(entity.pageField == undefined) {
+                    concatArr.push(webprotEncNum(0, 1))
+                } else {
+                    concatArr.push(
+                        webprotEncNum(1, 1),
+                        webprotEncNum(entity.pageField, 2),
+                        webprotEncNum(entity.pageDir ? 1 : 0, 1),
+                        webprotEncNum(entity.pageFrom, 8),
+                        webprotEncNum(entity.pageCnt, 1)
+                    )
+                }
                 // Additionally save self info request ID for future reference
-                if(packet.entities[i].id == 0)
+                if(entity.id == 0)
                     webprotState.selfRequestId = webprotState.seqId
             }
             data = Buffer.concat(concatArr)
@@ -233,11 +259,11 @@ function webprotSendPacket(packet) {
             var concatArr = [ webprotEncNum(packet.entities.length, 2) ]
             packet.entities.forEach(ent => {
                 // Encode the entity
+                var propCnt = 0
+                var props = []
                 switch(ent.type) {
                     case 'user':
                         concatArr.push(webprotEncNum(1, 2))
-                        var propCnt = 0
-                        var props = []
                         if(ent.id != undefined) {
                             propCnt++
                             props.push(
@@ -287,11 +313,128 @@ function webprotSendPacket(packet) {
                                 webprotEncNum(ent.avaBlob, 8)
                             )
                         }
-                        // Append property count and properties themselves
-                        concatArr.push(webprotEncNum(propCnt, 2))
-                        props.forEach(prop => concatArr.push(prop))
+                        break
+
+                    case 'message':
+                        concatArr.push(webprotEncNum(4, 2))
+                        if(ent.id != undefined) {
+                            propCnt++
+                            props.push(
+                                webprotEncNum(0, 2),
+                                webprotEncNum(ent.id, 8)
+                            )
+                        }
+                        if(ent.sections != undefined) {
+                            propCnt++
+                            props.push(
+                                webprotEncNum(1, 2),
+                                webprotEncNum(ent.sections.length, 1)
+                            )
+                            ent.sections.forEach(section => {
+                                const t = { 'text': 0, 'file': 1, 'code': 2, 'quote': 3 }[section.type]
+                                props.push(
+                                    webprotEncNum(t, 1),
+                                    webprotEncNum(section.blob ?? 0, 8),
+                                    webprotEncStr(section.text ?? '')
+                                )
+                            })
+                        }
+                        if(ent.channel != undefined) {
+                            propCnt++
+                            props.push(
+                                webprotEncNum(2, 2),
+                                webprotEncNum(ent.channel, 8)
+                            )
+                        }
+                        if(ent.edited != undefined) {
+                            propCnt++
+                            props.push(
+                                webprotEncNum(3, 2),
+                                webprotEncNum(ent.edited ? 1 : 0, 1)
+                            )
+                        }
+                        if(ent.sender != undefined) {
+                            propCnt++
+                            props.push(
+                                webprotEncNum(4, 2),
+                                webprotEncNum(ent.sender, 8)
+                            )
+                        }
+                        break
+
+                    case 'group':
+                        concatArr.push(webprotEncNum(3, 2))
+                        for(const kv of Object.entries(ent)) {
+                            const k = kv[0]
+                            const v = kv[1]
+                            // Encode the field
+                            let fieldId
+                            let fieldVal
+                            switch(k) {
+                                       case 'id':
+                                fieldId = 0
+                                fieldVal = webprotEncNum(v, 8)
+                                break; case 'name':
+                                fieldId = 1
+                                fieldVal = webprotEncStr(v)
+                                break; case 'channels':
+                                fieldId = 2
+                                fieldVal = webprotEncNumList(v, 8)
+                                break; case 'owner':
+                                fieldId = 3
+                                fieldVal = webprotEncNum(v, 8)
+                                break; case 'roles':
+                                fieldId = 4
+                                fieldVal = webprotEncNumList(v, 8)
+                                break; case 'icon':
+                                fieldId = 5
+                                fieldVal = webprotEncNum(v, 8)
+                                break
+                            }
+                            if(fieldId != undefined) {
+                                // We have one more field encoded
+                                propCnt++
+                                props.push(
+                                    webprotEncNum(fieldId, 2),
+                                    fieldVal
+                                )
+                            }
+                        }
+                        break
+
+                    case 'channel':
+                        concatArr.push(webprotEncNum(2, 2))
+                        for(const kv of Object.entries(ent)) {
+                            const k = kv[0]
+                            const v = kv[1]
+                            // Encode the field
+                            let fieldId
+                            let fieldVal
+                            switch(k) {
+                                        case 'id':
+                                fieldId = 0
+                                fieldVal = webprotEncNum(v, 8)
+                                break; case 'name':
+                                fieldId = 1
+                                fieldVal = webprotEncStr(v)
+                                break; case 'group':
+                                fieldId = 3
+                                fieldVal = webprotEncNum(v, 8)
+                                break
+                            }
+                            if(fieldId != undefined) {
+                                // We have one more field encoded
+                                propCnt++
+                                props.push(
+                                    webprotEncNum(fieldId, 2),
+                                    fieldVal
+                                )
+                            }
+                        }
                         break
                 }
+                concatArr.push(webprotEncNum(propCnt, 2))
+                props.forEach(prop => concatArr.push(prop))
             })
             data = Buffer.concat(concatArr)
             break
@@ -439,17 +582,7 @@ function webprotData(bytes) {
 
                 var entityType = webprotDecNum(payload.slice(pos, pos + 2), 2)
                 pos += 2
-                switch(entityType) {
-                    case 1:
-                        entity.type = 'user'
-                        break
-                    case 2:
-                        entity.type = 'channel'
-                        break
-                    default:
-                        entity.type = 'unknown'
-                        break
-                }
+                entity.type = ['unknown', 'user', 'channel', 'group', 'message'][entityType]
                 var fieldCount = webprotDecNum(payload.slice(pos, pos + 2), 2)
                 pos += 2
 
@@ -545,6 +678,74 @@ function webprotData(bytes) {
                                 entity.group = webprotDecNum(payload.slice(pos, pos + 8), 8)
                                 pos += 8
                                 break
+                            case 4: // messages
+                                entity.messages = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.messages.length * 8)
+                                break
+                        }
+                    } else if(entity.type == 'message') {
+                        switch(fieldType) {
+                            case 0: // id
+                                entity.id = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 1: // sections
+                                entity.sections = []
+                                const cnt = webprotDecNum(payload.slice(pos, pos + 1), 1)
+                                pos += 1
+                                for(var i = 0; i < cnt; i++) {
+                                    const type = webprotDecNum(payload.slice(pos, pos + 1), 1)
+                                    pos += 1
+                                    const blob = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                    pos += 8
+                                    const text = webprotDecStr(payload.slice(pos))
+                                    pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+                                    entity.sections.push({
+                                        'type': ['text', 'file', 'code', 'quote'][type],
+                                        'blob': blob,
+                                        'text': text
+                                    })
+                                }
+                                break
+                            case 2: // channel
+                                entity.channel = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 3: // edited
+                                entity.edited = webprotDecNum(payload.slice(pos, pos + 1), 1) > 0
+                                pos += 1
+                                break
+                            case 4: // sender
+                                entity.sender = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                        }
+                    } else if(entity.type == 'group') {
+                        switch(fieldType) {
+                            case 0: // id
+                                entity.id = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 1: // name
+                                entity.name = webprotDecStr(payload.slice(pos))
+                                pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+                                break
+                            case 2: // channels
+                                entity.channels = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.channels.length * 8)
+                                break
+                            case 3: // owner
+                                entity.owner = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 4: // roles
+                                entity.roles = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.roles.length * 8)
+                                break
+                            case 5: // icon
+                                entity.icon = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
                         }
                     }
                 }
@@ -557,7 +758,8 @@ function webprotData(bytes) {
                 webprotState.self = entities[0]
 
             ipcSend({
-                'type': 'webprot.entities', 'entities': entities
+                'type': 'webprot.entities', 'entities': entities,
+                'spontaneous': replyTo == 0 // did the server send these entities because it wanted to?
             })
             break
 
@@ -569,6 +771,7 @@ function webprotData(bytes) {
             var preview = webprotDecStr(payload.slice(pos)); pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
             var hash = payload.slice(pos, pos + 32)
             var token = payload.slice(pos + 32, pos + 64)
+            var length = webprotDecNum(payload.slice(pos + 64, pos + 72), 4)
 
             // Update blob state
             var blobState = webprotState.blobStates.find(x => x.id == id)
@@ -579,6 +782,26 @@ function webprotData(bytes) {
                 'size': size,
                 'preview': preview,
                 'hash': hash
+            }
+
+            // Send a "preview available" message
+            if(id > 0) {
+                ipcSend({
+                    'type': 'webprot.blob-preview-available',
+                    'operId': blobState.previewOperId,
+                    'id': id,
+                    'name': name,
+                    'size': size,
+                    'preview': preview,
+                    'hash': hash,
+                    'length': length
+                })
+            }
+
+            // Abort if we don't actually need to download
+            if(id > 0 && !blobState.actuallyDownload) {
+                webprotState.blobStates = webprotState.blobStates.filter(elm => elm != blobState)
+                break
             }
 
             if(id > 0) {
@@ -596,9 +819,11 @@ function webprotData(bytes) {
                 'host': webprotSettings.host,
                 'port': webprotSettings.blobPort
             }, () => {
-                // Send our download/upload token
-                blobState.state = 'sendingToken'
-                blobState.socket.write(token)
+                if(blobState.socket != null) {
+                    // Send our download/upload token
+                    blobState.state = 'sendingToken'
+                    blobState.socket.write(token)
+                }
             })
 
             blobState.socket.on('data', (bytes) => {
@@ -810,7 +1035,9 @@ ipcMain.on('asynchronous-message', (event, arg) => {
             'state': 'awaitingInfo',
             'progress': 0,
             'received': 0,
-            'operId': arg.blobOperId
+            'operId': arg.blobOperId,
+            'previewOperId': arg.previewOperId,
+            'actuallyDownload': arg.actuallyDownload
         })
 
         // Get blob info
@@ -844,8 +1071,9 @@ ipcMain.on('asynchronous-message', (event, arg) => {
         })
     } else if(arg.action == 'webprot.entity-put') {
         webprotSendPacket({
-            'type': 'entities',
-            'entities': arg.entities
+            type: 'entities',
+            operId: arg.operId,
+            entities: arg.entities
         })
     } else if(arg.action == 'webprot.manage-contacts') {
         webprotSendPacket({

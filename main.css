@@ -33,9 +33,7 @@ body {
     font-family: RobotoBold;
 
     user-select: none;
-
-    /*background: url('./bg.png');
-    background-size: cover;*/
+    overflow: hidden;
 }
 
 *::-webkit-scrollbar {
@@ -51,7 +49,20 @@ body {
 
 p {
     margin: 5px 0 5px 0;
+
+    font-family: Roboto;
+    font-size: 12px;
 }
+h1, h2, h3, h4, h5, h6 {
+    margin: 5px;
+}
+a {
+    color: var(--accent);
+}
+pre {
+    margin: 0;
+}
+
 
 #title-bar {
     -webkit-app-region: drag;
@@ -60,7 +71,7 @@ p {
     line-height: 20px;
     vertical-align: middle;
     background-color: var(--shade-1);
-    padding: none;
+    padding: 0px;
     margin: 0px;
 }
 
@@ -100,6 +111,9 @@ p {
     padding-right: 3px;
 }
 
+#floating-image,
+#floating-message,
+#group-create-box,
 #floating-box {
     z-index: 1000;
     position: fixed;
@@ -110,14 +124,28 @@ p {
     left: 0;
     right: 0;
     bottom: 0;
+
     margin: auto;
+    padding: 40px;
 
     border-radius: 5px;
     background-color: var(--shade-3);
 
     font-family: RobotoBold;
     font-size: 10px;
-    padding: 20px;
+}
+#floating-message {
+    width: fit-content;
+}
+#floating-image {
+    width: unset;
+
+    max-width:  80vw;
+    max-height: 80vh;
+
+    background-color: unset;
+    border-radius: 0;
+    padding: unset;
 }
 
 #login-form, #mfa-form, #signup-form {
@@ -240,6 +268,10 @@ button.apply-button:not(.title-bar-button):not(.menu-exit):active {
     color: var(--apply-dim-2);
 }
 
+.cg-button img {
+    filter: brightness(calc(100% - var(--darken-icon)));
+}
+
 button.icon-button:not(.title-bar-button):not(.menu-exit) {
     background-color: #00000000;
     border: none;
@@ -304,18 +336,6 @@ label {
     padding: 0;
 }
 
-#group-list-sidebar {
-    background-color: var(--shade-2);
-    width: 50px;
-    padding: 0;
-}
-
-#channel-list-sidebar {
-    background-color: var(--shade-2);
-    width: 200px;
-    padding: 0;
-}
-
 #user-info-bar {
     background-color: var(--shade-2);
     height: 48px;
@@ -335,7 +355,9 @@ label {
     padding: 0;
 }
 
-#member-list-friend-header, #user-search-bar {
+#member-list-friend-header,
+#member-list-friend-type,
+#user-search-bar {
     background-color: var(--shade-2);
 
     font-family: RobotoBold;
@@ -347,6 +369,11 @@ label {
 
     align-items: center;
 }
+#member-list-friend-type {
+    padding-top:    5px;
+    padding-bottom: 5px;
+}
+
 #user-search-bar {
     padding: 0 10px 10px 10px;
 }
@@ -365,14 +392,6 @@ label {
 
     -webkit-mask-image: url('./icons/ava-mask.png');
     mask-image: url('./icons/ava-mask.png');
-
-    cursor: pointer;
-}
-.user-avatar-huge {
-    width: 64px;
-    height: 64px;
-
-    border-radius: 32px;
 
     cursor: pointer;
 }
@@ -470,179 +489,6 @@ label {
     margin: auto;
 
     background-color: #0000007a;
-}
-
-#user-settings {
-    width: 70vw;
-    height: 75vh;
-
-    margin: auto;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
-
-    background-color: var(--shade-3);
-    border-radius: 5px;
-    box-shadow: 0 0 10px var(--shadow);
-
-    display: flex;
-    flex-direction: row;
-}
-
-#user-settings-sidebar {
-    width: 20%;
-    margin: 0;
-
-    top: 0;
-    bottom: 0;
-
-    padding-top: 20px;
-    padding-bottom: 20px;
-    padding-right: 20px;
-
-    background-color: var(--shade-4);
-    border-radius: 5px 0 0 5px;
-
-    display: flex;
-    flex-direction: column;
-}
-
-.settings-section-sel {
-    right: 0;
-    margin-top: 20px;
-    text-align: right;
-    width: 100%;
-
-    color: var(--foreground-1);
-    transition: color 0.1s ease;
-    font-family: RobotoBold;
-    font-size: 12px;
-
-    cursor: pointer;
-}
-.settings-section-sel:hover{
-    color: var(--foreground-2);
-}
-
-input[type="radio"].settings-radio {
-    display: none;
-}
-input[type="radio"].settings-radio:checked + label {
-    color: var(--foreground);
-}
-
-.settings-section {
-    box-sizing: border-box;
-
-    width: 100%;
-    margin: 0;
-
-    padding: 20px;
-
-    display: flex;
-    flex-direction: column;
-
-    color: var(--foreground);
-    font-family: RobotoBold;
-    font-size: 12px;
-
-    overflow-y: scroll;
-    overflow-x: hidden;
-}
-
-.setting {
-    margin: 10px;
-}
-
-.settings-separator {
-    box-sizing: border-box;
-
-    width: 100%;
-    height: 1px;
-
-    margin: 5px auto 5px auto;
-
-    background-color: var(--shade-7);
-}
-
-.settings-subsection {
-    box-sizing: border-box;
-
-    width: 100%;
-    height: fit-content;
-
-    margin-bottom: 20px;
-    padding: 20px;
-
-    background-color: var(--shade-4);
-    border-radius: 5px;
-    box-shadow: 0 0 10px var(--shadow);
-
-    display: flex;
-    flex-direction: column;
-}
-
-.settings-subsection-title {
-    margin-bottom: 20px;
-}
-
-#self-avatar-change-container {
-    position: relative;
-    display: table;
-}
-#self-avatar-change {
-    width: 64px;
-    height: 64px;
-
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    z-index: 500;
-
-    background-color: black;
-    opacity: 0;
-    transition: opacity 0.25s;
-    border-radius: 32px;
-
-    color: white;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    pointer-events: none;
-}
-.user-avatar-huge:hover + #self-avatar-change {
-    opacity: 0.75;
-}
-
-#self-profile-settings-inputs {
-    width: 100%;
-
-    margin-left: 20px;
-
-    display: flex;
-    flex-direction: column;
-}
-
-.self-profile-setting-input-container {
-    width: 100%;
-
-    margin-top: 5px;
-
-    display: flex;
-    flex-direction: column;
-
-    color: var(--foreground-1);
-}
-
-#self-name-change, #self-email-change, #self-status-text-change {
-    width: 50%;
-
-    margin-bottom: 10px;
 }
 
 
@@ -775,28 +621,21 @@ input[type="radio"].hidden-radio:checked + label {
 }
 
 
+
 #central-field {
     position: relative;
     height: 100%;
 }
 
-#messages-layout {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
 
-    height: 100%;
-    width: 100%;
-}
 
 #message-input-container {
     height: fit-content;
     width: 100%;
     padding: 5px;
 
-    border-radius: 5px 5px 0 0;
-    background-color: var(--shade-5);
+    border-radius: 10px 10px 0 0;
+    background-color: var(--shade-2);
 }
 
 textarea.message-input {
@@ -821,19 +660,312 @@ textarea.code-input {
 .message-file-section {
     background: var(--shade-1);
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
 
     min-width: 200px;
 
+    margin-top: 5px;
     padding: 5px;
 
     font-family: Roboto;
     font-size: 12px;
+
+    justify-content: space-between;
 }
-.message-file-header-span {
+.message-file-header {
     color: var(--foreground-1);
 }
 
 span.fg-1 {
     color: var(--foreground-1)
+}
+
+
+
+#message-layout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 100%;
+}
+
+#message-area-container {
+    max-height: 100%;
+    height: 100%;
+}
+#message-scroll-area {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column-reverse;
+    justify-items: flex-end;
+
+    overflow: hidden scroll;
+}
+
+#message-area-header,
+#message-area-explainer {
+    padding: 10px;
+    margin: 10px;
+
+    background-color: var(--shade-1);
+    border-radius: 10px;
+}
+
+
+
+.message {
+    position: relative;
+
+    margin: 0 5px 0 5px;
+    padding: 7px;
+
+    background-color: var(--shade-3);
+    transition: background-color 0.1s ease;
+    border-radius: 10px;
+
+    vertical-align: top;
+
+    cursor: pointer;
+}
+.message:hover {
+    background-color: var(--shade-2);
+}
+
+.message-user-nickname {
+    font-family: RobotoBold;
+    font-size: 13px;
+}
+.message-avatar-container {
+    position: relative;
+}
+.message-avatar {
+    -webkit-mask-image: none;
+    mask-image: none;
+    border-radius: 16px;
+}
+
+.message-content {
+    margin-left: 10px;
+}
+
+.message-quote-section,
+.message-text-section {
+    margin-top: 5px;
+    vertical-align: baseline;
+    
+    font-family: Roboto;
+    font-size: 13px;
+
+    user-select: text;
+}
+
+.message-text-section span {
+    display: flex;
+    align-items: center;
+}
+
+.message-quote-section {
+    padding: 5px;
+
+    border-left: 2px solid var(--accent-dim)   !important;
+    background-color: var(--accent-trans)      !important;
+
+    border-radius: 0 5px 5px 0;
+}
+div.message-quote-section {
+    cursor: pointer;
+}
+
+.message-code-section {
+    margin-top: 5px;
+    padding: 5px;
+
+    border-radius: 5px;
+
+    font-family: monospace;
+    font-size: 12px;
+
+    user-select: text;
+}
+
+.message-img-section {
+    display: block;
+
+    margin-top: 5px;
+
+    max-width: 500px;
+    max-height: 250px;
+    width: auto;
+    height: auto;
+
+    border-radius: 5px;
+}
+
+.message-time {
+    margin-left: 10px;
+
+    color: var(--foreground-1);
+    font-family: RobotoBold;
+    font-size: 12px;
+}
+
+iframe {
+    margin-top: 5px;
+
+    border: none;
+    border-radius: 5px;
+}
+
+img.emoji {
+    display: inline;
+    width: 20px;
+}
+img.large-emoji {
+    width: 40px;
+}
+
+#message-layout-header {
+    padding: 10px;
+
+    background-color: var(--shade-2);
+    border-radius: 0 0 10px 10px;
+}
+#channel-name {
+    font-family: RobotoBold;
+    font-size: 12px;
+}
+
+
+
+#group-list-sidebar-container {
+    width: 10px;
+    padding: 0;
+    background-color: var(--shade-2);
+}
+#group-list-sidebar {
+    padding: 5px;
+    height: 100%;
+
+    align-items: center;
+    overflow: hidden scroll;
+}
+#group-list-sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.group-icon {
+    width:  48px;
+    height: 48px;
+
+    margin-bottom: 5px;
+
+    background-color: var(--shade-4);
+    border-radius: 24px;
+    transition: background-color 0.2s ease,
+                border-radius    0.2s ease;
+
+    cursor: pointer;
+
+    text-overflow: clip;
+    white-space: nowrap;
+    overflow: hidden;
+
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+
+    font-weight: 500;
+    font-size: 12px;
+}
+.group-icon:hover {
+    background-color: var(--accent);
+    border-radius: 12px;
+}
+img.group-icon,
+img.group-icon:hover {
+    background-color: unset;
+}
+
+#group-icon-add {
+    background-color: var(--apply-trans);
+}
+#group-icon-add:hover {
+    background-color: var(--apply);
+}
+
+.group-icon img { /* special icons have an image in them */
+    max-width:  inherit;
+    max-height: inherit;
+}
+
+.group-icon-separator {
+    width: 32px;
+    height: 1px;
+
+    margin-top:     5px;
+    margin-bottom: 10px;
+
+    background-color: var(--shade-7);
+}
+
+#group-create-box {
+    align-items: center;
+    font-size: 15px;
+}
+#group-create-box span:nth-child(4) {
+    margin-top: 20px;
+}
+
+
+
+#channel-list-sidebar {
+    background-color: var(--shade-2);
+    width: 200px;
+    padding: 0;
+}
+#channel-list-container {
+    height: 100%;
+}
+
+#channel-list {
+    padding: 10px;
+    height: 100%;
+    overflow: hidden scroll;
+}
+
+.channel-button {
+    margin-bottom: 10px;
+    padding: 10px;
+
+    background-color: var(--shade-3);
+    border-radius: 5px;
+    transition: background-color 0.1s ease;
+
+    font-family: RobotoBold;
+    font-size:   13px;
+
+    cursor: pointer;
+}
+.channel-button:hover,
+.channel-button-selected {
+    background-color: var(--shade-4);
+}
+
+#channel-list-header {
+    padding: 10px;
+
+    background-color: var(--shade-3);
+    border-radius: 0 0 10px 10px;
+    transition: background-color 0.1s ease;
+
+    font-family: RobotoBold;
+    font-size:   13px;
+
+    cursor: pointer;
+}
+#channel-list-header:hover {
+    background-color: var(--shade-4);
 }

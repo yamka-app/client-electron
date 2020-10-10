@@ -2,6 +2,7 @@
     --accent: #f47a3e;
     --accent-dim: #c06132;
     --accent-dim-2: #b35a2e;
+    --accent-trans: #f47b3e48;
 
     --danger: #e41e1e;
     --danger-dim-1: #b61818;
@@ -10,13 +11,14 @@
     --apply: #2ac02a;
     --apply-dim-1: #1d861d;
     --apply-dim-2: #146414;
+    --apply-trans: #2ac02a48;
 
     --red: #e41e1e;
     --yellow: #c7c72c;
     --green: #2ac02a;
     
     --shade-1: #0a0a0a;
-    --shade-2: #0e0e0e;
+    --shade-2: #0c0c0c;
     --shade-3: #101010;
     --shade-3-trans: #101010bf;
     --shade-4: #181818;
@@ -28,5 +30,7 @@
     --foreground-2: #adadad;
     --foreground: #efefef;
 
-    --shadow: #00000052;
+    --shadow: #00000023;
+
+    --darken-icon: 0%;
 }

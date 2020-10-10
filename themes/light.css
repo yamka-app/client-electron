@@ -2,6 +2,7 @@
     --accent: #f47a3e;
     --accent-dim: #c06132;
     --accent-dim-2: #b35a2e;
+    --accent-trans: #f47b3e48;
 
     --danger: #e41e1e;
     --danger-dim-1: #b61818;
@@ -10,23 +11,26 @@
     --apply: #2ac02a;
     --apply-dim-1: #1d861d;
     --apply-dim-2: #146414;
+    --apply-trans: #2ac02a48;
 
     --red: #e41e1e;
     --yellow: #c7c72c;
     --green: #2ac02a;
     
-    --shade-1: #efefef;
-    --shade-2: #e5e5e5;
-    --shade-3: #dfdfdf;
-    --shade-3-trans: #dfdfdfbf;
-    --shade-4: #cfcfcf;
-    --shade-5: #c5c5c5;
-    --shade-6: #bfbfbf;
-    --shade-7: #afafaf;
+    --shade-1: #fdf6e3;
+    --shade-2: #eee8d5;
+    --shade-3: #e0dccd;
+    --shade-3-trans: #e0dccdbf;
+    --shade-4: #c4c1b8;
+    --shade-5: #979691;
+    --shade-6: #8f8c84;
+    --shade-7: #797874;
     
-    --foreground-1: #474747;
-    --foreground-2: #2b2b2b;
-    --foreground: #000000;
+    --foreground-1: #586e75;
+    --foreground-2: #073642;
+    --foreground: #002b36;
     
-    --shadow: #00000052;
+    --shadow: #00000023;
+
+    --darken-icon: 80%;
 }

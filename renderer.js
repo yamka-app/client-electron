@@ -1,6 +1,27 @@
 const escapeHTML = require('escape-html')
+const { on } = require('process')
+const { decode } = require('blurhash')
+
+const hljs = require('highlight.js')
+const marked = require("marked");
+var remark = require('remark')
+var gemojiToEmoji = require('remark-gemoji-to-emoji')
+
+const { create } = require('domain')
+const { url } = require('inspector')
+
+hljs.configure({ useBR: true })
+
+marked.setOptions({
+    gfm: true,
+    headerIds: false,
+    highlight: false,
+    silent: true,
+    smartLists: true
+})
 
 const emailRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|'(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*')@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+const allEmojiRegex = /^<span>\p{Emoji}{1,5}<\/span>$/gum
 
 // Cached entities and blobs
 var entityCache = {}
@@ -15,10 +36,11 @@ var endCallbacks = []
 // The group and channel the user's in
 var viewingGroup = 0
 var viewingChan = 0
+var editingChan = 0
 var viewingContactGroup = 0
 
 function _rendererFunc() {
-    const { ipcRenderer, remote, shell } = require('electron')
+    const { ipcRenderer, remote, shell, clipboard } = require('electron')
     const { BrowserWindow, dialog } = remote
     const fs = remote.require('fs')
     const path = require('path')
@@ -37,35 +59,6 @@ function _rendererFunc() {
         })
     }
 
-    // Open a specific user settings tab
-    function showUserSettingsTab(name) {
-        // "Log out" is not really a tab
-        if(name == 'user-settings-section-logout') {
-            hideElm(document.getElementById('main-layout-container'))
-            showElm(document.getElementById('login-form'))
-
-            // Clear the continuation token
-            localStorage.removeItem('contToken')
-
-            // Send a logout notification
-            ipcSend({
-                'action': 'webprot.login',
-                'email': '___@logout@___',
-                'password': ''
-            })
-            return
-        }
-
-        // Hide all sections
-        var sections = document.getElementsByClassName("user-settings-section")
-        for(var i = 0; i < sections.length; i++)
-            hideElm(sections[i])
-
-        // Show the tab we need
-        showElm(document.getElementById(name))
-        document.getElementById(name + '-sel').checked = true
-    }
-
     // Upload and download blobs
     function upload(path, onEnd, onProgressMade) {
         ipcSend({
@@ -75,23 +68,23 @@ function _rendererFunc() {
             'progressOperId': regCallback(onProgressMade)
         })
     }
-    function download(id, onEnd, onPreviewAvailable) {
-        if(blobCache[id] == undefined) {
+    function download(id, onEnd, onPreviewAvailable, actuallyDownload=true) {
+        if(blobCache[id] != undefined && onPreviewAvailable == undefined && onEnd != undefined) {
+            onEnd(blobCache[id])
+        } else {
             ipcSend({
                 'action': 'webprot.blob-dl',
                 'id': id,
                 'blobOperId': regCallback(onEnd),
-                'previewOperId': regCallback(onPreviewAvailable)
+                'previewOperId': regCallback(onPreviewAvailable),
+                'actuallyDownload': actuallyDownload
             })
-        } else {
-            if(onEnd != undefined)
-                onEnd(blobCache[id])
         }
     }
 
     // Adjust the height of a TextArea
-    function adjTaHeight() {
-        this.rows = Math.min(this.value.split(/\r\n|\r|\n/).length, 10)
+    function adjTaHeight(elm) {
+        elm.rows = Math.min(elm.value.split(/\r\n|\r|\n/).length, 10)
     }
 
     // Show and hide elements
@@ -133,6 +126,112 @@ function _rendererFunc() {
     function hideUserSettings() {
         triggerDisappear(document.getElementById('user-settings'), true)
     }
+    function showUserSettingsTab(name) {
+        // "Log out" is not really a tab
+        if(name == 'user-settings-section-logout') {
+            hideElm(document.getElementById('main-layout-container'))
+            showElm(document.getElementById('login-form'))
+
+            // Clear the continuation token
+            localStorage.removeItem('contToken')
+
+            // Send a logout notification
+            ipcSend({
+                'action': 'webprot.login',
+                'email': '___@logout@___',
+                'password': ''
+            })
+            return
+        }
+
+        // Hide all sections
+        var sections = document.getElementsByClassName("user-settings-section")
+        for(var i = 0; i < sections.length; i++)
+            hideElm(sections[i])
+
+        // Show the tab we need
+        showElm(document.getElementById(name))
+        document.getElementById(name + '-sel').checked = true
+    }
+
+    // Creates an acronym for a group name
+    function groupNameAcronym(name) {
+        return escapeHtml(name.split(' ').map(x => x.charAt(0)).join(''))
+    }
+
+    // Shows a channel in the group settings
+    function groupSettingsShowChannel(id) {
+        editingChan = id
+        document.getElementById('channel-name-change').value = entityCache[id].name
+    }
+
+    function updateGroupSettingsChannelList() {
+        if(viewingGroup == 0)
+            return
+
+        const channelList = document.getElementById('group-settings-channel-list')
+        const channels = entityCache[viewingGroup].channels
+        reqEntities(channels.map(x => { return { type: 'channel', id: x } }), false, () => {
+            while(channelList.firstChild)
+                channelList.firstChild.remove()
+            for(let chanId of channels) {
+                const elm = createChannelButton(chanId, (e) => { groupSettingsShowChannel(chanId) }, false)
+                channelList.append(elm)
+            }
+        })
+    }
+
+    // Shows/hides group settings
+    function showGroupSettings() {
+        // Load group info
+        const group = entityCache[viewingGroup]
+        document.getElementById('group-name-change').value = escapeHtml(group.name)
+        triggerAppear(document.getElementById('group-settings'), true)
+
+        showGroupSettingsTab('group-settings-section-general')
+        groupSettingsShowChannel(entityCache[viewingGroup].channels[0])
+
+        // Load settings
+        // Channel list
+        updateGroupSettingsChannelList()
+
+        if(group.icon != 0) {
+            download(group.icon, (b) => {
+                document.getElementById('group-icon-huge').src = 'file://' + b.path
+            })
+        }
+    }
+    function hideGroupSettings() {
+        triggerDisappear(document.getElementById('group-settings'), true)
+    }
+    function showGroupSettingsTab(name) {
+        // "Delete group" is not really a tab
+        if(name == 'group-settings-section-delete') {
+            ipcSend({ // change da world, my final message.. goodbye
+                action: 'webprot.entity-put',
+                entities: [{
+                    type:  'group',
+                    id:    viewingGroup,
+                    owner: 0
+                }]
+            })
+            viewingGroup = 0
+            viewingChan = 0
+            editingChan = 0
+            updLayout()
+            hideGroupSettings()
+            return
+        }
+
+        // Hide all sections
+        var sections = document.getElementsByClassName("group-settings-section")
+        for(var i = 0; i < sections.length; i++)
+            hideElm(sections[i])
+
+        // Show the tab we need
+        showElm(document.getElementById(name))
+        document.getElementById(name + '-sel').checked = true
+    }
 
     // Show a floating box
     function showBox(header, text) {
@@ -143,6 +242,13 @@ function _rendererFunc() {
         document.getElementById('floating-box-ok').addEventListener('click', (e) => {
             triggerDisappear(document.getElementById('floating-box'), true)
         })
+    }
+
+    // Converts an ID into a time string
+    function idToTime(id) {
+        const timestamp = Number((BigInt(id) >> 16n) + 1577836800000n)
+        const date = new Date(timestamp)
+        return date.toLocaleString()
     }
 
     // Send a data packet
@@ -179,8 +285,8 @@ function _rendererFunc() {
         document.getElementById('self-status-text-change').value = statusText
     }
     function updateSelfName(name) {
-        document.getElementById('self-name-change').value = name
         document.getElementById('self-nickname').innerHTML = escapeHtml(name)
+        document.getElementById('self-name-change').value = name
     }
     function formatTag(tag) {
         return '#' + String(tag).padStart(5, '0')
@@ -256,9 +362,6 @@ function _rendererFunc() {
 
     // Requests entities
     function reqEntities(ents, dontUseCached, cb) {
-        if(ents.length == 0)
-            return
-
         if(dontUseCached) {
             ipcSend({
                 'action': 'webprot.entity-get',
@@ -283,7 +386,28 @@ function _rendererFunc() {
         }
     }
 
-    // Updates all information about a user in the app
+    // Updates all information about a group
+    function updateGroup(id) {
+        const group = entityCache[id]
+        // Update icons
+        const icons = document.getElementsByClassName('group-icon-' + id)
+        if(icons.length > 0 && group.icon !== 0) {
+            download(group.icon, (blob) => {
+                for(const icon of icons)
+                    icon.src = 'file://' + blob.path
+            })
+        } else if(group.icon === 0) {
+            for(const icon of icons)
+                icon.innerHTML = groupNameAcronym(group.name)
+        }
+
+        // Update the channel list
+        if(id === viewingGroup)
+            updChannelList()
+        updateGroupSettingsChannelList()
+    }
+
+    // Updates all information about a user
     function updateUser(id) {
         const user = entityCache[id]
         // Update avatars
@@ -398,16 +522,29 @@ function _rendererFunc() {
         // Friends (open DMs when clicked)
         if(special == 'friend') {
             elm.addEventListener('click', (e) => {
-                // Determine which channel we should switch to
-                for(const chanId of remote.getGlobal('webprotState').self.channels) {
-                    reqEntities([{'type':'channel', 'id':chanId}], false, () => {
+                // Get all channel entities
+                var channels = remote.getGlobal('webprotState').self.channels
+                for(var i = 0; i < channels.length; i++)
+                {
+                    channels[i] = {
+                        'type':'channel', 'id':channels[i],
+                        'pageField': 2, // members,
+                        'pageFrom': 0,
+                        'pageDir': true, // older first
+                        'pageCnt': 50
+                    }
+                }
+                reqEntities(channels, false, () => {
+                    for(const chanId of remote.getGlobal('webprotState').self.channels) {
+                        // The DM channel with two members (self and target user) is the resulting channel
                         const members = entityCache[chanId].members
-                        if(members.length == 2 && members.every(mId => mId == id || mId == remote.getGlobal('webprotState').self.id)) {
+                        if(members.length == 2
+                            && members.every(mId => mId == id || mId == remote.getGlobal('webprotState').self.id)) {
                             viewingChan = chanId
                             updLayout()
                         }
-                    })
-                }
+                    }
+                })
             })
         }
 
@@ -427,22 +564,16 @@ function _rendererFunc() {
         // Group 0 = own direct messages
         if(viewingGroup == 0) {
             const self = remote.getGlobal('webprotState').self
+            const friendType = document.getElementById('member-list-friend-type')
 
-            switch(viewingContactGroup) {
-                case 0: // all my friends are watching, I can hear them talking
-                case 1: // online friends
-                    userIds = self.friends
-                    break
-                case 2: // pending in requests
-                    userIds = self.pendingIn
-                    break
-                case 3: // pending out requests
-                    userIds = self.pendingOut
-                    break
-                case 4: // blocked people
-                    userIds = self.blocked
-                    break
-            }
+            friendType.innerHTML = escapeHtml(
+                ['ALL FRIENDS',
+                 'ONLINE FRIENDS',
+                 'INCOMING REQUESTS',
+                 'OUTGOING REQUESTS',
+                 'BANNED'][viewingContactGroup])
+
+            userIds = [self.friends, self.friends, self.pendingIn, self.pendingOut, self.blocked][viewingContactGroup]
         }
 
         // Request users
@@ -467,6 +598,48 @@ function _rendererFunc() {
         })
     }
 
+    // Returns a human readable file size
+    function readableFileSize(fileSize) {
+        if(fileSize < 1024)
+            return fileSize + ' B'
+        else if(fileSize >= 1024 * 1024)
+            return (fileSize / (1024 * 1024)).toFixed(2) + ' MiB'
+        else if(fileSize >= 1024)
+            return (fileSize / 1024).toFixed(2) + ' KiB'
+    }
+
+    // Sends the message
+    function sendMessage() {
+        var sects = msgSections
+
+        for(var i = 0; i < sects.length; i++) {
+            const typeName = sects[i].type
+            if(typeName == 'text' || typeName == 'code' || typeName == 'quote')
+                sects[i].text = sects[i].typeElm.value
+
+            // Abort if any of the files haven't been uploaded yet
+            if(typeName == 'file' && sects[i].blob == undefined)
+                return
+
+            sects[i].elm = undefined
+            sects[i].typeElm = undefined
+        }
+
+        ipcSend({
+            'action': 'webprot.entity-put',
+            'entities': [
+                {
+                    'type': 'message',
+                    'id': 0,
+                    'sections': sects,
+                    'channel': viewingChan
+                }
+            ]
+        })
+
+        resetMsgInput()
+    }
+
     // Creates an input message section
     function createInputSection(type, id, removeCb, filename, fileSize) {
         const section = document.createElement('div')
@@ -474,7 +647,7 @@ function _rendererFunc() {
         section.id = 'message-section-' + id
 
         const removeBtn = document.createElement('button')
-        removeBtn.classList.add('icon-button')
+        removeBtn.classList.add('icon-button', 'cg-button')
         section.appendChild(removeBtn)
         removeBtn.addEventListener('click', removeCb)
 
@@ -490,23 +663,17 @@ function _rendererFunc() {
                 typeElm.classList.add('message-input', 'fill-width')
                 typeElm.placeholder = 'Text section'
                 typeElm.rows = 1
-                typeElm.oninput = adjTaHeight
+                typeElm.oninput = () => adjTaHeight(typeElm)
                 break
             case 'file':
                 typeElm = document.createElement('div')
                 typeElm.classList.add('message-file-section', 'flex-col')
 
-                var readableSize = ''
-                if(fileSize < 1024)
-                    readableSize = fileSize + ' B'
-                else if(fileSize >= 1024 * 1024)
-                    readableSize = (fileSize / (1024 * 1024)).toFixed(2) + ' MiB'
-                else if(fileSize >= 1024)
-                    readableSize = (fileSize / 1024).toFixed(2) + ' KiB'
+                const readableSize = readableFileSize(fileSize)
 
                 const headerSpan = document.createElement('span')
                 headerSpan.innerHTML = 'File (' + readableSize + '):'
-                headerSpan.classList.add('message-file-header-span')
+                headerSpan.classList.add('message-file-header')
                 typeElm.appendChild(headerSpan)
 
                 const nameSpan = document.createElement('code')
@@ -524,8 +691,15 @@ function _rendererFunc() {
                 typeElm.classList.add('code-input', 'fill-width')
                 typeElm.placeholder = 'Code section'
                 typeElm.rows = 1
-                typeElm.oninput = adjTaHeight
+                typeElm.oninput = () => adjTaHeight(typeElm)
                 typeElm.spellcheck = false
+                break
+            case 'quote':
+                typeElm = document.createElement('textarea')
+                typeElm.classList.add('message-input', 'fill-width', 'message-quote-section')
+                typeElm.placeholder = 'Quote section'
+                typeElm.rows = 1
+                typeElm.oninput = () => adjTaHeight(typeElm)
                 break
         }
         section.appendChild(typeElm)
@@ -536,6 +710,17 @@ function _rendererFunc() {
 
         // Play an animation
         triggerAppear(section)
+
+        // Send the message when pressing enter, insert a line break with shift+enter
+        section.addEventListener('keypress', (e) => {
+            if(e.keyCode == 13 && !e.shiftKey) {
+                e.stopPropagation()
+                e.stopImmediatePropagation()
+                sendMessage()
+                // idk why, it inserts a line break there
+                setTimeout(() => msgSections[0].typeElm.value = '', 1)
+            }
+        })
 
         msgSections.push({ 'type':type, 'typeElm':typeElm, 'elm':section })
     }
@@ -577,11 +762,505 @@ function _rendererFunc() {
         createInputSection('text', id, () => {
             removeInputSection(id)
         })
+
+        // Focus on it
+        msgSections[id].typeElm.focus()
+    }
+
+    // Generates a summary text of the message
+    function messageSummary(id) {
+        const msg = entityCache[id]
+        var summary = ''
+        for(section of msg.sections) {
+            if(section.type == 'text' || section.type == 'code') {
+                summary = section.text
+                break
+            }
+        }
+        // If there's no text in the message, find a file
+        if(summary == '') {
+            for(section of msg.sections) {
+                if(section.type == 'file') {
+                    summary = 'File'
+                    break
+                }
+            }
+        }
+        // If there's still nothing
+        if(summary == '')
+            summary = 'Empty message'
+
+        return summary
+    }
+
+    // Prepares message text (sanitizes it and inserts line breaks)
+    function prepareMsgText(txt) {
+        return escapeHtml(txt).replace(/(?:\r\n|\r|\n)/g, '<br>')
+    }
+    function markupText(txt) {
+        return remark().use(gemojiToEmoji).processSync(    // emoji parser
+            ('<span>' +
+            marked.parseInline(                            // Markdown parser
+            escapeHtml(txt)) +                             // no XSS for 'ya today, sorry
+            '</span>')
+            .replace(/(?:\r\n|\r|\n)/g, '</span><span>'))  // insert line breaks
+            .contents
+    }
+
+    // Shows/hides a floating message
+    function showFloatingMessage(id) {
+        const floatingMessage = document.getElementById('floating-message')
+        // Remove old junk
+        while(floatingMessage.firstChild)
+            floatingMessage.firstChild.remove()
+
+        // Create the message
+        const message = createMessage(id)
+        message.style.margin = '0'
+        floatingMessage.appendChild(message)
+        updateUser(entityCache[id].sender)
+
+        triggerAppear(floatingMessage, true)
+    }
+    function hideFloatingMessage() {
+        const floatingMessage = document.getElementById('floating-message')
+        triggerDisappear(floatingMessage, true)
+    }
+
+    // Show/hides a floating image
+    function showFloatingImage(id) {
+        // Remove the old image
+        const floatingImageBg = document.getElementById('floating-image-bg')
+        var floatingImage = document.getElementById('floating-image')
+        if(floatingImage)
+            floatingImage.remove()
+
+        // Create the image
+        download(id, (blob) => {
+            floatingImage = document.createElement('img')
+            floatingImage.id = 'floating-image'
+            floatingImage.src = 'file://' + blob.path
+            floatingImageBg.appendChild(floatingImage)
+            triggerAppear(floatingImage, true)
+        })
+    }
+    function hideFloatingImage() {
+        const floatingImage = document.getElementById('floating-image')
+        if(floatingImage)
+            triggerDisappear(floatingImage, true)
+    }
+
+    // Shows/hides the group create box
+    function showGroupCreateBox() {
+        const groupCreateBox = document.getElementById('group-create-box')
+        triggerAppear(groupCreateBox, true)
+    }
+    function hideGroupCreateBox() {
+        const groupCreateBox = document.getElementById('group-create-box')
+        triggerDisappear(groupCreateBox, true)
+    }
+
+    // Parses URL hostname
+    function parseHostname(url) {
+        var match = url.match(/:\/\/(www[0-9]?\.)?(.[^/:]+)/i)
+        if (match != null && match.length > 2 && typeof match[2] === 'string' && match[2].length > 0) {
+            return match[2];
+        } else {
+            return null;
+        }
+    }
+
+    // Parses a URL parameter
+    function parseUrlParameter(url, param) {
+        url = url.split('?')[1]
+        var urlVars = url.split('&')
+    
+        for (var i = 0; i < urlVars.length; i++) {
+            var parName = urlVars[i].split('=')
+            if (parName[0] === param)
+                return parName[1] === undefined ? true : parName[1]
+        }
+    }
+
+    // Creates a message box seen in the message area
+    function createMessage(id) {
+        // Get the message entity by the id
+        const msg = entityCache[id]
+
+        const elm = document.createElement('div')
+        elm.classList.add('message', 'message-' + msg.id, 'flex-row')
+
+        const avaContainer = document.createElement('div')
+        avaContainer.classList.add('message-avatar-container')
+        elm.appendChild(avaContainer)
+
+        const ava = document.createElement('img')
+        ava.classList.add('user-avatar', 'message-avatar', 'user-avatar-' + msg.sender)
+        avaContainer.appendChild(ava)
+
+        const content = document.createElement('div')
+        content.classList.add('message-content', 'flex-col')
+        elm.appendChild(content)
+
+        var nicknameContainer = document.createElement('div')
+        nicknameContainer.classList.add('flex-row')
+        content.appendChild(nicknameContainer)
+
+        const nickname = document.createElement('span')
+        nickname.classList.add('message-user-nickname', 'user-nickname-' + msg.sender)
+        nicknameContainer.appendChild(nickname)
+
+        const timeElm = document.createElement('span')
+        timeElm.classList.add('message-time')
+        timeElm.innerHTML = escapeHtml(idToTime(id))
+        nicknameContainer.appendChild(timeElm)
+
+        for(const section of msg.sections) {
+            var sectionElement = null
+            switch(section.type) {
+                case 'text':
+                    // Just plain text
+                    sectionElement = document.createElement('div')
+                    sectionElement.classList.add('message-text-section')
+                    const text = markupText(section.text)
+                    sectionElement.innerHTML = text
+                    twemoji.parse(sectionElement, { folder: 'svg', ext: '.svg' })
+                    // If the text cosists of emojis only, increase their size
+                    //console.log(text, allEmojiRegex.test(text), text.match(allEmojiRegex))
+                    if(allEmojiRegex.test(text)) {
+                        const emojis = sectionElement.getElementsByTagName("img")
+                        for(const emoji of emojis)
+                            emoji.classList.add('large-emoji')
+                    }
+                    break
+                case 'code':
+                    // A code box with highlighting and a copy button
+                    sectionElement = document.createElement('pre')
+                    sectionElement.classList.add('message-code-section')
+                    sectionElement.innerHTML = prepareMsgText(section.text)
+                    hljs.highlightBlock(sectionElement)
+
+                    const copyButton = document.createElement('button')
+                    copyButton.classList.add('icon-button')
+                    content.appendChild(copyButton)
+
+                    copyButton.onclick = (e) => {
+                        e.stopPropagation()
+                        clipboard.writeText(section.text)
+                    }
+
+                    const copyImg = document.createElement('img')
+                    copyImg.src = path.join(__dirname, 'icons/copy.png')
+                    copyButton.appendChild(copyImg)
+
+                    break
+                case 'file':
+                    const fileSectionElement = document.createElement('div') // a temporary replacement
+                    content.appendChild(fileSectionElement)
+                    download(section.blob, undefined, (name, size, preview, hash, length) => { // called when info becomes available
+                        // Check if it's an image
+                        const extenstion = name.split('.').pop()
+                        if(['png', 'jpg', 'gif', 'bmp'].includes(extenstion)) {
+                            const w = Number(size.split('x')[0])
+                            const h = Number(size.split('x')[1])
+
+                            // Create the image element
+                            const imgElement = document.createElement('img')
+                            imgElement.classList.add('message-img-section')
+                            //imgElement.width = w
+                            //imgElement.height = h
+                            
+                            // Create the preview element
+                            const canvasElement = document.createElement('canvas')
+                            canvasElement.classList.add('message-img-section')
+                            canvasElement.width = w
+                            canvasElement.height = h
+
+                            const adjW = (32 * w / h).toFixed(0) // to preserve the aspect ratio
+                            const pixels = decode(preview, adjW, 32);
+                            const ctx = canvasElement.getContext('2d');
+                            const imageData = ctx.createImageData(adjW, 32);
+                            imageData.data.set(pixels);
+                            ctx.putImageData(imageData, 0, 0);
+                            // Scale it (blurhash decoding is too slow, scaling is faster)
+                            const imageObj = new Image(adjW, 32)
+                            imageObj.onload = () => {
+                                ctx.clearRect(0, 0, w, h)
+                                ctx.scale(w / adjW, h / 32)
+                                ctx.drawImage(imageObj, 0, 0)
+                            }
+                            imageObj.src = canvasElement.toDataURL()
+
+                            fileSectionElement.appendChild(canvasElement)
+                            // Append the image as a child
+                            fileSectionElement.appendChild(imgElement)
+
+                            // Download the image
+                            download(section.blob, (blob) => {
+                                // Set the image source
+                                imgElement.src = 'file://' + blob.path
+                                // Remove the preview element
+                                canvasElement.remove()
+                                // Enlarge the image when clicking on it
+                                imgElement.onclick = (e) => {
+                                    e.stopPropagation()
+                                    e.stopImmediatePropagation()
+                                    showFloatingImage(section.blob)
+                                }
+                            })
+                        } else {
+                            fileSectionElement.classList.add('message-file-section', 'flex-row')
+
+                            const info = document.createElement('div')
+                            info.classList.add('file-section-info', 'flex-col')
+                            fileSectionElement.appendChild(info)
+
+                            const sizeElm = document.createElement('div')
+                            sizeElm.classList.add('message-file-header')
+                            sizeElm.innerHTML = 'File (' + readableFileSize(length) + ')'
+                            info.appendChild(sizeElm)
+
+                            const nameElm = document.createElement('code')
+                            nameElm.innerHTML = escapeHtml(name)
+                            info.appendChild(nameElm)
+
+                            const dlBtn = document.createElement('button')
+                            dlBtn.classList.add('icon-button', 'file-dl-button')
+                            fileSectionElement.appendChild(dlBtn)
+
+                            // Download the file
+                            dlBtn.onclick = (e) => {
+                                e.stopPropagation()
+                                // Ask where to save it
+                                var filePath = dialog.showSaveDialogSync(window, {
+                                    properties: [ 'showOverwriteConfirmation', 'createDirectory' ]
+                                })
+                                // Don't continue if the user decided not to
+                                if(filePath == undefined)
+                                    return
+
+                                // Download the file
+                                download(section.blob, (blob) => {
+                                    fs.copyFileSync(blob.path, filePath)
+                                })
+                            }
+
+                            const dlBtnIcon = document.createElement('img')
+                            dlBtnIcon.src = path.join(__dirname, 'icons/download.png')
+                            dlBtn.appendChild(dlBtnIcon)
+                        }
+                    }, false) // don't actually download, just request information
+                    break
+                case 'quote':
+                    // Just plain text
+                    sectionElement = document.createElement('div')
+                    sectionElement.classList.add('message-quote-section')
+                    sectionElement.innerHTML = markupText(section.text)
+                    twemoji.parse(sectionElement, { folder: 'svg', ext: '.svg' })
+
+                    // If "blob" ID (actually message ID in this case) != 0 then show the message when clicking on it
+                    if(section.blob != 0) {
+                        const replyIndicator = document.createElement('span')
+                        replyIndicator.classList.add('message-text-section')
+                        replyIndicator.innerHTML = '<strong>Reply (click to show):</strong>'
+                        content.appendChild(replyIndicator)
+
+                        sectionElement.addEventListener('click', (e) => {
+                            e.stopImmediatePropagation()
+                            showFloatingMessage(section.blob)
+                        })
+                    }
+                    break
+            }
+            if(sectionElement != null)
+                content.appendChild(sectionElement)
+        }
+
+        // When the user clicks a message, quote its first section
+        elm.addEventListener('click', (e) => {
+            const sectionId = msgSections.length
+            createInputSection('quote', sectionId, () => {
+                removeInputSection(sectionId)
+            })
+
+            msgSections[sectionId].blob = id
+
+            msgSections[sectionId].typeElm.value = messageSummary(id)
+            adjTaHeight(msgSections[sectionId].typeElm)
+        })
+
+        // When clicking a link, open it in a browser
+        const links = elm.getElementsByTagName("a")
+        for(const link of links) {
+            const href = link.href
+            link.removeAttribute('href')
+            link.onclick = (e) => {
+                e.stopPropagation()
+                shell.openExternal(href)
+            }
+            // Additionally, if the link is a YouTube video, add an iframe
+            const hostname = parseHostname(href)
+            if(hostname == 'youtube.com' || hostname == 'youtu.be') {
+                // Get the video ID
+                var videoId = ''
+                if(hostname == 'youtube.com')
+                    videoId = escapeHtml(parseUrlParameter(href, 'v'))
+                else if(hostname == 'youtu.be')
+                    videoId = href.split('/')[href.split('/').length - 1]
+                
+                // Add an iframe
+                const iframe = document.createElement('iframe')
+                iframe.width = 400
+                iframe.height = 225
+                iframe.allow = 'clipboard-write; encrypted-media; picture-in-picture; fullscreen'
+                iframe.src = 'https://www.youtube.com/embed/' + videoId
+                content.appendChild(iframe)
+            }
+        }
+
+        return elm
+    }
+
+    // Fetches and appends messages to the top
+    function appendMsgsTop(id_from, callback, clear=false) {
+        const msgArea = document.getElementById('message-area')
+        const header = document.getElementById('message-area-header')
+        
+        reqEntities([{
+            'type': 'channel', 'id': viewingChan,
+            'pageField': 4, // messages
+            'pageFrom': id_from,
+            'pageDir': false, // older than the supplied ID
+            'pageCnt': 50
+        }], true, () => {
+            const msgs = [...entityCache[viewingChan].messages]
+            // Sort message IDs
+            msgs.sort()
+            // Get messages
+            for(var i = 0; i < msgs.length; i++)
+                msgs[i] = { 'type': 'message', 'id': msgs[i] }
+            // Add messages
+            reqEntities(msgs, false, () => {
+                // Clear previous messages if needed
+                if(clear) {
+                    for(var i = msgArea.children.length - 1; i >= 0; i--) {
+                        const child = msgArea.children[i]
+                        if(child.id != 'message-area-header')
+                            child.remove()
+                    }
+                }
+                msgs.reverse()
+                msgs.forEach(msg => {
+                    const id = msg.id
+                    header.after(createMessage(id))
+                    updateUser(entityCache[id].sender) // should assign the avatar and nickname
+                })
+                // Scroll to the bottom
+                msgArea.scrollTop = msgArea.scrollHeight
+            })
+            // Call the callback
+            if(callback != undefined)
+                callback()
+        })
     }
 
     // Updates the message area
     function updMessageArea() {
+        if(viewingChan == 0)
+            return;
 
+        const msgArea = document.getElementById('message-area')
+
+        // Show the hedaer
+        showElm(document.getElementById('message-area-header'))
+
+        // Get channel messages
+        if(viewingChan != 0)
+            appendMsgsTop(0xFFFFFFFFFFFFF, undefined, true)
+
+        // Show the title
+        reqEntities([{ type: 'channel', id: viewingChan }], false, () => {
+            const channel = entityCache[viewingChan]
+            const label = document.getElementById('channel-name')
+            if(channel.name == 'DM') {
+                // If the channel is a DM channel, get the ID of the other person and show their name instead
+                const members = channel.members
+                let   otherId = members[0]
+                if(otherId == remote.getGlobal('webprotState').self.id)
+                    otherId = members[1]
+                channel.name = '@' + entityCache[otherId].name
+            }
+            label.innerHTML = escapeHtml(channel.name)
+        })
+    }
+
+    // Updates the group list
+    function updGroupList() {
+        const groupList = document.getElementById('group-list')
+
+        // Request the groups the user's in
+        const groups = remote.getGlobal('webprotState').self.groups
+        reqEntities(groups.map(x => { return { type: 'group', id: x } }), false, () => {
+            // Delete old icons
+            while(groupList.firstChild)
+                groupList.firstChild.remove()
+            // Add new ones
+            for(let groupId of groups) {
+                const group = entityCache[groupId]
+                // We want the groupbar icon to be an image if an icon of the group is set
+                let elm
+                if(group.icon == 0) {
+                    elm = document.createElement('div')
+                    elm.innerHTML = groupNameAcronym(group.name)
+                } else {
+                    elm = document.createElement('img')
+                    download(group.icon, (blob) => elm.src = 'file://' + blob.path)
+                }
+                // Add the default classes and a click listener
+                elm.classList.add('group-icon', 'group-icon-' + group.id, 'cg-button')
+                elm.onclick = (e) => { viewingGroup = group.id; viewingChan = group.channels[0]; updLayout() }
+                groupList.append(elm)
+            }
+        })
+    }
+
+    function createChannelButton(id, clickCb, highlightSelected=true) {
+        const channel = entityCache[id]
+
+        const elm = document.createElement('div')
+        elm.classList.add('channel-button')
+        if(viewingChan == id && highlightSelected)
+            elm.classList.add('channel-button-selected')
+            
+        elm.innerHTML = escapeHtml(channel.name)
+        elm.onclick = clickCb
+
+        return elm
+    }
+
+    // Updates the channel list
+    function updChannelList() {
+        if(viewingGroup == 0)
+            return
+
+        const channelList = document.getElementById('channel-list')
+        const channelListHeader = document.getElementById('channel-list-header')
+
+        // Show the server name
+        channelListHeader.innerHTML = escapeHtml(entityCache[viewingGroup].name)
+
+        // Request the channels of the group the user is viewing
+        const channels = entityCache[viewingGroup].channels
+        reqEntities(channels.map(x => { return { type: 'channel', id: x } }), false, () => {
+            // Delete old icons
+            while(channelList.firstChild)
+                channelList.firstChild.remove()
+            // Add new ones
+            for(let chanId of channels) {
+                const elm = createChannelButton(chanId, (e) => { viewingChan = chanId; updLayout() })
+                channelList.append(elm)
+            }
+        })
     }
 
     // Updates the layout: member list, messages, etc.
@@ -590,20 +1269,44 @@ function _rendererFunc() {
 
         // Show or hide the friend hedaer
         const friendHeader = document.getElementById('member-list-friend-header')
-        if(viewingGroup == 0)
+        const friendType   = document.getElementById('member-list-friend-type')
+        if(viewingGroup === 0) {
             showElm(friendHeader)
-        else
+            showElm(friendType)
+        } else {
             hideElm(friendHeader)
+            hideElm(friendType)
+        }
 
         // Show or hide the channel list
         const channelList = document.getElementById('channel-list-sidebar')
-        if(viewingGroup == 0)
+        if(viewingGroup === 0)
             hideElm(channelList)
         else
             showElm(channelList)
 
         updMemberList()
+        updChannelList()
         updMessageArea()
+        updGroupList()
+    }
+
+    // Appends a message to the message area
+    function appendMsg(id) {
+        const msgArea = document.getElementById('message-area')
+
+        // Check if scrolled all the way down
+        const scrolled = msgArea.scrollTop === (msgArea.scrollHeight - msgArea.offsetHeight)
+
+        // Create the message
+        const msg = createMessage(id)
+        msgArea.appendChild(msg)
+        updateUser(entityCache[id].sender)
+        triggerAppear(msg)
+
+        // Scroll down again if it was like that before
+        if(scrolled)
+            msgArea.scrollTop = msgArea.scrollHeight
     }
     
     // Packet reception handler
@@ -684,7 +1387,7 @@ function _rendererFunc() {
             case 'webprot.entities':
                 arg.entities.forEach((entity) => {
                     // Add entities to the entity list
-                    entityCache[entity.id] = entity
+                    entityCache[entity.id] = { ...entityCache[entity.id], ...entity }
 
                     // Update info about self
                     if(entity.id == remote.getGlobal('webprotState').self.id) {
@@ -696,13 +1399,44 @@ function _rendererFunc() {
                             updateSelfAva(blob.path)
                         })
 
-                        // Update DM list
+                        // Update DM and group list
                         updLayout()
+                    }
+
+                    // Append messages to the open channel
+                    if(arg.spontaneous && entity.type == 'message' && entity.channel == viewingChan)
+                        appendMsg(entity.id)
+
+                    // Send notifications
+                    if(arg.spontaneous && entity.type == 'message' &&
+                        (entity.channel != viewingChan ||  // either we're sitting in another channel
+                         !window.isFocused())) {           // or the window is out of focus
+                        const sender = entityCache[entity.sender]
+                        // Download the avatar of the sender
+                        download(sender.avaBlob, (senderAvatar) => {
+                            const notification = new Notification(sender.name, {
+                                'body': messageSummary(entity.id),
+                                'icon': senderAvatar.path
+                            })
+                            // Shitch to the channel when a notification has been clicked
+                            notification.onclick = (e) => {
+                                viewingChan = entity.channel
+                                updLayout()
+                                window.focus()
+                            }
+                            notification.show()
+                        })
                     }
 
                     // Update info about other users
                     if(entity.type == 'user')
                         updateUser(entity.id)
+
+                    // Update info about groups and channels
+                    if(entity.type == 'group')
+                        updateGroup(entity.id)
+                    if(entity.type == 'channel' && entity.group != 0)
+                        updateGroup(entity.group)
                 })
                 break
 
@@ -712,7 +1446,9 @@ function _rendererFunc() {
                 blobCache[blob.id] = blob
 
                 // Trigger the download end trigger
-                endCallbacks[arg.state.operId](blob)
+                var cb = endCallbacks[arg.state.operId]
+                if(cb !== undefined)
+                    cb(blob)
                 break
 
             case 'webprot.ul-end':
@@ -727,6 +1463,12 @@ function _rendererFunc() {
             case 'webprot.ul-progress':
                 // Call the callback
                 endCallbacks[arg.operId](arg.progress, arg.max)
+                break
+
+            case 'webprot.blob-preview-available':
+                // Call the callback
+                if(endCallbacks[arg.operId] != undefined)
+                    endCallbacks[arg.operId](arg.name, arg.size, arg.preview, arg.hash, arg.length)
                 break
 
             case 'webprot.mfa-secret':
@@ -874,40 +1616,57 @@ function _rendererFunc() {
         }
     })
 
-    // Add listeners that open and close the user settings panel
-    document.getElementById('self-avatar').addEventListener('click', showUserSettings)
-    document.getElementById('self-nickname').addEventListener('click', showUserSettings)
-    document.getElementById('user-settings-exit').addEventListener('click', hideUserSettings)
-    document.getElementById('user-settings-bg').addEventListener('click', hideUserSettings)
-
-    document.getElementById('user-settings').addEventListener('click', evt => {
+    function stopPropagation(evt) {
         evt.stopPropagation()
         evt.cancelBubble = true
-    })
+    }
 
-    // Status changing
+    // Add listeners that open and close the user settings panel
+    document.getElementById('self-avatar')        .onclick = showUserSettings
+    document.getElementById('self-nickname')      .onclick = showUserSettings
+    document.getElementById('user-settings-exit') .onclick = hideUserSettings
+    document.getElementById('user-settings-bg')   .onclick = hideUserSettings
+
+    document.getElementById('floating-message-bg').onclick = hideFloatingMessage
+    document.getElementById('floating-image-bg')  .onclick = hideFloatingImage
+    document.getElementById('group-create-box-bg').onclick = hideGroupCreateBox
+
+    document.getElementById('channel-list-header').onclick = showGroupSettings
+    document.getElementById('group-settings-exit').onclick = hideGroupSettings
+    document.getElementById('group-settings-bg')  .onclick = hideGroupSettings
+
+    document.getElementById('user-settings')   .onclick = stopPropagation
+    document.getElementById('group-settings')  .onclick = stopPropagation
+    document.getElementById('group-create-box').onclick = stopPropagation
+
+    // Settings sections
     document.querySelectorAll('input[name="user-settings-sections"]').forEach((element) => {
-        element.addEventListener('click', (event) => {
+        element.onclick = (e) => {
             showUserSettingsTab(element.id.substring(0, element.id.length - 4))
-        })
+        }
+    })
+    document.querySelectorAll('input[name="group-settings-sections"]').forEach((element) => {
+        element.onclick = (w) => {
+            showGroupSettingsTab(element.id.substring(0, element.id.length - 4))
+        }
     })
 
     // Various text peoperties changing
-    var statusTextChange = document.getElementById('self-status-text-change')
-    statusTextChange.addEventListener('keypress', (evt) => {
+    const statusTextChange = document.getElementById('self-status-text-change')
+    statusTextChange.onkeypress = (evt) => {
         if(evt.keyCode == 13) // Enter
             setSelfStatusText(statusTextChange.value)
-    })
-    var usernameChange = document.getElementById('self-name-change')
-    usernameChange.addEventListener('keypress', (evt) => {
-        if(evt.keyCode == 13) // Enter
+    }
+    const usernameChange = document.getElementById('self-name-change')
+    usernameChange.onkeypress = (evt) => {
+        if(evt.keyCode == 13)
             setSelfName(usernameChange.value)
-    })
-    var emailChange = document.getElementById('self-email-change')
-    emailChange.addEventListener('keypress', (evt) => {
-        if(evt.keyCode == 13) // Enter
+    }
+    const emailChange = document.getElementById('self-email-change')
+    emailChange.onkeypress = (evt) => {
+        if(evt.keyCode == 13)
             setSelfEmail(emailChange.value)
-    })
+    }
 
     // 2FA toggling
     document.getElementById('self-mfa-toggle-button').addEventListener('click', (evt) => {
@@ -923,8 +1682,13 @@ function _rendererFunc() {
     // Floaty stuffs closing
     document.onkeydown = function(evt) {
         evt = evt || window.event
-        if (evt.keyCode == 27)
+        if (evt.keyCode == 27) {
             hideUserSettings()
+            hideFloatingMessage()
+            hideFloatingImage()
+            hideGroupCreateBox()
+            hideGroupSettings()
+        }
     }
 
     // Add listeners to self status selectors
@@ -934,8 +1698,8 @@ function _rendererFunc() {
     document.getElementById('self-status-sleep')  .addEventListener('click', evt => setSelfStatus(2))
     document.getElementById('self-status-dnd')    .addEventListener('click', evt => setSelfStatus(3))
 
-    // User avatar selection
-    document.getElementById('self-avatar-huge').addEventListener('click', () => {
+    // User avatar/group icon selection
+    document.getElementById('self-avatar-huge').onclick = () => {
         var newAvaPath = dialog.showOpenDialogSync(window, {
             properties: ['openFile'],
             filters: [
@@ -943,7 +1707,7 @@ function _rendererFunc() {
             ]
         })
         // Don't if the user decided not to
-        if(newAvaPath == undefined)
+        if(newAvaPath === undefined)
             return
 
         newAvaPath = newAvaPath[0]
@@ -955,7 +1719,31 @@ function _rendererFunc() {
             // Update the blob ID
             sendSelfValue('avaBlob', id)
         })
-    })
+    }
+
+    document.getElementById('group-icon-huge').onclick = () => {
+        var newIconPath = dialog.showOpenDialogSync(window, {
+            properties: ['openFile'],
+            filters: [
+                { name: 'Images', extensions: ['jpg', 'png', 'gif', 'bmp'] }
+            ]
+        })
+        if(newIconPath === undefined)
+            return
+
+        newIconPath = newIconPath[0]
+        upload(newIconPath, (id) => {
+            download(id)
+            ipcSend({
+                action: 'webprot.entity-put',
+                entities: [{
+                    type: 'group',
+                    id: viewingGroup,
+                    icon: id
+                }]
+            })
+        })
+    }
 
     // Theme switching
     document.getElementById('theme-switch').addEventListener('change', (e) => {
@@ -1002,7 +1790,7 @@ function _rendererFunc() {
     document.getElementById('friend-add-commit').addEventListener('click', (e) => {
         ipcSend({
             'action': 'webprot.search-user',
-            'name': document.getElementById('user-search-input').value,
+            'name': document.getElementById('user-search-input').value
         })
     })
 
@@ -1039,7 +1827,7 @@ function _rendererFunc() {
 
         // Upload the file
         upload(filePath, (blobId) => {
-            msgSections[id].blobId = blobId
+            msgSections[id].blob = blobId
             fileProgressBar.remove()
         }, (progress, max) => {
             fileProgressBar.max = max
@@ -1052,6 +1840,104 @@ function _rendererFunc() {
             removeInputSection(id)
         })
     })
+    document.getElementById('message-quote-section-button').addEventListener('click', (e) => {
+        const id = msgSections.length
+        createInputSection('quote', id, () => {
+            removeInputSection(id)
+        })
+    })
+
+    // Message send button
+    document.getElementById('message-send-button').addEventListener('click', (e) => {
+        sendMessage()
+    })
+
+    // Load new messages when scrolled to the top
+    const msgScrollArea = document.getElementById('message-scroll-area')
+    const loadingFunc = (e) => {
+        const messages = entityCache[viewingChan].messages
+        if(msgScrollArea.scrollTop <= 500 && messages.length == 50) { // if the last batch gave less than 50 msgs, it must be the end
+            // Remove the handler and request messages
+            msgScrollArea.onscroll = ''
+            appendMsgsTop(messages[messages.length - 1], () => {
+                // Bring the handler back when messages finish loading
+                msgScrollArea.onscroll = loadingFunc
+            })
+        }
+    }
+    msgScrollArea.onscroll = loadingFunc
+
+    // Create/join a group
+    document.getElementById('group-icon-add').onclick = showGroupCreateBox
+    document.getElementById('group-create-ok').onclick = (e) => {
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type: 'group',
+                id:   0,
+                name: document.getElementById('group-create-name').value
+            }],
+            operId: regCallback(() => {
+                hideGroupCreateBox()
+            })
+        })
+    }
+
+    // Open the home menu
+    document.getElementById('group-icon-home').onclick = (e) => { viewingGroup = 0; viewingChan = 0; updLayout() }
+
+    // Group settings
+    const groupNameChange = document.getElementById('group-name-change')
+    groupNameChange.onkeypress = (evt) => {
+        if(evt.keyCode == 13) {
+            ipcSend({
+                action: 'webprot.entity-put',
+                entities: [{
+                    type: 'group',
+                    id:   viewingGroup,
+                    name: groupNameChange.value
+                }]
+            })
+        }
+    }
+
+    document.getElementById('channel-add-button').onclick = (e) => {
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type:  'channel',
+                id:    0,
+                name:  'Text channel',
+                group: viewingGroup
+            }]
+        })
+    }
+
+    const chanNameChange = document.getElementById('channel-name-change')
+    chanNameChange.onkeypress = (e) => {
+        if(e.keyCode == 13) {
+            ipcSend({
+                action: 'webprot.entity-put',
+                entities: [{
+                    type:  'channel',
+                    id:    editingChan,
+                    name:  chanNameChange.value,
+                    group: viewingGroup
+                }]
+            })
+        }
+    }
+
+    document.getElementById('channel-remove-button').onclick = (e) => {
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type:  'channel',
+                id:    editingChan,
+                group: 0
+            }]
+        })
+    }
 }
 
 window.addEventListener('load', _rendererFunc)
