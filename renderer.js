@@ -81,8 +81,8 @@ function _rendererFunc() {
             'progressOperId': regCallback(onProgressMade)
         })
     }
-    function download(id, onEnd, onPreviewAvailable, actuallyDownload=true) {
-        if(blobCache[id] != undefined && onPreviewAvailable == undefined && onEnd != undefined) {
+    function download(id, onEnd, onPreviewAvailable, actuallyDownload=true, force=false) {
+        if(blobCache[id] != undefined && onPreviewAvailable == undefined && onEnd != undefined && !force) {
             onEnd(blobCache[id])
         } else {
             ipcSend({
@@ -153,8 +153,8 @@ function _rendererFunc() {
 
     // Determines whether we sould receive notifications
     function shouldReceiveNotif() {
-        return remote.getGlobal('webprotState').self.status != 3 // not in "do not distract" mode
-            && localStorage.getItem('notifications') === 'true'
+        return (remote.getGlobal('webprotState').self.status !== 3) // no in "do not distract" mode
+            && (localStorage.getItem('notifications') === 'true')
     }
 
     // Adjust the height of a TextArea
@@ -1289,7 +1289,7 @@ function _rendererFunc() {
                                     e.stopImmediatePropagation()
                                     showFloatingImage(section.blob)
                                 }
-                            })
+                            }, undefined, true, true)
                         } else {
                             fileSectionElement.classList.add('message-file-section', 'flex-row')
 
@@ -1532,7 +1532,7 @@ function _rendererFunc() {
             // Show the list of people that are typing
             const typingElm  = document.getElementById('channel-typing')
             const typingAnim = document.getElementById('typing-dots')
-            const typing = channel.typing
+            const typing = channel.typing.filter(x => x != remote.getGlobal('webprotState').self.id)
             reqEntities(typing.map(x => { return { type: 'user', id: x } }), false, () => {
                 var content = ''
                 const verb = (typing.length === 1) ? 'is' : 'are'
@@ -1812,22 +1812,24 @@ function _rendererFunc() {
                          && shouldReceiveNotif()) {        // (notifications must be enabled)
                         reqEntities([{ type: 'user', id: entity.sender}], false, () => {
                             const sender = entityCache[entity.sender]
-                            // Download the avatar of the sender
-                            download(sender.avaBlob, (senderAvatar) => {
-                                const notification = new Notification(sender.name, {
-                                    'body': messageSummary(entity.id),
-                                    'icon': senderAvatar.path
+                            if(sender.id != remote.getGlobal('webprotState').self.id) {
+                                // Download the avatar of the sender
+                                download(sender.avaBlob, (senderAvatar) => {
+                                    const notification = new Notification(sender.name, {
+                                        'body': messageSummary(entity.id),
+                                        'icon': senderAvatar.path
+                                    })
+                                    // Shitch to the channel when a notification has been clicked
+                                    notification.onclick = (e) => {
+                                        viewingChan = entity.channel
+                                        updLayout()
+                                        window.focus()
+                                    }
+                                    if(notification.show)
+                                        notification.show()
                                 })
-                                // Shitch to the channel when a notification has been clicked
-                                notification.onclick = (e) => {
-                                    viewingChan = entity.channel
-                                    updLayout()
-                                    window.focus()
-                                }
-                                if(notification.show)
-                                    notification.show()
-                            })
-                            //sounds.notification.play()
+                                //sounds.notification.play()
+                            }
                         })
                     }
 
@@ -2253,10 +2255,13 @@ function _rendererFunc() {
                     removeInputSection(id)
                 }, fileName, fs.statSync(fileName).size)
         
+                // Upload the file
                 const fileProgressBar = msgSections[id].typeElm.getElementsByTagName('progress')[0]
                 upload(fileName, (blobId) => {
                     msgSections[id].blob = blobId
                     fileProgressBar.remove()
+                    // Remove it when done
+                    fs.unlinkSync(fileName)
                 }, (progress, max) => {
                     fileProgressBar.max = max
                     fileProgressBar.value = progress
