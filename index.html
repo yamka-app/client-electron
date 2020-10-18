@@ -2,14 +2,14 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline'; img-src 'self' https://twemoji.maxcdn.com/ data:; script-src 'self' https://twemoji.maxcdn.com/;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline'; img-src 'self' https://twemoji.maxcdn.com/ https://i.ytimg.com/ data:; script-src 'self' https://twemoji.maxcdn.com/;">
 
     <title>Order</title>
 
+    <link rel="stylesheet" type="text/css" href="main.css">
     <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
     <link rel="stylesheet" type="text/css" href="switch.css">
     <link rel="stylesheet" type="text/css" href="settings.css">
-    <link rel="stylesheet" type="text/css" href="main.css">
     <link rel="stylesheet" href="./node_modules/highlight.js/styles/a11y-dark.css">
 
     <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
@@ -18,12 +18,25 @@
   </head>
   <body>
     <div id="floating-box-bg" class="darken-bg" style="display: none;">
-      <div id="floating-box">
-        <label id="floating-box-header" style="font-size: 15px;">TITLE</label>
-        <br>
-        <label id="floating-box-text">Text</label>
+      <div id="floating-box" class="flex-col">
+        <span id="floating-box-header" style="font-size: 15px;">TITLE</span>
+        <span id="floating-box-text">Text</span>
 
-        <button id="floating-box-ok" class="accent-button fill-width" style="margin-top: 20px;">OK</button>
+        <button id="floating-box-ok"  class="              fill-width" style="margin-top: 20px;">OK</button>
+        <button id="floating-box-upd" class="accent-button fill-width" style="margin-top: 20px;">UPDATE</button>
+      </div>
+    </div>
+
+    <div id="connecting-screen-bg" class="darken-bg">
+      <div id="connecting-screen" class="flex-col">
+        <span>Connecting</span>
+        <div id="connecting-dots" class="flex-row">
+          <div id="connecting-dot-1"></div>
+          <div id="connecting-dot-2"></div>
+          <div id="connecting-dot-3"></div>
+        </div>
+        <span>Problems? Check your Internet connection or</span>
+        <button id="connecting-see-status">Tweet at us</button>
       </div>
     </div>
 
@@ -49,10 +62,10 @@
       </div>
     </div>
 
-    <table id="capital-layout" style="border: none; border-spacing: 0; height: 100vh; width: 100vw">
+    <table id="capital-layout">
       <tr style="height: fit-content"><td style="padding: 0; vertical-align: top;">
         <div id="title-bar">
-          <div id="title-text">ORDER - ALPHA PREVIEW</div>
+          <div id="title-text">Order - Beta</div>
           <div id="title-status"></div>
 
           <div id="title-bar-buttons">
@@ -114,7 +127,7 @@
 
                     <div class="self-profile-setting-input-container">
                       STATUS
-                      <span id="self-status-switch" class="radio-switch" style="margin-top: 5px">
+                      <span id="self-status-switch" class="radio-switch">
                         <span class="radio-switch-section">
                           <img src="./icons/online.png"/>
                           <input id= "self-status-online" type="radio" name="self-status-sel" class="hidden-radio" checked="checked"/>
@@ -160,16 +173,17 @@
                 <div class="self-profile-setting-input-container">
                   <span class="flex-row">
                     2FA IS
-                    <span id="self-mfa-enable-status" style="margin-left: 5px;">DISABLED</span>
+                    <span id="self-mfa-enable-status">DISABLED</span>
                   </span>
-                  <button id="self-mfa-toggle-button" class="danger-button" style="width: fit-content;">ENABLE 2FA</button>
+                  <button id="self-mfa-toggle-button" class="danger-button">ENABLE 2FA</button>
                 </div>
               </div>
             </div>
 
             <div id="user-settings-section-about" class="settings-section user-settings-section" style="display: none;">
-              <img src="./logo.png" style="width: 64px; height: 64px; margin-bottom: 10px;"/>
-              <p style="font-size: 20px;">ABOUT</p>
+              <div id="about-logo"><img src="logo_o.png"></div><br>
+              Order version 0.0.9-beta
+              <p>ABOUT</p>
               ORDER is a messaging app that does not track you, does not have ads,
               does not impose age restrictions, does not ban people or groups and
               provides deep group and user privacy customizations.
@@ -179,19 +193,71 @@
               <button id="donate" class="accent-button">Donate money to project development</button>
               <br>
 
-              <p style="font-size: 20px;">TECHNOLOGIES USED</p>
+              <p>TECHNOLOGIES USED</p>
               Linux, Windows and macOS clients: Electron<br>
               Backend: .NET Core, Apache Cassandra<br>
               Website: nginx
 
-              <p style="font-size: 20px;">CREATED BY</p>
+              <p>CREATED BY</p>
               portasynthinca3
 
-              <p style="font-size: 20px;">CREDITS</p>
+              <p>CREDITS</p>
               Thanks to:<br>
               Twitter for providing Twemoji<br>
               Andrey Hayrnasov (Dazaika) for suggesting a VPS<br>
               Sasha Kulichkov (hetyh) for setting up the VPS
+            </div>
+
+            <div id="user-settings-section-notifications" class="settings-section user-settings-section" style="display: none;">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title">NOTIFICATIONS</span>
+                <div class="self-profile-setting-input-container">
+                  <div class="setting-switch">
+                    <label class="switch" style="margin-left: 0; margin-top: 2px;">
+                      <input id="enable-notifications" type="checkbox"/>
+                      <span class="slider round"></span>
+                    </label>
+                    <span>RECEIVE NOTIFICATIONS</span>
+                  </div>
+                  <div class="setting-switch">
+                    <label class="switch" style="margin-left: 0; margin-top: 2px;">
+                      <input id="send-typing" type="checkbox"/>
+                      <span class="slider round"></span>
+                    </label>
+                    <span>TELL OTHERS I'M TYPING</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="user-settings-section-content" class="settings-section user-settings-section" style="display: none;">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title">CONTENT</span>
+                <div class="self-profile-setting-input-container">
+                  <div class="setting-switch">
+                    <label class="switch" style="margin-left: 0; margin-top: 2px;">
+                      <input id="preview-yt" type="checkbox"/>
+                      <span class="slider round"></span>
+                    </label>
+                    <span>PREVIEW YOUTUBE VIDEOS</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="user-settings-section-appearance" class="settings-section user-settings-section" style="display: none;">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title">APPEARANCE</span>
+                <div class="self-profile-setting-input-container">
+                  ACCENT COLOR
+                  <input id="accent-color-change" type="color"/>
+                </div>
+                <div class="self-profile-setting-input-container">
+                  FONT SIZE
+                  <span id="font-size-indicator"></span>
+                  <input id="font-size-change" type="range" min="5" max="16" value="9" class="trackbar">
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -240,7 +306,9 @@
                 <span class="settings-subsection-title">CHANNELS</span>
                 <div class="flex-row">
                   <div class="flex-col">
-                    <div id="group-settings-channel-list" class="flex-col"></div>
+                    <div id="group-settings-channel-list" class="flex-col">
+                      <!--Channels reside here-->
+                    </div>
                     <button id="channel-add-button" class="fill-width">+</button>
                   </div>
                   <div id="group-settings-channel-settings" class="flex-col">
@@ -253,6 +321,43 @@
                 </div>
               </div>
             </div>
+
+            <div id="group-settings-section-invites" class="settings-section group-settings-section">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title">INVITES</span>
+                <div class="flex-col">
+                  <div id="group-settings-invite-list" class="flex-col">
+                    <!--Invites reside here-->
+                  </div>
+                  <button id="invite-create-button" class="apply-button">CREATE INVITE</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="group-settings-section-roles" class="settings-section group-settings-section">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title">ROLES</span>
+                <div class="flex-row">
+                  <div class="flex-col">
+                    <button id="role-add-button" class="fill-width">+</button>
+                    <div id="group-settings-role-list" class="flex-col">
+                      <!--Roles reside here-->
+                    </div>
+                  </div>
+                  <div id="group-settings-role-settings" class="flex-col">
+                    <div class="group-setting-input-container">
+                      NAME
+                      <input id="role-name-change"/>
+                    </div>
+                    <div class="group-setting-input-container">
+                      COLOR
+                      <input id="role-color-change" type="color"/>
+                    </div>
+                    <button id="role-remove-button" class="danger-button">DELETE ROLE</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -260,7 +365,7 @@
           <div id="mfa-qr-banner">
             <span style="margin-bottom: 20px;">2FA QR CODE</span>
             <div id="mfa-qr-placeholder" style="margin-bottom: 20px;"></div>
-            <span>Scan this code in your code generating app (i.e. Google Authenticator or Authy) on your phone</span>
+            <span>Scan this code in your code generating app (i.e. Authy (preferred) or Google Authenticator) on your phone</span>
             <button id="mfa-qr-ok" class="accent-button fill-width">OK</button>
           </div>
         </div>
@@ -280,11 +385,14 @@
 
           <td id="channel-list-sidebar">
             <div id="channel-list-container" class="flex-col">
-              <div id="channel-list-header">
-                <!--The server name resides here-->
+              <div id="channel-list-header" class="flex-row">
+                <button id="group-leave" class="icon-button"><img src="icons/leave.png"/></button>
+                <span id="group-name"></span>
               </div>
-              <div id="channel-list" class="flex-col">
-                <!--Channels reside here-->
+              <div class="scroll-area">
+                <div id="channel-list" class="flex-col">
+                  <!--Channels reside here-->
+                </div>
               </div>
             </div>
           </td>
@@ -295,7 +403,7 @@
                 <span id="channel-name"></span>
               </div>
 
-              <div id="message-scroll-area">
+              <div id="message-scroll-area" class="scroll-area">
                 <div id="message-area" class="flex-col">
                   <!-- Messages reside here -->
                   <div id="message-area-header" style="display: none">
@@ -316,6 +424,12 @@
                     <button id="message-file-section-button"  class="icon-button cg-button"><img src="icons/add_file.png"></button>
                     <button id="message-code-section-button"  class="icon-button cg-button"><img src="icons/add_code.png"></button>
                     <button id="message-quote-section-button" class="icon-button cg-button"><img src="icons/add_quote.png"></button>
+                    <span id="channel-typing"></span>
+                    <div id="typing-dots" class="flex-row" style="display: none;">
+                      <div id="typing-dot-1"></div>
+                      <div id="typing-dot-2"></div>
+                      <div id="typing-dot-3"></div>
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -346,6 +460,10 @@
               ALL FRIENDS
             </td></tr>
 
+            <tr style="height: fit-content;"><td id="member-list-group-header" style="display: none;">
+              GROUP MEMBERS
+            </td></tr>
+
             <tr><td id="member-list-bar" class="flex-col">
               <!-- All members reside here -->
             </td></tr>
@@ -358,24 +476,20 @@
 
               <span id="self-status-text" class="user-status">status text</span>
               <div class="flex-row user-nickname-container">
-                <span id="self-nickname" class="user-nickname">nickname</span>
-                <span id="self-tag" class="user-tag">#11111</span>
+                <span id="self-nickname" class="user-nickname">loading</span>
+                <span id="self-tag" class="user-tag">#00000</span>
               </div>
             </td></tr>
           </table></td>
         </tr></tbody></table>
       </td></tr>
 
-      <tr style="height: fit-content"><td style="padding: 0"><div id="login-form" style="display: show;">
+      <tr style="height: fit-content"><td style="padding: 0"><div id="login-form" style="display: show;" class="flex-col">
         E-MAIL
-        <br>
         <span class="input-container"><input id="login-email" style="margin-bottom: 10px;" class="fill-width"/></span>
-        <br>
   
         <span style="padding-top: 10px;">PASSWORD</span>
-        <br>
         <span class="input-container" class="fill-width"><input id="login-password" type="password" class="fill-width"/></span>
-        <br>
   
         <button id="login-button" class="accent-button fill-width">LOGIN</button>
         <button id="login-signup-button" class="fill-width">SIGN UP</button>

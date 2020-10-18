@@ -1,11 +1,12 @@
 const escapeHTML = require('escape-html')
-const { on } = require('process')
+const { on, send } = require('process')
 const { decode } = require('blurhash')
+const tinycolor = require("tinycolor2");
 
 const hljs = require('highlight.js')
 const marked = require("marked");
-var remark = require('remark')
-var gemojiToEmoji = require('remark-gemoji-to-emoji')
+const remark = require('remark')
+const gemojiToEmoji = require('remark-gemoji-to-emoji')
 
 const { create } = require('domain')
 const { url } = require('inspector')
@@ -30,34 +31,46 @@ var blobCache = {}
 // Input message sections
 var msgSections = []
 
-// Operation finish triggers
+// Operation finish callbacks
 var endCallbacks = []
 
-// The group and channel the user's in
-var viewingGroup = 0
-var viewingChan = 0
-var editingChan = 0
-var viewingContactGroup = 0
+// Sounds
+var sounds = {}
+
+// UI state
+var viewingGroup
+var viewingChan
+var editingChan, editingRole
+var viewingContactGroup
+
+// Default settings
+const defaultSettings = {
+    accentColor:   '#b723fb',
+    fontSize:      9,
+    theme:         'dark',
+    notifications: true,
+    sendTyping:    true,
+    previewYt:     true
+}
 
 function _rendererFunc() {
     const { ipcRenderer, remote, shell, clipboard } = require('electron')
     const { BrowserWindow, dialog } = remote
-    const fs = remote.require('fs')
-    const path = require('path')
-    const escapeHtml = require('escape-html')
+    const fs      = remote.require('fs')
+    const path    =        require('path')
+    const escapeHtml =     require('escape-html')
+
+    sounds.notification = new Audio(path.join(__dirname, 'sounds/notification.wav'))
 
     // Get the browser window
     var window = BrowserWindow.getFocusedWindow()
 
-    // Try to log in using the continuation token
-    var contToken = localStorage.getItem('contToken')
-    if(contToken != undefined) {
+    // Try to connect and send a continuation later if we have one
+    if(localStorage.getItem('contToken') !== undefined) {
         ipcSend({
-            'action': 'webprot.login',
-            'email': '___@cont@token@___',
-            'password': contToken
+            action: 'webprot.connect'
         })
-    }
+    } 
 
     // Upload and download blobs
     function upload(path, onEnd, onProgressMade) {
@@ -80,6 +93,68 @@ function _rendererFunc() {
                 'actuallyDownload': actuallyDownload
             })
         }
+    }
+
+    // Set default settings
+    for(const kv of Object.entries(defaultSettings))
+        if(localStorage.getItem(kv[0]) === null)
+            localStorage.setItem(kv[0], kv[1])
+
+    // Settings
+    const accentColorChange = document.getElementById('accent-color-change')
+    accentColorChange.onchange = (e) => setAccentColor(accentColorChange.value)
+    const fontSizeChange = document.getElementById('font-size-change')
+    fontSizeChange.onchange = (e) => setFontSize(fontSizeChange.value)
+    const themeSwitch = document.getElementById('theme-switch')
+    themeSwitch.onchange = (e) => setTheme(themeSwitch.checked ? 'light' : 'dark')
+
+    const notificationSwitch = document.getElementById('enable-notifications')
+    notificationSwitch.onchange = (e) => localStorage.setItem('notifications', notificationSwitch.checked)
+    notificationSwitch.checked = localStorage.getItem('notifications') === 'true'
+    const sendTypingSwitch = document.getElementById('send-typing')
+    sendTypingSwitch.onchange = (e) => localStorage.setItem('sendTyping', sendTypingSwitch.checked)
+    sendTypingSwitch.checked = localStorage.getItem('sendTyping') === 'true'
+
+    const previewYtSwitch = document.getElementById('preview-yt')
+    previewYtSwitch.onchange = (e) => localStorage.setItem('previewYt', previewYtSwitch.checked)
+    previewYtSwitch.checked = localStorage.getItem('previewYt') === 'true'
+
+    // Sets the font size
+    const docStyle = document.documentElement.style
+    function setFontSize(pt) {
+        localStorage.setItem('fontSize', pt)
+        fontSizeChange.value = pt
+
+        docStyle.setProperty('--font-size', pt + 'pt')
+        document.getElementById('font-size-indicator').innerHTML = pt
+    }
+
+    // Sets the accent color
+    function setAccentColor(color) {
+        localStorage.setItem('accentColor', color)
+        accentColorChange.value = color
+
+        docStyle.setProperty('--accent', color)
+        docStyle.setProperty('--accent-dim',   tinycolor(color).darken(amount=10).toString())
+        docStyle.setProperty('--accent-dim-2', tinycolor(color).darken(amount=20).toString())
+        docStyle.setProperty('--accent-trans', color + '48')
+    }
+
+    // Sets the theme
+    function setTheme(theme) {
+        localStorage.setItem('theme', theme)
+        document.getElementById('theme-css').href = 'themes/' + theme + '.css'
+        themeSwitch.checked = theme == 'light'
+    }
+
+    setAccentColor(localStorage.getItem('accentColor'))
+    setFontSize   (localStorage.getItem('fontSize'))
+    setTheme      (localStorage.getItem('theme'))
+
+    // Determines whether we sould receive notifications
+    function shouldReceiveNotif() {
+        return remote.getGlobal('webprotState').self.status != 3 // not in "do not distract" mode
+            && localStorage.getItem('notifications') === 'true'
     }
 
     // Adjust the height of a TextArea
@@ -170,15 +245,108 @@ function _rendererFunc() {
             return
 
         const channelList = document.getElementById('group-settings-channel-list')
-        const channels = entityCache[viewingGroup].channels
+        const channels    = entityCache[viewingGroup].channels
         reqEntities(channels.map(x => { return { type: 'channel', id: x } }), false, () => {
+            // Remove previous buttons
             while(channelList.firstChild)
                 channelList.firstChild.remove()
+            // Create buttons for each channel
             for(let chanId of channels) {
                 const elm = createChannelButton(chanId, (e) => { groupSettingsShowChannel(chanId) }, false)
                 channelList.append(elm)
             }
         })
+    }
+
+    // Shows a role in the group settings
+    function groupSettingsShowRole(id) {
+        editingRole = id
+
+        reqEntities([{ type: 'role', id: id }], false, () => {
+            const role = entityCache[id]
+            document.getElementById('role-name-change').value = role.name
+    
+            // Show or hide the removal button based on whether the role is @everyone
+            const deleteBtn = document.getElementById('role-remove-button')
+            if(role.priority === 0)
+                hideElm(deleteBtn)
+            else
+                showElm(deleteBtn)
+
+            // Do the same with the name change field (enable/disable it though)
+            const nameChange = document.getElementById('role-name-change')
+            if(role.priority === 0)
+                nameChange.setAttribute('disabled', '')
+            else
+                nameChange.removeAttribute('disabled')
+
+            const colorChange = document.getElementById('role-color-change')
+            colorChange.value = role.color
+        })
+    }
+
+    function updateGroupSettingsRoles() {
+        if(viewingGroup == 0)
+            return
+
+        const roleList = document.getElementById('group-settings-role-list')
+        const roles    = entityCache[viewingGroup].roles
+        // Force because the roles might have changed their priorities
+        reqEntities(roles.map(x => { return { type: 'role', id: x } }), true, () => {
+            // Remove previous buttons
+            while(roleList.firstChild)
+                roleList.firstChild.remove()
+            // Create buttons for each role (sorted by priority, descending)
+            roles.sort((a, b) => entityCache[a].priority - entityCache[b].priority)
+            roles.reverse()
+            for(let roleId of roles) {
+                const role = entityCache[roleId]
+
+                const elm  = document.createElement('div')
+                elm.classList.add('role-button')
+                elm.innerHTML = escapeHtml(role.name)
+                elm.onclick = (e) => { groupSettingsShowRole(roleId) }
+
+                roleList.append(elm)
+            }
+        })
+    }
+
+    function updateGroupSettingsInvites() {
+        if(viewingGroup == 0)
+            return
+
+        const inviteList = document.getElementById('group-settings-invite-list')
+        var   invites = entityCache[viewingGroup].invites
+
+        while(inviteList.firstChild)
+            inviteList.firstChild.remove()
+
+        for(const inv of invites) {
+            const elm = document.createElement('div')
+            elm.classList.add('group-invite-entry', 'flex-row')
+            inviteList.appendChild(elm)
+
+            const code = document.createElement('span')
+            code.innerHTML = escapeHtml(inv)
+            elm.appendChild(code)
+
+            const remove = document.createElement('button')
+            remove.classList.add('danger-button')
+            remove.innerHTML = 'REVOKE INVITE'
+            remove.onclick = (e) => {
+                invites = invites.filter(x => x != inv)
+                ipcSend({
+                    action: 'webprot.entity-put',
+                    entities: [{
+                        type:    'group',
+                        id:      viewingGroup,
+                        invites: invites
+                    }]
+                })
+            }
+            elm.appendChild(remove)
+        }
     }
 
     // Shows/hides group settings
@@ -190,16 +358,22 @@ function _rendererFunc() {
 
         showGroupSettingsTab('group-settings-section-general')
         groupSettingsShowChannel(entityCache[viewingGroup].channels[0])
-
-        // Load settings
-        // Channel list
-        updateGroupSettingsChannelList()
+        // The earliest created role is @everyone, and it hast the lowest ID of them all
+        groupSettingsShowRole(entityCache[viewingGroup].roles.sort((a, b) => a - b)[0])
 
         if(group.icon != 0) {
             download(group.icon, (b) => {
                 document.getElementById('group-icon-huge').src = 'file://' + b.path
             })
         }
+
+        // Load settings
+        try { // these might throw an exception if the user has no access to group settings
+            updateGroupSettingsRoles()
+            updateGroupSettingsChannelList()
+            updateGroupSettingsInvites()
+        }
+        catch { }
     }
     function hideGroupSettings() {
         triggerDisappear(document.getElementById('group-settings'), true)
@@ -234,7 +408,7 @@ function _rendererFunc() {
     }
 
     // Show a floating box
-    function showBox(header, text) {
+    function showBox(header, text, showUpdate=false, updCb=undefined) {
         document.getElementById('floating-box-header').innerHTML = header
         document.getElementById('floating-box-text').innerHTML = text
         triggerAppear(document.getElementById('floating-box'), true)
@@ -242,13 +416,33 @@ function _rendererFunc() {
         document.getElementById('floating-box-ok').addEventListener('click', (e) => {
             triggerDisappear(document.getElementById('floating-box'), true)
         })
+
+        const updButton = document.getElementById('floating-box-upd')
+        updButton.onclick = updCb
+        if(showUpdate)
+            showElm(updButton)
+        else
+            hideElm(updButton)
+    }
+
+    // Gets time difference in ms
+    function timeDiff(id1, id2) {
+        const ts1 = Number((BigInt(id1) >> 16n))
+        const ts2 = Number((BigInt(id2) >> 16n))
+        return ts2 - ts1
     }
 
     // Converts an ID into a time string
     function idToTime(id) {
         const timestamp = Number((BigInt(id) >> 16n) + 1577836800000n)
         const date = new Date(timestamp)
-        return date.toLocaleString()
+        return date.toLocaleDateString(undefined, {
+            year:   'numeric',
+            month:  'long',
+            day:    'numeric',
+            hour:   'numeric',
+            minute: 'numeric'
+        })
     }
 
     // Send a data packet
@@ -387,55 +581,71 @@ function _rendererFunc() {
     }
 
     // Updates all information about a group
-    function updateGroup(id) {
-        const group = entityCache[id]
-        // Update icons
-        const icons = document.getElementsByClassName('group-icon-' + id)
-        if(icons.length > 0 && group.icon !== 0) {
-            download(group.icon, (blob) => {
+    function updateGroup(id, force=false) {
+        reqEntities([{ type: 'group', id: id }], force, () => {
+            const group = entityCache[id]
+            // Update icons
+            const icons = document.getElementsByClassName('group-icon-' + id)
+            if(icons.length > 0 && group.icon !== 0) {
+                download(group.icon, (blob) => {
+                    for(const icon of icons)
+                        icon.src = 'file://' + blob.path
+                })
+            } else if(group.icon === 0) {
                 for(const icon of icons)
-                    icon.src = 'file://' + blob.path
-            })
-        } else if(group.icon === 0) {
-            for(const icon of icons)
-                icon.innerHTML = groupNameAcronym(group.name)
-        }
-
-        // Update the channel list
-        if(id === viewingGroup)
-            updChannelList()
-        updateGroupSettingsChannelList()
+                    icon.innerHTML = escapeHtml(groupNameAcronym(group.name))
+            }
+    
+            // Update the channel and member list
+            if(id === viewingGroup) {
+                updChannelList()
+                updMemberList()
+            }
+    
+            try {
+                updateGroupSettingsChannelList()
+                updateGroupSettingsInvites()
+                updateGroupSettingsRoles()
+            }
+            catch { }
+        })
     }
 
     // Updates all information about a user
     function updateUser(id) {
-        const user = entityCache[id]
-        // Update avatars
-        const avas = document.getElementsByClassName('user-avatar-' + id)
-        if(avas.length > 0) {
-            download(user.avaBlob, (blob) => {
-                for(const ava of avas)
-                    ava.src = 'file://' + blob.path
-            })
-        }
-
-        // Update statuses
-        const statuses = document.getElementsByClassName('user-online-' + id)
-        for(const status of statuses)
-            status.src = statusIconPath(user.status)
-
-        // Update nicknames and tags
-        const nicknames = document.getElementsByClassName('user-nickname-' + id)
-        const tags = document.getElementsByClassName('user-tag-' + id)
-        for(const name of nicknames)
-            name.innerHTML = escapeHtml(user.name)
-        for(const tag of tags)
-            tag.innerHTML = escapeHtml(formatTag(user.tag))
-
-        // Update status texts
-        const statusTexts = document.getElementsByClassName('user-status-' + id)
-        for(st of statusTexts)
-            st.innerHTML = escapeHtml(user.statusText)
+        reqEntities([{ type: 'user', id: id }], false, () => {
+            const user = entityCache[id]
+            // Update avatars
+            const avas = document.getElementsByClassName('user-avatar-' + id)
+            if(avas.length > 0) {
+                download(user.avaBlob, (blob) => {
+                    for(const ava of avas)
+                        ava.src = 'file://' + blob.path
+                })
+            }
+    
+            // Update statuses
+            const statuses = document.getElementsByClassName('user-online-' + id)
+            for(const status of statuses)
+                status.src = statusIconPath(user.status)
+    
+            // Update nicknames and tags
+            const nicknames = document.getElementsByClassName('user-nickname-' + id)
+            const tags = document.getElementsByClassName('user-tag-' + id)
+            for(const name of nicknames) {
+                name.innerHTML = escapeHtml(user.name)
+                // Set colors
+                if(user.color != undefined)
+                    name.style.color = user.color
+            }
+            for(const tag of tags)
+                tag.innerHTML = escapeHtml(formatTag(user.tag))
+    
+            // Update status texts
+            const statusTexts = document.getElementsByClassName('user-status-' + id)
+            for(st of statusTexts)
+                st.innerHTML = escapeHtml(user.statusText)
+        })
     }
 
     // Creates an element that should be placed in the member list
@@ -553,49 +763,53 @@ function _rendererFunc() {
 
     // Updates the member list sidebar
     function updMemberList() {
-        const memberList = document.getElementById('member-list-bar')
+        if(viewingGroup === 0) {
+            const memberList = document.getElementById('member-list-bar')
 
-        // Remove all previous members
-        while(memberList.firstChild)
-            memberList.removeChild(memberList.firstChild)
+            // Remove all previous members
+            while(memberList.firstChild)
+                memberList.removeChild(memberList.firstChild)
 
-        // Determine what users should end up in the member list
-        var userIds = []
-        // Group 0 = own direct messages
-        if(viewingGroup == 0) {
-            const self = remote.getGlobal('webprotState').self
-            const friendType = document.getElementById('member-list-friend-type')
+            // Determine what users should end up in the member list
+            var userIds = []
+            // Group 0 = own direct messages
+            if(viewingGroup == 0) {
+                const self = remote.getGlobal('webprotState').self
+                const friendType = document.getElementById('member-list-friend-type')
 
-            friendType.innerHTML = escapeHtml(
-                ['ALL FRIENDS',
-                 'ONLINE FRIENDS',
-                 'INCOMING REQUESTS',
-                 'OUTGOING REQUESTS',
-                 'BANNED'][viewingContactGroup])
+                friendType.innerHTML = escapeHtml(
+                    ['ALL FRIENDS',
+                    'ONLINE FRIENDS',
+                    'INCOMING REQUESTS',
+                    'OUTGOING REQUESTS',
+                    'BANNED'][viewingContactGroup])
 
-            userIds = [self.friends, self.friends, self.pendingIn, self.pendingOut, self.blocked][viewingContactGroup]
-        }
+                userIds = [self.friends, self.friends, self.pendingIn, self.pendingOut, self.blocked][viewingContactGroup]
+            }
 
-        // Request users
-        const users = userIds.map(id => { return { 'type':'user', 'id':id } })
-        reqEntities(users, false, () => {
-            // Create summaries for each one and append them to the member list
-            userIds.forEach(id => {
-                if(viewingGroup == 0) { // special case for DMs
-                    var add = true
-                    if(viewingContactGroup == 1 && entityCache[id].status == 0) // don't add offline friends if we only want to see online ones
-                        add = false
-                    if(add) {
-                        memberList.appendChild(createUserSummary(
-                            id, ['friend', 'friend', 'pending-in', 'pending-out', 'blocked'][viewingContactGroup]
-                        ))
-                        updateUser(id)
+            // Request users
+            const users = userIds.map(id => { return { 'type':'user', 'id':id } })
+            reqEntities(users, false, () => {
+                // Create summaries for each one and append them to the member list
+                userIds.forEach(id => {
+                    if(viewingGroup == 0) { // special case for DMs
+                        var add = true
+                        if(viewingContactGroup == 1 && entityCache[id].status == 0) // don't add offline friends if we only want to see online ones
+                            add = false
+                        if(add) {
+                            memberList.appendChild(createUserSummary(
+                                id, ['friend', 'friend', 'pending-in', 'pending-out', 'blocked'][viewingContactGroup]
+                            ))
+                            updateUser(id)
+                        }
+                    } else {
+                        memberList.appendChild(createUserSummary(id))
                     }
-                } else {
-                    memberList.appendChild(createUserSummary(id))
-                }
+                })
             })
-        })
+        } else {
+            appendMembersBottom(entityCache[viewingGroup].everyoneRole, 0, undefined, true)
+        }
     }
 
     // Returns a human readable file size
@@ -625,19 +839,77 @@ function _rendererFunc() {
             sects[i].typeElm = undefined
         }
 
+        // Send the message
         ipcSend({
-            'action': 'webprot.entity-put',
-            'entities': [
-                {
-                    'type': 'message',
-                    'id': 0,
-                    'sections': sects,
-                    'channel': viewingChan
-                }
-            ]
+            action: 'webprot.entity-put',
+            entities: [{
+                type: 'message',
+                id: 0,
+                sections: sects,
+                channel: viewingChan
+            }]
         })
+        // Reset the typing status
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type:   'channel',
+                id:     viewingChan,
+                group:  viewingGroup,
+                typing: []
+            }]
+        })
+        setTimeout(clearTyping, 50)
 
         resetMsgInput()
+    }
+
+    var typingClearTimer, currentlyTyping
+    function sendTyping() {
+        if(localStorage.getItem('sendTyping') === 'false')
+            return
+        if(currentlyTyping)
+            return
+        // Cancel the previous typing clear timer
+        if(typingClearTimer)
+            clearTimeout(typingClearTimer)
+        // Send the typing notification
+        currentlyTyping = true
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type:   'channel',
+                id:     viewingChan,
+                group:  viewingGroup,
+                typing: [0]
+            }]
+        })
+        // Create a typing clear timer
+        typingClearTimer = setTimeout(() => {
+            clearTyping()
+        }, 10000)
+    }
+
+    // Says "no, we're not typing anymore"
+    function clearTyping() {
+        currentlyTyping = false
+        clearTimeout(typingClearTimer)
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type:   'channel',
+                id:     viewingChan,
+                group:  viewingGroup,
+                typing: []
+            }]
+        })
+    }
+
+    function updTyping(txt) {
+        if(txt.length > 0)
+            sendTyping()
+        else
+            clearTyping()
     }
 
     // Creates an input message section
@@ -663,7 +935,7 @@ function _rendererFunc() {
                 typeElm.classList.add('message-input', 'fill-width')
                 typeElm.placeholder = 'Text section'
                 typeElm.rows = 1
-                typeElm.oninput = () => adjTaHeight(typeElm)
+                typeElm.oninput = () => { adjTaHeight(typeElm); updTyping(typeElm.value) }
                 break
             case 'file':
                 typeElm = document.createElement('div')
@@ -691,7 +963,7 @@ function _rendererFunc() {
                 typeElm.classList.add('code-input', 'fill-width')
                 typeElm.placeholder = 'Code section'
                 typeElm.rows = 1
-                typeElm.oninput = () => adjTaHeight(typeElm)
+                typeElm.oninput = () => { adjTaHeight(typeElm); updTyping(typeElm.value) }
                 typeElm.spellcheck = false
                 break
             case 'quote':
@@ -699,7 +971,7 @@ function _rendererFunc() {
                 typeElm.classList.add('message-input', 'fill-width', 'message-quote-section')
                 typeElm.placeholder = 'Quote section'
                 typeElm.rows = 1
-                typeElm.oninput = () => adjTaHeight(typeElm)
+                typeElm.oninput = () => { adjTaHeight(typeElm); updTyping(typeElm.value) }
                 break
         }
         section.appendChild(typeElm)
@@ -804,7 +1076,7 @@ function _rendererFunc() {
             escapeHtml(txt)) +                             // no XSS for 'ya today, sorry
             '</span>')
             .replace(/(?:\r\n|\r|\n)/g, '</span><span>'))  // insert line breaks
-            .contents
+            .contents.replace('/shrug', '¯\\_(ツ)_/¯')     // I f-ing LOVE this emote ¯\_(ツ)_/¯
     }
 
     // Shows/hides a floating message
@@ -883,37 +1155,43 @@ function _rendererFunc() {
     }
 
     // Creates a message box seen in the message area
-    function createMessage(id) {
+    function createMessage(id, short=false) {
         // Get the message entity by the id
         const msg = entityCache[id]
 
         const elm = document.createElement('div')
         elm.classList.add('message', 'message-' + msg.id, 'flex-row')
+        if(short)
+            elm.classList.add('short-message')
 
-        const avaContainer = document.createElement('div')
-        avaContainer.classList.add('message-avatar-container')
-        elm.appendChild(avaContainer)
-
-        const ava = document.createElement('img')
-        ava.classList.add('user-avatar', 'message-avatar', 'user-avatar-' + msg.sender)
-        avaContainer.appendChild(ava)
+        if(!short) {
+            const avaContainer = document.createElement('div')
+            avaContainer.classList.add('message-avatar-container')
+            elm.appendChild(avaContainer)
+    
+            const ava = document.createElement('img')
+            ava.classList.add('user-avatar', 'message-avatar', 'user-avatar-' + msg.sender)
+            avaContainer.appendChild(ava)
+        }
 
         const content = document.createElement('div')
         content.classList.add('message-content', 'flex-col')
         elm.appendChild(content)
 
-        var nicknameContainer = document.createElement('div')
-        nicknameContainer.classList.add('flex-row')
-        content.appendChild(nicknameContainer)
-
-        const nickname = document.createElement('span')
-        nickname.classList.add('message-user-nickname', 'user-nickname-' + msg.sender)
-        nicknameContainer.appendChild(nickname)
-
-        const timeElm = document.createElement('span')
-        timeElm.classList.add('message-time')
-        timeElm.innerHTML = escapeHtml(idToTime(id))
-        nicknameContainer.appendChild(timeElm)
+        if(!short) {
+            var nicknameContainer = document.createElement('div')
+            nicknameContainer.classList.add('flex-row')
+            content.appendChild(nicknameContainer)
+    
+            const nickname = document.createElement('span')
+            nickname.classList.add('message-user-nickname', 'user-nickname-' + msg.sender)
+            nicknameContainer.appendChild(nickname)
+    
+            const timeElm = document.createElement('span')
+            timeElm.classList.add('message-time')
+            timeElm.innerHTML = escapeHtml(idToTime(id))
+            nicknameContainer.appendChild(timeElm)
+        }
 
         for(const section of msg.sections) {
             var sectionElement = null
@@ -960,7 +1238,7 @@ function _rendererFunc() {
                     download(section.blob, undefined, (name, size, preview, hash, length) => { // called when info becomes available
                         // Check if it's an image
                         const extenstion = name.split('.').pop()
-                        if(['png', 'jpg', 'gif', 'bmp'].includes(extenstion)) {
+                        if(['png', 'jpeg', 'jpg', 'gif', 'bmp'].includes(extenstion)) {
                             const w = Number(size.split('x')[0])
                             const h = Number(size.split('x')[1])
 
@@ -971,27 +1249,30 @@ function _rendererFunc() {
                             //imgElement.height = h
                             
                             // Create the preview element
-                            const canvasElement = document.createElement('canvas')
-                            canvasElement.classList.add('message-img-section')
-                            canvasElement.width = w
-                            canvasElement.height = h
-
-                            const adjW = (32 * w / h).toFixed(0) // to preserve the aspect ratio
-                            const pixels = decode(preview, adjW, 32);
-                            const ctx = canvasElement.getContext('2d');
-                            const imageData = ctx.createImageData(adjW, 32);
-                            imageData.data.set(pixels);
-                            ctx.putImageData(imageData, 0, 0);
-                            // Scale it (blurhash decoding is too slow, scaling is faster)
-                            const imageObj = new Image(adjW, 32)
-                            imageObj.onload = () => {
-                                ctx.clearRect(0, 0, w, h)
-                                ctx.scale(w / adjW, h / 32)
-                                ctx.drawImage(imageObj, 0, 0)
+                            let canvasElement
+                            if(preview !== '') {
+                                canvasElement = document.createElement('canvas')
+                                canvasElement.classList.add('message-img-section')
+                                canvasElement.width = w
+                                canvasElement.height = h
+    
+                                const adjW = (32 * w / h).toFixed(0) // to preserve the aspect ratio
+                                const pixels = decode(preview, adjW, 32);
+                                const ctx = canvasElement.getContext('2d');
+                                const imageData = ctx.createImageData(adjW, 32);
+                                imageData.data.set(pixels);
+                                ctx.putImageData(imageData, 0, 0);
+                                // Scale it (blurhash decoding is too slow, scaling is faster)
+                                const imageObj = new Image(adjW, 32)
+                                imageObj.onload = () => {
+                                    ctx.clearRect(0, 0, w, h)
+                                    ctx.scale(w / adjW, h / 32)
+                                    ctx.drawImage(imageObj, 0, 0)
+                                }
+                                imageObj.src = canvasElement.toDataURL()
+    
+                                fileSectionElement.appendChild(canvasElement)
                             }
-                            imageObj.src = canvasElement.toDataURL()
-
-                            fileSectionElement.appendChild(canvasElement)
                             // Append the image as a child
                             fileSectionElement.appendChild(imgElement)
 
@@ -1000,7 +1281,8 @@ function _rendererFunc() {
                                 // Set the image source
                                 imgElement.src = 'file://' + blob.path
                                 // Remove the preview element
-                                canvasElement.remove()
+                                if(canvasElement)
+                                    canvasElement.remove()
                                 // Enlarge the image when clicking on it
                                 imgElement.onclick = (e) => {
                                     e.stopPropagation()
@@ -1060,11 +1342,6 @@ function _rendererFunc() {
 
                     // If "blob" ID (actually message ID in this case) != 0 then show the message when clicking on it
                     if(section.blob != 0) {
-                        const replyIndicator = document.createElement('span')
-                        replyIndicator.classList.add('message-text-section')
-                        replyIndicator.innerHTML = '<strong>Reply (click to show):</strong>'
-                        content.appendChild(replyIndicator)
-
                         sectionElement.addEventListener('click', (e) => {
                             e.stopImmediatePropagation()
                             showFloatingMessage(section.blob)
@@ -1100,7 +1377,8 @@ function _rendererFunc() {
             }
             // Additionally, if the link is a YouTube video, add an iframe
             const hostname = parseHostname(href)
-            if(hostname == 'youtube.com' || hostname == 'youtu.be') {
+            if(hostname == 'youtube.com' || hostname == 'youtu.be'
+                && localStorage.getItem('previewYt') === 'true') {
                 // Get the video ID
                 var videoId = ''
                 if(hostname == 'youtube.com')
@@ -1121,6 +1399,45 @@ function _rendererFunc() {
         return elm
     }
 
+    // Fetches and appends members to the bottom
+    function appendMembersBottom(role, id_from, callback, clear=false) {
+        const memberList = document.getElementById('member-list-bar')
+        const header =     document.getElementById('member-list-group-header')
+        showElm(header)
+        
+        reqEntities([{
+            'type': 'role', 'id': role,
+            'pageField': 6, // members
+            'pageFrom': id_from,
+            'pageDir': false, // has no purpose in the the role entity
+            'pageCnt': 50
+        }], true, () => {
+            var members = [...entityCache[role].members]
+            members.sort()
+            members = members.map(x => { return { type: 'user', id: x } })
+            // Request members
+            reqEntities(members, false, () => {
+                // Clear previous members if needed
+                if(clear) {
+                    while(memberList.firstChild)
+                        memberList.firstChild.remove()
+                }
+                members = members.map(x => entityCache[x.id])
+                members.forEach(member => {
+                    const id = member.id
+                    memberList.appendChild(createUserSummary(id))
+                    // Force user color (no need to request it since we know it from the role already)
+                    entityCache[id].color = entityCache[role].color
+                    updateUser(id)
+                })
+
+                // Call the callback
+                if(callback != undefined)
+                    callback()
+            })
+        })
+    }
+
     // Fetches and appends messages to the top
     function appendMsgsTop(id_from, callback, clear=false) {
         const msgArea = document.getElementById('message-area')
@@ -1133,13 +1450,10 @@ function _rendererFunc() {
             'pageDir': false, // older than the supplied ID
             'pageCnt': 50
         }], true, () => {
-            const msgs = [...entityCache[viewingChan].messages]
-            // Sort message IDs
+            var msgs = [...entityCache[viewingChan].messages]
             msgs.sort()
-            // Get messages
-            for(var i = 0; i < msgs.length; i++)
-                msgs[i] = { 'type': 'message', 'id': msgs[i] }
-            // Add messages
+            msgs = msgs.map(x => { return { type: 'message', id: x } })
+            // Request messages
             reqEntities(msgs, false, () => {
                 // Clear previous messages if needed
                 if(clear) {
@@ -1150,22 +1464,46 @@ function _rendererFunc() {
                     }
                 }
                 msgs.reverse()
+                msgs = msgs.map(x => entityCache[x.id])
+                var lastSender = 0
                 msgs.forEach(msg => {
                     const id = msg.id
-                    header.after(createMessage(id))
-                    updateUser(entityCache[id].sender) // should assign the avatar and nickname
+                    const lastMsg = msgs[msgs.indexOf(msg) + 1]
+                    const short = lastMsg ? (msg.sender === lastMsg.sender && timeDiff(lastMsg.id, msg.id) <= 60000) : false
+                    header.after(createMessage(id, short)) // bundling
                 })
+                // Request senders (uncached, because they might have different colors in different groups)
+                if(viewingGroup !== 0) {
+                    let senders = msgs.map(x => { return {
+                        type:          'user',
+                        id:            x.sender,
+                        contextEntity: 3,
+                        contextId:     viewingGroup
+                    } })
+                    // Only request those cached from a different group
+                    senders = senders.filter(x => entityCache[x.id] == undefined || entityCache[x.id].ctxGroup !== viewingGroup)
+                    senders = senders.filter((x, i, s) => s.findIndex(y => y.id === x.id) === i)
+                    if(senders.length > 0) {
+                        reqEntities(senders, true, () => {
+                            senders.forEach(x => entityCache[x.id].ctxGroup = viewingGroup)
+                        })
+                    }
+                }
+                // Update users
+                var uniqueSenders = msgs.map(x => entityCache[x.id].sender)
+                uniqueSenders = uniqueSenders.filter((s, i) => uniqueSenders.indexOf(s) === i)
+                uniqueSenders.forEach(x => updateUser(x))
                 // Scroll to the bottom
                 msgArea.scrollTop = msgArea.scrollHeight
+                // Call the callback
+                if(callback != undefined)
+                    callback()
             })
-            // Call the callback
-            if(callback != undefined)
-                callback()
         })
     }
 
     // Updates the message area
-    function updMessageArea() {
+    function updMessageArea(updMessages=true) {
         if(viewingChan == 0)
             return;
 
@@ -1175,7 +1513,7 @@ function _rendererFunc() {
         showElm(document.getElementById('message-area-header'))
 
         // Get channel messages
-        if(viewingChan != 0)
+        if(viewingChan != 0 && updMessages)
             appendMsgsTop(0xFFFFFFFFFFFFF, undefined, true)
 
         // Show the title
@@ -1191,6 +1529,21 @@ function _rendererFunc() {
                 channel.name = '@' + entityCache[otherId].name
             }
             label.innerHTML = escapeHtml(channel.name)
+            // Show the list of people that are typing
+            const typingElm  = document.getElementById('channel-typing')
+            const typingAnim = document.getElementById('typing-dots')
+            const typing = channel.typing
+            reqEntities(typing.map(x => { return { type: 'user', id: x } }), false, () => {
+                var content = ''
+                const verb = (typing.length === 1) ? 'is' : 'are'
+                if(typing.length !== 0) {
+                    content = '<b>' + typing.map(x => escapeHtml(entityCache[x].name)).join('</b>, <b>') + '</b> ' + verb + ' typing'
+                    showElm(typingAnim)
+                } else {
+                    hideElm(typingAnim)
+                }
+                typingElm.innerHTML = content
+            })
         })
     }
 
@@ -1244,10 +1597,10 @@ function _rendererFunc() {
             return
 
         const channelList = document.getElementById('channel-list')
-        const channelListHeader = document.getElementById('channel-list-header')
+        const groupName = document.getElementById('group-name')
 
         // Show the server name
-        channelListHeader.innerHTML = escapeHtml(entityCache[viewingGroup].name)
+        groupName.innerHTML = escapeHtml(entityCache[viewingGroup].name)
 
         // Request the channels of the group the user is viewing
         const channels = entityCache[viewingGroup].channels
@@ -1311,11 +1664,32 @@ function _rendererFunc() {
     
     // Packet reception handler
     function ipcRecv(evt, arg) {
-        if(arg.type != 'webprot.status' && arg.type != 'webprot.ul-progress')
+        if(arg.type !== 'webprot.status' && arg.type !== 'webprot.ul-progress' && arg.type !== 'webprot.completion-notification')
             console.log('%c[RECEIVED]', 'color: #bb0000; font-weight: bold;', arg)
         switch(arg.type) {
             case 'webprot.status':
-                    console.log('%c[STATUS]', 'color: #6440a5; font-weight: bold;', arg.message)
+                console.log('%c[STATUS]', 'color: #6440a5; font-weight: bold;', arg.message)
+                break
+
+            case 'webprot.connecting':
+                showElm(document.getElementById('connecting-screen-bg'))
+                break
+            case 'webprot.connected':
+                setTimeout(() => hideElm(document.getElementById('connecting-screen-bg')), 1000) // kinda wait \(-_-)/
+                // Send the continuation token
+                const contToken = localStorage.getItem('contToken')
+                if(contToken) {
+                    ipcSend({
+                        'action': 'webprot.login',
+                        'email': '___@cont@token@___',
+                        'password': contToken
+                    })
+                }
+                break
+            case 'webprot.disconnected':
+                setTimeout(() => ipcSend({
+                    action: 'webprot.connect'
+                }), 500)
                 break
 
             case 'webprot.2fa-required':
@@ -1377,7 +1751,9 @@ function _rendererFunc() {
                 break
 
             case 'webprot.outdated':
-                showBox('OUTDATED CLIENT', arg.message)
+                showBox('OUTDATED CLIENT', arg.message, true, () => {
+                    shell.openExternal('https://ordermsg.tk/download')
+                })
                 break
 
             case 'webprot.rate-limit':
@@ -1387,6 +1763,7 @@ function _rendererFunc() {
             case 'webprot.entities':
                 arg.entities.forEach((entity) => {
                     // Add entities to the entity list
+                    const oldEntity = entityCache[entity.id]
                     entityCache[entity.id] = { ...entityCache[entity.id], ...entity }
 
                     // Update info about self
@@ -1399,43 +1776,80 @@ function _rendererFunc() {
                             updateSelfAva(blob.path)
                         })
 
-                        // Update DM and group list
+                        // Update DM, friend and group list
                         updLayout()
+
+                        // Check new friend requests
+                        if(arg.spontaneous && oldEntity.pendingIn.length !== entity.pendingIn.length
+                            && shouldReceiveNotif()) {
+                            const newFriends = entity.pendingIn.filter(x => !oldEntity.pendingIn.includes(x))
+                            // Request their entities
+                            reqEntities(newFriends.map(x => { return { type: 'user', id: x } }), false, () => {
+                                for(const fid of newFriends) {
+                                    const f = entityCache[fid]
+                                    // Download avatars of each one
+                                    download(f.avaBlob, (ava) => {
+                                        const notification = new Notification(
+                                            f.name + ' wants to add you as a friend', {
+                                            'icon': ava.path
+                                        })
+                                        if(notification.show)
+                                            notification.show()
+                                    })
+                                }
+                            })
+                        }
                     }
 
                     // Append messages to the open channel
                     if(arg.spontaneous && entity.type == 'message' && entity.channel == viewingChan)
                         appendMsg(entity.id)
 
-                    // Send notifications
+                    // Send message notifications
                     if(arg.spontaneous && entity.type == 'message' &&
                         (entity.channel != viewingChan ||  // either we're sitting in another channel
-                         !window.isFocused())) {           // or the window is out of focus
-                        const sender = entityCache[entity.sender]
-                        // Download the avatar of the sender
-                        download(sender.avaBlob, (senderAvatar) => {
-                            const notification = new Notification(sender.name, {
-                                'body': messageSummary(entity.id),
-                                'icon': senderAvatar.path
+                         !window.isFocused())              // or the window is out of focus
+                         && shouldReceiveNotif()) {        // (notifications must be enabled)
+                        reqEntities([{ type: 'user', id: entity.sender}], false, () => {
+                            const sender = entityCache[entity.sender]
+                            // Download the avatar of the sender
+                            download(sender.avaBlob, (senderAvatar) => {
+                                const notification = new Notification(sender.name, {
+                                    'body': messageSummary(entity.id),
+                                    'icon': senderAvatar.path
+                                })
+                                // Shitch to the channel when a notification has been clicked
+                                notification.onclick = (e) => {
+                                    viewingChan = entity.channel
+                                    updLayout()
+                                    window.focus()
+                                }
+                                if(notification.show)
+                                    notification.show()
                             })
-                            // Shitch to the channel when a notification has been clicked
-                            notification.onclick = (e) => {
-                                viewingChan = entity.channel
-                                updLayout()
-                                window.focus()
-                            }
-                            notification.show()
+                            //sounds.notification.play()
                         })
                     }
 
                     // Update info about other users
-                    if(entity.type == 'user')
+                    if(entity.type == 'user') {
                         updateUser(entity.id)
+                    }
+
+                    // Update common groups
+                    if(arg.spontaneous && entity.type == 'user') {
+                        for(const g of entity.groups) // the server only sends common groups
+                            updateGroup(g)
+                    }
 
                     // Update info about groups and channels
-                    if(entity.type == 'group')
+                    if(arg.spontaneous && entity.type == 'group')
                         updateGroup(entity.id)
-                    if(entity.type == 'channel' && entity.group != 0)
+                    if(arg.spontaneous && entity.type == 'channel' && entity.group != 0)
+                        updateGroup(entity.group)
+                    if(arg.spontaneous && entity.type == 'channel' && entity.id == viewingChan)
+                        updMessageArea(false)
+                    if(arg.spontaneous && entity.type == 'role')
                         updateGroup(entity.group)
                 })
                 break
@@ -1703,7 +2117,7 @@ function _rendererFunc() {
         var newAvaPath = dialog.showOpenDialogSync(window, {
             properties: ['openFile'],
             filters: [
-                { name: 'Images', extensions: ['jpg', 'png', 'gif', 'bmp'] }
+                { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'] }
             ]
         })
         // Don't if the user decided not to
@@ -1744,14 +2158,6 @@ function _rendererFunc() {
             })
         })
     }
-
-    // Theme switching
-    document.getElementById('theme-switch').addEventListener('change', (e) => {
-        if(document.getElementById('theme-switch').checked)
-            document.getElementById('theme-css').href = 'themes/light.css'
-        else
-            document.getElementById('theme-css').href = 'themes/dark.css'
-    })
 
     // "About Order" buttons
     document.getElementById('view-on-github').addEventListener('click', (e) => {
@@ -1807,7 +2213,7 @@ function _rendererFunc() {
             properties: ['openFile'],
             filters: [
                 { name: 'All files', extensions: ['*'] },
-                { name: 'Images', extensions: ['jpg', 'png', 'gif', 'bmp'] },
+                { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'] },
                 { name: 'Videos', extensions: ['mp4', 'mkv', 'avi'] },
                 { name: 'Audio', extensions: ['mp3', 'wav', 'flac'] }
             ]
@@ -1834,6 +2240,30 @@ function _rendererFunc() {
             fileProgressBar.value = progress
         })
     })
+    // Paste images on Ctrl+V
+    document.onkeydown = (e) => {
+        // Don't try to paste text as an image
+        const clipFormat = clipboard.availableFormats()[0]
+        if(e.ctrlKey && e.key === 'v' && clipFormat.startsWith('image/')) {
+            const img = clipboard.readImage()
+            const fileName = path.join(remote.getGlobal('tmpDir'), 'tmpimg.png')
+            fs.writeFile(fileName, img.toPNG(), () => {
+                const id = msgSections.length
+                createInputSection('file', id, () => {
+                    removeInputSection(id)
+                }, fileName, fs.statSync(fileName).size)
+        
+                const fileProgressBar = msgSections[id].typeElm.getElementsByTagName('progress')[0]
+                upload(fileName, (blobId) => {
+                    msgSections[id].blob = blobId
+                    fileProgressBar.remove()
+                }, (progress, max) => {
+                    fileProgressBar.max = max
+                    fileProgressBar.value = progress
+                })
+            })
+        }
+    }
     document.getElementById('message-code-section-button').addEventListener('click', (e) => {
         const id = msgSections.length
         createInputSection('code', id, () => {
@@ -1877,9 +2307,15 @@ function _rendererFunc() {
                 id:   0,
                 name: document.getElementById('group-create-name').value
             }],
-            operId: regCallback(() => {
-                hideGroupCreateBox()
-            })
+            operId: regCallback(hideGroupCreateBox)
+        })
+    }
+    document.getElementById('group-join-ok').onclick = (e) => {
+        ipcSend({
+            action: 'webprot.resolve-invite',
+            code:   document.getElementById('group-join-code').value,
+            add:    true,
+            operId: regCallback(hideGroupCreateBox)
         })
     }
 
@@ -1936,6 +2372,79 @@ function _rendererFunc() {
                 id:    editingChan,
                 group: 0
             }]
+        })
+    }
+
+    document.getElementById('invite-create-button').onclick = (e) => {
+        const invites = entityCache[viewingGroup].invites
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type:    'group',
+                id:      viewingGroup,
+                invites: [...invites, '']
+            }]
+        })
+    }
+
+    document.getElementById('role-add-button').onclick = (e) => {
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type:     'role',
+                id:       0,
+                name:     'Role',
+                color:    '#ffffff',
+                group:    viewingGroup
+            }]
+        })
+    }
+
+    const roleNameChane = document.getElementById('role-name-change')
+    roleNameChane.onkeypress = (e) => {
+        if(e.keyCode == 13) {
+            ipcSend({
+                action: 'webprot.entity-put',
+                entities: [{
+                    type:  'role',
+                    id:    editingRole,
+                    name:  roleNameChane.value,
+                    group: viewingGroup
+                }]
+            })
+        }
+    }
+
+    document.getElementById('role-remove-button').onclick = (e) => {
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type:  'role',
+                id:    editingRole,
+                group: 0
+            }]
+        })
+    }
+
+    const roleColorChange = document.getElementById('role-color-change')
+    roleColorChange.onchange = (e) => {
+        ipcSend({
+            action: 'webprot.entity-put',
+            entities: [{
+                type:  'role',
+                id:    editingRole,
+                color: roleColorChange.value
+            }]
+        })
+    }
+
+    document.getElementById('group-leave').onclick = (e) => {
+        stopPropagation(e)
+        ipcSend({
+            action:      'webprot.manage-contacts',
+            contactType: 'group',
+            method:      'remove',
+            id:          viewingGroup
         })
     }
 }

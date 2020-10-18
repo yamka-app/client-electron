@@ -5,10 +5,10 @@ const path = require('path')
 const tmp = require('tmp')
 const zlib = require('zlib')
 
+if (require('electron-squirrel-startup')) return app.quit()
+
 const configPath = path.join(__dirname, "_order_config.json")
 var config = {}
-
-if (require('electron-squirrel-startup')) return app.quit()
 
 var mainWindow = null
 var tray = null
@@ -17,6 +17,7 @@ var windowCreated = false
 // Create a temporary directory for downloaded files
 tmp.setGracefulCleanup()
 var tmpDir = tmp.dirSync().name
+global.tmpDir = tmpDir
 console.log('Temporary directory: ' + tmpDir)
 
 function createWindow() {
@@ -217,21 +218,27 @@ function webprotSendPacket(packet) {
             var concatArr = [ webprotEncNum(packet.entities.length, 2) ]
             for(var i = 0; i < packet.entities.length; i++) {
                 const entity = packet.entities[i]
-                const numType = { 'user': 1, 'channel': 2, 'group': 3, 'message': 4 }[entity.type]
+                const numType = { user: 1, channel: 2, group: 3, message: 4, role: 5 }[entity.type]
                 concatArr.push(
                     webprotEncNum(numType, 2),
-                    webprotEncNum(entity.id, 8)
+                    webprotEncNum(entity.id, 8),
+                    webprotEncNum((entity.pageField == undefined) ? 0 : 1, 1),
+                    webprotEncNum((entity.contextEntity == undefined) ? 0 : 1, 1)
                 )
                 // Pagination
-                if(entity.pageField == undefined) {
-                    concatArr.push(webprotEncNum(0, 1))
-                } else {
+                if(entity.pageField != undefined) {
                     concatArr.push(
-                        webprotEncNum(1, 1),
                         webprotEncNum(entity.pageField, 2),
                         webprotEncNum(entity.pageDir ? 1 : 0, 1),
                         webprotEncNum(entity.pageFrom, 8),
                         webprotEncNum(entity.pageCnt, 1)
+                    )
+                }
+                // Context
+                if(entity.contextEntity != undefined) {
+                    concatArr.push(
+                        webprotEncNum(entity.contextEntity, 2),
+                        webprotEncNum(entity.contextId, 8)
                     )
                 }
                 // Additionally save self info request ID for future reference
@@ -389,6 +396,12 @@ function webprotSendPacket(packet) {
                                 break; case 'icon':
                                 fieldId = 5
                                 fieldVal = webprotEncNum(v, 8)
+                                break; case 'invites':
+                                fieldId = 6
+                                fieldVal = Buffer.concat([
+                                    webprotEncNum(v.length, 2),
+                                    ...v.map(x => webprotEncStr(x))
+                                ])
                                 break
                             }
                             if(fieldId != undefined) {
@@ -420,6 +433,50 @@ function webprotSendPacket(packet) {
                                 break; case 'group':
                                 fieldId = 3
                                 fieldVal = webprotEncNum(v, 8)
+                                break; case 'typing':
+                                fieldId = 5
+                                fieldVal = webprotEncNumList(v, 8)
+                                break
+                            }
+                            if(fieldId != undefined) {
+                                // We have one more field encoded
+                                propCnt++
+                                props.push(
+                                    webprotEncNum(fieldId, 2),
+                                    fieldVal
+                                )
+                            }
+                        }
+                        break
+
+                    case 'role':
+                        concatArr.push(webprotEncNum(5, 2))
+                        for(const kv of Object.entries(ent)) {
+                            const k = kv[0]
+                            const v = kv[1]
+                            // Encode the field
+                            let fieldId
+                            let fieldVal
+                            switch(k) {
+                                        case 'id':
+                                fieldId = 0
+                                fieldVal = webprotEncNum(v, 8)
+                                break; case 'name':
+                                fieldId = 1
+                                fieldVal = webprotEncStr(v)
+                                break; case 'color':
+                                fieldId = 2
+                                const raw = parseInt(v.substring(1), 16)
+                                fieldVal = webprotEncNum(raw, 4)
+                                break; case 'group':
+                                fieldId = 3
+                                fieldVal = webprotEncNum(v, 8)
+                                break; case 'priority':
+                                fieldId = 4
+                                fieldVal = webprotEncNum(v, 2)
+                                break; case 'perms':
+                                fieldId = 5
+                                fieldVal = Buffer.from(v)
                                 break
                             }
                             if(fieldId != undefined) {
@@ -441,7 +498,7 @@ function webprotSendPacket(packet) {
 
         case 'manage-contacts':
             type = 13
-            var contact_types = ['friend', 'blocked', 'pending-in', 'pending-out']
+            var contact_types = ['friend', 'blocked', 'pending-in', 'pending-out', 'group']
             var actions = ['add', 'remove']
             data = Buffer.concat([
                 webprotEncNum(contact_types.indexOf(packet.contactType), 1),
@@ -453,6 +510,14 @@ function webprotSendPacket(packet) {
         case 'search-user':
             type = 14
             data = webprotEncStr(packet.name)
+            break
+
+        case 'resolve-invite':
+            type = 15
+            data = Buffer.concat([
+                webprotEncNum(packet.add ? 1 : 0, 1),
+                webprotEncStr(packet.code)
+            ])
             break
     }
 
@@ -582,7 +647,7 @@ function webprotData(bytes) {
 
                 var entityType = webprotDecNum(payload.slice(pos, pos + 2), 2)
                 pos += 2
-                entity.type = ['unknown', 'user', 'channel', 'group', 'message'][entityType]
+                entity.type = ['unknown', 'user', 'channel', 'group', 'message', 'role'][entityType]
                 var fieldCount = webprotDecNum(payload.slice(pos, pos + 2), 2)
                 pos += 2
 
@@ -659,6 +724,15 @@ function webprotData(bytes) {
                                 entity.groups = webprotDecNumList(payload.slice(pos), 8)
                                 pos += 2 + (entity.groups.length * 8)
                                 break
+                            case 15: // roles
+                                entity.roles = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.roles.length * 8)
+                                break
+                            case 16: // color
+                                const raw = webprotDecNum(payload.slice(pos, pos + 4), 4).toString(16)
+                                entity.color = '#' + ('00000' + raw).slice(-6)
+                                pos += 4
+                                break
                         }
                     } else if(entity.type == 'channel') {
                         switch(fieldType) {
@@ -681,6 +755,10 @@ function webprotData(bytes) {
                             case 4: // messages
                                 entity.messages = webprotDecNumList(payload.slice(pos), 8)
                                 pos += 2 + (entity.messages.length * 8)
+                                break
+                            case 5: // typing users
+                                entity.typing = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.typing.length * 8)
                                 break
                         }
                     } else if(entity.type == 'message') {
@@ -745,6 +823,50 @@ function webprotData(bytes) {
                             case 5: // icon
                                 entity.icon = webprotDecNum(payload.slice(pos, pos + 8), 8)
                                 pos += 8
+                                break
+                            case 6: // invites
+                                entity.invites = []
+                                const cnt = webprotDecNum(payload.slice(pos, pos + 2), 2); pos += 2
+                                for(let i = 0; i < cnt; i++) {
+                                    entity.invites.push(webprotDecStr(payload.slice(pos)))
+                                    pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+                                }
+                                break
+                            case 7: // everyone role
+                                entity.everyoneRole = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                        }
+                    } else if(entity.type == 'role') {
+                        switch(fieldType) {
+                            case 0: // id
+                                entity.id = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 1: // name
+                                entity.name = webprotDecStr(payload.slice(pos))
+                                pos += webprotDecNum(payload.slice(pos, pos + 2), 2) + 2
+                                break
+                            case 2: // color
+                                const raw = webprotDecNum(payload.slice(pos, pos + 4), 4).toString(16)
+                                entity.color = '#' + ('00000' + raw).slice(-6)
+                                pos += 4
+                                break
+                            case 3: // group
+                                entity.group = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 4: // priority
+                                entity.priority = webprotDecNum(payload.slice(pos, pos + 2), 2)
+                                pos += 2
+                                break
+                            case 5: // perms
+                                entity.perms = payload.slice(pos, pos + 6)
+                                pos += 6
+                                break
+                            case 6: // members
+                                entity.members = webprotDecNumList(payload.slice(pos), 8)
+                                pos += (entity.members.length * 8) + 2
                                 break
                         }
                     }
@@ -834,10 +956,18 @@ function webprotData(bytes) {
                         blobState.state = 'error'
                         ipcSend({
                             'type': 'webprot.status',
-                            'message': 'Blob download/upload error'
+                            'message': 'Blob download/upload error (id=' + blobState.info.id + ')'
                         })
+                        if(blobState.info.id !== 0 && blobState.actuallyDownload) {
+                            blobState.previewOperId = undefined
+                            //webprotSendPacket({
+                            //    'type': 'blob-get',
+                            //    'id': blobState.id,
+                            //    'operId': blobState.operId
+                            //})
+                        }
                     } else {
-                        blobState.state = (blobState.info.id == 0) ? 'uploading' : 'awaitingLength'
+                        blobState.state = (blobState.info.id === 0) ? 'uploading' : 'awaitingLength'
                         if(blobState.state != 'uploading')
                             return
 
@@ -943,7 +1073,8 @@ function webprotData(bytes) {
 }
 
 function ipcSend(data) {
-    mainWindow.webContents.send('message', data)
+    if(mainWindow?.webContents)
+        mainWindow.webContents.send('message', data)
 }
 
 function webprotConnect() {
@@ -962,6 +1093,9 @@ function webprotConnect() {
     ipcSend({
         'type': 'webprot.status', 'message': 'Connecting'
     })
+    ipcSend({
+        'type': 'webprot.connecting'
+    })
     var timeStart = new Date().getTime();
     webprotState.socket = tls.connect({
         'host': webprotSettings.host,
@@ -973,6 +1107,9 @@ function webprotConnect() {
         ipcSend({
             'type': 'webprot.status',
             'message': 'Connected in ' + (timeEnd - timeStart) + ' ms'
+        })
+        ipcSend({
+            'type': 'webprot.connected'
         })
         webprotState.connected = true
         webprotState.connecting = false
@@ -994,6 +1131,9 @@ function webprotConnect() {
         console.log('Disconnected')
         ipcSend({
             'type': 'webprot.status', 'message': 'Disconnected'
+        })
+        ipcSend({
+            'type': 'webprot.disconnected'
         })
     })
     webprotState.socket.on('error', (error) => {
@@ -1066,7 +1206,7 @@ ipcMain.on('asynchronous-message', (event, arg) => {
         webprotSendPacket({
             'type': 'blob-put',
             'operId': arg.operId,
-            'name': arg.path,
+            'name': path.basename(arg.path),
             'length': len
         })
     } else if(arg.action == 'webprot.entity-put') {
@@ -1088,6 +1228,13 @@ ipcMain.on('asynchronous-message', (event, arg) => {
             'type': 'search-user',
             'operId': arg.operId,
             'name': arg.name
+        })
+    } else if(arg.action == 'webprot.resolve-invite') {
+        webprotSendPacket({
+            type:   'resolve-invite',
+            operId: arg.operId,
+            code:   arg.code,
+            add:    arg.add
         })
     }
 })

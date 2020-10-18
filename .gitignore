@@ -87,6 +87,8 @@ typings/
 
 # Electron-Forge
 out/
+ordermsg-win32-x64/
 
 # Order
 _order_config.json
+*.zip

@@ -1,8 +1,8 @@
 :root {
-    --accent: #f47a3e;
-    --accent-dim: #c06132;
-    --accent-dim-2: #b35a2e;
-    --accent-trans: #f47b3e48;
+    --accent: #b723fb;
+    --accent-dim: #9e1fd8;
+    --accent-dim-2: #8d1cc2;
+    --accent-trans: #b723fb48;
 
     --danger: #e41e1e;
     --danger-dim-1: #b61818;
@@ -11,21 +11,29 @@
     --apply: #2ac02a;
     --apply-dim-1: #1d861d;
     --apply-dim-2: #146414;
-    --apply-trans: #2ac02a48;
 
     --red: #e41e1e;
     --yellow: #c7c72c;
     --green: #2ac02a;
+    --rainbow-grad: linear-gradient(45deg, #e03434 0%,
+                                           #fba02a 16%,
+                                           #ffe923 32%,
+                                           #7bff23 48%,
+                                           #23ffc8 64%,
+                                           #2332ff 80%,
+                                           #ff23cf 100%);
     
     --shade-1: #fdf6e3;
-    --shade-2: #eee8d5;
-    --shade-3: #e0dccd;
-    --shade-3-trans: #e0dccdbf;
-    --shade-4: #c4c1b8;
-    --shade-5: #979691;
-    --shade-6: #8f8c84;
-    --shade-7: #797874;
+    --shade-2: #f3edd9;
+    --shade-3: #f0ebdb;
+    --shade-3-trans: #f0ebdbbf;
+    --shade-4: #e6e1d4;
+    --shade-5: #d3d1c7;
+    --shade-6: #cec9bc;
+    --shade-7: #c7c4b7;
     
+    --font-size: 9pt;
+    --accent-foreground: #efefef;
     --foreground-1: #586e75;
     --foreground-2: #073642;
     --foreground: #002b36;
