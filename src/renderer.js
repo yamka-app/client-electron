@@ -138,6 +138,8 @@ function _rendererFunc() {
         docStyle.setProperty('--accent-dim',   tinycolor(color).darken(amount=10).toString())
         docStyle.setProperty('--accent-dim-2', tinycolor(color).darken(amount=20).toString())
         docStyle.setProperty('--accent-trans', color + '48')
+
+        docStyle.setProperty('--accent-foreground', tinycolor(color).isLight() ? '#000000' : '#ffffff')
     }
 
     // Sets the theme

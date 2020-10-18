@@ -23,20 +23,21 @@
                                            #2332ff 80%,
                                            #ff23cf 100%);
     
-    --shade-1: #fdf6e3;
-    --shade-2: #f3edd9;
-    --shade-3: #f0ebdb;
-    --shade-3-trans: #f0ebdbbf;
-    --shade-4: #e6e1d4;
-    --shade-5: #d3d1c7;
-    --shade-6: #cec9bc;
-    --shade-7: #c7c4b7;
+    --shade-1: #dbd9d0;
+    --shade-2: #e0dcd1;
+    --shade-3: #e7e5db;
+    --shade-3-trans: #e7e5dbaf;
+    --shade-4: #ece7db;
+    --shade-4-trans: #ece7dbaf;
+    --shade-5: #f5f1e5;
+    --shade-6: #f7f2e5;
+    --shade-7: #fffbef;
     
     --font-size: 9pt;
     --accent-foreground: #efefef;
-    --foreground-1: #586e75;
-    --foreground-2: #073642;
-    --foreground: #002b36;
+    --foreground-1: #3e4c50;
+    --foreground-2: #283235;
+    --foreground: #202729;
     
     --shadow: #00000023;
 

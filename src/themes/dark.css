@@ -23,14 +23,15 @@
                                            #2332ff 80%,
                                            #ff23cf 100%);
     
-    --shade-1: #0a0a0a;
-    --shade-2: #0c0c0c;
-    --shade-3: #101010;
-    --shade-3-trans: #101010bf;
-    --shade-4: #181818;
-    --shade-5: #1d1d1d;
-    --shade-6: #202020;
-    --shade-7: #282828;
+    --shade-1: #0e0e0e;
+    --shade-2: #111111;
+    --shade-3: #141414;
+    --shade-3-trans: #141414df;
+    --shade-4: #1f1f1f;
+    --shade-4-trans: #1f1f1fdf;
+    --shade-5: #252525;
+    --shade-6: #2c2c2c;
+    --shade-7: #292929;
 
     --font-size: 9pt;
     --accent-foreground: #efefef;

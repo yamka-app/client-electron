@@ -146,7 +146,8 @@ pre {
     padding: 40px;
 
     border-radius: 5px;
-    background-color: var(--shade-3);
+    background-color: var(--shade-3-trans);
+    backdrop-filter: blur(5px);
 
     font-family: RobotoBold;
     font-size: var(--font-size);
@@ -190,7 +191,7 @@ input {
 
     background-color: var(--shade-3);
     border-radius: 3px;
-    border: 1px solid var(--shade-7);
+    border: 1px solid var(--foreground-1);
     transition: border-color 0.1s;
 
     color: var(--foreground);
@@ -585,6 +586,10 @@ input[type="radio"].hidden-radio {
 input[type="radio"].hidden-radio:checked + label {
     color: var(--foreground);
     transition: color 0.25s;
+}
+input[type="color"],
+input[type="range"] {
+    border: unset;
 }
 .status-sel:hover {
     color: var(--foreground-2);
