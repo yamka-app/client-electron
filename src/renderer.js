@@ -1243,12 +1243,6 @@ function _rendererFunc() {
                         if(['png', 'jpeg', 'jpg', 'gif', 'bmp'].includes(extenstion)) {
                             const w = Number(size.split('x')[0])
                             const h = Number(size.split('x')[1])
-
-                            // Create the image element
-                            const imgElement = document.createElement('img')
-                            imgElement.classList.add('message-img-section')
-                            //imgElement.width = w
-                            //imgElement.height = h
                             
                             // Create the preview element
                             let canvasElement
@@ -1275,16 +1269,17 @@ function _rendererFunc() {
     
                                 fileSectionElement.appendChild(canvasElement)
                             }
-                            // Append the image as a child
-                            fileSectionElement.appendChild(imgElement)
 
                             // Download the image
                             download(section.blob, (blob) => {
-                                // Set the image source
-                                imgElement.src = 'file://' + blob.path
                                 // Remove the preview element
                                 if(canvasElement)
                                     canvasElement.remove()
+                                // Create the image element
+                                const imgElement = document.createElement('img')
+                                imgElement.classList.add('message-img-section')
+                                imgElement.src = 'file://' + blob.path
+                                fileSectionElement.parentElement.replaceChild(imgElement, fileSectionElement)
                                 // Enlarge the image when clicking on it
                                 imgElement.onclick = (e) => {
                                     e.stopPropagation()

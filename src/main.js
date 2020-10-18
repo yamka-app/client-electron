@@ -1011,9 +1011,9 @@ function webprotData(bytes) {
                     // Check if we downloaded everything
                     if(blobState.received >= blobState.info.length) {
                         blobState.file.close()
-                        blobState.file = null
                         blobState.socket.end()
-                        blobState.socket = null
+                        delete blobState.file
+                        delete blobState.socket
                         webprotState.blobStates = webprotState.blobStates.filter(elm => elm != blobState)
 
                         blobState.state = 'finished'
@@ -1029,8 +1029,8 @@ function webprotData(bytes) {
                 } else if(blobState.state == 'awaitingId') {
                     // It's the ID of the uploaded blob
                     var id = webprotDecNum(bytes, 8)
-                    delete blobState.file
                     blobState.socket.end()
+                    delete blobState.file
                     delete blobState.socket
                     webprotState.blobStates = webprotState.blobStates.filter(elm => elm != blobState)
 
@@ -1169,23 +1169,29 @@ ipcMain.on('asynchronous-message', (event, arg) => {
             'entities': arg.entities
         })
     } else if(arg.action == 'webprot.blob-dl') {
-        // Create a new state object
-        webprotState.blobStates.push({
-            'id': arg.id,
-            'state': 'awaitingInfo',
-            'progress': 0,
-            'received': 0,
-            'operId': arg.blobOperId,
-            'previewOperId': arg.previewOperId,
-            'actuallyDownload': arg.actuallyDownload
-        })
+        // Refuse if there's already a blob operation
+        const existing = webprotState.blobStates.filter(x => x.id == arg.id)[0]
+        if(existing) {
+            return;
+        } else {
+            // Create a new state object
+            webprotState.blobStates.push({
+                'id': arg.id,
+                'state': 'awaitingInfo',
+                'progress': 0,
+                'received': 0,
+                'operId': arg.blobOperId,
+                'previewOperId': arg.previewOperId,
+                'actuallyDownload': arg.actuallyDownload
+            })
 
-        // Get blob info
-        webprotSendPacket({
-            'type': 'blob-get',
-            'id': arg.id,
-            'operId': arg.operId
-        })
+            // Get blob info
+            webprotSendPacket({
+                'type': 'blob-get',
+                'id': arg.id,
+                'operId': arg.operId
+            })   
+        }
     } else if(arg.action == 'webprot.blob-ul') {
         // Get file length
         var len = fs.statSync(arg.path).size
