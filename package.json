@@ -3,7 +3,7 @@
   "productName": "Order",
   "version": "0.0.10",
   "description": "A secure messenger",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",

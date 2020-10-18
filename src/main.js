@@ -39,7 +39,7 @@ function createWindow() {
             height: (config && config.bounds) ? config.bounds.height : 720
         })
         //mainWindow.maximize()
-        mainWindow.loadFile('index.html')
+        mainWindow.loadFile('src/index.html')
         windowCreated = true
 
         // Write configuration when closing
