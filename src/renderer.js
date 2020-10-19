@@ -777,6 +777,17 @@ function _rendererFunc() {
 
     // Updates the member list sidebar
     function updMemberList() {
+        // Show or hide the friend hedaer
+        const friendHeader = document.getElementById('member-list-friend-header')
+        const friendType   = document.getElementById('member-list-friend-type')
+        if(viewingGroup === 0) {
+            showElm(friendHeader)
+            showElm(friendType)
+        } else {
+            hideElm(friendHeader)
+            hideElm(friendType)
+        }
+
         if(viewingGroup === 0) {
             const memberList = document.getElementById('member-list-bar')
 
@@ -1449,6 +1460,7 @@ function _rendererFunc() {
 
     // Fetches and appends messages to the top
     function appendMsgsTop(id_from, callback, clear=false) {
+        fetchingMsgs = true
         const msgArea = document.getElementById('message-area')
         const header = document.getElementById('message-area-header')
         
@@ -1602,7 +1614,14 @@ function _rendererFunc() {
 
     // Updates the channel list
     function updChannelList() {
-        if(viewingGroup == 0)
+        // Show or hide the channel list
+        const channelListSidebar = document.getElementById('channel-list-sidebar')
+        if(viewingGroup === 0)
+            hideElm(channelListSidebar)
+        else
+            showElm(channelListSidebar)
+
+        if(viewingGroup === 0)
             return
 
         const channelList = document.getElementById('channel-list')
@@ -1628,24 +1647,6 @@ function _rendererFunc() {
     // Updates the layout: member list, messages, etc.
     function updLayout() {
         console.log('Updating layout, gId=' + viewingGroup + ', cId=' + viewingChan + ', cgId=' + viewingContactGroup)
-
-        // Show or hide the friend hedaer
-        const friendHeader = document.getElementById('member-list-friend-header')
-        const friendType   = document.getElementById('member-list-friend-type')
-        if(viewingGroup === 0) {
-            showElm(friendHeader)
-            showElm(friendType)
-        } else {
-            hideElm(friendHeader)
-            hideElm(friendType)
-        }
-
-        // Show or hide the channel list
-        const channelList = document.getElementById('channel-list-sidebar')
-        if(viewingGroup === 0)
-            hideElm(channelList)
-        else
-            showElm(channelList)
 
         updMemberList()
         updChannelList()
@@ -1792,7 +1793,11 @@ function _rendererFunc() {
                         })
 
                         // Update DM, friend and group list
-                        updLayout()
+                        updGroupList()
+                        if(viewingGroup === 0) {
+                            updMemberList()
+                            updChannelList()
+                        }
 
                         // Check new friend requests
                         if(arg.spontaneous && oldEntity.pendingIn.length !== entity.pendingIn.length
