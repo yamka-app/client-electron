@@ -647,6 +647,13 @@ function _rendererFunc() {
             const statusTexts = document.getElementsByClassName('user-status-' + id)
             for(st of statusTexts)
                 st.innerHTML = escapeHtml(user.statusText)
+
+            // Update "verified" badges
+            if(user.badges.includes(1)) {
+                const verifiedBadges = document.getElementsByClassName('verified-badge-' + id)
+                for(b of verifiedBadges)
+                    b.classList.remove('unverified')
+            }
         })
     }
 
@@ -680,6 +687,11 @@ function _rendererFunc() {
         nicknameContainer.classList.add('flex-row')
         nicknameContainer.classList.add('user-nickname-container')
         elm.appendChild(nicknameContainer)
+
+        var verifiedBadge = document.createElement('img')
+        verifiedBadge.classList.add('unverified', 'verified-badge-' + id)
+        verifiedBadge.src = path.join(__dirname, 'icons/badges/verified.png')
+        nicknameContainer.appendChild(verifiedBadge)
 
         var nickname = document.createElement('span')
         nickname.classList.add('user-nickname')
@@ -1246,6 +1258,9 @@ function _rendererFunc() {
                             
                             // Create the preview element
                             let canvasElement
+                            let imgElement = document.createElement('img')
+                            imgElement.classList.add('message-img-section')
+                            fileSectionElement.appendChild(imgElement)
                             if(preview !== '') {
                                 canvasElement = document.createElement('canvas')
                                 canvasElement.classList.add('message-img-section')
@@ -1272,18 +1287,15 @@ function _rendererFunc() {
 
                             // Download the image
                             download(section.blob, (blob) => {
+                                console.log(imgElement)
+                                imgElement.src = 'file://' + blob.path
+                                fileSectionElement.appendChild(imgElement)
                                 // Remove the preview element
                                 if(canvasElement)
                                     canvasElement.remove()
-                                // Create the image element
-                                const imgElement = document.createElement('img')
-                                imgElement.classList.add('message-img-section')
-                                imgElement.src = 'file://' + blob.path
-                                fileSectionElement.parentElement.replaceChild(imgElement, fileSectionElement)
                                 // Enlarge the image when clicking on it
                                 imgElement.onclick = (e) => {
-                                    e.stopPropagation()
-                                    e.stopImmediatePropagation()
+                                    stopPropagation(e)
                                     showFloatingImage(section.blob)
                                 }
                             }, undefined, true, true)
@@ -1374,7 +1386,7 @@ function _rendererFunc() {
             }
             // Additionally, if the link is a YouTube video, add an iframe
             const hostname = parseHostname(href)
-            if(hostname == 'youtube.com' || hostname == 'youtu.be'
+            if(hostname === 'youtube.com' || hostname === 'youtu.be'
                 && localStorage.getItem('previewYt') === 'true') {
                 // Get the video ID
                 var videoId = ''
@@ -1741,20 +1753,26 @@ function _rendererFunc() {
                 showBox('LOGIN ERROR', arg.message)
                 document.getElementById('login-password').value = ''
                 break
-
             case 'webprot.signup-err':
                 showBox('SIGNUP ERROR', arg.message)
                 document.getElementById('signup-password').value = ''
                 break
-
             case 'webprot.outdated':
                 showBox('OUTDATED CLIENT', arg.message, true, () => {
                     shell.openExternal('https://ordermsg.tk/download')
                 })
                 break
-
             case 'webprot.rate-limit':
                 showBox('RATE LIMITING', arg.message)
+                break
+            case 'webprot.invalid-username':
+                showBox('INVALID USERNAME', arg.message)
+                break
+            case 'webprot.invalid-invite':
+                showBox('INVALID INVITE', arg.message)
+                break
+            case 'webprot.internal-error':
+                showBox('INTERNAL ERROR', arg.message)
                 break
 
             case 'webprot.entities':

@@ -164,6 +164,7 @@ pre {
     background-color: unset;
     border-radius: 0;
     padding: unset;
+    backdrop-filter: unset;
 }
 
 #login-form, #mfa-form, #signup-form {
@@ -378,14 +379,15 @@ label {
 #member-list-friend-type,
 #member-list-group-header,
 #user-search-bar {
-    background-color: var(--shade-2);
-
-    font-family: RobotoBold;
-    font-size: var(--font-size);
-    
-    width: 250px;
+    height: 20px;
+    width:  250px;
     padding: 0 10px 0 10px;
     position: relative;
+
+    background-color: var(--shade-4);
+
+    font-family: RobotoBold;
+    font-size:   var(--font-size);
 
     align-items: center;
 }
@@ -393,6 +395,10 @@ label {
 #member-list-friend-type {
     padding-top:    5px;
     padding-bottom: 5px;
+}
+#member-list-group-header {
+    height:      29px;
+    border-left: 2px solid var(--shade-2);
 }
 
 #user-search-bar {
@@ -434,12 +440,20 @@ label {
 
     cursor: pointer;
 }
+.user-nickname-container img:not(.unverified) {
+    width:  12px;
+    height: 12px;
+    margin-right: 4px;
+}
+.user-nickname-container img.unverified {
+    display: none;
+}
 .user-status:not(:empty) ~ .user-nickname-container {
     top: 12px;
 }
 .user-nickname {
     display: inline-block;
-    max-width: 110px;
+    max-width: 130px;
 
     white-space: nowrap;
     overflow: hidden;
@@ -453,7 +467,7 @@ label {
 
 .user-status {
     display: inline-block;
-    max-width: 145px;
+    max-width: 190px;
 
     position: absolute;
     left: 44px;
@@ -894,11 +908,9 @@ img.large-emoji {
 }
 
 #message-layout-header {
+    height:  20px;
     padding: 10px;
-
-    background-color: var(--shade-3-trans);
-    border-radius: 0 0 10px 10px;
-    backdrop-filter: blur(2px);
+    background-color: var(--shade-4);
 }
 #channel-name {
     font-family: RobotoBold;
@@ -910,7 +922,7 @@ img.large-emoji {
 #group-list-sidebar-container {
     width: 10px;
     padding: 0;
-    background-color: var(--shade-2);
+    background-color: var(--shade-1);
 }
 #group-list-sidebar {
     padding: 5px;
@@ -989,9 +1001,10 @@ img.group-icon:hover {
 
 
 #channel-list-sidebar {
-    background-color: var(--shade-2);
-    width: 250px;
+    width:   250px;
     padding: 0;
+    background-color: var(--shade-2);
+    border-radius:    10px 0 0 0;
 }
 #channel-list-container {
     height: 100%;
@@ -1028,10 +1041,14 @@ img.group-icon:hover {
 }
 
 #channel-list-header {
-    padding: 10px;
+    height: 20px;
+    align-items: center;
 
-    background-color: var(--shade-3);
-    border-radius: 0 0 10px 10px;
+    padding: 10px;
+    border-radius: 10px 0 0 10px;
+    border-right:  2px solid var(--shade-2);
+
+    background-color: var(--shade-4);
     transition: background-color 0.1s ease;
 
     font-family: RobotoBold;
@@ -1040,7 +1057,7 @@ img.group-icon:hover {
     cursor: pointer;
 }
 #channel-list-header:hover {
-    background-color: var(--shade-4);
+    background-color: var(--shade-5);
 }
 #group-leave {
     height: unset;

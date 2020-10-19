@@ -103,7 +103,7 @@ const webprotSettings = {
     'host': 'ordermsg.tk',
     'port': 1746,
     'blobPort': 1747,
-    'version': 1,
+    'version': 2,
     'compressionThreshold': 32
 }
 
@@ -585,54 +585,30 @@ function webprotData(bytes) {
         case 4: // status
             var code = webprotDecNum(payload.slice(0, 2), 2)
             var msg = webprotDecStr(payload.slice(2))
-            var type_str = ''
-            switch(code) {
-                case 1:
-                    type_str = 'outdated'
-                    break
-                case 2:
-                    type_str = 'invalid-conn-state'
-                    break
-                case 3:
-                    type_str = 'login-err'
-                    break
-                case 4:
-                    type_str = '2fa-required'
-                    // Start pinging the server every 15s (it will close the connection if no packets are sent for 30s)
-                    webprotState.sendPings = true
-                    break
-                case 5:
-                    type_str = 'login-success'
-                    webprotState.sendPings = true
-                    break
-                case 6:
-                    type_str = 'signup-err'
-                    break
-                case 7:
-                    type_str = 'rate-limit'
-                    break
-                case 8:
-                    type_str = 'invalid-id'
-                    break
-                case 9:
-                    type_str = 'blob-too-large'
-                    break
-                case 10:
-                    type_str = 'permission-denied'
-                    break
-                case 11:
-                    type_str = 'invalid-cont-token'
-                    break
-                case 12:
-                    type_str = 'user-not-pending'
-                    break
-                case 13:
-                    type_str = 'cont-act-not-applicable'
-                    break
-                default:
-                    type_str = 'unknown-status-code'
-                    break
-            }
+            var type_str = [
+                'outdated',
+                'invalid-conn-state',
+                'login-err',
+                '2fa-required',
+                'login-success',
+                'signup-err',
+                'rate-limit',
+                'invalid-id',
+                'blob-too-large',
+                'permission-denied',
+                'invalid-cont-token',
+                'user-not-pending',
+                'cont-act-not-applicable',
+                'invalid-username',
+                'invalid-entity',
+                'not-paginable',
+                'invalid-invite',
+                'internal-error',
+                'unknown-packet'
+            ][code - 1]
+            if(code == 4 || code == 5) // 2fa required / login success
+                webprotState.sendPings = true
+
             ipcSend({
                 'type': 'webprot.' + type_str, 'message': msg
             })
@@ -732,6 +708,10 @@ function webprotData(bytes) {
                                 const raw = webprotDecNum(payload.slice(pos, pos + 4), 4).toString(16)
                                 entity.color = '#' + ('00000' + raw).slice(-6)
                                 pos += 4
+                                break
+                            case 17: // badges
+                                entity.badges = webprotDecNumList(payload.slice(pos), 2)
+                                pos += 2 + (entity.badges.length * 2)
                                 break
                         }
                     } else if(entity.type == 'channel') {
