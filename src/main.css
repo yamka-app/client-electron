@@ -391,6 +391,9 @@ label {
 
     align-items: center;
 }
+#member-list-friend-header {
+    padding: 10px;
+}
 #member-list-group-header,
 #member-list-friend-type {
     padding-top:    5px;
@@ -440,12 +443,12 @@ label {
 
     cursor: pointer;
 }
-.user-nickname-container img:not(.unverified) {
+img.verified-badge.true {
     width:  12px;
     height: 12px;
     margin-right: 4px;
 }
-.user-nickname-container img.unverified {
+img.verified-badge:not(.true) {
     display: none;
 }
 .user-status:not(:empty) ~ .user-nickname-container {

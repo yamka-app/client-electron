@@ -35,7 +35,9 @@ var msgSections = []
 var endCallbacks = []
 
 // Sounds
-var sounds = {}
+var sounds = {
+    notification: undefined
+}
 
 // UI state
 var viewingGroup
@@ -75,22 +77,22 @@ function _rendererFunc() {
     // Upload and download blobs
     function upload(path, onEnd, onProgressMade) {
         ipcSend({
-            'action': 'webprot.blob-ul',
-            'path': path,
-            'blobOperId': regCallback(onEnd),
-            'progressOperId': regCallback(onProgressMade)
+            action:         'webprot.blob-ul',
+            path:           path,
+            blobOperId:     regCallback(onEnd),
+            progressOperId: regCallback(onProgressMade)
         })
     }
     function download(id, onEnd, onPreviewAvailable, actuallyDownload=true, force=false) {
-        if(blobCache[id] != undefined && onPreviewAvailable == undefined && onEnd != undefined && !force) {
+        if(blobCache[id] !== undefined && onPreviewAvailable === undefined && onEnd !== undefined && !force) {
             onEnd(blobCache[id])
         } else {
             ipcSend({
-                'action': 'webprot.blob-dl',
-                'id': id,
-                'blobOperId': regCallback(onEnd),
-                'previewOperId': regCallback(onPreviewAvailable),
-                'actuallyDownload': actuallyDownload
+                action:           'webprot.blob-dl',
+                id:               id,
+                blobOperId:       regCallback(onEnd),
+                previewOperId:    regCallback(onPreviewAvailable),
+                actuallyDownload: actuallyDownload
             })
         }
     }
@@ -98,22 +100,23 @@ function _rendererFunc() {
     // Set default settings
     for(const kv of Object.entries(defaultSettings))
         if(localStorage.getItem(kv[0]) === null)
-            localStorage.setItem(kv[0], kv[1])
+            localStorage.setItem(kv[0], kv[1].toString())
 
     // Settings
     const accentColorChange = document.getElementById('accent-color-change')
+    const fontSizeChange    = document.getElementById('font-size-change')
+    const themeSwitch       = document.getElementById('theme-switch')
     accentColorChange.onchange = (e) => setAccentColor(accentColorChange.value)
-    const fontSizeChange = document.getElementById('font-size-change')
-    fontSizeChange.onchange = (e) => setFontSize(fontSizeChange.value)
-    const themeSwitch = document.getElementById('theme-switch')
-    themeSwitch.onchange = (e) => setTheme(themeSwitch.checked ? 'light' : 'dark')
+    fontSizeChange.onchange    = (e) => setFontSize(fontSizeChange.value)
+    themeSwitch.onchange       = (e) => setTheme(themeSwitch.checked ? 'light' : 'dark')
 
-    const notificationSwitch = document.getElementById('enable-notifications')
+    const notificationSwitch    = document.getElementById('enable-notifications')
     notificationSwitch.onchange = (e) => localStorage.setItem('notifications', notificationSwitch.checked)
-    notificationSwitch.checked = localStorage.getItem('notifications') === 'true'
-    const sendTypingSwitch = document.getElementById('send-typing')
-    sendTypingSwitch.onchange = (e) => localStorage.setItem('sendTyping', sendTypingSwitch.checked)
-    sendTypingSwitch.checked = localStorage.getItem('sendTyping') === 'true'
+    notificationSwitch.checked  = localStorage.getItem('notifications') === 'true'
+
+    const sendTypingSwitch      = document.getElementById('send-typing')
+    sendTypingSwitch.onchange   = (e) => localStorage.setItem('sendTyping', sendTypingSwitch.checked)
+    sendTypingSwitch.checked    = localStorage.getItem('sendTyping') === 'true'
 
     const previewYtSwitch = document.getElementById('preview-yt')
     previewYtSwitch.onchange = (e) => localStorage.setItem('previewYt', previewYtSwitch.checked)
@@ -184,14 +187,14 @@ function _rendererFunc() {
             showElm(element.parentElement)
 
         element.classList.remove('disappearing')
-        element.classList.add('appearing')
+        element.classList.add   ('appearing')
     }
     function triggerDisappear(element, affectParent) {
         if(affectParent)
             setTimeout(() => hideElm(element.parentElement), 200);
 
         element.classList.remove('appearing')
-        element.classList.add('disappearing')
+        element.classList.add   ('disappearing')
     }
 
     // Show and hide the user settings panel
@@ -205,7 +208,7 @@ function _rendererFunc() {
     }
     function showUserSettingsTab(name) {
         // "Log out" is not really a tab
-        if(name == 'user-settings-section-logout') {
+        if(name === 'user-settings-section-logout') {
             hideElm(document.getElementById('main-layout-container'))
             showElm(document.getElementById('login-form'))
 
@@ -214,9 +217,9 @@ function _rendererFunc() {
 
             // Send a logout notification
             ipcSend({
-                'action': 'webprot.login',
-                'email': '___@logout@___',
-                'password': ''
+                action:   'webprot.login',
+                email:    '___@logout@___',
+                password: ''
             })
             return
         }
@@ -243,7 +246,7 @@ function _rendererFunc() {
     }
 
     function updateGroupSettingsChannelList() {
-        if(viewingGroup == 0)
+        if(viewingGroup === 0)
             return
 
         const channelList = document.getElementById('group-settings-channel-list')
@@ -288,7 +291,7 @@ function _rendererFunc() {
     }
 
     function updateGroupSettingsRoles() {
-        if(viewingGroup == 0)
+        if(viewingGroup === 0)
             return
 
         const roleList = document.getElementById('group-settings-role-list')
@@ -315,7 +318,7 @@ function _rendererFunc() {
     }
 
     function updateGroupSettingsInvites() {
-        if(viewingGroup == 0)
+        if(viewingGroup === 0)
             return
 
         const inviteList = document.getElementById('group-settings-invite-list')
@@ -363,7 +366,7 @@ function _rendererFunc() {
         // The earliest created role is @everyone, and it hast the lowest ID of them all
         groupSettingsShowRole(entityCache[viewingGroup].roles.sort((a, b) => a - b)[0])
 
-        if(group.icon != 0) {
+        if(group.icon !== 0) {
             download(group.icon, (b) => {
                 document.getElementById('group-icon-huge').src = 'file://' + b.path
             })
@@ -514,14 +517,14 @@ function _rendererFunc() {
     // Change info about self
     function sendSelfValue(key, val) {
         entity = {
-            'type': 'user',
-            'id': 0
+            type: 'user',
+            id:   0
         }
         entity[key] = val
 
         ipcSend({
-            'action': 'webprot.entity-put',
-            'entities': [entity]
+            action:   'webprot.entity-put',
+            entities: [entity]
         })
     }
     function setSelfStatus(status) {
@@ -560,9 +563,9 @@ function _rendererFunc() {
     function reqEntities(ents, dontUseCached, cb) {
         if(dontUseCached) {
             ipcSend({
-                'action': 'webprot.entity-get',
-                'entities': ents,
-                'operId': regCallback(cb)
+                action:   'webprot.entity-get',
+                entities: ents,
+                operId:   regCallback(cb)
             })
         } else {
             var remaining_ents = []
@@ -571,9 +574,9 @@ function _rendererFunc() {
                     remaining_ents.push(ents[i])
             if(remaining_ents.length > 0) {
                 ipcSend({
-                    'action': 'webprot.entity-get',
-                    'entities': remaining_ents,
-                    'operId': regCallback(cb)
+                    action:   'webprot.entity-get',
+                    entities: remaining_ents,
+                    operId:   regCallback(cb)
                 })
             } else {
                 if(cb != undefined)
@@ -637,7 +640,7 @@ function _rendererFunc() {
             for(const name of nicknames) {
                 name.innerHTML = escapeHtml(user.name)
                 // Set colors
-                if(user.color != undefined)
+                if(user.color !== undefined)
                     name.style.color = user.color
             }
             for(const tag of tags)
@@ -652,7 +655,7 @@ function _rendererFunc() {
             if(user.badges.includes(1)) {
                 const verifiedBadges = document.getElementsByClassName('verified-badge-' + id)
                 for(b of verifiedBadges)
-                    b.classList.remove('unverified')
+                    b.classList.add('true')
             }
         })
     }
@@ -689,7 +692,7 @@ function _rendererFunc() {
         elm.appendChild(nicknameContainer)
 
         var verifiedBadge = document.createElement('img')
-        verifiedBadge.classList.add('unverified', 'verified-badge-' + id)
+        verifiedBadge.classList.add('verified-badge', 'verified-badge-' + id)
         verifiedBadge.src = path.join(__dirname, 'icons/badges/verified.png')
         nicknameContainer.appendChild(verifiedBadge)
 
@@ -704,17 +707,17 @@ function _rendererFunc() {
         nicknameContainer.appendChild(tag)
 
         // Special users (friends, pending, blocked)
-        if(special != undefined) {
+        if(special !== undefined) {
             var friendRemoveBtn = document.createElement('button')
             friendRemoveBtn.classList.add('hover-show-button')
             friendRemoveBtn.classList.add('icon-button')
             friendRemoveBtn.classList.add('friend-remove-button')
             friendRemoveBtn.addEventListener('click', (e) => {
                 ipcSend({
-                    'action': 'webprot.manage-contacts',
-                    'contactType': special,
-                    'method': 'remove',
-                    'id': id
+                    action:      'webprot.manage-contacts',
+                    contactType: special,
+                    method:      'remove',
+                    id:          id
                 })
             })
             elm.appendChild(friendRemoveBtn)
@@ -724,17 +727,17 @@ function _rendererFunc() {
             friendRemoveBtn.appendChild(friendRemoveImg)
         }
         // Pending in users (add an accept button)
-        if(special == 'pending-in') {
+        if(special === 'pending-in') {
             var friendAcceptBtn = document.createElement('button')
             friendAcceptBtn.classList.add('hover-show-button')
             friendAcceptBtn.classList.add('icon-button')
             friendAcceptBtn.classList.add('friend-accept-button')
             friendAcceptBtn.addEventListener('click', (e) => {
                 ipcSend({
-                    'action': 'webprot.manage-contacts',
-                    'contactType': 'friend',
-                    'method': 'add',
-                    'id': id
+                    action:      'webprot.manage-contacts',
+                    contactType: 'friend',
+                    method:      'add',
+                    id:          id
                 })
             })
             elm.appendChild(friendAcceptBtn)
@@ -744,18 +747,19 @@ function _rendererFunc() {
             friendAcceptBtn.appendChild(friendAcceptImg)
         }
         // Friends (open DMs when clicked)
-        if(special == 'friend') {
+        if(special === 'friend') {
             elm.addEventListener('click', (e) => {
                 // Get all channel entities
                 var channels = remote.getGlobal('webprotState').self.channels
                 for(var i = 0; i < channels.length; i++)
                 {
                     channels[i] = {
-                        'type':'channel', 'id':channels[i],
-                        'pageField': 2, // members,
-                        'pageFrom': 0,
-                        'pageDir': true, // older first
-                        'pageCnt': 50
+                        type:      'channel',
+                        id:        channels[i],
+                        pageField: 2, // members,
+                        pageFrom:  0,
+                        pageDir:   true, // older first
+                        pageCnt:   50
                     }
                 }
                 reqEntities(channels, false, () => {
@@ -763,7 +767,7 @@ function _rendererFunc() {
                         // The DM channel with two members (self and target user) is the resulting channel
                         const members = entityCache[chanId].members
                         if(members.length == 2
-                            && members.every(mId => mId == id || mId == remote.getGlobal('webprotState').self.id)) {
+                            && members.every(mId => mId == id || mId === remote.getGlobal('webprotState').self.id)) {
                             viewingChan = chanId
                             updLayout()
                         }
@@ -780,12 +784,16 @@ function _rendererFunc() {
         // Show or hide the friend hedaer
         const friendHeader = document.getElementById('member-list-friend-header')
         const friendType   = document.getElementById('member-list-friend-type')
+        const groupHeader  = document.getElementById('member-list-group-header')
+        
         if(viewingGroup === 0) {
             showElm(friendHeader)
             showElm(friendType)
+            hideElm(groupHeader)
         } else {
             hideElm(friendHeader)
             hideElm(friendType)
+            showElm(groupHeader)
         }
 
         if(viewingGroup === 0) {
@@ -798,7 +806,7 @@ function _rendererFunc() {
             // Determine what users should end up in the member list
             var userIds = []
             // Group 0 = own direct messages
-            if(viewingGroup == 0) {
+            if(viewingGroup === 0) {
                 const self = remote.getGlobal('webprotState').self
                 const friendType = document.getElementById('member-list-friend-type')
 
@@ -853,11 +861,11 @@ function _rendererFunc() {
 
         for(var i = 0; i < sects.length; i++) {
             const typeName = sects[i].type
-            if(typeName == 'text' || typeName == 'code' || typeName == 'quote')
+            if(typeName === 'text' || typeName === 'code' || typeName === 'quote')
                 sects[i].text = sects[i].typeElm.value
 
             // Abort if any of the files haven't been uploaded yet
-            if(typeName == 'file' && sects[i].blob == undefined)
+            if(typeName === 'file' && sects[i].blob === undefined)
                 return
 
             sects[i].elm = undefined
@@ -868,10 +876,10 @@ function _rendererFunc() {
         ipcSend({
             action: 'webprot.entity-put',
             entities: [{
-                type: 'message',
-                id: 0,
+                type:     'message',
+                id:       0,
                 sections: sects,
-                channel: viewingChan
+                channel:  viewingChan
             }]
         })
         // Reset the typing status
@@ -1010,7 +1018,7 @@ function _rendererFunc() {
 
         // Send the message when pressing enter, insert a line break with shift+enter
         section.addEventListener('keypress', (e) => {
-            if(e.keyCode == 13 && !e.shiftKey) {
+            if(e.keyCode === 13 && !e.shiftKey) {
                 e.stopPropagation()
                 e.stopImmediatePropagation()
                 sendMessage()
@@ -1019,7 +1027,7 @@ function _rendererFunc() {
             }
         })
 
-        msgSections.push({ 'type':type, 'typeElm':typeElm, 'elm':section })
+        msgSections.push({ type: type, typeElm: typeElm, elm: section })
     }
 
     // Removes an input message section
@@ -1028,7 +1036,7 @@ function _rendererFunc() {
         const elm = document.getElementById('message-section-' + id)
         // Remove it
         for(var i = 0; i < msgSections.length; i++) {
-            if(msgSections[i].elm == elm) {
+            if(msgSections[i].elm === elm) {
                 msgSections.splice(i, 1);
                 break
             }
@@ -1037,7 +1045,7 @@ function _rendererFunc() {
         setTimeout(() => elm.remove(), 200)
 
         // If there are no elements left, create an empty one
-        if(msgSections.length == 0)
+        if(msgSections.length === 0)
             resetMsgInput()
     }
 
@@ -1069,22 +1077,22 @@ function _rendererFunc() {
         const msg = entityCache[id]
         var summary = ''
         for(section of msg.sections) {
-            if(section.type == 'text' || section.type == 'code') {
+            if(section.type === 'text' || section.type === 'code') {
                 summary = section.text
                 break
             }
         }
         // If there's no text in the message, find a file
-        if(summary == '') {
+        if(summary === '') {
             for(section of msg.sections) {
-                if(section.type == 'file') {
+                if(section.type === 'file') {
                     summary = 'File'
                     break
                 }
             }
         }
         // If there's still nothing
-        if(summary == '')
+        if(summary === '')
             summary = 'Empty message'
 
         return summary
@@ -1207,6 +1215,11 @@ function _rendererFunc() {
             var nicknameContainer = document.createElement('div')
             nicknameContainer.classList.add('flex-row')
             content.appendChild(nicknameContainer)
+
+            var verifiedBadge = document.createElement('img')
+            verifiedBadge.classList.add('verified-badge', 'verified-badge-' + msg.sender)
+            verifiedBadge.src = path.join(__dirname, 'icons/badges/verified.png')
+            nicknameContainer.appendChild(verifiedBadge)
     
             const nickname = document.createElement('span')
             nickname.classList.add('message-user-nickname', 'user-nickname-' + msg.sender)
@@ -1422,15 +1435,14 @@ function _rendererFunc() {
     // Fetches and appends members to the bottom
     function appendMembersBottom(role, id_from, callback, clear=false) {
         const memberList = document.getElementById('member-list-bar')
-        const header =     document.getElementById('member-list-group-header')
-        showElm(header)
         
         reqEntities([{
-            'type': 'role', 'id': role,
-            'pageField': 6, // members
-            'pageFrom': id_from,
-            'pageDir': false, // has no purpose in the the role entity
-            'pageCnt': 50
+            type:      'role',
+            id:        role,
+            pageField: 6, // members
+            pageFrom:  id_from,
+            pageDir:   false, // has no meaning in the the role entity
+            pageCnt:   50
         }], true, () => {
             var members = [...entityCache[role].members]
             members.sort()
@@ -1452,7 +1464,7 @@ function _rendererFunc() {
                 })
 
                 // Call the callback
-                if(callback != undefined)
+                if(callback !== undefined)
                     callback()
             })
         })
@@ -1465,11 +1477,12 @@ function _rendererFunc() {
         const header = document.getElementById('message-area-header')
         
         reqEntities([{
-            'type': 'channel', 'id': viewingChan,
-            'pageField': 4, // messages
-            'pageFrom': id_from,
-            'pageDir': false, // older than the supplied ID
-            'pageCnt': 50
+            type:      'channel',
+            id:        viewingChan,
+            pageField: 4, // messages
+            pageFrom:  id_from,
+            pageDir:   false, // older than the supplied ID
+            pageCnt:   50
         }], true, () => {
             var msgs = [...entityCache[viewingChan].messages]
             msgs.sort()
@@ -1486,7 +1499,6 @@ function _rendererFunc() {
                 }
                 msgs.reverse()
                 msgs = msgs.map(x => entityCache[x.id])
-                var lastSender = 0
                 msgs.forEach(msg => {
                     const id = msg.id
                     const lastMsg = msgs[msgs.indexOf(msg) + 1]
@@ -1502,7 +1514,7 @@ function _rendererFunc() {
                         contextId:     viewingGroup
                     } })
                     // Only request those cached from a different group
-                    senders = senders.filter(x => entityCache[x.id] == undefined || entityCache[x.id].ctxGroup !== viewingGroup)
+                    senders = senders.filter(x => entityCache[x.id] === undefined || entityCache[x.id].ctxGroup !== viewingGroup)
                     senders = senders.filter((x, i, s) => s.findIndex(y => y.id === x.id) === i)
                     if(senders.length > 0) {
                         reqEntities(senders, true, () => {
@@ -1525,7 +1537,7 @@ function _rendererFunc() {
 
     // Updates the message area
     function updMessageArea(updMessages=true) {
-        if(viewingChan == 0)
+        if(viewingChan === 0)
             return;
 
         const msgArea = document.getElementById('message-area')
@@ -1545,7 +1557,7 @@ function _rendererFunc() {
                 // If the channel is a DM channel, get the ID of the other person and show their name instead
                 const members = channel.members
                 let   otherId = members[0]
-                if(otherId == remote.getGlobal('webprotState').self.id)
+                if(otherId === remote.getGlobal('webprotState').self.id)
                     otherId = members[1]
                 channel.name = '@' + entityCache[otherId].name
             }
@@ -1553,7 +1565,7 @@ function _rendererFunc() {
             // Show the list of people that are typing
             const typingElm  = document.getElementById('channel-typing')
             const typingAnim = document.getElementById('typing-dots')
-            const typing = channel.typing.filter(x => x != remote.getGlobal('webprotState').self.id)
+            const typing = channel.typing.filter(x => x !== remote.getGlobal('webprotState').self.id)
             reqEntities(typing.map(x => { return { type: 'user', id: x } }), false, () => {
                 var content = ''
                 const verb = (typing.length === 1) ? 'is' : 'are'
@@ -1603,7 +1615,7 @@ function _rendererFunc() {
 
         const elm = document.createElement('div')
         elm.classList.add('channel-button')
-        if(viewingChan == id && highlightSelected)
+        if(viewingChan === id && highlightSelected)
             elm.classList.add('channel-button-selected')
             
         elm.innerHTML = escapeHtml(channel.name)
@@ -1690,9 +1702,9 @@ function _rendererFunc() {
                 const contToken = localStorage.getItem('contToken')
                 if(contToken) {
                     ipcSend({
-                        'action': 'webprot.login',
-                        'email': '___@cont@token@___',
-                        'password': contToken
+                        action:   'webprot.login',
+                        email:    '___@cont@token@___',
+                        password: contToken
                     })
                 }
                 break
@@ -1708,9 +1720,9 @@ function _rendererFunc() {
 
                 document.getElementById('mfa-login-button').addEventListener('click', (e) => {
                     ipcSend({
-                        'action': 'webprot.login',
-                        'email': '___@mfa@token@___',
-                        'password': document.getElementById('login-mfa-code').value
+                        action:   'webprot.login',
+                        email:    '___@mfa@token@___',
+                        password: document.getElementById('login-mfa-code').value
                     })
                 })
                 break
@@ -1724,9 +1736,9 @@ function _rendererFunc() {
 
                 // Request info about self
                 ipcSend({
-                    'action': 'webprot.entity-get',
-                    'entities': [
-                        {'type': 'user', 'id': 0}
+                    action: 'webprot.entity-get',
+                    entities: [
+                        { type: 'user', id: 0 }
                     ]
                 })
 
@@ -1811,7 +1823,7 @@ function _rendererFunc() {
                                     download(f.avaBlob, (ava) => {
                                         const notification = new Notification(
                                             f.name + ' wants to add you as a friend', {
-                                            'icon': ava.path
+                                            icon: ava.path
                                         })
                                         if(notification.show)
                                             notification.show()
@@ -1822,12 +1834,12 @@ function _rendererFunc() {
                     }
 
                     // Append messages to the open channel
-                    if(arg.spontaneous && entity.type == 'message' && entity.channel == viewingChan)
+                    if(arg.spontaneous && entity.type === 'message' && entity.channel === viewingChan)
                         appendMsg(entity.id)
 
                     // Send message notifications
-                    if(arg.spontaneous && entity.type == 'message' &&
-                        (entity.channel != viewingChan ||  // either we're sitting in another channel
+                    if(arg.spontaneous && entity.type === 'message' &&
+                        (entity.channel !== viewingChan ||  // either we're sitting in another channel
                          !window.isFocused())              // or the window is out of focus
                          && shouldReceiveNotif()) {        // (notifications must be enabled)
                         reqEntities([{ type: 'user', id: entity.sender}], false, () => {
@@ -1836,8 +1848,8 @@ function _rendererFunc() {
                                 // Download the avatar of the sender
                                 download(sender.avaBlob, (senderAvatar) => {
                                     const notification = new Notification(sender.name, {
-                                        'body': messageSummary(entity.id),
-                                        'icon': senderAvatar.path
+                                        body: messageSummary(entity.id),
+                                        icon: senderAvatar.path
                                     })
                                     // Shitch to the channel when a notification has been clicked
                                     notification.onclick = (e) => {
@@ -1854,24 +1866,23 @@ function _rendererFunc() {
                     }
 
                     // Update info about other users
-                    if(entity.type == 'user') {
+                    if(entity.type === 'user')
                         updateUser(entity.id)
-                    }
 
                     // Update common groups
-                    if(arg.spontaneous && entity.type == 'user') {
+                    if(arg.spontaneous && entity.type === 'user') {
                         for(const g of entity.groups) // the server only sends common groups
                             updateGroup(g)
                     }
 
                     // Update info about groups and channels
-                    if(arg.spontaneous && entity.type == 'group')
+                    if(arg.spontaneous && entity.type === 'group')
                         updateGroup(entity.id)
-                    if(arg.spontaneous && entity.type == 'channel' && entity.group != 0)
+                    if(arg.spontaneous && entity.type === 'channel' && entity.group !== 0)
                         updateGroup(entity.group)
-                    if(arg.spontaneous && entity.type == 'channel' && entity.id == viewingChan)
+                    if(arg.spontaneous && entity.type === 'channel' && entity.id === viewingChan)
                         updMessageArea(false)
-                    if(arg.spontaneous && entity.type == 'role')
+                    if(arg.spontaneous && entity.type === 'role')
                         updateGroup(entity.group)
                 })
                 break
@@ -1903,7 +1914,7 @@ function _rendererFunc() {
 
             case 'webprot.blob-preview-available':
                 // Call the callback
-                if(endCallbacks[arg.operId] != undefined)
+                if(endCallbacks[arg.operId] !== undefined)
                     endCallbacks[arg.operId](arg.name, arg.size, arg.preview, arg.hash, arg.length)
                 break
 
@@ -1937,7 +1948,7 @@ function _rendererFunc() {
 
                 // Remove the element
                 delete endCallbacks[arg.operId]
-                if(endCallbacks.every(x => x == undefined))
+                if(endCallbacks.every(x => x === undefined))
                     endCallbacks = []
         }
     }
@@ -1962,9 +1973,9 @@ function _rendererFunc() {
         var email = document.getElementById('login-email').value
         var password = document.getElementById('login-password').value
         ipcSend({
-            'action': 'webprot.login',
-            'email': email,
-            'password': password
+            action:   'webprot.login',
+            email:    email,
+            password: password
         })
     })
 
@@ -1988,7 +1999,7 @@ function _rendererFunc() {
         var passwordStrengthMeter = document.getElementById('password-strength-meter')
 
         // Display the strength to the user
-        if(password.length == 0) {
+        if(password.length === 0) {
             passwordStrengthText.innerHTML = ''
             passwordStrengthMeter.value = 0
         } else if(password.length < 6) {
@@ -2044,10 +2055,10 @@ function _rendererFunc() {
 
         if(proceed) {
             ipcSend({
-                'action': 'webprot.signup',
-                'email': email,
-                'name': username,
-                'password': password
+                action:   'webprot.signup',
+                email:    email,
+                name:     username,
+                password: password
             })
         }
     })
@@ -2090,17 +2101,17 @@ function _rendererFunc() {
     // Various text peoperties changing
     const statusTextChange = document.getElementById('self-status-text-change')
     statusTextChange.onkeypress = (evt) => {
-        if(evt.keyCode == 13) // Enter
+        if(evt.keyCode === 13) // Enter
             setSelfStatusText(statusTextChange.value)
     }
     const usernameChange = document.getElementById('self-name-change')
     usernameChange.onkeypress = (evt) => {
-        if(evt.keyCode == 13)
+        if(evt.keyCode === 13)
             setSelfName(usernameChange.value)
     }
     const emailChange = document.getElementById('self-email-change')
     emailChange.onkeypress = (evt) => {
-        if(evt.keyCode == 13)
+        if(evt.keyCode === 13)
             setSelfEmail(emailChange.value)
     }
 
@@ -2118,7 +2129,7 @@ function _rendererFunc() {
     // Floaty stuffs closing
     document.onkeydown = function(evt) {
         evt = evt || window.event
-        if (evt.keyCode == 27) {
+        if (evt.keyCode === 27) {
             hideUserSettings()
             hideFloatingMessage()
             hideFloatingImage()
@@ -2217,8 +2228,8 @@ function _rendererFunc() {
     })
     document.getElementById('friend-add-commit').addEventListener('click', (e) => {
         ipcSend({
-            'action': 'webprot.search-user',
-            'name': document.getElementById('user-search-input').value
+            action: 'webprot.search-user',
+            name:   document.getElementById('user-search-input').value
         })
     })
 
@@ -2241,7 +2252,7 @@ function _rendererFunc() {
             ]
         })
         // Don't continue if the user decided not to
-        if(filePath == undefined)
+        if(filePath === undefined)
             return
         filePath = filePath[0]
 
@@ -2266,7 +2277,7 @@ function _rendererFunc() {
     document.onkeydown = (e) => {
         // Don't try to paste text as an image
         const clipFormat = clipboard.availableFormats()[0]
-        if(e.ctrlKey && e.key === 'v' && clipFormat.startsWith('image/')) {
+        if(e.ctrlKey && e.keyCode === 86 && clipFormat.startsWith('image/')) {
             const img = clipboard.readImage()
             const fileName = path.join(remote.getGlobal('tmpDir'), 'tmpimg.png')
             fs.writeFile(fileName, img.toPNG(), () => {
@@ -2311,7 +2322,7 @@ function _rendererFunc() {
     const msgScrollArea = document.getElementById('message-scroll-area')
     const loadingFunc = (e) => {
         const messages = entityCache[viewingChan].messages
-        if(msgScrollArea.scrollTop <= 500 && messages.length == 50) { // if the last batch gave less than 50 msgs, it must be the end
+        if(msgScrollArea.scrollTop <= 500 && messages.length === 50) { // if the last batch gave less than 50 msgs, it must be the end
             // Remove the handler and request messages
             msgScrollArea.onscroll = ''
             appendMsgsTop(messages[messages.length - 1], () => {
@@ -2350,7 +2361,7 @@ function _rendererFunc() {
     // Group settings
     const groupNameChange = document.getElementById('group-name-change')
     groupNameChange.onkeypress = (evt) => {
-        if(evt.keyCode == 13) {
+        if(evt.keyCode === 13) {
             ipcSend({
                 action: 'webprot.entity-put',
                 entities: [{
@@ -2376,7 +2387,7 @@ function _rendererFunc() {
 
     const chanNameChange = document.getElementById('channel-name-change')
     chanNameChange.onkeypress = (e) => {
-        if(e.keyCode == 13) {
+        if(e.keyCode === 13) {
             ipcSend({
                 action: 'webprot.entity-put',
                 entities: [{
@@ -2416,18 +2427,18 @@ function _rendererFunc() {
         ipcSend({
             action: 'webprot.entity-put',
             entities: [{
-                type:     'role',
-                id:       0,
-                name:     'Role',
-                color:    '#ffffff',
-                group:    viewingGroup
+                type:  'role',
+                id:    0,
+                name:  'Role',
+                color: '#ffffff',
+                group: viewingGroup
             }]
         })
     }
 
     const roleNameChane = document.getElementById('role-name-change')
     roleNameChane.onkeypress = (e) => {
-        if(e.keyCode == 13) {
+        if(e.keyCode === 13) {
             ipcSend({
                 action: 'webprot.entity-put',
                 entities: [{
