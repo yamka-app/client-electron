@@ -55,6 +55,27 @@ const defaultSettings = {
     previewYt:     true
 }
 
+// Kaomoji, yaaay!
+const kaomoji = [
+    ['/shrug',     '¯\\_(ツ)_/¯'],
+    ['/tableflip', '(╮°-°)╮┳━━┳ ( ╯°□°)╯ ┻━━┻'],
+    ['/unflip',    '┬─┬ ノ( ゜-゜ノ)'],
+    ['/cat',       '(＾• ω •＾)'],
+    ['/fish',      '>°))))彡'],
+    ['/music',     '(^_^♪)'],
+    ['/f',         '(￣^￣)ゞ'],
+    ['/wink',      '(^_~)'],
+    ['/hug',       '(づ ◕‿◕ )づ'],
+    ['/love',      '(◕‿◕)♡']
+    ['/hi',        'ヾ(・ω・*)'],
+    ['/surprise',  '(⊙_⊙)'],
+    ['/doubt',     '(→_→)'],
+    ['/whatever',  '┐(￣～￣)┌'],
+    ['/fear',      '(;;;*_*)'],
+    ['/crying',    '(╥_╥)'],
+    ['/joy',       '(* ^ ω ^)']
+]
+
 function _rendererFunc() {
     const { ipcRenderer, remote, shell, clipboard } = require('electron')
     const { BrowserWindow, dialog } = remote
@@ -766,8 +787,8 @@ function _rendererFunc() {
                     for(const chanId of remote.getGlobal('webprotState').self.channels) {
                         // The DM channel with two members (self and target user) is the resulting channel
                         const members = entityCache[chanId].members
-                        if(members.length == 2
-                            && members.every(mId => mId == id || mId === remote.getGlobal('webprotState').self.id)) {
+                        if(members.length === 2
+                            && members.every(mId => mId === id || mId === remote.getGlobal('webprotState').self.id)) {
                             viewingChan = chanId
                             updLayout()
                         }
@@ -1103,13 +1124,20 @@ function _rendererFunc() {
         return escapeHtml(txt).replace(/(?:\r\n|\r|\n)/g, '<br>')
     }
     function markupText(txt) {
-        return remark().use(gemojiToEmoji).processSync(    // emoji parser
+        var esc = remark().use(gemojiToEmoji).processSync(    // emoji parser
             ('<span>' +
-            marked.parseInline(                            // Markdown parser
-            escapeHtml(txt)) +                             // no XSS for 'ya today, sorry
-            '</span>')
-            .replace(/(?:\r\n|\r|\n)/g, '</span><span>'))  // insert line breaks
-            .contents.replace('/shrug', '¯\\_(ツ)_/¯')     // I f-ing LOVE this emote ¯\_(ツ)_/¯
+            marked.parseInline(                               // Markdown parser
+            escapeHtml(txt)) +                                // no XSS for 'ya today, sorry
+            '</span>')   
+            .replace(/(?:\r\n|\r|\n)/g, '</span><span>'))     // insert line breaks
+            .contents
+
+        // Add kaomojis
+        for(const kao of kaomoji) {
+            if(kao !== undefined)
+                esc = esc.replace(kao[0], kao[1])
+        }
+        return esc
     }
 
     // Shows/hides a floating message
