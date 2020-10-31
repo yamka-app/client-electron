@@ -150,7 +150,7 @@ function _rendererFunc() {
         fontSizeChange.value = pt
 
         docStyle.setProperty('--font-size', pt + 'pt')
-        document.getElementById('font-size-indicator').innerHTML = pt
+        document.getElementById('font-size-indicator').innerHTML = escapeHtml(pt)
     }
 
     // Sets the accent color
