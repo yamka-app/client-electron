@@ -2,19 +2,20 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline'; img-src 'self' https://twemoji.maxcdn.com/ https://i.ytimg.com/ data:; script-src 'self' https://twemoji.maxcdn.com/;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com; img-src 'self' https://twemoji.maxcdn.com/ https://i.ytimg.com/ data:; script-src 'self' https://twemoji.maxcdn.com/ https://hcaptcha.com https://*.hcaptcha.com; frame-src https://hcaptcha.com https://*.hcaptcha.com;">
 
     <title>Order</title>
 
     <link rel="stylesheet" type="text/css" href="main.css">
-    <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
     <link rel="stylesheet" type="text/css" href="switch.css">
-    <link rel="stylesheet" type="text/css" href="settings.css">
+    <link rel="stylesheet" type="text/css" href="popups.css">
+    <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
     <link rel="stylesheet" href="../node_modules/highlight.js/styles/a11y-dark.css">
 
     <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="../node_modules/qrcode-generator/qrcode.js"></script>
-    <script type="text/javascript" src='./renderer.js'></script>
+    <script src="../node_modules/qrcode-generator/qrcode.js"></script>
+    <script src='./renderer.js'></script>
+    <script src="https://hcaptcha.com/1/api.js" async defer></script>
   </head>
   <body>
     <div id="floating-box-bg" class="darken-bg" style="display: none;">
@@ -22,8 +23,8 @@
         <span id="floating-box-header" style="font-size: 15px;">TITLE</span>
         <span id="floating-box-text">Text</span>
 
-        <button id="floating-box-ok"  class="              fill-width" style="margin-top: 20px;">OK</button>
         <button id="floating-box-upd" class="accent-button fill-width" style="margin-top: 20px;">UPDATE</button>
+        <button id="floating-box-ok"  class="              fill-width" style="margin-top: 20px;">OK</button>
       </div>
     </div>
 
@@ -36,7 +37,7 @@
           <div id="connecting-dot-3"></div>
         </div>
         <span>Problems? Check your Internet connection or</span>
-        <button id="connecting-see-status">Tweet at us</button>
+        <button id="connecting-tweet">Tweet at us</button>
       </div>
     </div>
 
@@ -48,6 +49,50 @@
 
     <div id="floating-image-bg" class="darken-bg" style="display: none;">
       <!--The floating image will be here-->
+    </div>
+
+    <div id="captcha-bg" class="darken-bg" style="display: none;">
+      <div id="captcha">
+        <form>
+          <div class="h-captcha" data-sitekey="17f785c4-62b5-45e0-b863-ba6c80cc1051"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="group-delete-box-bg" class="darken-bg" style="display: none;">
+      <div id="group-delete-box" class="flex-col">
+        <h6>WARNING!</h6>
+        <p>This action is <b>IRREVERSIBLE</b>! You can <b>NOT</b> restore a group after it has been deleted!</p>
+        <button id="group-delete-revert"  class="apply-button">I CHANGED MY MIND</button>
+        <p>Please enter the full name of the group you want to delete (<b><spam id="group-delete-name"></spam></b>) to confirm this action.</p>
+        <input id="group-delete-name-input"/>
+        <button id="group-delete-confirm" class="danger-button">DELETE THIS GROUP</button>
+      </div>
+    </div>
+
+    <div id="profile-bg" class="darken-bg" style="display: none;">
+      <div id="profile">
+        <div id="profile-topbar" class="flex-row">
+          <img id="profile-avatar" class="user-avatar-huge"/>
+          <div class="flex-col">
+            <div id="profile-nickname-container" class="flex-row">
+              <span id="profile-nickname" class="user-nickname">nickname</span>
+              <span id="profile-tag" class="user-tag">#11111</span>
+              <span id="profile-badges" class="flex-row"></span>
+            </div>
+          </div>
+        </div>
+        <div class="flex-row">
+          <div id="profile-groups-container">
+            <h6>MUTUAL GROUPS</h6>
+            <div id="profile-groups"></div>
+          </div>
+          <div id="profile-friends-container">
+            <h6>MUTUAL FRIENDS</h6>
+            <div id="profile-friends"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="group-create-box-bg" class="darken-bg" style="display: none;">
@@ -182,11 +227,11 @@
 
             <div id="user-settings-section-about" class="settings-section user-settings-section" style="display: none;">
               <div id="about-logo"><img src="logo_o.png"></div><br>
-              Order version 0.0.11-beta
+              Client version 0.0.12-beta
               <p>ABOUT</p>
-              ORDER is a messaging app that does not track you, does not have ads,
+              Order is a messaging app that does not track you, does not have ads,
               does not impose age restrictions, does not ban people or groups and
-              provides deep group and user privacy customizations.
+              provides excellent customizations.
               All clients are free software distributed under the MIT license.
               <br>
               <button id="view-on-github" class="accent-button">View source code and/or contribute on GitHub</button>
@@ -198,14 +243,18 @@
               Backend: .NET Core, Apache Cassandra<br>
               Website: nginx
 
+              <p>CREDITS</p>
+              Thanks to:<br><br>
+              Twitter for providing Twemoji<br>
+              The Montserrat Project Authors for providing the Montserrat font<br>
+              Google for providing Noto Sans<br>
+              JetBrains for providing JetBrains Mono<br><br>
+              hetyh and LukasTM for suporting the project financially<br>
+              Dazaika for suggesting a VPS<br>
+              hetyh for setting up the VPS<br>
+
               <p>CREATED BY</p>
               portasynthinca3
-
-              <p>CREDITS</p>
-              Thanks to:<br>
-              Twitter for providing Twemoji<br>
-              Andrey Hayrnasov (Dazaika) for suggesting a VPS<br>
-              Sasha Kulichkov (hetyh) for setting up the VPS
             </div>
 
             <div id="user-settings-section-notifications" class="settings-section user-settings-section" style="display: none;">

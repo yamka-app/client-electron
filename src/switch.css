@@ -25,11 +25,11 @@
 
 .slider:before {
     position: absolute;
-    content: "";
-    height: 12px;
-    width: 12px;
-    left: 2px;
-    bottom: 2px;
+    content:  "";
+    height:   12px;
+    width:    12px;
+    left:     2px;
+    bottom:   2px;
     background-color: var(--foreground);
     transition: background-color 0.25s;
     transition: transform 0.25s;
@@ -43,4 +43,5 @@ input:checked + .slider {
 
 input:checked + .slider:before {
     transform: translateX(12px);
+    background-color: var(--accent-foreground);
 }

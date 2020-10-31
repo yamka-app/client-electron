@@ -1,20 +1,23 @@
 :root {
-    --accent: #b723fb;
-    --accent-dim: #9e1fd8;
-    --accent-dim-2: #8d1cc2;
-    --accent-trans: #b723fb48;
+    --theme-name:   "Dark";
+    --theme-author: "Order";
 
-    --danger: #e41e1e;
+    --accent:       #b42fe4;
+    --accent-dim:   #a328cf;
+    --accent-dim-2: #9928c2;
+    --accent-trans: #b42fe448;
+
+    --danger:       #e41e1e;
     --danger-dim-1: #b61818;
     --danger-dim-2: #8a1010;
 
-    --apply: #2ac02a;
+    --apply:       #2ac02a;
     --apply-dim-1: #1d861d;
     --apply-dim-2: #146414;
 
-    --red: #e41e1e;
+    --red:    #e41e1e;
     --yellow: #c7c72c;
-    --green: #2ac02a;
+    --green:  #2ac02a;
     --rainbow-grad: linear-gradient(45deg, #e03434 0%,
                                            #fba02a 16%,
                                            #ffe923 32%,
@@ -23,23 +26,25 @@
                                            #2332ff 80%,
                                            #ff23cf 100%);
     
-    --shade-1: #0e0e0e;
-    --shade-2: #111111;
-    --shade-3: #141414;
+    --shade-1:       #0e0e0e;
+    --shade-2:       #111111;
+    --shade-3:       #141414;
     --shade-3-trans: #141414df;
-    --shade-4: #181818;
+    --shade-4:       #181818;
     --shade-4-trans: #181818df;
-    --shade-5: #1a1a1a;
-    --shade-6: #1c1c1c;
-    --shade-7: #1d1d1d;
+    --shade-5:       #1a1a1a;
+    --shade-6:       #1c1c1c;
+    --shade-7:       #1d1d1d;
 
     --font-size: 9pt;
+    --danger-foreground: #efefef;
+    --apply-foreground:  #efefef;
     --accent-foreground: #efefef;
-    --foreground-1: #7e7d7d;
-    --foreground-2: #adadad;
-    --foreground: #efefef;
+    --foreground-1:      #7e7d7d;
+    --foreground-2:      #adadad;
+    --foreground:        #efefef;
 
-    --shadow: #00000023;
+    --shadow: #00000069;
 
     --darken-icon: 0%;
 }

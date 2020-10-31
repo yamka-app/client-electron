@@ -47,7 +47,7 @@ var viewingContactGroup
 
 // Default settings
 const defaultSettings = {
-    accentColor:   '#b723fb',
+    accentColor:   '#b42fe4',
     fontSize:      9,
     theme:         'dark',
     notifications: true,
@@ -407,19 +407,9 @@ function _rendererFunc() {
     function showGroupSettingsTab(name) {
         // "Delete group" is not really a tab
         if(name == 'group-settings-section-delete') {
-            ipcSend({ // change da world, my final message.. goodbye
-                action: 'webprot.entity-put',
-                entities: [{
-                    type:  'group',
-                    id:    viewingGroup,
-                    owner: 0
-                }]
-            })
-            viewingGroup = 0
-            viewingChan = 0
-            editingChan = 0
-            updLayout()
             hideGroupSettings()
+            document.getElementById('group-delete-name').innerHTML = escapeHtml(entityCache[viewingGroup].name)
+            triggerAppear(document.getElementById('group-delete-box'), true)
             return
         }
 
@@ -493,9 +483,9 @@ function _rendererFunc() {
 
         // Update the explainer below the switch
         var explainer = [
-            'You will appear offline but will have full access to everything',
+            'Everyone will think you\'re offline, but you\'ll still have access to everything',
             'You will appear online',
-            'You will appear as sleeping but will have full access to everything',
+            'Everyone will think you\'re asleep, but you\'ll still have access to everything',
             'You will not receive any notifications'
         ][status]
         document.getElementById('self-status-explainer').innerHTML = explainer
@@ -655,6 +645,10 @@ function _rendererFunc() {
             for(const status of statuses)
                 status.src = statusIconPath(user.status)
     
+            // Reset the color if in DMs
+            if(viewingGroup === 0)
+                user.color = undefined
+
             // Update nicknames and tags
             const nicknames = document.getElementsByClassName('user-nickname-' + id)
             const tags = document.getElementsByClassName('user-tag-' + id)
@@ -663,6 +657,8 @@ function _rendererFunc() {
                 // Set colors
                 if(user.color !== undefined)
                     name.style.color = user.color
+                else
+                    name.style.color = 'unset'
             }
             for(const tag of tags)
                 tag.innerHTML = escapeHtml(formatTag(user.tag))
@@ -685,31 +681,26 @@ function _rendererFunc() {
     function createUserSummary(id, special) {
         // Elements applied to all users
         var elm = document.createElement('div')
-        elm.classList.add('user-summary')
-        elm.classList.add('user-summary-' + id)
+        elm.classList.add('user-summary', 'user-summary-' + id)
 
         var avaContainer = document.createElement('div')
         avaContainer.classList.add('user-avatar-container')
         elm.appendChild(avaContainer)
 
         var ava = document.createElement('img')
-        ava.classList.add('user-avatar')
-        ava.classList.add('user-avatar-' + id)
+        ava.classList.add('user-avatar', 'user-avatar-' + id)
         avaContainer.appendChild(ava)
 
         var status = document.createElement('img')
-        status.classList.add('user-online')
-        status.classList.add('user-online-' + id)
+        status.classList.add('user-online', 'user-online-' + id)
         avaContainer.appendChild(status)
 
         var statusText = document.createElement('span')
-        statusText.classList.add('user-status')
-        statusText.classList.add('user-status-' + id)
+        statusText.classList.add('user-status', 'user-status-' + id)
         elm.appendChild(statusText)
 
         var nicknameContainer = document.createElement('div')
-        nicknameContainer.classList.add('flex-row')
-        nicknameContainer.classList.add('user-nickname-container')
+        nicknameContainer.classList.add('flex-row', 'user-nickname-container')
         elm.appendChild(nicknameContainer)
 
         var verifiedBadge = document.createElement('img')
@@ -718,13 +709,11 @@ function _rendererFunc() {
         nicknameContainer.appendChild(verifiedBadge)
 
         var nickname = document.createElement('span')
-        nickname.classList.add('user-nickname')
-        nickname.classList.add('user-nickname-' + id)
+        nickname.classList.add('user-nickname', 'user-nickname-' + id)
         nicknameContainer.appendChild(nickname)
 
         var tag = document.createElement('span')
-        tag.classList.add('user-tag')
-        tag.classList.add('user-tag-' + id)
+        tag.classList.add('user-tag', 'user-tag-' + id)
         nicknameContainer.appendChild(tag)
 
         // Special users (friends, pending, blocked)
@@ -767,13 +756,12 @@ function _rendererFunc() {
             friendAcceptImg.src = path.join(__dirname, 'icons/approve.png')
             friendAcceptBtn.appendChild(friendAcceptImg)
         }
-        // Friends (open DMs when clicked)
         if(special === 'friend') {
-            elm.addEventListener('click', (e) => {
+            // Friends (open DMs when clicked)
+            elm.onclick = (e) => {
                 // Get all channel entities
                 var channels = remote.getGlobal('webprotState').self.channels
-                for(var i = 0; i < channels.length; i++)
-                {
+                for(var i = 0; i < channels.length; i++) {
                     channels[i] = {
                         type:      'channel',
                         id:        channels[i],
@@ -794,7 +782,10 @@ function _rendererFunc() {
                         }
                     }
                 })
-            })
+            }
+        } else {
+            // All other people
+            elm.onclick = (e) => showProfile(id)
         }
 
         return elm
@@ -1160,6 +1151,84 @@ function _rendererFunc() {
         triggerDisappear(floatingMessage, true)
     }
 
+    // Shows/hides a profile
+    function showProfile(id) {
+        const user = entityCache[id]
+        const profile  = document.getElementById('profile')
+        const nickname = document.getElementById('profile-nickname').classList
+        const tag      = document.getElementById('profile-tag').classList
+        const avatar   = document.getElementById('profile-avatar').classList
+        const badges   = document.getElementById('profile-badges')
+        const groups   = document.getElementById('profile-groups')
+        const friends  = document.getElementById('profile-friends')
+        
+        // Remove the old classes
+        for(const c of nickname.values())
+            if(c.startsWith('user-nickname-'))
+                nickname.remove(c)
+        for(const c of tag.values())
+            if(c.startsWith('user-tag-'))
+                tag.remove(c)
+        for(const c of avatar.values())
+            if(c.startsWith('user-avatar-') && c !== "user-avatar-huge")
+                avatar.remove(c)
+        // Add new classes so that updateUser() could pick up on them
+        nickname.add('user-nickname-' + id)
+        tag     .add('user-tag-'      + id)
+        avatar  .add('user-avatar-'   + id)
+        updateUser(id)
+
+        // Remove old badges
+        while(badges.firstChild)
+            badges.firstChild.remove()
+        // Add badges
+        for(const bid of user.badges) {
+            const file = path.join(__dirname, 'icons/badges', ['verified', 'staff'][bid - 1] + '.png')
+            const abbr = ['This user is who they claim to be',
+                          'This user is a member of the core Order team'][bid - 1]
+            
+            const abbrElm = document.createElement('abbr')
+            abbrElm.title = escapeHtml(abbr)
+            badges.appendChild(abbrElm)
+
+            const iconElm = document.createElement('img')
+            iconElm.src = 'file://' + file
+            abbrElm.appendChild(iconElm)
+        }
+
+        // Remove old mutual servers/friends
+        while(groups.firstChild)
+            groups.firstChild.remove()
+        while(friends.firstChild)
+            friends.firstChild.remove()
+        // Add mutual groups and friends
+        for(const gid of user.groups) {
+            const elm = document.createElement('div')
+            elm.classList.add('mutual-thing')
+            elm.innerHTML = escapeHtml(entityCache[gid].name)
+            elm.onclick = (e) => {
+                hideProfile()
+                viewingGroup = gid
+                viewingChan = entityCache[gid].channels[0]
+                updLayout()
+            } 
+            groups.appendChild(elm)
+        }
+        for(const fid of user.friends) {
+            const elm = document.createElement('div')
+            elm.classList.add('mutual-thing')
+            elm.innerHTML = escapeHtml(entityCache[fid].name)
+            elm.onclick = (e) => showProfile(fid)
+            friends.appendChild(elm)
+        }
+
+        triggerAppear(profile, true)
+    }
+    function hideProfile() {
+        const profile = document.getElementById('profile')
+        triggerDisappear(profile, true)
+    }
+
     // Show/hides a floating image
     function showFloatingImage(id) {
         // Remove the old image
@@ -1233,6 +1302,7 @@ function _rendererFunc() {
             const ava = document.createElement('img')
             ava.classList.add('user-avatar', 'message-avatar', 'user-avatar-' + msg.sender)
             avaContainer.appendChild(ava)
+            ava.onclick = (e) => { stopPropagation(e); showProfile(msg.sender) }
         }
 
         const content = document.createElement('div')
@@ -1339,7 +1409,6 @@ function _rendererFunc() {
 
                             // Download the image
                             download(section.blob, (blob) => {
-                                console.log(imgElement)
                                 imgElement.src = 'file://' + blob.path
                                 fileSectionElement.appendChild(imgElement)
                                 // Remove the preview element
@@ -1565,23 +1634,27 @@ function _rendererFunc() {
 
     // Updates the message area
     function updMessageArea(updMessages=true) {
-        if(viewingChan === 0)
+        if(viewingChan === 0) {
+            const msgArea = document.getElementById('message-area')
+            for(var i = msgArea.children.length - 1; i >= 0; i--) {
+                const child = msgArea.children[i]
+                if(child.id != 'message-area-header')
+                    child.remove()
+            }
             return;
-
-        const msgArea = document.getElementById('message-area')
+        }
 
         // Show the hedaer
         showElm(document.getElementById('message-area-header'))
-
         // Get channel messages
-        if(viewingChan != 0 && updMessages)
+        if(viewingChan !== 0 && updMessages)
             appendMsgsTop(0xFFFFFFFFFFFFF, undefined, true)
 
         // Show the title
         reqEntities([{ type: 'channel', id: viewingChan }], false, () => {
             const channel = entityCache[viewingChan]
             const label = document.getElementById('channel-name')
-            if(channel.name == 'DM') {
+            if(channel.name === 'DM') {
                 // If the channel is a DM channel, get the ID of the other person and show their name instead
                 const members = channel.members
                 let   otherId = members[0]
@@ -1597,7 +1670,7 @@ function _rendererFunc() {
             reqEntities(typing.map(x => { return { type: 'user', id: x } }), false, () => {
                 var content = ''
                 const verb = (typing.length === 1) ? 'is' : 'are'
-                if(typing.length !== 0) {
+                if(typing.length > 0) {
                     content = '<b>' + typing.map(x => escapeHtml(entityCache[x].name)).join('</b>, <b>') + '</b> ' + verb + ' typing'
                     showElm(typingAnim)
                 } else {
@@ -2113,6 +2186,9 @@ function _rendererFunc() {
     document.getElementById('user-settings')   .onclick = stopPropagation
     document.getElementById('group-settings')  .onclick = stopPropagation
     document.getElementById('group-create-box').onclick = stopPropagation
+    document.getElementById('profile')         .onclick = stopPropagation
+
+    document.getElementById('profile-bg').onclick = hideProfile
 
     // Settings sections
     document.querySelectorAll('input[name="user-settings-sections"]').forEach((element) => {
@@ -2155,9 +2231,10 @@ function _rendererFunc() {
     })
 
     // Floaty stuffs closing
-    document.onkeydown = function(evt) {
-        evt = evt || window.event
-        if (evt.keyCode === 27) {
+    document.onkeydown = (e) => {
+        e = e || window.event
+        if (e.keyCode === 27) {
+            hideProfile()
             hideUserSettings()
             hideFloatingMessage()
             hideFloatingImage()
@@ -2510,6 +2587,27 @@ function _rendererFunc() {
             method:      'remove',
             id:          viewingGroup
         })
+    }
+
+    document.getElementById('group-delete-revert').onclick = (e) => {
+        triggerDisappear(document.getElementById('group-delete-box'), true)
+    }
+    document.getElementById('group-delete-confirm').onclick = (e) => {
+        if(document.getElementById('group-delete-name-input').value === entityCache[viewingGroup].name) {
+            ipcSend({ // change da world, my final message.. goodbye
+                action: 'webprot.entity-put',
+                entities: [{
+                    type:  'group',
+                    id:    viewingGroup,
+                    owner: 0
+                }]
+            })
+            viewingGroup = 0
+            viewingChan = 0
+            editingChan = 0
+            updLayout()
+            triggerDisappear(document.getElementById('group-delete-box'), true)
+        }
     }
 }
 
