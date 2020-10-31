@@ -23,5 +23,5 @@ cd client-electron
 npm start
 ```
 
-## Download
+## Or download binaries
 [...on the official Order website](https://ordermsg.tk/download)
