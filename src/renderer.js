@@ -144,7 +144,8 @@ function _rendererFunc() {
     previewYtSwitch.checked = localStorage.getItem('previewYt') === 'true'
 
     // Sets the font size
-    const docStyle = document.documentElement.style
+    const docStyle =     document.documentElement.style
+    const docStyleComp = getComputedStyle(document.documentElement)
     function setFontSize(pt) {
         localStorage.setItem('fontSize', pt)
         fontSizeChange.value = pt
@@ -158,12 +159,23 @@ function _rendererFunc() {
         localStorage.setItem('accentColor', color)
         accentColorChange.value = color
 
-        docStyle.setProperty('--accent', color)
-        docStyle.setProperty('--accent-dim',   tinycolor(color).darken(amount=10).toString())
-        docStyle.setProperty('--accent-dim-2', tinycolor(color).darken(amount=20).toString())
-        docStyle.setProperty('--accent-trans', color + '48')
-
+        docStyle.setProperty('--accent',            tinycolor(color).toString())
+        docStyle.setProperty('--accent-dim',        tinycolor(color).darken(amount=10).toString())
+        docStyle.setProperty('--accent-dim-2',      tinycolor(color).darken(amount=20).toString())
+        docStyle.setProperty('--accent-trans',      tinycolor(color).setAlpha(0x48).toString())
         docStyle.setProperty('--accent-foreground', tinycolor(color).isLight() ? '#000000' : '#ffffff')
+
+        const tc = tinycolor(color)
+        for(let i = 1; i <= 7; i++) {
+            const original =  tinycolor(docStyleComp.getPropertyValue('--default-shade-' + i))
+            const colorzied = tinycolor.mix(original, tc, amount=1)
+            docStyle.setProperty('--shade-' + i, colorzied.toString())
+
+            if(i === 3 || i === 4) {
+                const originalTrans = tinycolor(docStyleComp.getPropertyValue('--default-shade-' + i + '-trans'))
+                docStyle.setProperty('--shade-' + i + '-trans', colorzied.setAlpha(originalTrans.getAlpha()).toString())
+            }
+        }
     }
 
     // Sets the theme

@@ -26,15 +26,15 @@
                                            #2332ff 80%,
                                            #ff23cf 100%);
     
-    --shade-1:       #0e0e0e;
-    --shade-2:       #111111;
-    --shade-3:       #141414;
-    --shade-3-trans: #141414df;
-    --shade-4:       #181818;
-    --shade-4-trans: #181818df;
-    --shade-5:       #1a1a1a;
-    --shade-6:       #1c1c1c;
-    --shade-7:       #1d1d1d;
+    --default-shade-1:       #0e0e0e;
+    --default-shade-2:       #111111;
+    --default-shade-3:       #141414;
+    --default-shade-3-trans: #141414df;
+    --default-shade-4:       #181818;
+    --default-shade-4-trans: #181818df;
+    --default-shade-5:       #1a1a1a;
+    --default-shade-6:       #1c1c1c;
+    --default-shade-7:       #1d1d1d;
 
     --font-size: 9pt;
     --danger-foreground: #efefef;
