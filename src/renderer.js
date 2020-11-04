@@ -1796,6 +1796,13 @@ function _rendererFunc() {
             for(let chanId of channels) {
                 const elm = createChannelButton(chanId, (e) => { viewingChan = chanId; updLayout() })
                 channelList.append(elm)
+
+                if(entityCache[chanId].rules) {
+                    const rulesBtn = document.createElement('button')
+                    rulesBtn.classList.add('apply-button', 'rules-accept-button')
+                    rulesBtn.innerHTML = 'Accept group rules'
+                    channelList.append(rulesBtn)
+                }
             }
         })
     }

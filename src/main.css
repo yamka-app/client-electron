@@ -226,6 +226,11 @@ button:active {
     background-color: var(--apply-dim-2);
 }
 
+.rules-accept-button {
+    margin-top:    0;
+    margin-bottom: 10px;
+}
+
 .cg-button img {
     filter: brightness(calc(100% - var(--darken-icon)));
 }
