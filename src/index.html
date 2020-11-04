@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com; img-src 'self' https://twemoji.maxcdn.com/ https://i.ytimg.com/ data:; script-src 'self' https://twemoji.maxcdn.com/ https://hcaptcha.com https://*.hcaptcha.com; frame-src https://hcaptcha.com https://*.hcaptcha.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com file://*; img-src 'self' https://twemoji.maxcdn.com/ https://i.ytimg.com/ data:; script-src 'self' https://twemoji.maxcdn.com/ https://hcaptcha.com https://*.hcaptcha.com; frame-src https://hcaptcha.com https://*.hcaptcha.com;">
 
     <title>Order</title>
 
@@ -305,6 +305,15 @@
                   FONT SIZE
                   <span id="font-size-indicator"></span>
                   <input id="font-size-change" type="range" min="5" max="16" value="9" class="trackbar">
+                </div>
+                <div class="self-profile-setting-input-container">
+                  THEME
+                  <span>
+                    <span id="theme-name">Name</span>
+                    <spam id="theme-name-sep"> by </spam>
+                    <span id="theme-author">Author</span>
+                  </span>
+                  <button id="theme-change" class="apply-button">LOAD A CUSTOM THEME</button>
                 </div>
               </div>
             </div>

@@ -1,11 +1,6 @@
 :root {
-    --theme-name:   "Dark";
-    --theme-author: "Order";
-
-    --accent:       #b42fe4;
-    --accent-dim:   #a328cf;
-    --accent-dim-2: #9928c2;
-    --accent-trans: #b42fe448;
+    --theme-name:   Dark;
+    --theme-author: Order;
 
     --danger:       #e41e1e;
     --danger-dim-1: #b61818;
@@ -36,10 +31,8 @@
     --default-shade-6:       #1c1c1c;
     --default-shade-7:       #1d1d1d;
 
-    --font-size: 9pt;
     --danger-foreground: #efefef;
     --apply-foreground:  #efefef;
-    --accent-foreground: #efefef;
     --foreground-1:      #7e7d7d;
     --foreground-2:      #adadad;
     --foreground:        #efefef;

@@ -49,7 +49,8 @@ var viewingContactGroup
 const defaultSettings = {
     accentColor:   '#b42fe4',
     fontSize:      9,
-    theme:         'dark',
+    customTheme:   false,
+    theme:         '', // will be computed later
     notifications: true,
     sendTyping:    true,
     previewYt:     true
@@ -83,6 +84,8 @@ function _rendererFunc() {
     const path    =        require('path')
     const escapeHtml =     require('escape-html')
 
+    defaultSettings.theme = path.join(__dirname, 'themes', 'dark.css')
+    
     sounds.notification = new Audio(path.join(__dirname, 'sounds/notification.wav'))
 
     // Get the browser window
@@ -127,9 +130,21 @@ function _rendererFunc() {
     const accentColorChange = document.getElementById('accent-color-change')
     const fontSizeChange    = document.getElementById('font-size-change')
     const themeSwitch       = document.getElementById('theme-switch')
+    const themeSelector     = document.getElementById('theme-change')
     accentColorChange.onchange = (e) => setAccentColor(accentColorChange.value)
     fontSizeChange.onchange    = (e) => setFontSize(fontSizeChange.value)
     themeSwitch.onchange       = (e) => setTheme(themeSwitch.checked ? 'light' : 'dark')
+
+    themeSelector.onclick = (e) => {
+        const stylePath = dialog.showOpenDialogSync(window, {
+            properties: ['openFile'],
+            filters: [
+                { name: 'Styles', extensions: ['css'] }
+            ]
+        })
+        if(stylePath !== undefined)
+            loadTheme(stylePath)
+    }
 
     const notificationSwitch    = document.getElementById('enable-notifications')
     notificationSwitch.onchange = (e) => localStorage.setItem('notifications', notificationSwitch.checked)
@@ -158,6 +173,11 @@ function _rendererFunc() {
     function setAccentColor(color) {
         localStorage.setItem('accentColor', color)
         accentColorChange.value = color
+        recomputeStyling()
+    }
+
+    function recomputeStyling() {
+        const color = localStorage.getItem('accentColor')
 
         docStyle.setProperty('--accent',            tinycolor(color).toString())
         docStyle.setProperty('--accent-dim',        tinycolor(color).darken(amount=10).toString())
@@ -176,18 +196,29 @@ function _rendererFunc() {
                 docStyle.setProperty('--shade-' + i + '-trans', colorzied.setAlpha(originalTrans.getAlpha()).toString())
             }
         }
+
+        document.getElementById('theme-name')  .innerHTML = escapeHtml(docStyleComp.getPropertyValue('--theme-name'))
+        document.getElementById('theme-author').innerHTML = escapeHtml(docStyleComp.getPropertyValue('--theme-author'))
     }
 
-    // Sets the theme
-    function setTheme(theme) {
+    // Loads a (presumably custom theme)
+    function loadTheme(theme, custom=true) {
+        document.getElementById('theme-css').href = (custom ? 'file://' : '') + theme
+        setTimeout(recomputeStyling, 100) // TODO: fix :^)
+
         localStorage.setItem('theme', theme)
-        document.getElementById('theme-css').href = 'themes/' + theme + '.css'
-        themeSwitch.checked = theme == 'light'
+        localStorage.setItem('customTheme', custom)
+    }
+
+    // Sets one of the default themes
+    function setTheme(theme) {
+        loadTheme(path.join(__dirname, 'themes', theme + '.css'), false)
+        themeSwitch.checked = theme === 'light'
     }
 
     setAccentColor(localStorage.getItem('accentColor'))
     setFontSize   (localStorage.getItem('fontSize'))
-    setTheme      (localStorage.getItem('theme'))
+    loadTheme     (localStorage.getItem('theme'), localStorage.getItem('customTheme'))
 
     // Determines whether we sould receive notifications
     function shouldReceiveNotif() {

@@ -147,6 +147,10 @@ input[type="radio"].settings-radio:checked + label {
     pointer-events: none;
 }
 
+#theme-name,
+#theme-author {
+    color: var(--foreground);
+}
 
 .user-avatar-huge,
 .group-icon-huge {
