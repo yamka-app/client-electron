@@ -103,7 +103,7 @@ const webprotSettings = {
     'host': 'ordermsg.tk',
     'port': 1746,
     'blobPort': 1747,
-    'version': 2,
+    'version': 3,
     'compressionThreshold': 32
 }
 
@@ -436,6 +436,9 @@ function webprotSendPacket(packet) {
                                 break; case 'typing':
                                 fieldId = 5
                                 fieldVal = webprotEncNumList(v, 8)
+                                break; case 'rules':
+                                fieldId = 6
+                                fieldVal = webprotEncNum(v ? 1 : 0, 1)
                                 break
                             }
                             if(fieldId != undefined) {
@@ -519,13 +522,29 @@ function webprotSendPacket(packet) {
                 webprotEncStr(packet.code)
             ])
             break
+
+        case 'create-bot':
+            type = 16
+            data = Buffer.concat([
+                webprotEncNum(0, 8),
+                webprotEncStr(packet.name)
+            ])
+            break
+
+        case 'invite-bot':
+            type = 17
+            data = Buffer.concat([
+                webprotEncNum(packet.bot,   8),
+                webprotEncNum(packet.group, 8)
+            ])
+            break
     }
 
     // Mash everything into one buffer
     var buf = Buffer.concat([
         webprotEncNum(type, 1),
         webprotEncNum(webprotState.seqId, 4),
-        webprotEncNum((packet.replyTo != undefined) ? packet.replyTo : 0, 4),
+        webprotEncNum((packet.replyTo !== undefined) ? packet.replyTo : 0, 4),
         data
     ])
 
@@ -713,6 +732,14 @@ function webprotData(bytes) {
                                 entity.badges = webprotDecNumList(payload.slice(pos), 2)
                                 pos += 2 + (entity.badges.length * 2)
                                 break
+                            case 18: // bot owner
+                                entity.botOwner = webprotDecNum(payload.slice(pos, pos + 8), 8)
+                                pos += 8
+                                break
+                            case 19: // owned bots
+                                entity.ownedBots = webprotDecNumList(payload.slice(pos), 8)
+                                pos += 2 + (entity.ownedBots.length * 8)
+                                break
                         }
                     } else if(entity.type == 'channel') {
                         switch(fieldType) {
@@ -739,6 +766,10 @@ function webprotData(bytes) {
                             case 5: // typing users
                                 entity.typing = webprotDecNumList(payload.slice(pos), 8)
                                 pos += 2 + (entity.typing.length * 8)
+                                break
+                            case 6: // whether the channel contains rules or not
+                                entity.rules = webprotDecNum(payload.slice(pos, pos + 1), 1)
+                                pos += 1
                                 break
                         }
                     } else if(entity.type == 'message') {
@@ -1039,6 +1070,13 @@ function webprotData(bytes) {
                 'type': 'webprot.cont-token', 'token': webprotDecStr(payload)
             })
             break
+
+        case 16: // created bot info
+            ipcSend({
+                type:  'webprot.bot-created',
+                id:    webprotDecNum(payload.slice(0, 8)),
+                token: webprotDecStr(payload.slice(8))
+            })
     }
 
     // Send an operation completion notification
@@ -1221,6 +1259,17 @@ ipcMain.on('asynchronous-message', (event, arg) => {
             operId: arg.operId,
             code:   arg.code,
             add:    arg.add
+        })
+    } else if(arg.action == 'webprot.create-bot') {
+        webprotSendPacket({
+            type: 'create-bot',
+            name: arg.name
+        })
+    } else if(arg.action == 'webprot.invite-bot') {
+        webprotSendPacket({
+            type:  'invite-bot',
+            bot:   arg.bot,
+            group: arg.group
         })
     }
 })

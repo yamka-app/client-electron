@@ -1226,9 +1226,10 @@ function _rendererFunc() {
             badges.firstChild.remove()
         // Add badges
         for(const bid of user.badges) {
-            const file = path.join(__dirname, 'icons/badges', ['verified', 'staff'][bid - 1] + '.png')
+            const file = path.join(__dirname, 'icons/badges', ['verified', 'staff', 'bot'][bid - 1] + '.png')
             const abbr = ['This user is who they claim to be',
-                          'This user is a member of the core Order team'][bid - 1]
+                          'This user is a member of the core Order team',
+                          'This user is a bot'][bid - 1]
             
             const abbrElm = document.createElement('abbr')
             abbrElm.title = escapeHtml(abbr)
@@ -1982,6 +1983,9 @@ function _rendererFunc() {
                                 }
                             })
                         }
+
+                        // Update the owned bot list
+                        document.getElementById('owned-bot-list').innerHTML = entity.ownedBots.join(', ')
                     }
 
                     // Append messages to the open channel
@@ -2101,6 +2105,12 @@ function _rendererFunc() {
                 delete endCallbacks[arg.operId]
                 if(endCallbacks.every(x => x === undefined))
                     endCallbacks = []
+                break
+
+            case 'webprot.bot-created':
+                showBox('BOT CREATED', 'Bot ID: ' + arg.id + '<br>Bot token: ' + arg.token
+                    + '<br>This token will be only shown once for security reasons. Please keep it safe.')
+                break
         }
     }
     ipcRenderer.on('message', ipcRecv)
@@ -2658,6 +2668,21 @@ function _rendererFunc() {
             updLayout()
             triggerDisappear(document.getElementById('group-delete-box'), true)
         }
+    }
+
+    document.getElementById('create-bot').onclick = (e) => {
+        ipcSend({
+            action: 'webprot.create-bot',
+            name:   document.getElementById('create-bot-name').value
+        })
+    }
+
+    document.getElementById('invite-bot-button').onclick = (e) => {
+        ipcSend({
+            action: 'webprot.invite-bot',
+            bot:    document.getElementById('invite-bot-id').value,
+            group:  viewingGroup
+        })
     }
 }
 

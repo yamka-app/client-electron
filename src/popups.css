@@ -303,7 +303,7 @@ input[type="radio"].settings-radio:checked + label {
     z-index:  1000;
     position: fixed;
 
-    width:  300px;
+    width:  fit-content;
     height: fit-content;
     top:    0;
     left:   0;
@@ -412,4 +412,9 @@ input[type="radio"].settings-radio:checked + label {
     font-family:      Montserrat;
     font-size:        var(--font-size);
     background-color: var(--shade-3-trans);
+}
+
+#owned-bot-list,
+#floating-box-text {
+    user-select: text;
 }

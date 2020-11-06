@@ -18,16 +18,6 @@
     <script src="https://hcaptcha.com/1/api.js" async defer></script>
   </head>
   <body>
-    <div id="floating-box-bg" class="darken-bg" style="display: none;">
-      <div id="floating-box" class="flex-col">
-        <span id="floating-box-header" style="font-size: 15px;">TITLE</span>
-        <span id="floating-box-text">Text</span>
-
-        <button id="floating-box-upd" class="accent-button fill-width" style="margin-top: 20px;">UPDATE</button>
-        <button id="floating-box-ok"  class="              fill-width" style="margin-top: 20px;">OK</button>
-      </div>
-    </div>
-
     <div id="connecting-screen-bg" class="darken-bg">
       <div id="connecting-screen" class="flex-col">
         <span>Connecting</span>
@@ -148,6 +138,9 @@
 
               <input id= "user-settings-section-about-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-about-sel" class="settings-section-sel">ABOUT ORDER</label>
+
+              <input id= "user-settings-section-developers-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
+              <label for="user-settings-section-developers-sel" class="settings-section-sel">DEVELOPERS</label>
 
               <input id= "user-settings-section-logout-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-logout-sel" class="settings-section-sel" style="color: var(--danger);">LOG OUT</label>
@@ -317,6 +310,20 @@
                 </div>
               </div>
             </div>
+
+            <div id="user-settings-section-developers" class="settings-section user-settings-section" style="display: none;">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title">DEVELOPERS</span>
+                <div class="self-profile-setting-input-container">
+                  <div class="self-profile-setting-input-container">
+                    ACCENT COLOR
+                    <input id="create-bot-name" placeholder="Bot name"/>
+                    <button id="create-bot" class="apply-button">CREATE A BOT</button>
+                  </div>
+                  <span>YOUR BOTS: </span><span id="owned-bot-list"></span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -388,6 +395,8 @@
                     <!--Invites reside here-->
                   </div>
                   <button id="invite-create-button" class="apply-button">CREATE INVITE</button>
+                  <input id="invite-bot-id" placeholder="bot ID"></input>
+                  <button id="invite-bot-button" class="apply-button">INVITE BOT</button>
                 </div>
               </div>
             </div>
@@ -541,6 +550,16 @@
           </table></td>
         </tr></tbody></table>
       </td></tr>
+
+      <div id="floating-box-bg" class="darken-bg" style="display: none;">
+        <div id="floating-box" class="flex-col">
+          <span id="floating-box-header" style="font-size: 15px;">TITLE</span>
+          <span id="floating-box-text">Text</span>
+  
+          <button id="floating-box-upd" class="accent-button fill-width" style="margin-top: 20px;">UPDATE</button>
+          <button id="floating-box-ok"  class="              fill-width" style="margin-top: 20px;">OK</button>
+        </div>
+      </div>
 
       <tr style="height: fit-content"><td style="padding: 0"><div id="login-form" style="display: show;" class="flex-col">
         E-MAIL
