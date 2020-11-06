@@ -483,12 +483,12 @@ img.verified-badge:not(.true) {
 .darken-bg {
     position: fixed;
 
-    width: 100%;
-    top: 20px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 500;
+    width:   100%;
+    top:     20px;
+    left:    0;
+    right:   0;
+    bottom:  0;
+    z-index: 1000;
 
     margin: auto;
 

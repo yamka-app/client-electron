@@ -5,11 +5,11 @@
 
     margin: auto;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
+    top:     0;
+    left:    0;
+    right:   0;
+    bottom:  0;
+    z-index: 500;
 
     background-color: var(--shade-3-trans);
     border-radius: 5px;
@@ -18,6 +18,9 @@
 
     display: flex;
     flex-direction: row;
+}
+#user-settings-bg {
+    z-index: 500;
 }
 
 #user-settings-sidebar,
