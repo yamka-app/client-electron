@@ -40,6 +40,10 @@
     100% { background-color: var(--foreground-1); transform: scale(0.75) }
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     padding: 0px;
     margin: 0px;
@@ -745,6 +749,8 @@ span.fg-1 {
     height:   100%;
     display:  flex;
     overflow: hidden scroll;
+    
+    scroll-behavior: smooth;
 }
 #message-scroll-area {
     flex-direction: column-reverse;
@@ -828,10 +834,10 @@ span.fg-1 {
 .message-quote-section {
     padding: 5px;
 
-    border-left: 2px solid var(--accent-dim)   !important;
-    background-color: var(--accent-trans)      !important;
+    border-left:      2px solid var(--foreground) !important;
+    background-color: var(--shade-1)              !important;
 
-    border-radius: 0 5px 5px 0;
+    border-radius: 5px;
 }
 div.message-quote-section {
     cursor: pointer;

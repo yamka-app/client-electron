@@ -1829,7 +1829,7 @@ function _rendererFunc() {
         const msg = createMessage(id)
         msgArea.appendChild(msg)
         updateUser(entityCache[id].sender)
-        triggerAppear(msg)
+        //triggerAppear(msg)
 
         // Scroll down again if it was like that before
         if(scrolled)

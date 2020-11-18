@@ -261,6 +261,10 @@ input[type="radio"].settings-radio:checked + label {
     background-size: 400% 400%;
     animation: gradientAnimation 10s ease infinite;
 }
+#about-logo > img {
+    width: inherit;
+    height: inherit;
+}
 
 .trackbar {
     -webkit-appearance: none;
