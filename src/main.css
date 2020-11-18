@@ -40,10 +40,6 @@
     100% { background-color: var(--foreground-1); transform: scale(0.75) }
 }
 
-html {
-    scroll-behavior: smooth;
-}
-
 body {
     padding: 0px;
     margin: 0px;
@@ -383,33 +379,42 @@ label {
 
 .user-avatar-container {
     margin-left: 8px;
-    margin-top: 8px;
+    margin-top:  8px;
     position: relative;
 }
 .user-avatar {
-    width: 32px;
+    width:  32px;
     height: 32px;
 
     -webkit-mask-image: url('./icons/ava-mask.png');
-    mask-image: url('./icons/ava-mask.png');
+            mask-image: url('./icons/ava-mask.png');
 
     cursor: pointer;
 }
+.tiny-avatar {
+    width:  16px;
+    height: 16px;
+    margin-right:  6px;
+    border-radius: 8px;
+
+    -webkit-mask-image: none;
+            mask-image: none;
+}
 .user-online {
-    width: 9px;
+    width:  9px;
     height: 9px;
     position: absolute;
-    top: 21px;
+    top:  21px;
     left: 21px;
 }
 
 .user-nickname-container {
-    font-size: var(--font-size);
     font-family: Montserrat;
+    font-size:   var(--font-size);
 
     position: absolute;
-    left: 44px;
-    top: 18px;
+    left:     44px;
+    top:      18px;
 
     cursor: pointer;
 }
@@ -749,8 +754,6 @@ span.fg-1 {
     height:   100%;
     display:  flex;
     overflow: hidden scroll;
-    
-    scroll-behavior: smooth;
 }
 #message-scroll-area {
     flex-direction: column-reverse;
@@ -799,10 +802,14 @@ span.fg-1 {
 .message-avatar-container {
     position: relative;
 }
+.reply-avatar-container {
+    align-items: center;
+}
 .message-avatar {
+    border-radius: 16px;
+
     -webkit-mask-image: none;
             mask-image: none;
-    border-radius: 16px;
 }
 
 .message-content {

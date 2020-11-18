@@ -341,6 +341,9 @@ input[type="radio"].settings-radio:checked + label {
     padding:          unset;
     backdrop-filter:  unset;
 }
+#group-create-box {
+    width: 300px;
+}
 #group-delete-box {
     width:  fit-content;
     height: fit-content;

@@ -8,6 +8,10 @@ const marked = require("marked");
 const remark = require('remark')
 const gemojiToEmoji = require('remark-gemoji-to-emoji')
 
+window.__forceSmoothScrollPolyfill__ = true;
+const smoothscroll = require('smoothscroll-polyfill')
+smoothscroll.polyfill()
+
 const { create } = require('domain')
 const { url } = require('inspector')
 
@@ -1511,14 +1515,35 @@ function _rendererFunc() {
                     // Just plain text
                     sectionElement = document.createElement('div')
                     sectionElement.classList.add('message-quote-section')
-                    sectionElement.innerHTML = markupText(section.text)
-                    twemoji.parse(sectionElement, { folder: 'svg', ext: '.svg' })
+
+                    const txt = document.createElement('div')
+                    txt.innerHTML = markupText(section.text)
+                    twemoji.parse(txt, { folder: 'svg', ext: '.svg' })
+                    sectionElement.appendChild(txt)
 
                     // If "blob" ID (actually message ID in this case) != 0 then show the message when clicking on it
-                    if(section.blob != 0) {
+                    // and also add the "*nickname* said:" thingy
+                    if(section.blob !== 0) {
                         sectionElement.addEventListener('click', (e) => {
                             e.stopImmediatePropagation()
                             showFloatingMessage(section.blob)
+                        })
+                        reqEntities([{ type: 'message', id: section.blob }], false, () => {
+                            const replyMsg = entityCache[section.blob]
+                            reqEntities([{ type: 'user', id: replyMsg.sender }], false, () => {
+                                const replyAvaContainer = document.createElement('div')
+                                replyAvaContainer.classList.add('reply-avatar-container', 'flex-row')
+                                sectionElement.insertBefore(replyAvaContainer, txt)
+                        
+                                const replyAva = document.createElement('img')
+                                replyAva.classList.add('user-avatar', 'tiny-avatar', 'user-avatar-' + replyMsg.sender)
+                                replyAvaContainer.appendChild(replyAva)
+                                replyAva.onclick = (e) => { stopPropagation(e); showProfile(replyMsg.sender) }
+    
+                                const replyNickname = document.createElement('span')
+                                replyNickname.classList.add('message-user-nickname', 'user-nickname-' + replyMsg.sender)
+                                replyAvaContainer.appendChild(replyNickname)
+                            })
                         })
                     }
                     break
@@ -1821,19 +1846,21 @@ function _rendererFunc() {
     // Appends a message to the message area
     function appendMsg(id) {
         const msgArea = document.getElementById('message-area')
+        const msgScrollArea = document.getElementById('message-scroll-area')
 
         // Check if scrolled all the way down
-        const scrolled = msgArea.scrollTop === (msgArea.scrollHeight - msgArea.offsetHeight)
+        const scrolled = msgScrollArea.scrollTop - (msgScrollArea.scrollHeight - msgScrollArea.offsetHeight) <= 100
 
         // Create the message
         const msg = createMessage(id)
         msgArea.appendChild(msg)
         updateUser(entityCache[id].sender)
-        //triggerAppear(msg)
 
         // Scroll down again if it was like that before
-        if(scrolled)
-            msgArea.scrollTop = msgArea.scrollHeight
+        if(scrolled) {
+            msgScrollArea.scrollBy({ top: -msg.offsetHeight, left: 0 })
+            msg.scrollIntoView({ block: 'end', behavior: 'smooth' })
+        }
     }
     
     // Packet reception handler
