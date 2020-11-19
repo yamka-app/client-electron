@@ -7,7 +7,8 @@ const zlib = require('zlib')
 
 if (require('electron-squirrel-startup')) return app.quit()
 
-const configPath = path.join(__dirname, "_order_config.json")
+const dataHomePath = path.join(app.getPath('appData'), 'ordermsg')
+const configPath = path.join(dataHomePath, 'order_config.json')
 var config = {}
 
 var mainWindow = null
@@ -57,13 +58,11 @@ app.on('ready', () => {
     // Read config
     try {
         config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    }
-    catch(e) {
+    } catch(e) {
+        if(!fs.existsSync(dataHomePath))
+            fs.mkdirSync(dataHomePath)
         // Default config
-        config = {
-            width: 1280,
-            height: 720
-        }
+        config = {}
     }
 
     // Create the window
