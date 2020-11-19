@@ -1163,9 +1163,9 @@ function webprotConnect() {
 }
 
 ipcMain.on('asynchronous-message', (event, arg) => {
-    if(arg.action == 'webprot.connect') {
+    if(arg.action === 'webprot.connect') {
         webprotConnect()
-    } else if(arg.action == 'webprot.login') {
+    } else if(arg.action === 'webprot.login') {
         webprotSendPacket({
             'type': 'login',
             'operId': arg.operId,
@@ -1271,5 +1271,17 @@ ipcMain.on('asynchronous-message', (event, arg) => {
             bot:   arg.bot,
             group: arg.group
         })
+    }
+})
+
+ipcMain.on('synchronous-message', (event, arg) => {
+    if(arg.action === 'config.set') {
+        config[arg.k] = arg.v
+        fs.writeFile(configPath, JSON.stringify(config), () => {})
+        event.returnValue = undefined
+    } else if(arg.action === 'config.get') {
+        event.returnValue = config[arg.k]
+    } else {
+        event.returnValue = undefined
     }
 })

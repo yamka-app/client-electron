@@ -16,16 +16,24 @@
 }
 
 @keyframes appear {
-    0%   { transform: scale(0.0); }
-    1%   { transform: scale(0.5); }
+    0%   { transform: scale(0.0);  }
+    1%   { transform: scale(0.5);  }
     75%  { transform: scale(1.05); }
-    100% { transform: scale(1.0); }
+    100% { transform: scale(1.0);  }
 }
-
 @keyframes disappear {
     0%   { transform: scale(1.0); opacity: 1; }
     99%  { transform: scale(0.5); opacity: 0; }
     100% { transform: scale(0.0); opacity: 0; }
+}
+
+@keyframes slideIn {
+      0% { transform: translateX(-500px); }
+    100% { transform: translateX(   0px); }
+}
+@keyframes slideInRight {
+      0% { transform: translateX(500px); }
+    100% { transform: translateX(  0px); }
 }
 
 @keyframes gradientAnimation {
@@ -129,8 +137,7 @@ input {
     outline: none !important;
 
     box-sizing:border-box;
-    margin-top: 5px;
-    padding-left: 10px;
+    padding-left:  10px;
     padding-right: 10px;
 
     background-color: var(--shade-4);
@@ -148,6 +155,7 @@ textarea {
 }
 input {
     height: 35px;
+    margin-top: 5px;
 }
 input:hover {
     border: 1px solid var(--accent-dim);
@@ -164,7 +172,6 @@ input:focus {
 
 button {
     outline: none !important;
-    box-shadow: none;
 
     margin-top: 1em;
     height:     35px;
@@ -180,6 +187,8 @@ button {
     transition:  color            0.1s ease,
                  background-color 0.1s ease,
                  transform        0.1s ease;
+
+    box-shadow: 0 0 5px var(--shadow);
 
     cursor: pointer;
 }
@@ -231,13 +240,10 @@ button:active {
     margin-bottom: 10px;
 }
 
-.cg-button img {
-    filter: brightness(calc(100% - var(--darken-icon)));
-}
-
 button.icon-button {
     background-color: transparent;
     transition:       filter 0.1s ease;
+    box-shadow: none;
 
     border:  none;
     padding: 0 7px 0 7px;
@@ -245,6 +251,14 @@ button.icon-button {
 }
 button.icon-button:hover {
     filter: brightness(1.5);
+}
+
+button.cg-button {
+    padding: 5px;
+    height:  fit-content;
+}
+button.cg-button img {
+    filter: brightness(calc(100% - var(--darken-icon)));
 }
 
 *       > button.hover-show-button {
@@ -266,12 +280,16 @@ button.icon-button:hover {
     background-color: transparent;
     border:           none;
     outline:          none;
+    box-shadow:       none;
 
     padding: 0 3px 0 3px;
     margin:  0;
     height: fit-content;
 
     cursor: pointer;
+}
+.title-bar-button:hover {
+    background-color: transparent;
 }
 
 progress {
@@ -468,13 +486,16 @@ img.verified-badge:not(.true) {
     padding: 0;
 
     background-color: var(--shade-1);
-    border-radius: 5px;
-    transition: background-color 0.1s ease;
+    border-radius:    5px;
+    transition:       background-color 0.1s ease;
+
+    animation: slideInRight 0.2s ease;
 
     cursor: pointer;
 }
 .user-summary:hover {
     background-color: var(--shade-2);
+    box-shadow: 0 0 5px var(--shadow);
 }
 
 .friend-remove-button,
@@ -656,8 +677,9 @@ input[type="color"] {
     width: 100%;
     padding: 5px;
 
-    border-radius: 10px 10px 0 0;
+    border-radius:    10px 10px 0 0;
     background-color: var(--shade-2);
+    box-shadow:       0 0 5px var(--shadow);
 }
 
 textarea.message-input {
@@ -726,6 +748,7 @@ textarea.code-input {
     font-size:   var(--font-size);
 
     justify-content: space-between;
+    box-shadow: 0 0 5px var(--shadow);
 }
 .message-file-header {
     color: var(--foreground-1);
@@ -758,6 +781,7 @@ span.fg-1 {
 #message-scroll-area {
     flex-direction: column-reverse;
     justify-items:  flex-end;
+    padding-bottom: 20px;
 }
 
 #message-area-header,
@@ -767,6 +791,7 @@ span.fg-1 {
 
     background-color: var(--shade-1);
     border-radius:    10px;
+    box-shadow:       0 0 5px var(--shadow);
 }
 #message-area-header p,
 #message-area-explainer p {
@@ -782,7 +807,8 @@ span.fg-1 {
     padding: 7px;
 
     background-color: var(--shade-3);
-    transition:       background-color 0.1s ease;
+    transition:       box-shadow       0.1s ease,
+                      background-color 0.1s ease;
     border-radius:    10px;
 
     vertical-align: top;
@@ -841,15 +867,15 @@ span.fg-1 {
 .message-quote-section {
     padding: 5px;
 
-    border-left:      2px solid var(--foreground) !important;
-    background-color: var(--shade-1)              !important;
+    border-left:      2px solid var(--foreground-2) !important;
+    background-color: var(--shade-1)                !important;
 
     border-radius: 5px;
+    box-shadow: 0 0 5px var(--shadow);
 }
 div.message-quote-section {
     cursor: pointer;
 }
-
 .message-code-section {
     margin-top: 5px;
     padding: 5px;
@@ -861,7 +887,6 @@ div.message-quote-section {
 
     user-select: text;
 }
-
 .message-img-section {
     display: block;
 
@@ -909,6 +934,24 @@ img.large-emoji {
 }
 
 
+.message > .message-action-bar {
+    position: absolute;
+    right:     5px;
+    top:     -10px;
+    padding:   3px;
+
+    opacity:    0;
+    transition: opacity 0.2s ease;
+
+    border-radius:    5px;
+    background-color: var(--shade-3);
+    box-shadow:       0 0 5px var(--shadow);
+}
+.message:hover > .message-action-bar {
+    opacity: 1;
+}
+
+
 
 #group-list-sidebar-container {
     width: 10px;
@@ -936,7 +979,9 @@ img.large-emoji {
     border-radius: 24px;
     transition: background-color 0.1s ease,
                 border-radius    0.1s ease,
-                color            0.1s ease;
+                color            0.1s ease,
+                box-shadow       0.1s ease;
+    box-shadow: 0 0 2px var(--shadow);
 
     cursor: pointer;
 
@@ -956,6 +1001,7 @@ img.large-emoji {
     background-color: var(--accent);
     border-radius:    12px;
     color:            var(--accent-foreground);
+    box-shadow:       0 0 5px var(--shadow);
 }
 img.group-icon,
 img.group-icon:hover {
@@ -1014,9 +1060,11 @@ img.group-icon:hover {
     margin-bottom: 10px;
     padding: 10px;
 
-    background-color: var(--shade-4);
-    border-radius: 5px;
-    transition: background-color 0.1s ease;
+    background-color: var(--shade-3);
+    border-radius:    5px;
+    transition:       background-color 0.1s ease;
+
+    animation: slideIn 0.2s ease;
 
     font-family: Montserrat;
     font-size:   var(--font-size);
@@ -1026,7 +1074,8 @@ img.group-icon:hover {
 .role-button:hover,
 .channel-button:hover,
 .channel-button-selected {
-    background-color: var(--shade-5);
+    background-color: var(--shade-4);
+    box-shadow: 0 0 5px var(--shadow);
 }
 
 .role-button {

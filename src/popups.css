@@ -357,6 +357,8 @@ input[type="radio"].settings-radio:checked + label {
     width:   50vw;
     height:  55vh;
     padding: 0;
+
+    box-shadow: 0 0 5px var(--shadow);
 }
 #profile-topbar {
     height: fit-content;
@@ -369,6 +371,7 @@ input[type="radio"].settings-radio:checked + label {
 
     background-color: var(--shade-3);
     border-radius:    5px 5px 0 0;
+    box-shadow:       0 0 5px var(--shadow);
 
     align-items: center;
 }
@@ -396,9 +399,10 @@ input[type="radio"].settings-radio:checked + label {
 .mutual-thing {
     padding:          10px;
     margin-bottom:    10px;
-    background-color: transparent;
-    transition:       background-color 0.1s ease;
-    border-radius:    10px;
+    background-color: var(--shade-3-trans);
+    transition:       box-shadow       0.1s ease,
+                      background-color 0.1s ease;
+    border-radius:    5px;
 
     font-family: Montserrat;
     font-size:   var(--font-size);
@@ -408,6 +412,7 @@ input[type="radio"].settings-radio:checked + label {
 }
 .mutual-thing:hover {
     background-color: var(--shade-4);
+    box-shadow:       0 0 5px var(--shadow);
 }
 
 #login-form, #mfa-form, #signup-form {
@@ -425,6 +430,7 @@ input[type="radio"].settings-radio:checked + label {
 }
 
 #owned-bot-list,
-#floating-box-text {
+#floating-box-text,
+#mfa-code-manual {
     user-select: text;
 }

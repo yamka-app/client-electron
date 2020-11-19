@@ -13,7 +13,8 @@ const smoothscroll = require('smoothscroll-polyfill')
 smoothscroll.polyfill()
 
 const { create } = require('domain')
-const { url } = require('inspector')
+const { url } = require('inspector');
+const { isNullOrUndefined } = require('util');
 
 hljs.configure({ useBR: true })
 
@@ -95,12 +96,24 @@ function _rendererFunc() {
     // Get the browser window
     var window = BrowserWindow.getFocusedWindow()
 
-    // Try to connect and send a continuation later if we have one
-    if(localStorage.getItem('contToken') !== undefined) {
-        ipcSend({
-            action: 'webprot.connect'
+    // Config
+    function configSet(k, v) {
+        ipcSendSync({
+            action: 'config.set',
+            k:      k,
+            v:      v
         })
-    } 
+    }
+    function configGet(k) {
+        return ipcSendSync({
+            action: 'config.get',
+            k:      k
+        })
+    }
+
+    ipcSend({
+        action: 'webprot.connect'
+    })
 
     // Upload and download blobs
     function upload(path, onEnd, onProgressMade) {
@@ -127,8 +140,8 @@ function _rendererFunc() {
 
     // Set default settings
     for(const kv of Object.entries(defaultSettings))
-        if(localStorage.getItem(kv[0]) === null)
-            localStorage.setItem(kv[0], kv[1].toString())
+        if(isNullOrUndefined(configGet(kv[0])))
+            configSet(kv[0], kv[1].toString())
 
     // Settings
     const accentColorChange = document.getElementById('accent-color-change')
@@ -151,22 +164,22 @@ function _rendererFunc() {
     }
 
     const notificationSwitch    = document.getElementById('enable-notifications')
-    notificationSwitch.onchange = (e) => localStorage.setItem('notifications', notificationSwitch.checked)
-    notificationSwitch.checked  = localStorage.getItem('notifications') === 'true'
+    notificationSwitch.onchange = (e) => configSet('notifications', notificationSwitch.checked)
+    notificationSwitch.checked  = configGet('notifications') === 'true'
 
     const sendTypingSwitch      = document.getElementById('send-typing')
-    sendTypingSwitch.onchange   = (e) => localStorage.setItem('sendTyping', sendTypingSwitch.checked)
-    sendTypingSwitch.checked    = localStorage.getItem('sendTyping') === 'true'
+    sendTypingSwitch.onchange   = (e) => configSet('sendTyping', sendTypingSwitch.checked)
+    sendTypingSwitch.checked    = configGet('sendTyping') === 'true'
 
     const previewYtSwitch = document.getElementById('preview-yt')
-    previewYtSwitch.onchange = (e) => localStorage.setItem('previewYt', previewYtSwitch.checked)
-    previewYtSwitch.checked = localStorage.getItem('previewYt') === 'true'
+    previewYtSwitch.onchange = (e) => configSet('previewYt', previewYtSwitch.checked)
+    previewYtSwitch.checked = configGet('previewYt') === 'true'
 
     // Sets the font size
     const docStyle =     document.documentElement.style
     const docStyleComp = getComputedStyle(document.documentElement)
     function setFontSize(pt) {
-        localStorage.setItem('fontSize', pt)
+        configSet('fontSize', pt)
         fontSizeChange.value = pt
 
         docStyle.setProperty('--font-size', pt + 'pt')
@@ -175,13 +188,13 @@ function _rendererFunc() {
 
     // Sets the accent color
     function setAccentColor(color) {
-        localStorage.setItem('accentColor', color)
+        configSet('accentColor', color)
         accentColorChange.value = color
         recomputeStyling()
     }
 
     function recomputeStyling() {
-        const color = localStorage.getItem('accentColor')
+        const color = configGet('accentColor')
 
         docStyle.setProperty('--accent',            tinycolor(color).toString())
         docStyle.setProperty('--accent-dim',        tinycolor(color).darken(amount=10).toString())
@@ -205,29 +218,31 @@ function _rendererFunc() {
         document.getElementById('theme-author').innerHTML = escapeHtml(docStyleComp.getPropertyValue('--theme-author'))
     }
 
-    // Loads a (presumably custom theme)
+    // Loads a (presumably custom) theme
     function loadTheme(theme, custom=true) {
         document.getElementById('theme-css').href = (custom ? 'file://' : '') + theme
         setTimeout(recomputeStyling, 100) // TODO: fix :^)
 
-        localStorage.setItem('theme', theme)
-        localStorage.setItem('customTheme', custom)
+        configSet('theme', theme)
+        configSet('customTheme', custom)
+
+        if(!custom)
+            themeSwitch.checked = (theme === 'themes/light.css')
     }
 
     // Sets one of the default themes
     function setTheme(theme) {
-        loadTheme(path.join(__dirname, 'themes', theme + '.css'), false)
-        themeSwitch.checked = theme === 'light'
+        loadTheme('themes/' + theme + '.css', false)
     }
 
-    setAccentColor(localStorage.getItem('accentColor'))
-    setFontSize   (localStorage.getItem('fontSize'))
-    loadTheme     (localStorage.getItem('theme'), localStorage.getItem('customTheme'))
+    setAccentColor(configGet('accentColor'))
+    setFontSize   (configGet('fontSize'))
+    loadTheme     (configGet('theme'), configGet('customTheme') === 'true')
 
     // Determines whether we sould receive notifications
     function shouldReceiveNotif() {
         return (remote.getGlobal('webprotState').self.status !== 3) // no in "do not distract" mode
-            && (localStorage.getItem('notifications') === 'true')
+            && (configGet('notifications') === 'true')
     }
 
     // Adjust the height of a TextArea
@@ -513,6 +528,9 @@ function _rendererFunc() {
         console.log('%c[SENDING]', 'color: #00bb00; font-weight: bold;', data)
         ipcRenderer.send('asynchronous-message', data)
     }
+    function ipcSendSync(data) {
+        return ipcRenderer.sendSync('synchronous-message', data)
+    }
 
     // Update info about self
     function statusStr(status) {
@@ -641,6 +659,14 @@ function _rendererFunc() {
                     cb()
             }
         }
+    }
+
+    // Puts entities
+    function putEntities(ents) {
+        ipcSend({
+            action:   'webprot.entity-put',
+            entities: ents
+        })
     }
 
     // Updates all information about a group
@@ -895,7 +921,9 @@ function _rendererFunc() {
                             updateUser(id)
                         }
                     } else {
-                        memberList.appendChild(createUserSummary(id))
+                        const elm = createUserSummary(id)
+                        elm.style.animationDelay = (0.2 * userIds.indexOf(id) / userIds.length) + 's'
+                        memberList.appendChild(elm)
                     }
                 })
             })
@@ -958,10 +986,11 @@ function _rendererFunc() {
 
     var typingClearTimer, currentlyTyping
     function sendTyping() {
-        if(localStorage.getItem('sendTyping') === 'false')
+        if(configGet('sendTyping') === 'false')
             return
         if(currentlyTyping)
             return
+
         // Cancel the previous typing clear timer
         if(typingClearTimer)
             clearTimeout(typingClearTimer)
@@ -1140,14 +1169,13 @@ function _rendererFunc() {
                 summary = section.text
                 break
             }
-        }
-        // If there's no text in the message, find a file
-        if(summary === '') {
-            for(section of msg.sections) {
-                if(section.type === 'file') {
-                    summary = 'File'
-                    break
-                }
+            if(section.type === 'quote') {
+                summary = 'Quote: ' + section.text
+                break
+            }
+            if(section.type === 'file') {
+                summary = 'File'
+                break
             }
         }
         // If there's still nothing
@@ -1330,6 +1358,45 @@ function _rendererFunc() {
             if (parName[0] === param)
                 return parName[1] === undefined ? true : parName[1]
         }
+    }
+
+    // Creates a message action bar
+    function createMessageActionBar(id) {
+        const bar = document.createElement('div')
+        bar.classList.add('message-action-bar', 'flex-row')
+
+        // The set of all message action buttons
+        const buttons = [
+            { icon: 'delete', selfOnly: true, onclick: () => putEntities([{ type: 'message', id: id, sender: 0 }]) },
+            { icon: 'reply', selfOnly: false, onclick: () => {
+                const sectionId = msgSections.length
+                createInputSection('quote', sectionId, () => {
+                    removeInputSection(sectionId)
+                })
+    
+                msgSections[sectionId].blob = id
+    
+                msgSections[sectionId].typeElm.value = messageSummary(id)
+                adjTaHeight(msgSections[sectionId].typeElm)
+            }}
+        ]
+
+        for(const btnDesc of buttons) {
+            // Don't add "self-only" buttons to messages not sent by self
+            const sentBySelf = entityCache[id].sender === remote.getGlobal('webprotState').self.id
+            if((btnDesc.selfOnly && sentBySelf) || !btnDesc.selfOnly) {
+                const btn = document.createElement('button')
+                btn.classList.add('icon-button', 'cg-button')
+                btn.onclick = btnDesc.onclick
+                bar.appendChild(btn)
+
+                const img = document.createElement('img')
+                img.src = 'icons/message_actions/' + btnDesc.icon + '.png'
+                btn.appendChild(img)
+            }
+        }
+
+        return bar
     }
 
     // Creates a message box seen in the message area
@@ -1522,7 +1589,7 @@ function _rendererFunc() {
                     sectionElement.appendChild(txt)
 
                     // If "blob" ID (actually message ID in this case) != 0 then show the message when clicking on it
-                    // and also add the "*nickname* said:" thingy
+                    // and also add the "*nickname* said on *time*:" thingy
                     if(section.blob !== 0) {
                         sectionElement.addEventListener('click', (e) => {
                             e.stopImmediatePropagation()
@@ -1543,6 +1610,11 @@ function _rendererFunc() {
                                 const replyNickname = document.createElement('span')
                                 replyNickname.classList.add('message-user-nickname', 'user-nickname-' + replyMsg.sender)
                                 replyAvaContainer.appendChild(replyNickname)
+    
+                                const replySaid = document.createElement('span')
+                                replySaid.classList.add('message-time')
+                                replySaid.innerHTML = escapeHtml('said on ' + idToTime(replyMsg.id) + ':')
+                                replyAvaContainer.appendChild(replySaid)
                             })
                         })
                     }
@@ -1551,19 +1623,6 @@ function _rendererFunc() {
             if(sectionElement != null)
                 content.appendChild(sectionElement)
         }
-
-        // When the user clicks a message, quote its first section
-        elm.addEventListener('click', (e) => {
-            const sectionId = msgSections.length
-            createInputSection('quote', sectionId, () => {
-                removeInputSection(sectionId)
-            })
-
-            msgSections[sectionId].blob = id
-
-            msgSections[sectionId].typeElm.value = messageSummary(id)
-            adjTaHeight(msgSections[sectionId].typeElm)
-        })
 
         // When clicking a link, open it in a browser
         const links = elm.getElementsByTagName("a")
@@ -1577,7 +1636,7 @@ function _rendererFunc() {
             // Additionally, if the link is a YouTube video, add an iframe
             const hostname = parseHostname(href)
             if(hostname === 'youtube.com' || hostname === 'youtu.be'
-                && localStorage.getItem('previewYt') === 'true') {
+                && configGet('previewYt') === 'true') {
                 // Get the video ID
                 var videoId = ''
                 if(hostname == 'youtube.com')
@@ -1594,6 +1653,9 @@ function _rendererFunc() {
                 content.appendChild(iframe)
             }
         }
+
+        // Add the action bar
+        elm.appendChild(createMessageActionBar(id))
 
         return elm
     }
@@ -1623,7 +1685,10 @@ function _rendererFunc() {
                 members = members.map(x => entityCache[x.id])
                 members.forEach(member => {
                     const id = member.id
-                    memberList.appendChild(createUserSummary(id))
+                    const elm = createUserSummary(id)
+
+                    elm.style.animationDelay = (0.2 * members.indexOf(member) / members.length) + 's'
+                    memberList.appendChild(elm)
                     // Force user color (no need to request it since we know it from the role already)
                     entityCache[id].color = entityCache[role].color
                     updateUser(id)
@@ -1773,7 +1838,7 @@ function _rendererFunc() {
                     download(group.icon, (blob) => elm.src = 'file://' + blob.path)
                 }
                 // Add the default classes and a click listener
-                elm.classList.add('group-icon', 'group-icon-' + group.id, 'cg-button')
+                elm.classList.add('group-icon', 'group-icon-' + group.id)
                 elm.onclick = (e) => { viewingGroup = group.id; viewingChan = group.channels[0]; updLayout() }
                 groupList.append(elm)
             }
@@ -1821,6 +1886,7 @@ function _rendererFunc() {
             // Add new ones
             for(let chanId of channels) {
                 const elm = createChannelButton(chanId, (e) => { viewingChan = chanId; updLayout() })
+                elm.style.animationDelay = (0.2 * channels.indexOf(chanId) / channels.length) + 's'
                 channelList.append(elm)
 
                 if(entityCache[chanId].rules) {
@@ -1844,7 +1910,7 @@ function _rendererFunc() {
     }
 
     // Appends a message to the message area
-    function appendMsg(id) {
+    function appendMessage(id) {
         const msgArea = document.getElementById('message-area')
         const msgScrollArea = document.getElementById('message-scroll-area')
 
@@ -1862,6 +1928,13 @@ function _rendererFunc() {
             msg.scrollIntoView({ block: 'end', behavior: 'smooth' })
         }
     }
+
+    // Deletes a message
+    function removeMesssage(id) {
+        const msgs = document.getElementsByClassName('message-' + id)
+        for(const msg of msgs)
+            msg.remove()
+    }
     
     // Packet reception handler
     function ipcRecv(evt, arg) {
@@ -1878,7 +1951,7 @@ function _rendererFunc() {
             case 'webprot.connected':
                 setTimeout(() => hideElm(document.getElementById('connecting-screen-bg')), 1000) // kinda wait \(-_-)/
                 // Send the continuation token
-                const contToken = localStorage.getItem('contToken')
+                const contToken = configGet('contToken')
                 if(contToken) {
                     ipcSend({
                         action:   'webprot.login',
@@ -2015,15 +2088,19 @@ function _rendererFunc() {
                         document.getElementById('owned-bot-list').innerHTML = entity.ownedBots.join(', ')
                     }
 
+                    // Delete messages
+                    if(arg.spontaneous && entity.type === 'message' && entity.sender === 0)
+                        removeMesssage(entity.id)
+
                     // Append messages to the open channel
-                    if(arg.spontaneous && entity.type === 'message' && entity.channel === viewingChan)
-                        appendMsg(entity.id)
+                    else if(arg.spontaneous && entity.type === 'message' && entity.channel === viewingChan)
+                        appendMessage(entity.id)
 
                     // Send message notifications
-                    if(arg.spontaneous && entity.type === 'message' &&
+                    if(arg.spontaneous && entity.type === 'message' && entity.sender !== 0 &&
                         (entity.channel !== viewingChan ||  // either we're sitting in another channel
-                         !window.isFocused())              // or the window is out of focus
-                         && shouldReceiveNotif()) {        // (notifications must be enabled)
+                         !window.isFocused())               // or the window is out of focus
+                         && shouldReceiveNotif()) {         // (notifications must be enabled)
                         reqEntities([{ type: 'user', id: entity.sender}], false, () => {
                             const sender = entityCache[entity.sender]
                             if(sender.id != remote.getGlobal('webprotState').self.id) {
@@ -2113,6 +2190,7 @@ function _rendererFunc() {
                 // Generate the code
                 qr.make()
                 document.getElementById('mfa-qr-placeholder').innerHTML = qr.createSvgTag(3)
+                document.getElementById('mfa-code-manual').innerHTML = escapeHtml(arg.secret)
 
                 // Show the banner
                 triggerAppear(document.getElementById('mfa-qr-banner'), true)
@@ -2120,7 +2198,7 @@ function _rendererFunc() {
 
             case 'webprot.cont-token':
                 // Store the token
-                localStorage.setItem('contToken', arg.token)
+                configSet('contToken', arg.token)
                 break
 
             case 'webprot.completion-notification':
