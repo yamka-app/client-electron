@@ -14,7 +14,7 @@ smoothscroll.polyfill()
 
 const { create } = require('domain')
 const { url } = require('inspector');
-const { isNullOrUndefined } = require('util');
+const { isNullOrUndefined, isNull } = require('util');
 
 hljs.configure({ useBR: true })
 
@@ -1097,19 +1097,21 @@ function _rendererFunc() {
                 const readableSize = readableFileSize(fileSize)
 
                 const headerSpan = document.createElement('span')
-                headerSpan.innerHTML = 'File (' + readableSize + '):'
+                headerSpan.innerHTML = isNullOrUndefined(readableSize) ? 'File' : ('File (' + readableSize + '):')
                 headerSpan.classList.add('message-file-header')
                 typeElm.appendChild(headerSpan)
 
-                const nameSpan = document.createElement('code')
-                nameSpan.innerHTML = escapeHtml(filename)
-                typeElm.appendChild(nameSpan)
-
-                const progress = document.createElement('progress')
-                progress.classList.add('fill-width')
-                typeElm.appendChild(progress)
-                progress.max = 100
-                progress.value = 0 
+                if(!isNullOrUndefined(filename)) {
+                    const nameSpan = document.createElement('code')
+                    nameSpan.innerHTML = escapeHtml(filename)
+                    typeElm.appendChild(nameSpan)
+    
+                    const progress = document.createElement('progress')
+                    progress.classList.add('fill-width')
+                    typeElm.appendChild(progress)
+                    progress.max = 100
+                    progress.value = 0
+                }
                 break
             case 'code':
                 typeElm = document.createElement('textarea')

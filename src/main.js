@@ -102,7 +102,7 @@ const webprotSettings = {
     'host': 'ordermsg.tk',
     'port': 1746,
     'blobPort': 1747,
-    'version': 3,
+    'version': 4,
     'compressionThreshold': 32
 }
 
