@@ -2155,7 +2155,7 @@ function _rendererFunc() {
                     // Send message notifications
                     if(arg.spontaneous && entity.type === 'message' && entity.sender !== 0 &&
                         (entity.channel !== viewingChan ||  // either we're sitting in another channel
-                         !window.isFocused())               // or the window is out of focus
+                         !document.hasFocus())              // or the window is out of focus
                          && shouldReceiveNotif()) {         // (notifications must be enabled)
                         reqEntities([{ type: 'user', id: entity.sender}], false, () => {
                             const sender = entityCache[entity.sender]
