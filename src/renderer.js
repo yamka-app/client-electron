@@ -529,7 +529,8 @@ function _rendererFunc() {
 
     // Send a data packet
     function ipcSend(data) {
-        console.log('%c[SENDING]', 'color: #00bb00; font-weight: bold;', data)
+        if(data.action !== 'webprot.connect')
+            console.log('%c[SENDING]', 'color: #00bb00; font-weight: bold;', data)
         ipcRenderer.send('asynchronous-message', data)
     }
     function ipcSendSync(data) {
@@ -1534,6 +1535,9 @@ function _rendererFunc() {
                         if(['png', 'jpeg', 'jpg', 'gif', 'bmp'].includes(extenstion)) {
                             const w = Number(size.split('x')[0])
                             const h = Number(size.split('x')[1])
+                            fileSectionElement.classList.add('message-img-section-container')
+                            fileSectionElement.style.width  = w + 'px'
+                            fileSectionElement.style.height = h + 'px'
                             
                             // Create the preview element
                             let canvasElement
@@ -1543,7 +1547,7 @@ function _rendererFunc() {
                             if(preview !== '') {
                                 canvasElement = document.createElement('canvas')
                                 canvasElement.classList.add('message-img-section')
-                                canvasElement.width = w
+                                canvasElement.width  = w
                                 canvasElement.height = h
     
                                 const adjW = (32 * w / h).toFixed(0) // to preserve the aspect ratio
@@ -1568,9 +1572,9 @@ function _rendererFunc() {
                             download(section.blob, (blob) => {
                                 imgElement.src = 'file://' + blob.path
                                 fileSectionElement.appendChild(imgElement)
-                                // Remove the preview element
+                                // Deblur the preview element
                                 if(canvasElement)
-                                    canvasElement.remove()
+                                    canvasElement.classList.add('deblur')
                                 // Enlarge the image when clicking on it
                                 imgElement.onclick = (e) => {
                                     stopPropagation(e)
@@ -1667,7 +1671,7 @@ function _rendererFunc() {
         }
 
         // Edit on double-click
-        elm.ondblclick = () => editMessage(id)
+        elm.ondblclick = () => { if(msg.sender === remote.getGlobal('webprotState').self.id) editMessage(id) }
 
         // When clicking a link, open it in the user's browser
         const links = elm.getElementsByTagName("a")
@@ -2542,6 +2546,9 @@ function _rendererFunc() {
     // "About Order" buttons
     document.getElementById('view-on-github').addEventListener('click', (e) => {
         shell.openExternal("https://github.com/ordermsg")
+    })
+    document.getElementById('donate').addEventListener('click', (e) => {
+        shell.openExternal("https://patreon.com/portasynthinca3")
     })
 
     // Friend control buttons

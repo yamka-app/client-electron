@@ -134,7 +134,8 @@ input {
     background-color: var(--shade-4);
     border-radius: 3px;
     border: 1px solid transparent;
-    transition: border-color 0.1s;
+    transition: border-color 0.1s ease,
+                box-shadow   0.1s ease;
     box-shadow: 0 0 5px var(--shadow);
 
     color: var(--foreground);
@@ -149,12 +150,13 @@ input {
     margin-top: 5px;
 }
 input:hover {
-    border: 1px solid var(--accent-dim);
-    transition: border-color 0.1s;
+    border:     1px solid var(--accent-dim);
+    box-shadow: 0 0 3px var(--accent);
 }
 input:focus {
-    border: 1px solid var(--accent);
+    border:     1px solid var(--accent);
     transition: border-color 0.1s;
+    box-shadow: 0 0 3px var(--accent);
 }
 
 .fill-width {
@@ -194,6 +196,7 @@ button:active {
     border-bottom:    3px solid var(--accent-dim-2);
     background-color: var(--accent);
     color:            var(--accent-foreground);
+    box-shadow:       0 0 3px var(--accent);
 }
 .accent-button:hover {
     background-color: var(--accent-dim);
@@ -206,6 +209,7 @@ button:active {
     border-bottom:    3px solid var(--danger-dim-2);
     background-color: var(--danger);
     color:            var(--danger-foreground);
+    box-shadow:       0 0 3px var(--danger);
 }
 .danger-button:hover {
     background-color: var(--danger-dim-1);
@@ -218,6 +222,7 @@ button:active {
     border-bottom:    3px solid var(--apply-dim-2);
     background-color: var(--apply);
     color:            var(--apply-foreground);
+    box-shadow:       0 0 3px var(--apply);
 }
 .apply-button:hover {
     background-color: var(--apply-dim-1);
@@ -244,11 +249,11 @@ button.icon-button:hover {
     filter: brightness(1.5);
 }
 
-button.cg-button {
+.cg-button:not(.group-icon) {
     padding: 5px;
     height:  fit-content;
 }
-button.cg-button img {
+.cg-button img {
     filter: brightness(calc(100% - var(--darken-icon)));
 }
 
@@ -663,10 +668,11 @@ input[type="color"] {
 
 #message-input-container {
     height: fit-content;
-    width: 100%;
-    padding: 5px;
+    width:   100%;
+    margin:  0 0 20px 12px;
+    padding: 10px;
 
-    border-radius:    10px 10px 0 0;
+    border-radius:    10px;
     background-color: var(--shade-2);
     box-shadow:       0 0 5px var(--shadow);
 }
@@ -812,6 +818,8 @@ span.fg-1 {
 }
 .message:hover {
     background-color: var(--shade-2);
+    box-shadow:       0 0 5px var(--shadow);
+    z-index:          500;
 }
 
 .message-user-nickname {
@@ -880,17 +888,37 @@ div.message-quote-section {
 
     user-select: text;
 }
+
+.message-img-section-container {
+    position: relative;
+
+    max-width:  500px;
+    max-height: 250px;
+}
 .message-img-section {
     display: block;
 
+    position: absolute;
+    top:      0;
+    left:     0;
+
     margin-top: 5px;
 
-    max-width: 500px;
+    max-width:  500px;
     max-height: 250px;
-    width: auto;
+    width:  auto;
     height: auto;
 
     border-radius: 5px;
+    cursor: pointer;
+}
+canvas.message-img-section {
+    opacity:    1;
+    transition: opacity 0.2s ease;
+    z-index:    500;
+}
+canvas.message-img-section.deblur {
+    opacity: 0;
 }
 
 .message-time {

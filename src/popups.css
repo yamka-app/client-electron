@@ -323,6 +323,7 @@ input[type="radio"].settings-radio:checked + label {
     border-radius:    5px;
     background-color: var(--shade-3-trans);
     backdrop-filter:  blur(5px);
+    box-shadow:       0 0 5px var(--shadow);
 
     font-family: Montserrat;
     font-size:   var(--font-size);
@@ -427,6 +428,7 @@ input[type="radio"].settings-radio:checked + label {
     font-family:      Montserrat;
     font-size:        var(--font-size);
     background-color: var(--shade-3-trans);
+    box-shadow:       0 0 5px var(--shadow);
 }
 
 #owned-bot-list,
