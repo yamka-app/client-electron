@@ -27,15 +27,6 @@
     100% { transform: scale(0.0); opacity: 0; }
 }
 
-@keyframes slideIn {
-      0% { transform: translateX(-500px); }
-    100% { transform: translateX(   0px); }
-}
-@keyframes slideInRight {
-      0% { transform: translateX(500px); }
-    100% { transform: translateX(  0px); }
-}
-
 @keyframes gradientAnimation {
     0%   { background-position: 0%   50% }
     50%  { background-position: 100% 50% }
@@ -489,8 +480,6 @@ img.verified-badge:not(.true) {
     border-radius:    5px;
     transition:       background-color 0.1s ease;
 
-    animation: slideInRight 0.2s ease;
-
     cursor: pointer;
 }
 .user-summary:hover {
@@ -706,9 +695,13 @@ textarea.code-input {
 #message-section-add-btns {
     align-items: center;
 }
-#channel-typing {
+#channel-typing,
+#message-editing {
     margin-left: 20px;
-    font-family: NotoSans;
+    font-family: Montserrat;
+}
+#message-editing {
+    color: var(--foreground-2);
 }
 
 #typing-dots div,
@@ -1063,8 +1056,6 @@ img.group-icon:hover {
     background-color: var(--shade-3);
     border-radius:    5px;
     transition:       background-color 0.1s ease;
-
-    animation: slideIn 0.2s ease;
 
     font-family: Montserrat;
     font-size:   var(--font-size);

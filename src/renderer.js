@@ -49,6 +49,7 @@ var viewingGroup
 var viewingChan
 var editingChan, editingRole
 var viewingContactGroup
+var editingMessage
 
 // Default settings
 const defaultSettings = {
@@ -948,13 +949,18 @@ function _rendererFunc() {
 
         for(var i = 0; i < sects.length; i++) {
             const typeName = sects[i].type
-            if(typeName === 'text' || typeName === 'code' || typeName === 'quote')
-                sects[i].text = sects[i].typeElm.value
 
             // Abort if any of the files haven't been uploaded yet
             if(typeName === 'file' && sects[i].blob === undefined)
                 return
 
+            if(isNullOrUndefined(sects[i].typeElm))
+                return
+            if(typeName === 'text' || typeName === 'code' || typeName === 'quote')
+                sects[i].text = sects[i].typeElm.value
+        }
+
+        for(var i = 0; i < sects.length; i++) {
             sects[i].elm = undefined
             sects[i].typeElm = undefined
         }
@@ -964,7 +970,7 @@ function _rendererFunc() {
             action: 'webprot.entity-put',
             entities: [{
                 type:     'message',
-                id:       0,
+                id:       editingMessage,
                 sections: sects,
                 channel:  viewingChan
             }]
@@ -982,6 +988,30 @@ function _rendererFunc() {
         setTimeout(clearTyping, 50)
 
         resetMsgInput()
+    }
+
+    // Sets up the message input field to edit a message
+    function editMessage(id) {
+        editingMessage = id
+
+        // Remove input sections
+        resetMsgInput(true)
+
+        // Create input sections
+        for(const srcSect of entityCache[id].sections) {
+            const sid = msgSections.length
+            createInputSection(srcSect.type, sid, () => removeInputSection(sid))
+            
+            const section = msgSections[sid]
+            const typeName = section.type
+            section.text = srcSect.text
+            section.blob = srcSect.blob
+
+            if(typeName === 'text' || typeName === 'code' || typeName === 'quote')
+                section.typeElm.value = section.text
+        }
+
+        document.getElementById('message-editing').innerHTML = escapeHtml('Editing message')
     }
 
     var typingClearTimer, currentlyTyping
@@ -1110,8 +1140,6 @@ function _rendererFunc() {
                 e.stopPropagation()
                 e.stopImmediatePropagation()
                 sendMessage()
-                // idk why, it inserts a line break there
-                setTimeout(() => msgSections[0].typeElm.value = '', 1)
             }
         })
 
@@ -1138,7 +1166,7 @@ function _rendererFunc() {
     }
 
     // Resets the message input field
-    function resetMsgInput() {
+    function resetMsgInput(fullReset=false) {
         const container = document.getElementById('message-input-container')
 
         // Remove all sections
@@ -1150,14 +1178,22 @@ function _rendererFunc() {
 
         msgSections = []
 
-        // Add a default section
-        const id = msgSections.length
-        createInputSection('text', id, () => {
-            removeInputSection(id)
-        })
-
-        // Focus on it
-        msgSections[id].typeElm.focus()
+        if(!fullReset) {
+            // Add a default section
+            const id = msgSections.length
+            createInputSection('text', id, () => {
+                removeInputSection(id)
+            })
+    
+            // Focus on it
+            msgSections[id].typeElm.focus()
+    
+            const elm = msgSections[id].typeElm
+            setTimeout(() => elm.value = '', 1)
+            setTimeout(() => adjTaHeight(elm), 1)
+    
+            document.getElementById('message-editing').innerHTML = ''
+        }
     }
 
     // Generates a summary text of the message
@@ -1367,7 +1403,6 @@ function _rendererFunc() {
 
         // The set of all message action buttons
         const buttons = [
-            { icon: 'delete', selfOnly: true, onclick: () => putEntities([{ type: 'message', id: id, sender: 0 }]) },
             { icon: 'reply', selfOnly: false, onclick: () => {
                 const sectionId = msgSections.length
                 createInputSection('quote', sectionId, () => {
@@ -1378,7 +1413,9 @@ function _rendererFunc() {
     
                 msgSections[sectionId].typeElm.value = messageSummary(id)
                 adjTaHeight(msgSections[sectionId].typeElm)
-            }}
+            } },
+            { icon: 'delete', selfOnly: true, onclick: () => putEntities([{ type: 'message', id: id, sender: 0 }]) },
+            { icon: 'edit',   selfOnly: true, onclick: () => editMessage(id) }
         ]
 
         for(const btnDesc of buttons) {
@@ -1440,7 +1477,7 @@ function _rendererFunc() {
     
             const timeElm = document.createElement('span')
             timeElm.classList.add('message-time')
-            timeElm.innerHTML = escapeHtml(idToTime(id))
+            timeElm.innerHTML = escapeHtml(idToTime(id) + (msg.edited ? ' (edited)' : ''))
             nicknameContainer.appendChild(timeElm)
         }
 
@@ -1624,7 +1661,10 @@ function _rendererFunc() {
                 content.appendChild(sectionElement)
         }
 
-        // When clicking a link, open it in a browser
+        // Edit on double-click
+        elm.ondblclick = () => editMessage(id)
+
+        // When clicking a link, open it in the user's browser
         const links = elm.getElementsByTagName("a")
         for(const link of links) {
             const href = link.href
@@ -1935,6 +1975,16 @@ function _rendererFunc() {
         for(const msg of msgs)
             msg.remove()
     }
+
+    // Edits a message
+    function editExistingMesssage(id) {
+        const msgs = document.getElementsByClassName('message-' + id)
+        for(const msg of msgs) {
+            const newMsg = createMessage(id, msg.classList.contains('short-message'))
+            msg.replaceWith(newMsg)
+            updateUser(msg.sender)
+        }
+    }
     
     // Packet reception handler
     function ipcRecv(evt, arg) {
@@ -2091,6 +2141,10 @@ function _rendererFunc() {
                     // Delete messages
                     if(arg.spontaneous && entity.type === 'message' && entity.sender === 0)
                         removeMesssage(entity.id)
+
+                    // Edit messages
+                    else if(arg.spontaneous && entity.type === 'message' && entity.id in entityCache)
+                        editExistingMesssage(entity.id)
 
                     // Append messages to the open channel
                     else if(arg.spontaneous && entity.type === 'message' && entity.channel === viewingChan)
