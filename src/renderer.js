@@ -50,6 +50,7 @@ var viewingChan
 var editingChan, editingRole
 var viewingContactGroup
 var editingMessage = 0
+var lastChanSender = {}
 
 // Default settings
 const defaultSettings = {
@@ -1769,6 +1770,7 @@ function _rendererFunc() {
                             child.remove()
                     }
                 }
+
                 msgs.reverse()
                 msgs = msgs.map(x => entityCache[x.id])
                 msgs.forEach(msg => {
@@ -1777,6 +1779,9 @@ function _rendererFunc() {
                     const short = lastMsg ? (msg.sender === lastMsg.sender && timeDiff(lastMsg.id, msg.id) <= 60000) : false
                     header.after(createMessage(id, short)) // bundling
                 })
+
+                lastChanSender[viewingChan] = msgs[0].sender
+
                 // Request senders (uncached, because they might have different colors in different groups)
                 if(viewingGroup !== 0) {
                     let senders = msgs.map(x => { return {
@@ -1785,6 +1790,7 @@ function _rendererFunc() {
                         contextEntity: 3,
                         contextId:     viewingGroup
                     } })
+
                     // Only request those cached from a different group
                     senders = senders.filter(x => entityCache[x.id] === undefined || entityCache[x.id].ctxGroup !== viewingGroup)
                     senders = senders.filter((x, i, s) => s.findIndex(y => y.id === x.id) === i)
@@ -1794,12 +1800,15 @@ function _rendererFunc() {
                         })
                     }
                 }
+
                 // Update users
                 var uniqueSenders = msgs.map(x => entityCache[x.id].sender)
                 uniqueSenders = uniqueSenders.filter((s, i) => uniqueSenders.indexOf(s) === i)
                 uniqueSenders.forEach(x => updateUser(x))
+
                 // Scroll to the bottom
                 msgArea.scrollTop = msgArea.scrollHeight
+
                 // Call the callback
                 if(callback != undefined)
                     callback()
@@ -1959,14 +1968,17 @@ function _rendererFunc() {
         const scrolled = msgScrollArea.scrollTop - (msgScrollArea.scrollHeight - msgScrollArea.offsetHeight) <= 100
 
         // Create the message
-        const msg = createMessage(id)
-        msgArea.appendChild(msg)
-        updateUser(entityCache[id].sender)
+        const msg = entityCache[id]
+        const msgElm = createMessage(id, msg.sender === lastChanSender[msg.channel])
+        msgArea.appendChild(msgElm)
+        updateUser(msg.sender)
+
+        lastChanSender[msg.channel] = msg.sender
 
         // Scroll down again if it was like that before
         if(scrolled) {
-            msgScrollArea.scrollBy({ top: -msg.offsetHeight, left: 0 })
-            msg.scrollIntoView({ block: 'end', behavior: 'smooth' })
+            msgScrollArea.scrollBy({ top: -msgElm.offsetHeight, left: 0 })
+            msgElm.scrollIntoView({ block: 'end', behavior: 'smooth' })
         }
     }
 
