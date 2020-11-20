@@ -1137,15 +1137,14 @@ function _rendererFunc() {
 
         // Play an animation
         triggerAppear(section)
-
-        // Send the message when pressing enter, insert a line break with shift+enter
-        section.addEventListener('keypress', (e) => {
+        
+        section.onkeypress = (e) => {
+            // Send the message when pressing enter, insert a line break on shift+enter
             if(e.keyCode === 13 && !e.shiftKey) {
-                e.stopPropagation()
-                e.stopImmediatePropagation()
+                stopPropagation(e)
                 sendMessage()
             }
-        })
+        }
 
         msgSections.push({ type: type, typeElm: typeElm, elm: section })
     }
