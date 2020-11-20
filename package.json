@@ -5,57 +5,30 @@
   "description": "A secure messenger with powerful features",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\""
+    "start": "electron .",
+    "dist": "electron-builder -wl"
   },
   "keywords": [],
   "author": "portasynthinca3",
   "license": "MIT",
-  "config": {
-    "forge": {
-      "make_targets": {
-        "win32": [
-          "squirrel"
-        ],
-        "linux": [
-          "appImage"
-        ]
-      },
-      "electronPackagerConfig": {},
-      "electronRebuildConfig": {},
-      "electronWinstallerConfig": {},
-      "github_repository": {
-        "owner": "ordermsg",
-        "name": "client-electron"
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "windows"
-          ]
-        },
-        {
-          "name": "electron-forge-maker-appimage",
-          "platforms": [
-            "linux"
-          ],
-          "config": {
-            "targetArch": "x64",
-            "dir": "./"
-          }
-        }
-      ]
+  "build": {
+    "appId": "tk.ordermsg.desktopclient",
+    "compression": "normal",
+    "asar": true,
+    "extends": null,
+    "linux": {
+      "target": "AppImage",
+      "category": "Network",
+      "icon": "src/icons/icon.png"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "src/icons/icon.png"
     }
   },
   "dependencies": {
-    "@electron-forge/maker-wix": "^6.0.0-beta.53",
     "blurhash": "^1.1.3",
     "code-prettify": "^0.1.0",
-    "electron-squirrel-startup": "^1.0.0",
     "escape-html": "^1.0.3",
     "highlight.js": "^10.2.1",
     "marked": "^1.2.0",
@@ -67,12 +40,7 @@
     "tmp": "^0.2.1"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.52",
-    "@electron-forge/maker-deb": "^6.0.0-beta.52",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.52",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.53",
-    "@electron-forge/maker-zip": "^6.0.0-beta.52",
     "electron": "9.3.1",
-    "electron-forge-maker-appimage": "https://github.com/Marcus10110/electron-forge-maker-appimage.git"
+    "electron-builder": "^22.9.1"
   }
 }

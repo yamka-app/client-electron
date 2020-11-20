@@ -17,11 +17,17 @@ Please disclose security vulnerabilities responsively. E-Mail me (`portasynthinc
 I will receive your report and do my best to mitigate the vulnerability. Feel free to disclose it two weeks after the patch has been pushed to master if it's client-related, or immediately after me saying it's fixed if it's backend-related. Thank you.
 
 ## Build
-Clone the repository, enter the cloned directory and run `npm start`, that's it!
+Clone the repository, enter the cloned directory and run `npm run dist`, that's it!
 ```sh
 git clone https://github.com/ordermsg/client-electron.git
 cd client-electron
-npm start
+npm run dist
+```
+Or, if you want to just run it wuthout actually building the wrole thing, do `npm start` instead:
+```sh
+git clone https://github.com/ordermsg/client-electron.git
+cd client-electron
+npm instead
 ```
 
 ## Or download binaries

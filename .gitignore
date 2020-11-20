@@ -85,9 +85,11 @@ typings/
 # Webpack
 .webpack/
 
-# Electron-Forge
-out/
-ordermsg-win32-x64/
+# Electron-Builder
+dist/
+
+# VS Code
+.vscode
 
 # Order
 _order_config.json
