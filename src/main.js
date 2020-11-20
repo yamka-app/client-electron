@@ -39,7 +39,6 @@ function createWindow() {
             width:  (config && config.bounds) ? config.bounds.width  : 1280,
             height: (config && config.bounds) ? config.bounds.height : 720
         })
-        //mainWindow.maximize()
         mainWindow.loadFile('src/index.html')
         windowCreated = true
 
@@ -47,10 +46,10 @@ function createWindow() {
         mainWindow.on('close', (e) => {
             config.bounds = mainWindow.getBounds()
             fs.writeFileSync(configPath, JSON.stringify(config))
+            e.preventDefault() // don't destroy the window
         })
     } else {
         mainWindow.show()
-        //mainWindow.hide()
     }
 }
 
@@ -74,8 +73,9 @@ app.on('ready', () => {
     tray.setContextMenu(Menu.buildFromTemplate([
         { label: 'Open Order', type: 'normal', click() { createWindow() } },
         { label: 'Exit Order', type: 'normal', click() {
-            // Clean the temporary files
+            // Clean temporary files
             fs.rmdir(tmpDir, { recursive: true }, () => {})
+            mainWindow.destroy()
             app.quit()
         } }
     ]))
@@ -1090,7 +1090,7 @@ function webprotData(bytes) {
 }
 
 function ipcSend(data) {
-    if(mainWindow?.webContents)
+    if(mainWindow?.isDestroyed() === false) // yeah (we also need to check for null, that's why)
         mainWindow.webContents.send('message', data)
 }
 
