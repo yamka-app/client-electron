@@ -988,6 +988,7 @@ function _rendererFunc() {
         setTimeout(clearTyping, 50)
 
         resetMsgInput()
+        editingMessage = 0
     }
 
     // Sets up the message input field to edit a message
@@ -1167,8 +1168,6 @@ function _rendererFunc() {
 
     // Resets the message input field
     function resetMsgInput(fullReset=false) {
-        editingMessage = 0
-        
         const container = document.getElementById('message-input-container')
 
         // Remove all sections
@@ -1986,6 +1985,7 @@ function _rendererFunc() {
             msg.replaceWith(newMsg)
             updateUser(msg.sender)
         }
+        return msgs.length !== 0
     }
     
     // Packet reception handler
@@ -2145,8 +2145,8 @@ function _rendererFunc() {
                         removeMesssage(entity.id)
 
                     // Edit messages
-                    else if(arg.spontaneous && entity.type === 'message' && entity.id in entityCache)
-                        editExistingMesssage(entity.id)
+                    else if(arg.spontaneous && entity.type === 'message' && editExistingMesssage(entity.id))
+                        ;
 
                     // Append messages to the open channel
                     else if(arg.spontaneous && entity.type === 'message' && entity.channel === viewingChan)
