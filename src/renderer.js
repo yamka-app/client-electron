@@ -2544,12 +2544,15 @@ function _rendererFunc() {
     }
 
     // "About Order" buttons
-    document.getElementById('view-on-github').addEventListener('click', (e) => {
+    document.getElementById('view-on-github').onclick = (e) => {
         shell.openExternal("https://github.com/ordermsg")
-    })
-    document.getElementById('donate').addEventListener('click', (e) => {
+    }
+    document.getElementById('donate').onclick = (e) => {
         shell.openExternal("https://patreon.com/portasynthinca3")
-    })
+    }
+    document.getElementById('connecting-tweet').onclick = (e) => {
+        shell.openExternal("https://twitter.com/portasynthinca3")
+    }
 
     // Friend control buttons
     document.getElementById('friends-all').addEventListener('click', (e) => {
