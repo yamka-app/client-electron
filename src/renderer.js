@@ -1259,7 +1259,7 @@ function _rendererFunc() {
         const message = createMessage(id)
         message.style.margin = '0'
         floatingMessage.appendChild(message)
-        updateUser(entityCache[id].sender)
+        updateRelatedUsers(id)
 
         triggerAppear(floatingMessage, true)
     }
@@ -1442,6 +1442,21 @@ function _rendererFunc() {
         return bar
     }
 
+    // Calls updateUser() for every user related to the message
+    function updateRelatedUsers(id, deep=5) {
+        if(deep <= 0)
+            return
+
+        const msg = entityCache[id]
+        console.log(msg)
+
+        for(const section of msg.sections)
+            if(section.type === 'quote' && section.blob !== 0)
+                updateRelatedUsers(section.blob, deep - 1)
+
+        updateUser(msg.sender)
+    }
+
     // Creates a message box seen in the message area
     function createMessage(id, short=false) {
         // Get the message entity by the id
@@ -1576,7 +1591,7 @@ function _rendererFunc() {
                                 if(canvasElement)
                                     canvasElement.classList.add('deblur')
                                 // Enlarge the image when clicking on it
-                                imgElement.onclick = (e) => {
+                                fileSectionElement.onclick = (e) => {
                                     stopPropagation(e)
                                     showFloatingImage(section.blob)
                                 }
@@ -1783,8 +1798,9 @@ function _rendererFunc() {
                 msgs.forEach(msg => {
                     const id = msg.id
                     const lastMsg = msgs[msgs.indexOf(msg) + 1]
-                    const short = lastMsg ? (msg.sender === lastMsg.sender && timeDiff(lastMsg.id, msg.id) <= 60000) : false
+                    const short = lastMsg ? (msg.sender === lastMsg.sender && timeDiff(lastMsg.id, msg.id) <= 300000) : false
                     header.after(createMessage(id, short)) // bundling
+                    updateRelatedUsers(id)
                 })
 
                 lastChanSender[viewingChan] = msgs[0].sender
@@ -1807,11 +1823,6 @@ function _rendererFunc() {
                         })
                     }
                 }
-
-                // Update users
-                var uniqueSenders = msgs.map(x => entityCache[x.id].sender)
-                uniqueSenders = uniqueSenders.filter((s, i) => uniqueSenders.indexOf(s) === i)
-                uniqueSenders.forEach(x => updateUser(x))
 
                 // Scroll to the bottom
                 msgArea.scrollTop = msgArea.scrollHeight
@@ -1978,7 +1989,7 @@ function _rendererFunc() {
         const msg = entityCache[id]
         const msgElm = createMessage(id, msg.sender === lastChanSender[msg.channel])
         msgArea.appendChild(msgElm)
-        updateUser(msg.sender)
+        updateRelatedUsers(msg.id)
 
         lastChanSender[msg.channel] = msg.sender
 
@@ -2002,7 +2013,7 @@ function _rendererFunc() {
         for(const msg of msgs) {
             const newMsg = createMessage(id, msg.classList.contains('short-message'))
             msg.replaceWith(newMsg)
-            updateUser(msg.sender)
+            updateRelatedUsers(id)
         }
         return msgs.length !== 0
     }
