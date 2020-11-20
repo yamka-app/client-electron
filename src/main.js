@@ -1095,7 +1095,7 @@ function ipcSend(data) {
 }
 
 function webprotConnect() {
-    if(webprotState.connecting)
+    if(webprotState.connecting || webprotState.connected)
         return
     webprotState.connecting = true
     webprotState.sendPings = false

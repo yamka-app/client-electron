@@ -15,6 +15,7 @@ smoothscroll.polyfill()
 const { create } = require('domain')
 const { url } = require('inspector');
 const { isNullOrUndefined, isNull } = require('util');
+const { setInterval } = require('timers');
 
 hljs.configure({ useBR: true })
 
@@ -38,6 +39,7 @@ var msgSections = []
 
 // Operation finish callbacks
 var endCallbacks = []
+var reconnectionIntervals = []
 
 // Sounds
 var sounds = {
@@ -113,9 +115,9 @@ function _rendererFunc() {
         })
     }
 
-    ipcSend({
+    reconnectionIntervals.push(setInterval(() => ipcSend({
         action: 'webprot.connect'
-    })
+    }), 2000))
 
     // Upload and download blobs
     function upload(path, onEnd, onProgressMade) {
@@ -2014,6 +2016,10 @@ function _rendererFunc() {
                 showElm(document.getElementById('connecting-screen-bg'))
                 break
             case 'webprot.connected':
+                for(const i of reconnectionIntervals)
+                    clearInterval(i)
+                reconnectionIntervals = []
+                console.log(reconnectionIntervals)
                 setTimeout(() => hideElm(document.getElementById('connecting-screen-bg')), 1000) // kinda wait \(-_-)/
                 // Send the continuation token
                 const contToken = configGet('contToken')
@@ -2026,9 +2032,11 @@ function _rendererFunc() {
                 }
                 break
             case 'webprot.disconnected':
-                setTimeout(() => ipcSend({
-                    action: 'webprot.connect'
-                }), 500)
+                if(reconnectionIntervals.length === 0) {
+                    reconnectionIntervals.push(setInterval(() => ipcSend({
+                        action: 'webprot.connect'
+                    }), 2000))
+                }
                 break
 
             case 'webprot.2fa-required':
