@@ -2,7 +2,8 @@
 
 ![](promo.png)
 
-:construction: **!WARNING!** Both the client the back-end are in their beta stage right now. :construction:
+:construction: **!WARNING!** Both the client the back-end are in their beta stage right now. :construction:\
+Latest version: **0.0.13**
 
 ## Contributing
 We ask of you here the same things we ask of you when you use our service: be kind and respectful to people. Treat every cotribution equally no matter its size. Even if it's just a letter change in a comment somewhere. Even if it's just a tiny bug report.
