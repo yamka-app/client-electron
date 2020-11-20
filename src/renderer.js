@@ -49,7 +49,7 @@ var viewingGroup
 var viewingChan
 var editingChan, editingRole
 var viewingContactGroup
-var editingMessage
+var editingMessage = 0
 
 // Default settings
 const defaultSettings = {
@@ -1167,6 +1167,8 @@ function _rendererFunc() {
 
     // Resets the message input field
     function resetMsgInput(fullReset=false) {
+        editingMessage = 0
+        
         const container = document.getElementById('message-input-container')
 
         // Remove all sections
