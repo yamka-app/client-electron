@@ -1,5 +1,3 @@
-const escapeHTML = require('escape-html')
-const { on, send } = require('process')
 const { decode } = require('blurhash')
 const tinycolor = require("tinycolor2");
 
@@ -39,7 +37,6 @@ var msgSections = []
 
 // Operation finish callbacks
 var endCallbacks = []
-var reconnectionIntervals = []
 
 // Sounds
 var sounds = {
@@ -53,18 +50,6 @@ var editingChan, editingRole
 var viewingContactGroup
 var editingMessage = 0
 var lastChanSender = {}
-
-// Default settings
-const defaultSettings = {
-    accentColor:   '#b42fe4',
-    fontSize:      9,
-    customTheme:   false,
-    theme:         '',        // will be computed later
-    notifications: true,
-    sendTyping:    true,
-    previewYt:     true,
-    blurOnDefocus: true
-}
 
 // Kaomoji, yaaay!
 const kaomoji = [
@@ -88,6 +73,8 @@ const kaomoji = [
 ]
 
 function _rendererFunc() {
+    _settingsFunc()
+
     const { ipcRenderer, remote, shell, clipboard } = require('electron')
     const { BrowserWindow, dialog } = remote
     const fs      = remote.require('fs')
@@ -101,24 +88,9 @@ function _rendererFunc() {
     // Get the browser window
     var window = BrowserWindow.getFocusedWindow()
 
-    // Config
-    function configSet(k, v) {
-        ipcSendSync({
-            action: 'config.set',
-            k:      k,
-            v:      v
-        })
-    }
-    function configGet(k) {
-        return ipcSendSync({
-            action: 'config.get',
-            k:      k
-        })
-    }
-
-    reconnectionIntervals.push(setInterval(() => ipcSend({
+    setInterval(() => ipcSend({
         action: 'webprot.connect'
-    }), 2000))
+    }))
 
     // Upload and download blobs
     function upload(path, onEnd, onProgressMade) {
@@ -142,111 +114,6 @@ function _rendererFunc() {
             })
         }
     }
-
-    // Set default settings
-    for(const kv of Object.entries(defaultSettings))
-        if(isNullOrUndefined(configGet(kv[0])))
-            configSet(kv[0], kv[1].toString())
-
-    // Settings
-    const accentColorChange = document.getElementById('accent-color-change')
-    const fontSizeChange    = document.getElementById('font-size-change')
-    const themeSwitch       = document.getElementById('theme-switch')
-    const themeSelector     = document.getElementById('theme-change')
-    accentColorChange.onchange = (e) => setAccentColor(accentColorChange.value)
-    fontSizeChange.onchange    = (e) => setFontSize(fontSizeChange.value)
-    themeSwitch.onchange       = (e) => setTheme(themeSwitch.checked ? 'light' : 'dark')
-
-    themeSelector.onclick = (e) => {
-        const stylePath = dialog.showOpenDialogSync(window, {
-            properties: ['openFile'],
-            filters: [
-                { name: 'Styles', extensions: ['css'] }
-            ]
-        })
-        if(stylePath !== undefined)
-            loadTheme(stylePath)
-    }
-
-    const notificationSwitch    = document.getElementById('enable-notifications')
-    notificationSwitch.onchange = (e) => configSet('notifications', notificationSwitch.checked)
-    notificationSwitch.checked  = configGet('notifications')
-
-    const sendTypingSwitch      = document.getElementById('send-typing')
-    sendTypingSwitch.onchange   = (e) => configSet('sendTyping', sendTypingSwitch.checked)
-    sendTypingSwitch.checked    = configGet('sendTyping')
-
-    const previewYtSwitch    = document.getElementById('preview-yt')
-    previewYtSwitch.onchange = (e) => configSet('previewYt', previewYtSwitch.checked)
-    previewYtSwitch.checked  = configGet('previewYt')
-
-    const defocusBlurSwicth    = document.getElementById('blur-unfocused')
-    defocusBlurSwicth.onchange = (e) => configSet('blurOnDefocus', defocusBlurSwicth.checked)
-    defocusBlurSwicth.checked  = configGet('blurOnDefocus')
-
-    // Sets the font size
-    const docStyle     = document.documentElement.style
-    const docStyleComp = getComputedStyle(document.documentElement)
-    function setFontSize(pt) {
-        configSet('fontSize', pt)
-        fontSizeChange.value = pt
-
-        docStyle.setProperty('--font-size', pt + 'pt')
-        document.getElementById('font-size-indicator').innerHTML = escapeHtml(pt)
-    }
-
-    // Sets the accent color
-    function setAccentColor(color) {
-        configSet('accentColor', color)
-        accentColorChange.value = color
-        recomputeStyling()
-    }
-
-    function recomputeStyling() {
-        const color = configGet('accentColor')
-
-        docStyle.setProperty('--accent',            tinycolor(color).toString())
-        docStyle.setProperty('--accent-dim',        tinycolor(color).darken(amount=10).toString())
-        docStyle.setProperty('--accent-dim-2',      tinycolor(color).darken(amount=20).toString())
-        docStyle.setProperty('--accent-trans',      tinycolor(color).setAlpha(0x48).toString())
-        docStyle.setProperty('--accent-foreground', tinycolor(color).isLight() ? '#000000' : '#ffffff')
-
-        const tc = tinycolor(color)
-        for(let i = 1; i <= 7; i++) {
-            const original =  tinycolor(docStyleComp.getPropertyValue('--default-shade-' + i))
-            const colorzied = tinycolor.mix(original, tc, amount=1)
-            docStyle.setProperty('--shade-' + i, colorzied.toString())
-
-            if(i === 3 || i === 4) {
-                const originalTrans = tinycolor(docStyleComp.getPropertyValue('--default-shade-' + i + '-trans'))
-                docStyle.setProperty('--shade-' + i + '-trans', colorzied.setAlpha(originalTrans.getAlpha()).toString())
-            }
-        }
-
-        document.getElementById('theme-name')  .innerHTML = escapeHtml(docStyleComp.getPropertyValue('--theme-name'))
-        document.getElementById('theme-author').innerHTML = escapeHtml(docStyleComp.getPropertyValue('--theme-author'))
-    }
-
-    // Loads a (presumably custom) theme
-    function loadTheme(theme, custom=true) {
-        document.getElementById('theme-css').href = (custom ? 'file://' : '') + theme
-        setTimeout(recomputeStyling, 100) // TODO: fix :^)
-
-        configSet('theme', theme)
-        configSet('customTheme', custom)
-
-        if(!custom)
-            themeSwitch.checked = (theme === 'themes/light.css')
-    }
-
-    // Sets one of the default themes
-    function setTheme(theme) {
-        loadTheme('themes/' + theme + '.css', false)
-    }
-
-    setAccentColor(configGet('accentColor'))
-    setFontSize   (configGet('fontSize'))
-    loadTheme     (configGet('theme'), configGet('customTheme') === 'true')
 
     // Determines whether we sould receive notifications
     function shouldReceiveNotif() {
@@ -537,9 +404,6 @@ function _rendererFunc() {
         if(data.action !== 'webprot.connect')
             console.log('%c[SENDING]', 'color: #00bb00; font-weight: bold;', data)
         ipcRenderer.send('asynchronous-message', data)
-    }
-    function ipcSendSync(data) {
-        return ipcRenderer.sendSync('synchronous-message', data)
     }
 
     // Update info about self
@@ -2035,10 +1899,6 @@ function _rendererFunc() {
                 showElm(document.getElementById('connecting-screen-bg'))
                 break
             case 'webprot.connected':
-                for(const i of reconnectionIntervals)
-                    clearInterval(i)
-                reconnectionIntervals = []
-                console.log(reconnectionIntervals)
                 setTimeout(() => hideElm(document.getElementById('connecting-screen-bg')), 1000) // kinda wait \(-_-)/
                 // Send the continuation token
                 const contToken = configGet('contToken')
@@ -2051,11 +1911,6 @@ function _rendererFunc() {
                 }
                 break
             case 'webprot.disconnected':
-                if(reconnectionIntervals.length === 0) {
-                    reconnectionIntervals.push(setInterval(() => ipcSend({
-                        action: 'webprot.connect'
-                    }), 2000))
-                }
                 break
 
             case 'webprot.2fa-required':
