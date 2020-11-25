@@ -41,15 +41,23 @@
 
 body {
     padding: 0px;
-    margin: 0px;
+    margin:  0px;
 
     background-color: var(--shade-1);
-    color: var(--foreground);
 
     font-family: Montserrat;
+    color:       var(--foreground);
 
     user-select: none;
-    overflow: hidden;
+    overflow:    hidden;
+}
+
+#main-layout-container {
+    transition: filter 0.2s ease;
+}
+#main-layout-container.unfocused {
+    filter: blur(10px);
+    pointer-events: none;
 }
 
 span {

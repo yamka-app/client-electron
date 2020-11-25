@@ -59,10 +59,11 @@ const defaultSettings = {
     accentColor:   '#b42fe4',
     fontSize:      9,
     customTheme:   false,
-    theme:         '', // will be computed later
+    theme:         '',        // will be computed later
     notifications: true,
     sendTyping:    true,
-    previewYt:     true
+    previewYt:     true,
+    blurOnDefocus: true
 }
 
 // Kaomoji, yaaay!
@@ -169,18 +170,22 @@ function _rendererFunc() {
 
     const notificationSwitch    = document.getElementById('enable-notifications')
     notificationSwitch.onchange = (e) => configSet('notifications', notificationSwitch.checked)
-    notificationSwitch.checked  = configGet('notifications') === 'true'
+    notificationSwitch.checked  = configGet('notifications')
 
     const sendTypingSwitch      = document.getElementById('send-typing')
     sendTypingSwitch.onchange   = (e) => configSet('sendTyping', sendTypingSwitch.checked)
-    sendTypingSwitch.checked    = configGet('sendTyping') === 'true'
+    sendTypingSwitch.checked    = configGet('sendTyping')
 
-    const previewYtSwitch = document.getElementById('preview-yt')
+    const previewYtSwitch    = document.getElementById('preview-yt')
     previewYtSwitch.onchange = (e) => configSet('previewYt', previewYtSwitch.checked)
-    previewYtSwitch.checked = configGet('previewYt') === 'true'
+    previewYtSwitch.checked  = configGet('previewYt')
+
+    const defocusBlurSwicth    = document.getElementById('blur-unfocused')
+    defocusBlurSwicth.onchange = (e) => configSet('blurOnDefocus', defocusBlurSwicth.checked)
+    defocusBlurSwicth.checked  = configGet('blurOnDefocus')
 
     // Sets the font size
-    const docStyle =     document.documentElement.style
+    const docStyle     = document.documentElement.style
     const docStyleComp = getComputedStyle(document.documentElement)
     function setFontSize(pt) {
         configSet('fontSize', pt)
@@ -1448,7 +1453,6 @@ function _rendererFunc() {
             return
 
         const msg = entityCache[id]
-        console.log(msg)
 
         for(const section of msg.sections)
             if(section.type === 'quote' && section.blob !== 0)
@@ -2887,6 +2891,11 @@ function _rendererFunc() {
             group:  viewingGroup
         })
     }
+
+    // Blur the window if it's unfocused
+    const mainLayoutCont = document.getElementById('main-layout-container')
+    window.addListener('blur',  (e) => { if(configGet('blurOnDefocus')) mainLayoutCont.classList.add   ('unfocused') })
+    window.addListener('focus', (e) => { if(configGet('blurOnDefocus')) mainLayoutCont.classList.remove('unfocused') })
 }
 
 window.addEventListener('load', _rendererFunc)

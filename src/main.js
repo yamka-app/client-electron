@@ -5,8 +5,6 @@ const path = require('path')
 const tmp = require('tmp')
 const zlib = require('zlib')
 
-if (require('electron-squirrel-startup')) return app.quit()
-
 const dataHomePath = path.join(app.getPath('appData'), 'ordermsg')
 const configPath = path.join(dataHomePath, 'order_config.json')
 var config = {}

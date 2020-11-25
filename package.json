@@ -31,6 +31,7 @@
     "code-prettify": "^0.1.0",
     "escape-html": "^1.0.3",
     "highlight.js": "^10.2.1",
+    "libsignal-protocol": "git+https://github.com/signalapp/libsignal-protocol-javascript.git",
     "marked": "^1.2.0",
     "qrcode-generator": "^1.4.4",
     "remark": "^12.0.1",
