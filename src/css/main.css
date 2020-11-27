@@ -2,17 +2,17 @@
 
 @font-face {
     font-family: NotoSans;
-    src: url(fonts/NotoSans-Regular.ttf)
+    src: url(../fonts/NotoSans-Regular.ttf)
 }
 
 @font-face {
     font-family: Montserrat;
-    src: url(fonts/Montserrat-Bold.ttf)
+    src: url(../fonts/Montserrat-Bold.ttf)
 }
 
 @font-face {
     font-family: JetBrainsMono;
-    src: url(fonts/JetBrainsMono-Regular.woff2);
+    src: url(../fonts/JetBrainsMono-Regular.woff2);
 }
 
 @keyframes appear {
@@ -408,8 +408,8 @@ label {
     width:  32px;
     height: 32px;
 
-    -webkit-mask-image: url('./icons/ava-mask.png');
-            mask-image: url('./icons/ava-mask.png');
+    -webkit-mask-image: url('../icons/ava-mask.png');
+            mask-image: url('../icons/ava-mask.png');
 
     cursor: pointer;
 }
@@ -545,7 +545,7 @@ img.verified-badge:not(.true) {
     border-radius: 15px;
     margin-top:    0;
 
-    background:          url('./icons/close.png');
+    background:          url('../icons/close.png');
     background-size:     12px;
     background-repeat:   no-repeat;
     background-position: center;

@@ -5,8 +5,11 @@
   "description": "A secure messenger with powerful features",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder -wl"
+    "build": "tsc --build ./src/tsconfig.json",
+    "watch": "tsc -w --build ./src/tsconfig.json",
+    "start": "npm run build && electron .",
+    "lint": "eslint -c .eslintrc --ext .ts ./src/ts",
+    "dist": "npm run build && electron-builder -wl"
   },
   "keywords": [],
   "author": "portasynthinca3",
@@ -27,18 +30,25 @@
     }
   },
   "dependencies": {
+    "@types/escape-html": "^1.0.0",
+    "@types/highlight.js": "^10.1.0",
+    "@types/marked": "^1.2.0",
+    "@types/node": "12.12.21",
+    "@types/tinycolor2": "^1.4.2",
     "blurhash": "^1.1.3",
     "code-prettify": "^0.1.0",
     "escape-html": "^1.0.3",
-    "highlight.js": "^10.2.1",
-    "libsignal-protocol": "git+https://github.com/signalapp/libsignal-protocol-javascript.git",
-    "marked": "^1.2.0",
+    "highlight.js": "^10.4.0",
+    "libsignal-protocol": "^1.3.7",
+    "marked": "^1.2.5",
+    "qrcode": "^1.4.4",
     "qrcode-generator": "^1.4.4",
     "remark": "^12.0.1",
     "remark-gemoji-to-emoji": "^1.1.0",
     "smoothscroll-polyfill": "^0.4.4",
     "tinycolor2": "^1.4.2",
-    "tmp": "^0.2.1"
+    "tmp": "^0.2.1",
+    "twemoji": "^13.0.1"
   },
   "devDependencies": {
     "electron": "9.3.1",

@@ -91,6 +91,9 @@ dist/
 # VS Code
 .vscode
 
+# TS compiler output
+src/js
+
 # Order
 _order_config.json
 *.zip
