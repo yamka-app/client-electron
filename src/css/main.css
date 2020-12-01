@@ -673,7 +673,9 @@ input[type="color"] {
 }
 
 
-
+#message-input-popup {
+    margin-top: 20px;
+}
 #message-input-container {
     height: fit-content;
     width:   100%;
@@ -788,7 +790,6 @@ span.fg-1 {
 #message-scroll-area {
     flex-direction: column-reverse;
     justify-items:  flex-end;
-    padding-bottom: 20px;
 }
 
 #message-area-header,
@@ -827,7 +828,7 @@ span.fg-1 {
 .message:hover {
     background-color: var(--shade-2);
     box-shadow:       0 0 5px var(--shadow);
-    z-index:          500;
+    z-index:          250;
 }
 
 .message-user-nickname {
@@ -861,23 +862,22 @@ span.fg-1 {
 }
 .message-quote-section span,
 .message-text-section span {
-    white-space: pre;
+    white-space: pre-wrap;
+    align-items: center;
+}
+.message-quote-section span > *:not(img.emoji),
+.message-text-section span > *:not(img.emoji) {
+    transform: translateY(3px);
 }
 .message-quote-section span:empty::before,
 .message-text-section span:empty::before {
     content: "\200b"; /* zero width space */
 }
 
-.message-text-section span {
-    display: flex;
-    align-items: center;
-}
-
 .message-quote-section {
     padding: 5px;
 
-    border-left:      2px solid var(--foreground-2) !important;
-    background-color: var(--shade-1)                !important;
+    background-color: var(--shade-1) !important;
 
     border-radius: 5px;
     box-shadow: 0 0 5px var(--shadow);
@@ -914,8 +914,9 @@ div.message-quote-section {
 
     max-width:  500px;
     max-height: 250px;
-    width:  auto;
-    height: auto;
+    width:   auto;
+    height:  auto;
+    z-index: 125;
 
     border-radius: 5px;
     cursor: pointer;
@@ -923,7 +924,7 @@ div.message-quote-section {
 canvas.message-img-section {
     opacity:    1;
     transition: opacity 0.2s ease;
-    z-index:    500;
+    position:   unset;
 }
 canvas.message-img-section.deblur {
     opacity: 0;
@@ -946,7 +947,7 @@ iframe {
 
 img.emoji {
     display: inline;
-    width: 20px;
+    width: 17px;
 }
 img.large-emoji {
     width: 40px;

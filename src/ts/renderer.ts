@@ -12,7 +12,7 @@ import remark        from "remark"
 import gemojiToEmoji from "remark-gemoji-to-emoji"
 import twemoji       from "twemoji";
 import fs            from "fs";
-import blurhash      from "blurhash";
+import blurhash = require("blurhash");
 import qrcode        from "qrcode";
 
 interface MessageSection {
@@ -26,6 +26,9 @@ interface MessageSection {
 // Cached entities and blobs
 var entityCache: {} = {};
 var blobCache: {} = {};
+
+// Max between messages to minify them
+const messageTimeThres: number = 300000;
 
 // Kaomoji, yaaay!
 const kaomoji: [string, string][] = [
@@ -53,7 +56,7 @@ function _rendererFunc() {
     var viewingGroup: number = 0, viewingChan: number = 0, viewingContactGroup: number = 0;
     var editingChan: number = 0,  editingRole: number = 0;
     var editingMessage: number = 0;
-    var lastChanSender = {};
+    var lastChanSender = {}; var lastChanMsg = {};
     var fetchingMsgs: boolean = false;
 
     // Short for "elementById"
@@ -74,8 +77,8 @@ function _rendererFunc() {
     const allEmojiRegex = /^<span>\p{Emoji}{1,5}<\/span>$/gum;
 
     // Initialize libs
-    const window = BrowserWindow.getFocusedWindow();
-    hljs.configure({ useBR: true });
+    const browserWindow = BrowserWindow.getFocusedWindow();
+    //hljs.configure({ useBR: true });
     marked.setOptions({
         gfm: true,
         headerIds: false,
@@ -228,7 +231,7 @@ function _rendererFunc() {
     
             // Show or hide the removal button based on whether the role is @everyone
             const deleteBtn = elementById("role-remove-button");
-            setElmVisibility(deleteBtn, role.priority === 0);
+            setElmVisibility(deleteBtn, role.priority !== 0);
 
             // Do the same with the name change field (enable/disable it though)
             const nameChange = elementById("role-name-change");
@@ -370,6 +373,8 @@ function _rendererFunc() {
 
     // Gets time difference in ms
     function timeDiff(id1: number, id2: number): number {
+        if(id1 === undefined || id2 === undefined)
+            return 0;
         const ts1 = Number((BigInt(id1) >> BigInt(16)));
         const ts2 = Number((BigInt(id2) >> BigInt(16)));
         return ts2 - ts1;
@@ -822,8 +827,8 @@ function _rendererFunc() {
 
             if(sects[i].typeElm === undefined)
                 return;
-            if(typeName in ["text", "code", "quote"])
-                sects[i].text = (sects[i].typeElm as HTMLInputElement).value;
+            if(["text", "code", "quote"].indexOf(typeName) > -1)
+                sects[i].text = (sects[i].typeElm as HTMLTextAreaElement).value;
         }
 
         for(var i = 0; i < sects.length; i++) {
@@ -831,24 +836,17 @@ function _rendererFunc() {
             sects[i].typeElm = undefined;
         }
 
-        // Send the message
-        putEntities([{
-            type:     "message",
-            id:       editingMessage,
-            sections: sects,
-            channel:  viewingChan
-        }]);
-        // Reset the typing status
-        putEntities([{
-            type:   "channel",
-            id:     viewingChan,
-            group:  viewingGroup,
-            typing: []
-        }]);
-        setTimeout(clearTyping, 50);
-
-        resetMsgInput();
-        editingMessage = 0;
+        // Reset the typing status and send the message
+        setTimeout(() => {
+            clearTyping([{
+                type:     "message",
+                id:       editingMessage,
+                sections: sects,
+                channel:  viewingChan
+            }]);
+            resetMsgInput();
+            editingMessage = 0;
+        }, 50);
     }
 
     // Sets up the message input field to edit a message
@@ -868,7 +866,7 @@ function _rendererFunc() {
             section.text = srcSect.text;
             section.blob = srcSect.blob;
 
-            if(typeName in ["text", "code", "quote"])
+            if(["text", "code", "quote"].indexOf(typeName) > -1)
                 (section.typeElm as HTMLInputElement).value = section.text;
         }
 
@@ -900,7 +898,7 @@ function _rendererFunc() {
     }
 
     // Says "no, we"re not typing anymore"
-    function clearTyping() {
+    function clearTyping(additionalEntities?: {}[]) {
         currentlyTyping = false;
         clearTimeout(typingClearTimer);
         putEntities([{
@@ -908,7 +906,7 @@ function _rendererFunc() {
             id:     viewingChan,
             group:  viewingGroup,
             typing: []
-        }]);
+        }, ...(additionalEntities ?? [])]);
     }
 
     function updTyping(txt: string) {
@@ -1057,7 +1055,7 @@ function _rendererFunc() {
         const msg = entityCache[id];
         var summary = "";
         for(const section of msg.sections) {
-            if(section.type in ["text", "code"]) {
+            if(["text", "code"].indexOf(section.type) !== -1) {
                 summary = section.text;
                 break;
             }
@@ -1400,11 +1398,9 @@ function _rendererFunc() {
                             const w = Number(size.split("x")[0]);
                             const h = Number(size.split("x")[1]);
                             fileSectionElement.classList.add("message-img-section-container");
-                            fileSectionElement.style.width  = w + "px";
-                            fileSectionElement.style.height = h + "px";
                             
                             // Create the preview element
-                            let canvasElement;
+                            let canvasElement: HTMLCanvasElement;
                             let imgElement = document.createElement("img");
                             imgElement.classList.add("message-img-section");
                             fileSectionElement.appendChild(imgElement);
@@ -1469,7 +1465,7 @@ function _rendererFunc() {
                             dlBtn.onclick = (e) => {
                                 e.stopPropagation()
                                 // Ask where to save it
-                                var filePath = dialog.showSaveDialogSync(window, {
+                                var filePath = dialog.showSaveDialogSync(browserWindow, {
                                     properties: [ "showOverwriteConfirmation", "createDirectory" ]
                                 });
                                 // Don"t continue if the user decided not to
@@ -1647,12 +1643,13 @@ function _rendererFunc() {
                 msgs.forEach(msg => {
                     const id = msg.id;
                     const lastMsg = msgs[msgs.indexOf(msg) + 1];
-                    const short = lastMsg ? (msg.sender === lastMsg.sender && timeDiff(lastMsg.id, msg.id) <= 300000) : false;
+                    const short = lastMsg ? (msg.sender === lastMsg.sender && timeDiff(lastMsg.id, msg.id) <= messageTimeThres) : false;
                     header.after(createMessage(id, short)); // bundling
                     updateRelatedUsers(id);
                 })
 
                 lastChanSender[viewingChan] = msgs[0].sender;
+                lastChanMsg   [viewingChan] = msgs[0].id;
 
                 // Request senders (uncached, because they might have different colors in different groups)
                 if(viewingGroup !== 0) {
@@ -1780,7 +1777,7 @@ function _rendererFunc() {
     function updChannelList() {
         // Show or hide the channel list
         const channelListSidebar = elementById("channel-list-sidebar");
-        setElmVisibility(channelListSidebar, viewingGroup === 0);
+        setElmVisibility(channelListSidebar, viewingGroup !== 0);
 
         if(viewingGroup === 0)
             return;
@@ -1833,15 +1830,16 @@ function _rendererFunc() {
 
         // Create the message
         const msg = entityCache[id];
-        const msgElm = createMessage(id, msg.sender === lastChanSender[msg.channel]);
+        const msgElm = createMessage(id, msg.sender === lastChanSender[msg.channel] && timeDiff(lastChanMsg[msg.channel].id, msg.id) <= messageTimeThres);
         msgArea.appendChild(msgElm);
         updateRelatedUsers(msg.id);
 
         lastChanSender[msg.channel] = msg.sender;
+        lastChanMsg   [msg.channel] = msg.id;
 
         // Scroll down again if it was like that before
         if(scrolled) {
-            msgScrollArea.scrollBy({ top: -msgElm.offsetHeight, left: 0 });
+            //msgScrollArea.scrollBy({ top: -msgElm.offsetHeight, left: 0 });
             msgElm.scrollIntoView({ block: "end", behavior: "smooth" });
         }
     }
@@ -1866,7 +1864,7 @@ function _rendererFunc() {
     
     // Packet reception handler
     function ipcRecv(evt: Event, arg: any) {
-        if(!(arg.type in ["webprot.status", "webprot.ul-progress", "webprot.completion-notification"]))
+        if(["webprot.status", "webprot.ul-progress", "webprot.completion-notification"].indexOf(arg.type) === -1)
             console.log("%c[RECEIVED]", "color: #bb0000; font-weight: bold;", arg);
         switch(arg.type) {
             case "webprot.status":
@@ -2041,7 +2039,7 @@ function _rendererFunc() {
                                     notification.onclick = (e) => {
                                         viewingChan = entity.channel;
                                         updLayout();
-                                        window.focus();
+                                        browserWindow.focus();
                                     }
                                 });
                                 //sounds.notification.play()
@@ -2062,8 +2060,8 @@ function _rendererFunc() {
                     // Update info about groups and channels
                     if(arg.spontaneous && entity.type === "group")
                         updateGroup(entity.id);
-                    if(arg.spontaneous && entity.type === "channel" && entity.group !== 0)
-                        updateGroup(entity.group);
+                    //if(arg.spontaneous && entity.type === "channel" && entity.group !== 0)
+                    //    updateGroup(entity.group);
                     if(arg.spontaneous && entity.type === "channel" && entity.id === viewingChan)
                         updMessageArea(false);
                     if(arg.spontaneous && entity.type === "role")
@@ -2148,16 +2146,16 @@ function _rendererFunc() {
 
     // Add listeners to window control buttons
     elementById("minimize-button").onclick = (e) => {
-        window.minimize();
+        browserWindow.minimize();
     };
     elementById("maximize-button").onclick = (e) => {
-        if(window.isMaximized())
-            window.unmaximize();
+        if(browserWindow.isMaximized())
+            browserWindow.unmaximize();
         else
-            window.maximize();
+            browserWindow.maximize();
     };
     elementById("close-button").onclick = (e) => {
-        window.hide();
+        browserWindow.hide();
     };
 
     // Add listeners to login controls
@@ -2346,7 +2344,7 @@ function _rendererFunc() {
 
     // User avatar/group icon selection
     elementById("self-avatar-huge").onclick = () => {
-        var newAvaPath: string[]|string = dialog.showOpenDialogSync(window, {
+        var newAvaPath: string[]|string = dialog.showOpenDialogSync(browserWindow, {
             properties: ["openFile"],
             filters: [
                 { name: "Images", extensions: ["jpg", "jpeg", "png", "gif", "bmp"] }
@@ -2368,7 +2366,7 @@ function _rendererFunc() {
     }
 
     elementById("group-icon-huge").onclick = () => {
-        var newIconPath: string[]|string = dialog.showOpenDialogSync(window, {
+        var newIconPath: string[]|string = dialog.showOpenDialogSync(browserWindow, {
             properties: ["openFile"],
             filters: [
                 { name: "Images", extensions: ["jpg", "png", "gif", "bmp"] }
@@ -2447,7 +2445,7 @@ function _rendererFunc() {
     };
     elementById("message-file-section-button").addEventListener("click", (e) => {
         // Select the file
-        var filePath: string[]|string = dialog.showOpenDialogSync(window, {
+        var filePath: string[]|string = dialog.showOpenDialogSync(browserWindow, {
             properties: ["openFile"],
             filters: [
                 { name: "All files", extensions: ["*"] },
@@ -2725,8 +2723,8 @@ function _rendererFunc() {
 
     // Blur the window if it"s unfocused
     const mainLayoutCont = elementById("main-layout-container");
-    window.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.add   ("unfocused") });
-    window.addListener("focus", (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.remove("unfocused") });
+    browserWindow.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.add   ("unfocused") });
+    browserWindow.addListener("focus", (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.remove("unfocused") });
 }
 
 window.addEventListener("load", _rendererFunc);
