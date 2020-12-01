@@ -1398,6 +1398,11 @@ function _rendererFunc() {
                             const w = Number(size.split("x")[0]);
                             const h = Number(size.split("x")[1]);
                             fileSectionElement.classList.add("message-img-section-container");
+
+                            const fake = document.createElement("img"); // to force container dimensions
+                            fileSectionElement.appendChild(fake);
+                            fake.classList.add("message-img-section-fake");
+                            fake.width = w; fake.height = h;
                             
                             // Create the preview element
                             let canvasElement: HTMLCanvasElement;
@@ -1423,6 +1428,7 @@ function _rendererFunc() {
                                     ctx.scale(w / adjW, h / 32);
                                     ctx.drawImage(imageObj, 0, 0);
                                 }
+                                fake.src = canvasElement.toDataURL();
                                 imageObj.src = canvasElement.toDataURL();
     
                                 fileSectionElement.appendChild(canvasElement);
