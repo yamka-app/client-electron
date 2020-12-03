@@ -1980,10 +1980,10 @@ function _rendererFunc() {
                         remote.getGlobal("webprotState").self = entity;
                         updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
 
-                        // Request self avatar
+                        // Request own avatar
                         download(entity.avaBlob, (blob) => {
                             updateSelfAva(blob.path);
-                        })
+                        });
 
                         // Update DM, friend and group list
                         updGroupList();
@@ -2056,12 +2056,6 @@ function _rendererFunc() {
                     // Update info about other users
                     if(entity.type === "user")
                         updateUser(entity.id);
-
-                    // Update common groups
-                    if(arg.spontaneous && entity.type === "user") {
-                        for(const g of entity.groups) // the server only sends common groups
-                            updateGroup(g);
-                    }
 
                     // Update info about groups and channels
                     if(arg.spontaneous && entity.type === "group")
