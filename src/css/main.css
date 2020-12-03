@@ -859,6 +859,9 @@ span.fg-1 {
 
     font-family: NotoSans;
     user-select: text;
+
+    display: flex;
+    flex-direction: column;
 }
 .message-quote-section span,
 .message-text-section span {
@@ -955,7 +958,6 @@ iframe {
 }
 
 img.emoji {
-    display: inline;
     width: 17px;
 }
 img.large-emoji {
