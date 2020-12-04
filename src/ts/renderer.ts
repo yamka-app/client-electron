@@ -1968,6 +1968,9 @@ function _rendererFunc() {
             case "webprot.internal-error":
                 showBox("INTERNAL ERROR", arg.message);
                 break;
+            case "webprot.friend-rq-sent":
+                showBox("FRIEND REQUEST SENT", arg.message);
+                break;
 
             case "webprot.entities":
                 arg.entities.forEach((entity) => {

@@ -620,7 +620,8 @@ function webprotData(bytes) {
                 'not-paginable',
                 'invalid-invite',
                 'internal-error',
-                'unknown-packet'
+                'unknown-packet',
+                'friend-rq-sent'
             ][code - 1]
             if(code == 4 || code == 5) // 2fa required / login success
                 webprotState.sendPings = true
