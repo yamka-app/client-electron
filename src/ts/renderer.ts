@@ -2048,7 +2048,7 @@ function _rendererFunc() {
                                         browserWindow.focus();
                                     }
                                 });
-                                //sounds.notification.play()
+                                sounds.notification.play()
                             }
                         });
                     }
