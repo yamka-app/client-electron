@@ -2,7 +2,9 @@
 
 ![](promo.png)
 
-:construction: **!WARNING!** Both the client the back-end are in their beta stage right now. :construction:\
+:construction: **!!!WARNING!!!** We're transitioning to new major breaking API changes both on the client and the back end. **This project is _not_ going to work (and probably even compile) at the moment** :construction:\
+
+[//]: # (:construction: **!WARNING!** Both the client the back-end are in their beta stage right now. :construction:\)
 Latest version: **0.0.13**
 
 ## Contributing
