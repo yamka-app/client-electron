@@ -70,7 +70,7 @@ export class User extends Entity {
         new fields.ColorField  ("color",         16),
         new fields.NumListField("badges", 2,     17),
         new fields.NumField    ("botOwner", 8,   18),
-        new fields.NumListField("ownedBots", 8,  19)
+        new fields.NumListField("ownedBots", 8,  19),
     ];
 }
 
@@ -83,7 +83,7 @@ export class Channel extends Entity {
         new fields.NumField    ("group", 8,    3),
         new fields.NumListField("messages", 8, 4),
         new fields.NumListField("typing", 8,   5),
-        new fields.NumListField("rules", 1,    6)
+        new fields.NumListField("rules", 1,    6),
     ];
 }
 
@@ -97,7 +97,7 @@ export class Group extends Entity {
         new fields.NumListField("roles", 8,        4),
         new fields.NumField    ("icon", 8,         5),
         new fields.StrListField("invites",         6),
-        new fields.NumField    ("everyoneRole", 8, 7)
+        new fields.NumField    ("everyoneRole", 8, 7),
     ];
 }
 
@@ -108,7 +108,7 @@ export class Message extends Entity {
         new fields.MsgSectionsField("sections",   1),
         new fields.NumField        ("channel", 8, 2),
         new fields.NumField        ("edited", 1,  3),
-        new fields.NumField        ("sender", 8,  4)
+        new fields.NumField        ("sender", 8,  4),
     ];
 }
 
@@ -121,17 +121,17 @@ export class Role extends Entity {
         new fields.NumField    ("group", 8,    3),
         new fields.NumField    ("priority", 2, 4),
         new fields.PermsField  ("perms",       5),
-        new fields.NumListField("members", 8,  6)
+        new fields.NumListField("members", 8,  6),
     ];
 }
 
 export class File extends Entity {
     typeNum = 6
     simpleFieldList = [
-        new fields.NumField    ("id", 8,       0),
-        new fields.StrField    ("name",        1),
-        new fields.StrField    ("size",        2),
-        new fields.StrField    ("preview",     3),
-        new fields.NumField    ("length", 4,   4),
+        new fields.NumField("id", 8,     0),
+        new fields.StrField("name",      1),
+        new fields.StrField("size",      2),
+        new fields.StrField("preview",   3),
+        new fields.NumField("length", 4, 4),
     ];
 }

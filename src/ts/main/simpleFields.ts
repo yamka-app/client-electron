@@ -1,4 +1,4 @@
-import DataTypes from "./dataTypes";
+import DataTypes, { Permissions } from "./dataTypes";
 
 // ============================================== SIMPLE FIELDS
 // The idea behind "simple fields" is to provide a convenient way for various
@@ -65,6 +65,22 @@ export class NumListField extends SimpleField {
     encodingFunc  = (val: number[]) => DataTypes.encNumList(val, this.bytes);
     decodingFunc  = (buf: Buffer)   => DataTypes.decNumList(buf, this.bytes);
     lengthingFunc = (buf: Buffer)   => DataTypes.decNum(buf.slice(0, 2)) * this.bytes;
+}
+
+export class StrListField extends SimpleField {
+    constructor(p: string, bid?: number) { super(p, bid); }
+
+    encodingFunc  = (val: string[]) => DataTypes.encStrList(val);
+    decodingFunc  = (buf: Buffer)   => DataTypes.decStrList(buf);
+    lengthingFunc = (buf: Buffer)   => DataTypes.strListLen(buf);
+}
+
+export class PermsField extends SimpleField {
+    constructor(p: string, bid?: number) { super(p, bid); }
+
+    encodingFunc  = (val: Permissions) => val.binary;
+    decodingFunc  = (buf: Buffer)      => new Permissions(buf);
+    lengthingFunc = (buf: Buffer)      => Permissions.len;
 }
 
 

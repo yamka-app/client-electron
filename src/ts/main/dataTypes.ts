@@ -67,4 +67,43 @@ export default class DataTypes {
         var len = this.decNum(bytes.slice(0, 2));
         return bytes.toString("utf8", 2, 2 + len);
     }
+
+    
+    static encStrList(val: string[]): Buffer {
+        if(val === undefined)
+            return Buffer.alloc(0);
+
+        return Buffer.concat([
+            this.encNum(val.length, 2),
+            ...val.map(s => this.encStr(s))
+        ]);
+    }
+    static decStrList(bytes: Buffer): string[] {
+        const cnt = this.decNum(bytes.slice(0, 2));
+        var arr = [];
+    
+        for(var i = 0; i < cnt;) {
+            arr.push(this.decStr(bytes.slice(i + 2)));
+            i += 2 + this.decNum(bytes.slice(i + 2, i + 4));
+        }
+    
+        return arr;
+    }
+    static strListLen(bytes: Buffer): number {
+        const cnt = this.decNum(bytes.slice(0, 2));
+        var len;
+    
+        for(len = 0; len < cnt;)
+            len += 2 + this.decNum(bytes.slice(len + 2, len + 4));
+    
+        return len + 2;
+    }
+}
+
+export class Permissions {
+    static len = 6;
+
+    binary: Buffer;
+
+    constructor(b: Buffer) { this.binary = b; }
 }
