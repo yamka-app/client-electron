@@ -20,8 +20,13 @@ export class SimpleField {
     decodingFunc?:  (buf: Buffer) => any;
     lengthingFunc?: (buf: Buffer) => number;
 
-    encode = (val: any)    => Buffer.concat([DataTypes.encNum(this.binaryId, 2), this.encodingFunc(val)]);
-    decode = (buf: Buffer) => this.decodingFunc(buf.slice(2));
+    encode = (val: any)    => Buffer.concat([
+        this.hasBinaryId() ?
+            DataTypes.encNum(this.binaryId, 1) :
+            Buffer.alloc(0),
+        this.encodingFunc(val)]);
+
+    decode = (buf: Buffer) => this.decodingFunc(buf.slice(this.hasBinaryId() ? 1 : 0));
 
     hasBinaryId = () => this.binaryId !== undefined;
     
@@ -73,24 +78,36 @@ export function checkBinaryIdExistence(fields: SimpleField[]): boolean {
     return allHaveId;
 }
 
-export function simpleFieldEncoder(t: any, fields: SimpleField[]): () => Buffer {
+export function simpleFieldEncoder(t: any, fields: SimpleField[], inclCnt: boolean = false): () => Buffer {
     checkBinaryIdExistence(fields);
 
-    return () => Buffer.concat(fields.map(f => 
-        (t[f.prop] === undefined) ?
-            Buffer.alloc(0) :
-            f.encode(t[f.prop])));
+    return () => {
+        const remaining = fields.map(f => 
+            (t[f.prop] === undefined) ?
+                Buffer.alloc(0) :
+                f.encode(t[f.prop]));
+
+        return Buffer.concat([
+            inclCnt ?
+                DataTypes.encNum(remaining.length, 1) :
+                Buffer.alloc(0),
+            ...remaining
+        ])
+    }
 }
 
-export function simpleFieldDecoder(t: any, fields: SimpleField[]): (buf: Buffer, limit?: number, pos?: number) => void|number {
+export function simpleFieldDecoder(t: any, fields: SimpleField[], inclCnt: boolean = false): (buf: Buffer, limit?: number, pos?: number) => void|number {
     const allHaveId = checkBinaryIdExistence(fields);
 
     if(allHaveId) {
         // "limit" defines how many fields we're allowed to decode max
         return (buf: Buffer, limit?: number, pos: number = 0) => {
             var decoded = 0;
-            while(pos < buf.length && (decoded < limit && limit !== undefined)) {
-                const id = DataTypes.decNum(buf.slice(pos, pos + 2));
+            if(inclCnt) { limit = DataTypes.decNum(buf.slice(pos, pos + 1)); pos++; }
+            if(limit === undefined) limit = -1;
+
+            while(pos < buf.length && (decoded < limit && limit !== -1)) {
+                const id = DataTypes.decNum(buf.slice(pos, pos + 1));
                 const field = fields.find(x => x.binaryId == id);
                 const slice = buf.slice(pos);
 

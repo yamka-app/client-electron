@@ -19,7 +19,7 @@ export class Entity {
         if(!fields.checkBinaryIdExistence(this.simpleFieldList))
             throw new Error("Entity fields should be id-prefixed");
 
-        this.encodeFields = fields.simpleFieldEncoder(this, this.simpleFieldList);
+        this.encodeFields = fields.simpleFieldEncoder(this, this.simpleFieldList, true);
         this.decodeFields = fields.simpleFieldDecoder(this, this.simpleFieldList);
     }
 
@@ -27,11 +27,14 @@ export class Entity {
         if(this.encodePayload === undefined)
             throw new Error("Can't encode a generic entity");
 
-        return this.encodePayload();
+        return Buffer.concat([
+            DataTypes.encNum(this.typeNum, 1),
+            this.encodeFields()
+        ]);
     }
 
     static decode(buf: Buffer, pos: number): EntityDecodeResult {
-        const type = DataTypes.decNum(buf.slice(pos, pos + 2));
+        const type = DataTypes.decNum(buf.slice(pos, pos + 1));
         var entity: Entity = [
             undefined,
             new User(),
@@ -41,7 +44,7 @@ export class Entity {
             new Role()
         ][type];
         entity = {...entity}; // clone the object
-        var posAfter = entity.decodeFields(buf, undefined, pos + 2) as number;
+        var posAfter = entity.decodeFields(buf, undefined, pos + 1) as number;
         return { entity: entity, posAfter: posAfter };
     }
 }
