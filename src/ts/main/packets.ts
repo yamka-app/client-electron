@@ -51,7 +51,7 @@ export class Packet {
             new FileTokenRequestPacket(),
             new FileTokenPacket(),
             new MFASecretPacket(),
-            undefined,
+            new ClientIdentityPacket(),
             new ContTokenPacket(),
             new ContactsManagePacket(),
             new UserSearchPacket(),
@@ -293,6 +293,14 @@ export class MFASecretPacket extends SimpleFieldPacket {
     simpleFieldList = [new fields.StrField("secret")];
 
     constructor(secret?: string) { super(); this.secret = secret; }
+}
+
+export class ClientIdentityPacket extends SimpleFieldPacket {
+    typeNum = 11;
+    userId: number;
+    simpleFieldList = [new fields.NumField("userId", 8)];
+
+    constructor(id?: number) { super(); this.userId = id; }
 }
 
 export class ContTokenPacket extends SimpleFieldPacket {
