@@ -107,3 +107,37 @@ export class Permissions {
 
     constructor(b: Buffer) { this.binary = b; }
 }
+
+export enum MessageSectionType {
+    TEXT   = 0,
+    FILE   = 1,
+    CODE   = 2,
+    QUOTE  = 3,
+    INVITE = 4,
+    USER   = 5,
+}
+export class MessageSection {
+    type: MessageSectionType;
+    blob: number;
+    text: string;
+
+    constructor(t?: MessageSectionType, b?: number, s?: string) {
+        this.type = t;
+        this.blob = b;
+        this.text = s;
+    }
+
+    encode = () => Buffer.concat([
+        DataTypes.encNum(this.type, 1),
+        DataTypes.encNum(this.blob, 8),
+        DataTypes.encStr(this.text)
+    ]);
+
+    static decode = (buf: Buffer) => new MessageSection(
+        DataTypes.decNum(buf.slice(0, 1)),
+        DataTypes.decNum(buf.slice(1, 9)),
+        DataTypes.decStr(buf.slice(9))
+    );
+
+    static len = (buf: Buffer) => 9 + DataTypes.decNum(buf.slice(9, 11));
+}

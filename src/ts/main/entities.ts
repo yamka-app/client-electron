@@ -6,7 +6,7 @@ import * as fields from "./simpleFields";
 //  entitiy types: users, groups, channels, etc.
 // Entities have fields, most notably, IDs.
 export class EntityDecodeResult {
-    entity: Entity;
+    entity:   Entity;
     posAfter: number;
 }
 export class Entity {

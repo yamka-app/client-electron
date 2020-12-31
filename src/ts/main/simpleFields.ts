@@ -1,4 +1,5 @@
-import DataTypes, { Permissions } from "./dataTypes";
+import DataTypes, { MessageSection, Permissions } from "./dataTypes";
+import { Message } from "./entities";
 
 // ============================================== SIMPLE FIELDS
 // The idea behind "simple fields" is to provide a convenient way for various
@@ -81,6 +82,33 @@ export class PermsField extends SimpleField {
     encodingFunc  = (val: Permissions) => val.binary;
     decodingFunc  = (buf: Buffer)      => new Permissions(buf);
     lengthingFunc = (buf: Buffer)      => Permissions.len;
+}
+
+export class MsgSectionsField extends SimpleField {
+    constructor(p: string, bid?: number) { super(p, bid); }
+
+    encodingFunc  = (val: MessageSection[]) => Buffer.concat([
+        DataTypes.encNum(val.length, 1),
+        ...val.map(x => x.encode())
+    ]);
+
+    decodingFunc  = (buf: Buffer)           => {
+        const cnt = DataTypes.decNum(buf.slice(0, 1));
+        var s = []; var pos = 1;
+        for(var i = 0; i < cnt; i++) {
+            s.push(MessageSection.decode(buf.slice(pos)));
+            pos += MessageSection.len(buf.slice(pos));
+        }
+        return s;
+    };
+    
+    lengthingFunc = (buf: Buffer)           => {
+        const cnt = DataTypes.decNum(buf.slice(0, 1));
+        var pos = 1;
+        for(var i = 0; i < cnt; i++)
+            pos += MessageSection.len(buf.slice(pos));
+        return pos;
+    };
 }
 
 

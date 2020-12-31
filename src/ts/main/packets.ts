@@ -57,7 +57,8 @@ export class Packet {
             new UserSearchPacket(),
             new InviteResolvePacket(),
             new BotCreatePacket(),
-            new BotInvitePacket()
+            new BotInvitePacket(),
+            new IdentificationPacket()
         ][type];
         if(packet === undefined) throw new Error(`Invalid packet type ${type}`);
         packet = {...packet}; // clone the object
@@ -83,21 +84,18 @@ export class SimpleFieldPacket extends Packet {
 
 export class LoginPacket extends SimpleFieldPacket {
     static typeNum = 1;
-    protocolVersion: number;
-    login:           string;
-    password:        string;
+    login:    string;
+    password: string;
 
     simpleFieldList = [
-        new fields.NumField("protocolVersion", 2),
         new fields.StrField("login"),
         new fields.StrField("password")
     ];
 
-    constructor(pv?: number, l?: string, p?: string) {
+    constructor(l?: string, p?: string) {
         super();
-        this.protocolVersion = pv;
-        this.login           = l;
-        this.password        = p;
+        this.login    = l;
+        this.password = p;
     }
 }
 
@@ -167,21 +165,18 @@ export class StatusPacket extends SimpleFieldPacket {
 
 export class SignupPacket extends SimpleFieldPacket {
     static typeNum = 5;
-    protocolVersion: number;
-    email:           string;
-    name:            string;
-    password:        string;
+    email:    string;
+    name:     string;
+    password: string;
 
     simpleFieldList = [
-        new fields.NumField("protocolVersion", 2),
         new fields.StrField("email"),
         new fields.StrField("name"),
         new fields.StrField("password")
     ];
 
-    constructor(pv?: number, e?: string, l?: string, p?: string) {
+    constructor(e?: string, l?: string, p?: string) {
         super();
-        this.protocolVersion = pv;
         this.name            = l;
         this.password        = p;
     }
@@ -387,4 +382,15 @@ export class BotInvitePacket extends SimpleFieldPacket {
     ];
 
     constructor(b?: number, g?: number) { super(); this.bot = b; this.group = g; }
+}
+
+export class IdentificationPacket extends SimpleFieldPacket {
+    typeNum = 18;
+    protocol: number;
+
+    simpleFieldList = [
+        new fields.NumField("protocol", 4),
+    ];
+
+    constructor(p?: number) { super(); this.protocol = p; }
 }
