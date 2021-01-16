@@ -1,5 +1,5 @@
-import DataTypes, { MessageSection, Permissions } from "./dataTypes";
-import { Message } from "./entities";
+import DataTypes, { MessageSection, Permissions } from "./dataTypes.js";
+import { Entity, Message } from "./entities.js";
 
 // ============================================== SIMPLE FIELDS
 // The idea behind "simple fields" is to provide a convenient way for various
@@ -42,6 +42,14 @@ export class NumField extends SimpleField {
     encodingFunc  = (val: number) => DataTypes.encNum(val, this.bytes);
     decodingFunc  = (buf: Buffer) => DataTypes.decNum(buf.slice(0, this.bytes));
     lengthingFunc = (buf: Buffer) => this.bytes;
+}
+
+export class BoolField extends SimpleField {
+    constructor(p: string, bid?: number) { super(p, bid); }
+
+    encodingFunc  = (val: boolean) => DataTypes.encNum(val ? 1 : 0, 1);
+    decodingFunc  = (buf: Buffer)  => DataTypes.decNum(buf.slice(0, 1)) > 0;
+    lengthingFunc = (buf: Buffer)  => 1;
 }
 
 export class ColorField extends SimpleField {
@@ -101,7 +109,7 @@ export class MsgSectionsField extends SimpleField {
         }
         return s;
     };
-    
+
     lengthingFunc = (buf: Buffer)           => {
         const cnt = DataTypes.decNum(buf.slice(0, 1));
         var pos = 1;
@@ -109,6 +117,14 @@ export class MsgSectionsField extends SimpleField {
             pos += MessageSection.len(buf.slice(pos));
         return pos;
     };
+}
+
+export class EntityField extends SimpleField {
+    constructor(p: string, bid?: number) { super(p, bid); }
+
+    encodingFunc  = (val: Entity) => val.encode();
+    decodingFunc  = (buf: Buffer) => Entity.decode(buf, 0).entity;
+    lengthingFunc = (buf: Buffer) => Entity.decode(buf, 0).posAfter;
 }
 
 

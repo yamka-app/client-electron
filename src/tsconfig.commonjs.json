@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "./js/commonjs",
+    "allowJs": true,
+    "target": "esnext",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["./ts/main/**/*", "./ts/protocol/**/*"]
+}

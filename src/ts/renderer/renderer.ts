@@ -1,19 +1,19 @@
-// These are defined in settings.ts
-declare function configGet(k: string): any;
-declare function configSet(k: string, v: string|boolean|number);
-
-import { ipcRenderer, remote, shell, clipboard } from "electron";
+const { ipcRenderer, remote, shell, clipboard } = require("electron");
 const { BrowserWindow, dialog } = remote;
-import * as hljs     from "highlight.js";
-import marked        from "marked";
-import path          from "path";
-import escapeHtml    from "escape-html";
-import remark        from "remark"
-import gemojiToEmoji from "remark-gemoji-to-emoji"
-import twemoji       from "twemoji";
-import fs            from "fs";
-import blurhash = require("blurhash");
-import qrcode        from "qrcode";
+const escapeHtml = require("escape-html");
+const marked     = require("marked");
+
+const path               = require("path");
+const remark             = require("remark");
+const gemojiToEmoji      = require("remark-gemoji-to-emoji");
+const twemoji            = require("twemoji");
+const fs                 = require("fs");
+const qrcode             = require("qrcode");
+const { highlightBlock } = require("highlight.js");
+const blurhash           = require("blurhash");
+
+import * as packets from "../protocol/packets.js";
+import { configGet, configSet } from "./settings.js";
 
 interface MessageSection {
     type:     string;
@@ -396,8 +396,15 @@ function _rendererFunc() {
     // Sends a message to the main process
     function ipcSend(data: any) {
         if(data.action !== "webprot.connect")
-            console.log("%c[SENDING]", "color: #00bb00; font-weight: bold;", data);
+            console.log("%c[R->M]", "color: #bbbb00; font-weight: bold;", data);
         ipcRenderer.send("asynchronous-message", data);
+    }
+    function sendPacket(p: packets.Packet) {
+        console.log("%c[SENDIN]", "color: #00bb00; font-weight: bold;", p);
+        ipcRenderer.send("asynchronous-message", {
+            action: "webprot.send-packet",
+            packet: p
+        });
     }
 
     // Convert a status number to text or a path to status icon
@@ -1080,7 +1087,7 @@ function _rendererFunc() {
         return escapeHtml(txt).replace(/(?:\r\n|\r|\n)/g, "<br>")
     }
     function markupText(txt: string): string {
-        var esc = remark().use(gemojiToEmoji).processSync(    // emoji parser
+        var esc = remark.processSync(
             ("<span>" +
             marked.parseInline(                               // Markdown parser
             escapeHtml(txt)) +                                // no XSS for "ya today, sorry
@@ -1372,7 +1379,7 @@ function _rendererFunc() {
                     sectionElement = document.createElement("pre");
                     sectionElement.classList.add("message-code-section");
                     sectionElement.innerHTML = prepareMsgText(section.text);
-                    hljs.highlightBlock(sectionElement);
+                    highlightBlock(sectionElement);
 
                     const copyButton = document.createElement("button");
                     copyButton.classList.add("icon-button");
@@ -1868,10 +1875,79 @@ function _rendererFunc() {
         return msgs.length !== 0;
     }
     
-    // Packet reception handler
+    // Packet handler
+    function onPacket(packet: packets.Packet) {
+        console.log("%c[RECEIVED]", "color: #bb0000; font-weight: bold;", packet);
+
+        if(packet instanceof packets.StatusPacket) {
+            const code = packet.code;
+            switch(code) {
+                case packets.StatusCode.LOGIN_SUCCESS:
+                    // Show the main UI
+                    hideElm(elementById("login-form"));
+                    hideElm(elementById("mfa-form"));
+                    hideElm(elementById("signup-form"));
+                    showElm(elementById("main-layout-container"));
+
+                    // Request info about self
+                    ipcSend({
+                        action: "webprot.entity-get",
+                        entities: [
+                            { type: "user", id: 0 }
+                        ]
+                    });
+
+                    // Clear input fields
+                    (elementById("login-email")     as HTMLInputElement).value = "";
+                    (elementById("login-password")  as HTMLInputElement).value = "";
+                    (elementById("login-mfa-code")  as HTMLInputElement).value = "";
+                    (elementById("signup-username") as HTMLInputElement).value = "";
+                    (elementById("signup-email")    as HTMLInputElement).value = "";
+                    (elementById("signup-password") as HTMLInputElement).value = "";
+
+                    // Reset all caches
+                    entityCache = {};
+                    blobCache = {};
+                    endCallbacks = [];
+
+                    // Reset the view
+                    viewingGroup = 0;
+                    viewingChan = 0;
+                    viewingContactGroup = 0;
+                    resetMsgInput();
+                    break;
+
+                case packets.StatusCode.MFA_REQUIRED:
+                    hideElm(elementById("login-form"));
+                    showElm(elementById("mfa-form"));
+    
+                    elementById("mfa-login-button").addEventListener("click", (e) => {
+                        ipcSend({
+                            action:   "webprot.login",
+                            email:    "___@mfa@token@___",
+                            password: (elementById("login-mfa-code") as HTMLInputElement).value
+                        });
+                    });
+                    break;
+
+                case packets.StatusCode.LOGIN_ERROR:
+                    showBox("LOGIN ERROR", packet.message);
+                    (elementById("login-password") as HTMLInputElement).value = "";
+                    break;
+
+                case packets.StatusCode.SIGNUP_ERROR:
+                    showBox("SIGNUP ERROR", packet.message);
+                    (elementById("signup-password") as HTMLInputElement).value = "";
+                    break;
+            }
+        }
+    }
+
+    // Main process handler
     function ipcRecv(evt: Event, arg: any) {
-        if(["webprot.status", "webprot.ul-progress", "webprot.completion-notification"].indexOf(arg.type) === -1)
-            console.log("%c[RECEIVED]", "color: #bb0000; font-weight: bold;", arg);
+        if(["webprot.status", "webprot.ul-progress", "webprot.completion-notification",
+            "webprot.packet-recv"].indexOf(arg.type) === -1)
+            console.log("%c[M->R]", "color: #bb00bb; font-weight: bold;", arg);
         switch(arg.type) {
             case "webprot.status":
                 console.log("%c[STATUS]", "color: #6440a5; font-weight: bold;", arg.message);
@@ -1895,62 +1971,10 @@ function _rendererFunc() {
             case "webprot.disconnected":
                 break;
 
-            case "webprot.2fa-required":
-                hideElm(elementById("login-form"));
-                showElm(elementById("mfa-form"));
-
-                elementById("mfa-login-button").addEventListener("click", (e) => {
-                    ipcSend({
-                        action:   "webprot.login",
-                        email:    "___@mfa@token@___",
-                        password: (elementById("login-mfa-code") as HTMLInputElement).value
-                    });
-                });
+            case "webprot.packet-recv":
+                onPacket(arg.packet);
                 break;
 
-            case "webprot.login-success":
-                // Show the main UI
-                hideElm(elementById("login-form"));
-                hideElm(elementById("mfa-form"));
-                hideElm(elementById("signup-form"));
-                showElm(elementById("main-layout-container"));
-
-                // Request info about self
-                ipcSend({
-                    action: "webprot.entity-get",
-                    entities: [
-                        { type: "user", id: 0 }
-                    ]
-                });
-
-                // Clear input fields
-                (elementById("login-email")     as HTMLInputElement).value = "";
-                (elementById("login-password")  as HTMLInputElement).value = "";
-                (elementById("login-mfa-code")  as HTMLInputElement).value = "";
-                (elementById("signup-username") as HTMLInputElement).value = "";
-                (elementById("signup-email")    as HTMLInputElement).value = "";
-                (elementById("signup-password") as HTMLInputElement).value = "";
-
-                // Reset all caches
-                entityCache = {};
-                blobCache = {};
-                endCallbacks = [];
-
-                // Reset the view
-                viewingGroup = 0;
-                viewingChan = 0;
-                viewingContactGroup = 0;
-                resetMsgInput();
-                break;
-
-            case "webprot.login-err":
-                showBox("LOGIN ERROR", arg.message);
-                (elementById("login-password") as HTMLInputElement).value = "";
-                break;
-            case "webprot.signup-err":
-                showBox("SIGNUP ERROR", arg.message);
-                (elementById("signup-password") as HTMLInputElement).value = "";
-                break;
             case "webprot.outdated":
                 showBox("OUTDATED CLIENT", arg.message, true, () => {
                     shell.openExternal("https://ordermsg.tk/download")
@@ -2111,16 +2135,20 @@ function _rendererFunc() {
                                + "?secret="
                                + arg.secret
                                + "&issuer=Order";
-                var qr = qrcode(10, "L");
-                qr.addData(qrString);
-
                 // Generate the code
-                qr.make();
-                elementById("mfa-qr-placeholder").innerHTML = qr.createSvgTag(3);
-                elementById("mfa-code-manual").innerHTML = escapeHtml(arg.secret);
+                const placeholder = elementById("mfa-qr-placeholder");
+                qrcode(qrString, (err, canvas) => {
+                    if(err) throw err;
 
-                // Show the banner
-                triggerAppear(elementById("mfa-qr-banner"), true);
+                    // Make sure to remove all children :>
+                    while(placeholder.firstChild)
+                        placeholder.firstChild.remove();
+
+                    placeholder.appendChild(canvas);
+                    elementById("mfa-code-manual").innerHTML = escapeHtml(arg.secret);
+
+                    triggerAppear(elementById("mfa-qr-banner"), true);
+                });
                 break;
 
             case "webprot.cont-token":
@@ -2163,13 +2191,9 @@ function _rendererFunc() {
 
     // Add listeners to login controls
     elementById("login-button").onclick = (e) => {
-        var email    = (elementById("login-email")    as HTMLInputElement).value;
-        var password = (elementById("login-password") as HTMLInputElement).value;
-        ipcSend({
-            action:   "webprot.login",
-            email:    email,
-            password: password
-        });
+        const email    = (elementById("login-email")    as HTMLInputElement).value;
+        const password = (elementById("login-password") as HTMLInputElement).value;
+        sendPacket(new packets.LoginPacket(email, password));
     };
 
     elementById("login-signup-button").onclick = (e) => {

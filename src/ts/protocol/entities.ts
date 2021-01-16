@@ -1,5 +1,6 @@
-import DataTypes   from "./dataTypes";
-import * as fields from "./simpleFields";
+import { COPYFILE_FICLONE_FORCE } from "constants";
+import DataTypes, { MessageSection }   from "./dataTypes.js";
+import * as fields from "./simpleFields.js";
 
 // ============================================== ENTITIES
 // Entities represent objects in Order. There are multiple
@@ -49,8 +50,19 @@ export class Entity {
     }
 }
 
+export enum UserStatus {
+    OFFLINE = 0,
+    ONLINE  = 1,
+    IDLE    = 2,
+    DND     = 3,
+}
+export enum UserBadge {
+    VERIFIED = 1,
+    STAFF    = 2,
+    BOT      = 3
+}
 export class User extends Entity {
-    typeNum = 1;
+    static typeNum = 1;
     simpleFieldList = [
         new fields.NumField    ("id", 8,         0),
         new fields.StrField    ("email",         1),
@@ -75,7 +87,7 @@ export class User extends Entity {
 }
 
 export class Channel extends Entity {
-    typeNum = 2
+    static typeNum = 2
     simpleFieldList = [
         new fields.NumField    ("id", 8,       0),
         new fields.StrField    ("name",        1),
@@ -88,7 +100,7 @@ export class Channel extends Entity {
 }
 
 export class Group extends Entity {
-    typeNum = 2
+    static typeNum = 2
     simpleFieldList = [
         new fields.NumField    ("id", 8,           0),
         new fields.StrField    ("name",            1),
@@ -102,7 +114,14 @@ export class Group extends Entity {
 }
 
 export class Message extends Entity {
-    typeNum = 4
+    static typeNum = 4;
+
+    id:       number;
+    sections: MessageSection[];
+    channel:  number;
+    edited:   boolean;
+    sender:   number;
+
     simpleFieldList = [
         new fields.NumField        ("id", 8,      0),
         new fields.MsgSectionsField("sections",   1),
@@ -113,7 +132,7 @@ export class Message extends Entity {
 }
 
 export class Role extends Entity {
-    typeNum = 5
+    static typeNum = 5;
     simpleFieldList = [
         new fields.NumField    ("id", 8,       0),
         new fields.StrField    ("name",        1),
@@ -126,7 +145,7 @@ export class Role extends Entity {
 }
 
 export class File extends Entity {
-    typeNum = 6
+    static typeNum = 6;
     simpleFieldList = [
         new fields.NumField("id", 8,     0),
         new fields.StrField("name",      1),

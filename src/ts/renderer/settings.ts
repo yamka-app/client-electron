@@ -1,6 +1,6 @@
-import escapeHtml = require("escape-html");
-import tinycolor  = require("tinycolor2");
-import electron   = require("electron");
+const escapeHtml = require("escape-html");
+const tinycolor  = require("tinycolor2");
+const electron   = require("electron");
 
 // Default settings
 const defaultSettings: {name: string, value: any}[] = [
@@ -24,13 +24,13 @@ const toggleSettings: {name: string, element: string}[] = [
 
 // Set ot get a setting
 const ipcRenderer_settings = require("electron").ipcRenderer
-function configGet(k: string): any {
+export function configGet(k: string): any {
     return ipcRenderer_settings.sendSync("synchronous-message", {
         action: "config.get",
         k:      k
     });
 }
-function configSet(k: string, v: string|boolean|number): void {
+export function configSet(k: string, v: string|boolean|number): void {
     ipcRenderer_settings.sendSync("synchronous-message", {
         action: "config.set",
         k:      k,

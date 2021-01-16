@@ -5,8 +5,9 @@ import path from "path";
 import tls  from "tls";
 import fs   from "fs";
 
-import DataTypes    from "./dataTypes";
-import * as packets from "./packets";
+import DataTypes    from "../protocol/dataTypes";
+import * as packets from "../protocol/packets";
+import { File }     from "../protocol/entities";
 
 const dataHomePath = path.join(app.getPath("appData"), "ordermsg");
 const configPath   = path.join(dataHomePath, "order_config.json");
@@ -42,7 +43,7 @@ function createWindow() {
         // Create the window
         mainWindow = new BrowserWindow({
             title:       "Order - beta",
-            icon:        path.join(__dirname, "logo.png"),
+            icon:        path.join(__dirname, "../../../logo.png"),
             maximizable: true,
             frame:       false,
             transparent: false,
@@ -87,7 +88,7 @@ app.on("ready", () => {
     createWindow();
 
     // Create the icon in the tray
-    tray = new Tray(path.join(__dirname, "logo.png"));
+    tray = new Tray(path.join(__dirname, "../../../logo.png"));
     tray.setToolTip("Order");
     tray.setContextMenu(Menu.buildFromTemplate([
         { label: "Open Order", type: "normal", click() { createWindow() } },
@@ -115,8 +116,8 @@ app.on("window-all-closed", () => { windowCreated = false; });
 const webprotSettings = {
     host:                 "ordermsg.tk",
     port:                 1746,
-    blobPort:             1747,
-    version:              4,
+    filePort:             1747,
+    version:              5,
     compressionThreshold: 32
 };
 
@@ -127,7 +128,6 @@ var webprotState = {
     socket:        null,
     seqId:         1,
     queue:         [],
-    selfRequestId: -1,
     self:          {},
 
     blobStates: [],
@@ -166,7 +166,7 @@ function webprotSendPacket(packet: packets.Packet) {
     // Compress the data
     const compressed = buf.length >= webprotSettings.compressionThreshold
     if(compressed)
-        buf = zlib.gzipSync(buf, {});
+        buf = zlib.gzipSync(buf);
 
     // Add a compression header
     buf = Buffer.concat([
@@ -182,18 +182,14 @@ function ipcSend(data) {
 }
 
 function webprotConnect() {
+    // Abort if connected already
     if(webprotState.connecting || webprotState.connected)
         return;
 
     webprotState.connecting = true;
     webprotState.sendPings = false;
     webprotState.seqId = 1;
-    webprotState.selfRequestId = -1;
     webprotState.self = {};
-
-    // Close the existing connection if it is open
-    if(webprotState.connected)
-        webprotState.socket.destroy();
 
     // Initiate a TLS connection to the server
     console.log("Connecting to " + webprotSettings.host + ":" + webprotSettings.port);
@@ -250,7 +246,7 @@ ipcMain.on("asynchronous-message", (event, arg) => {
         webprotConnect();
     } else if(arg.action === "webprot.send-packet") {
         webprotSendPacket(arg.packet);
-    } else if(arg.action == "webprot.blob-dl") {
+    }/* else if(arg.action == "webprot.blob-dl") {
         // Refuse if there"s already a blob operation
         const existing = webprotState.blobStates.find(x => x.id == arg.id);
         if(existing) {
@@ -268,7 +264,7 @@ ipcMain.on("asynchronous-message", (event, arg) => {
             });
 
             // Get blob info
-            webprotSendPacket(new protocol.BlobGetPacket(arg.id, arg.operId));
+            webprotSendPacket(new packets.FileTokenRequestPacket(arg.id));
         }
     } else if(arg.action == "webprot.blob-ul") {
         // Get file length
@@ -287,8 +283,9 @@ ipcMain.on("asynchronous-message", (event, arg) => {
         })
 
         // Get the upload token
-        webprotSendPacket(new protocol.BlobPutPacket(arg.operId, path.basename(arg.path), len));
-    }
+        
+        webprotSendPacket(new packets.FileUploadTokenRequestPacket(new File()));
+    }*/
 });
 
 ipcMain.on("synchronous-message", (event, arg) => {

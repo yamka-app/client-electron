@@ -1,6 +1,6 @@
-import DataTypes     from "./dataTypes";
-import * as fields   from "./simpleFields";
-import { Entity }    from "./entities";
+import DataTypes        from "./dataTypes.js";
+import * as fields      from "./simpleFields.js";
+import { Entity, File } from "./entities.js";
 
 // ============================================== PACKETS
 // Packets are individual units of data sent to/from the server in
@@ -17,6 +17,7 @@ export class Packet {
     typeNum?: number;
     seq?:     number;
     replyTo?: number;
+    captcha?: string;
 
     constructor() { }
 
@@ -31,6 +32,7 @@ export class Packet {
             DataTypes.encNum(this.typeNum, 1),
             DataTypes.encNum(Packet.nextSeq++, 4),
             DataTypes.encNum(this.replyTo ?? 0, 4),
+            DataTypes.encStr(this.captcha),
             this.encodePayload()
         ]);
     }
@@ -51,14 +53,15 @@ export class Packet {
             new FileTokenRequestPacket(),
             new FileTokenPacket(),
             new MFASecretPacket(),
-            new ClientIdentityPacket(),
+            new FileUploadTokenRequestPacket(),
             new ContTokenPacket(),
             new ContactsManagePacket(),
             new UserSearchPacket(),
             new InviteResolvePacket(),
             new BotCreatePacket(),
             new BotInvitePacket(),
-            new IdentificationPacket()
+            new IdentificationPacket(),
+            new ClientIdentityPacket()
         ][type];
         if(packet === undefined) throw new Error(`Invalid packet type ${type}`);
         packet = {...packet}; // clone the object
@@ -295,12 +298,12 @@ export class MFASecretPacket extends SimpleFieldPacket {
     constructor(secret?: string) { super(); this.secret = secret; }
 }
 
-export class ClientIdentityPacket extends SimpleFieldPacket {
+export class FileUploadTokenRequestPacket extends SimpleFieldPacket {
     typeNum = 11;
-    userId: number;
-    simpleFieldList = [new fields.NumField("userId", 8)];
+    file: File;
+    simpleFieldList = [new fields.EntityField("file")];
 
-    constructor(id?: number) { super(); this.userId = id; }
+    constructor(f?: File) { super(); this.file = f; }
 }
 
 export class ContTokenPacket extends SimpleFieldPacket {
@@ -394,11 +397,21 @@ export class BotInvitePacket extends SimpleFieldPacket {
 
 export class IdentificationPacket extends SimpleFieldPacket {
     typeNum = 18;
-    protocol: number;
+    protocol:            number;
+    supportsCompression: boolean;
 
     simpleFieldList = [
         new fields.NumField("protocol", 4),
+        new fields.BoolField("supportsCompression")
     ];
 
-    constructor(p?: number) { super(); this.protocol = p; }
+    constructor(p?: number, sc?: boolean) { super(); this.protocol = p; this.supportsCompression = sc; }
+}
+
+export class ClientIdentityPacket extends SimpleFieldPacket {
+    typeNum = 19;
+    userId: number;
+    simpleFieldList = [new fields.NumField("userId", 8)];
+
+    constructor(id?: number) { super(); this.userId = id; }
 }

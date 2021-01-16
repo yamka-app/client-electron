@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "./js/esnext",
+    "allowJs": true,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["./ts/protocol/**/*", "./ts/renderer/**/*"]
+}
