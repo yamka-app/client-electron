@@ -63,7 +63,7 @@ export class ColorField extends SimpleField {
 export class StrField extends SimpleField {
     encodingFunc  = (val: string) => DataTypes.encStr(val);
     decodingFunc  = (buf: Buffer) => DataTypes.decStr(buf);
-    lengthingFunc = (buf: Buffer) => DataTypes.decNum(buf.slice(0, 2));
+    lengthingFunc = (buf: Buffer) => 2 + DataTypes.decNum(buf.slice(0, 2));
 }
 
 export class NumListField extends SimpleField {
@@ -156,7 +156,7 @@ export function simpleFieldEncoder(t: any, fields: SimpleField[], inclCnt: boole
     }
 }
 
-export function simpleFieldDecoder(t: any, fields: SimpleField[], inclCnt: boolean = false): (buf: Buffer, limit?: number, pos?: number) => void|number {
+export function simpleFieldDecoder(t: any, fields: SimpleField[], inclCnt: boolean = false): (buf: Buffer, limit?: number, pos?: number) => void|number|any {
     const allHaveId = checkBinaryIdExistence(fields);
 
     if(allHaveId) {
@@ -186,13 +186,15 @@ export function simpleFieldDecoder(t: any, fields: SimpleField[], inclCnt: boole
             if(pos !== 0)
                 throw new Error("\"pos\" is not supported on non-id-prefixed fields");
 
-            var pos = 0;
-            for(const field of fields) {
-                const slice = buf.slice(pos);
-                t[field.prop] = field.decode(slice);
+            const n = t;
 
-                pos += field.lengthingFunc(slice);
+            for(const field of fields) {
+                const len = field.lengthingFunc(buf);
+                n[field.prop] = field.decode(buf.slice(0, len));
+                buf = buf.slice(len);
             }
+
+            return n;
         }
     }
 }

@@ -12,7 +12,7 @@ const qrcode             = require("qrcode");
 const { highlightBlock } = require("highlight.js");
 const blurhash           = require("blurhash");
 
-import * as packets from "../protocol/packets.js";
+import * as packets from "../protocol.s/packets.s.js";
 import { configGet, configSet } from "./settings.js";
 
 interface MessageSection {
@@ -400,9 +400,12 @@ function _rendererFunc() {
         ipcRenderer.send("asynchronous-message", data);
     }
     function sendPacket(p: packets.Packet) {
-        console.log("%c[SENDIN]", "color: #00bb00; font-weight: bold;", p);
+        console.log("%c[SENDING]", "color: #00bb00; font-weight: bold;", p);
         ipcRenderer.send("asynchronous-message", {
             action: "webprot.send-packet",
+            type: p.constructor.name, // we need this so the main process actually knows what we want to send
+                                      // because it appears to me that the RPC interface doesn't preserve class info
+                                      // because it was designed with pure JS in mind
             packet: p
         });
     }
@@ -1880,7 +1883,7 @@ function _rendererFunc() {
         console.log("%c[RECEIVED]", "color: #bb0000; font-weight: bold;", packet);
 
         if(packet instanceof packets.StatusPacket) {
-            const code = packet.code;
+            const code = packet.status;
             switch(code) {
                 case packets.StatusCode.LOGIN_SUCCESS:
                     // Show the main UI
@@ -1939,6 +1942,12 @@ function _rendererFunc() {
                     showBox("SIGNUP ERROR", packet.message);
                     (elementById("signup-password") as HTMLInputElement).value = "";
                     break;
+
+                case packets.StatusCode.OUTDATED:
+                    showBox("OUTDATED CLIENT", packet.message, true, () => {
+                        shell.openExternal("https://ordermsg.tk/download")
+                    });
+                    break;
             }
         }
     }
@@ -1946,7 +1955,8 @@ function _rendererFunc() {
     // Main process handler
     function ipcRecv(evt: Event, arg: any) {
         if(["webprot.status", "webprot.ul-progress", "webprot.completion-notification",
-            "webprot.packet-recv"].indexOf(arg.type) === -1)
+            "webprot.packet-recv", "webprot.connected", "webprot.connecting", "webprot.disconnected"]
+                .indexOf(arg.type) === -1)
             console.log("%c[M->R]", "color: #bb00bb; font-weight: bold;", arg);
         switch(arg.type) {
             case "webprot.status":
@@ -1972,14 +1982,13 @@ function _rendererFunc() {
                 break;
 
             case "webprot.packet-recv":
-                onPacket(arg.packet);
+                // "restore" the packet because of RPC...
+                const proto = {
+                    "StatusPacket": new packets.StatusPacket()
+                }[arg.pType];
+                onPacket(Object.assign(proto, arg.packet));
                 break;
 
-            case "webprot.outdated":
-                showBox("OUTDATED CLIENT", arg.message, true, () => {
-                    shell.openExternal("https://ordermsg.tk/download")
-                });
-                break;
             case "webprot.rate-limit":
                 showBox("RATE LIMITING", arg.message);
                 break;

@@ -141,10 +141,10 @@ input {
 
     background-color: var(--shade-4);
     border-radius: 3px;
-    border: 1px solid transparent;
+    border: 0px solid transparent;
     transition: border-color 0.1s ease,
                 box-shadow   0.1s ease;
-    box-shadow: 0 0 5px var(--shadow);
+    box-shadow: 0 0 5px var(--shadow) inset;
 
     color: var(--foreground);
     font-family: Montserrat;
@@ -159,12 +159,12 @@ input {
 }
 input:hover {
     border:     1px solid var(--accent-dim);
-    box-shadow: 0 0 3px var(--accent);
+    box-shadow: 0 0 3px var(--accent) inset;
 }
 input:focus {
     border:     1px solid var(--accent);
     transition: border-color 0.1s;
-    box-shadow: 0 0 3px var(--accent);
+    box-shadow: 0 0 3px var(--accent) inset;
 }
 
 .fill-width {

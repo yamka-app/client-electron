@@ -6,7 +6,7 @@ export default class DataTypes {
         return this.encNum(val ? 1 : 0, 1);
     }
     static decBool(buf: Buffer): boolean {
-        return this.decBool(buf);
+        return this.decNum(buf) > 0;
     }
 
 
@@ -57,7 +57,7 @@ export default class DataTypes {
     
     static encStr(str: string): Buffer {
         if(str === undefined)
-            return Buffer.alloc(0);
+            return Buffer.alloc(2);
 
         // A string consists of the actual UTF-8 encoded string and a 16-bit length (in bytes) preceding it
         var utf8 = Buffer.from(str, "utf8");

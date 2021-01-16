@@ -432,7 +432,7 @@ input[type="radio"].settings-radio:checked + label {
     font-family:      Montserrat;
     font-size:        var(--font-size);
     background-color: var(--shade-3-trans);
-    box-shadow:       0 0 5px var(--shadow);
+    box-shadow:       0 0 15px var(--shadow);
 }
 
 #owned-bot-list,

@@ -14,7 +14,7 @@ import { Entity, File } from "./entities.js";
 export class Packet {
     static nextSeq: number = 1;
 
-    typeNum?: number;
+    protected typeNum?: number;
     seq?:     number;
     replyTo?: number;
     captcha?: string;
@@ -22,7 +22,7 @@ export class Packet {
     constructor() { }
 
     encodePayload?: ()          => Buffer;
-    decodePayload?: (b: Buffer) => void;
+    decodePayload?: (b: Buffer) => Packet;
 
     encode: () => Buffer = function() {
         if(this.typeNum === undefined || this.encodePayload === undefined)
@@ -64,19 +64,20 @@ export class Packet {
             new ClientIdentityPacket()
         ][type];
         if(packet === undefined) throw new Error(`Invalid packet type ${type}`);
-        packet = {...packet}; // clone the object
         packet.replyTo = reply;
         packet.seq     = seq;
-        packet.decodePayload(buf.slice(9));
+        packet = packet.decodePayload(buf.slice(9));
         return packet;
     }
 }
 
 export class SimpleFieldPacket extends Packet {
-    simpleFieldList?: fields.SimpleField[];
+    protected simpleFieldList: fields.SimpleField[] = [];
 
-    constructor() {
+    constructor(fl: fields.SimpleField[]) {
         super();
+
+        this.simpleFieldList = fl;
         if(fields.checkBinaryIdExistence(this.simpleFieldList))
             throw new Error("Packet fields should not be id-prefixed");
 
@@ -86,17 +87,15 @@ export class SimpleFieldPacket extends Packet {
 }
 
 export class LoginPacket extends SimpleFieldPacket {
-    static typeNum = 1;
+    protected typeNum = 1;
     login:    string;
     password: string;
 
-    simpleFieldList = [
-        new fields.StrField("login"),
-        new fields.StrField("password")
-    ];
-
     constructor(l?: string, p?: string) {
-        super();
+        super([
+            new fields.StrField("login"),
+            new fields.StrField("password")
+        ]);
         this.login    = l;
         this.password = p;
     }
@@ -105,17 +104,21 @@ export class LoginPacket extends SimpleFieldPacket {
 export class PingPacket extends SimpleFieldPacket {
     typeNum = 2;
     echo: number;
-    simpleFieldList = [new fields.NumField("echo", 4)];
 
-    constructor(echo?: number) { super(); this.echo = echo; }
+    constructor(echo?: number) {
+        super([new fields.NumField("echo", 4)]);
+        this.echo = echo;
+    }
 }
 
 export class PongPacket extends SimpleFieldPacket {
     typeNum = 3;
     echo: number;
-    simpleFieldList = [new fields.NumField("echo", 4)];
 
-    constructor(echo?: number) { super(); this.echo = echo; }
+    constructor(echo?: number) {
+        super([new fields.NumField("echo", 4)]);
+        this.echo = echo;
+    }
 }
 
 export enum StatusCode {
@@ -142,44 +145,28 @@ export enum StatusCode {
 }
 export class StatusPacket extends SimpleFieldPacket {
     typeNum = 4;
-    code:    number;
     message: string;
     status:  StatusCode;
-    simpleFieldList = [new fields.NumField("code", 2), new fields.StrField("message")];
-
-    // Overriding these because we need to convert status codes
-    __normalDecodePayload = this.decodePayload;
-    __normalEncodePayload = this.encodePayload;
-    decodePayload = (buf: Buffer) => {
-        this.__normalDecodePayload(buf);
-        this.status = this.code as StatusCode;
-    }
-    encodePayload = () => {
-        this.code = this.status as number;
-        return this.__normalEncodePayload();
-    }
 
     constructor(status?: StatusCode, message?: string) {
-        super();
+        super([new fields.NumField("status", 2), new fields.StrField("message")]);
         this.status  = status;
         this.message = message;
     }
 }
 
 export class SignupPacket extends SimpleFieldPacket {
-    static typeNum = 5;
+    typeNum = 5;
     email:    string;
     name:     string;
     password: string;
 
-    simpleFieldList = [
-        new fields.StrField("email"),
-        new fields.StrField("name"),
-        new fields.StrField("password")
-    ];
-
     constructor(e?: string, l?: string, p?: string) {
-        super();
+        super([
+            new fields.StrField("email"),
+            new fields.StrField("name"),
+            new fields.StrField("password")
+        ]);
         this.name            = l;
         this.password        = p;
     }
@@ -236,7 +223,7 @@ export class EntityGetRequest {
     }
 }
 export class EntityGetPacket extends Packet {
-    static typeNum = 6;
+    typeNum = 6;
 
     entities?: EntityGetRequest[];
 
@@ -251,7 +238,7 @@ export class EntityGetPacket extends Packet {
 }
 
 export class EntitiesPacket extends Packet {
-    static typeNum = 7;
+    typeNum = 7;
 
     entities?: Entity[];
 
@@ -271,47 +258,43 @@ export class EntitiesPacket extends Packet {
             pos = result.posAfter;
             this.entities.push(result.entity);
         }
+        return this;
     }
 }
 
 export class FileTokenRequestPacket extends SimpleFieldPacket {
     typeNum = 8;
     id: number;
-    simpleFieldList = [new fields.NumField("id", 8)];
 
-    constructor(id?: number) { super(); this.id = id; }
+    constructor(id?: number) { super([new fields.NumField("id", 8)]); this.id = id; }
 }
 
 export class FileTokenPacket extends SimpleFieldPacket {
     typeNum = 9;
     token: string;
-    simpleFieldList = [new fields.StrField("token")];
 
-    constructor(token?: string) { super(); this.token = token; }
+    constructor(token?: string) { super([new fields.StrField("token")]); this.token = token; }
 }
 
 export class MFASecretPacket extends SimpleFieldPacket {
     typeNum = 10;
     secret: string;
-    simpleFieldList = [new fields.StrField("secret")];
 
-    constructor(secret?: string) { super(); this.secret = secret; }
+    constructor(secret?: string) { super([new fields.StrField("secret")]); this.secret = secret; }
 }
 
 export class FileUploadTokenRequestPacket extends SimpleFieldPacket {
     typeNum = 11;
     file: File;
-    simpleFieldList = [new fields.EntityField("file")];
 
-    constructor(f?: File) { super(); this.file = f; }
+    constructor(f?: File) { super([new fields.EntityField("file")]); this.file = f; }
 }
 
 export class ContTokenPacket extends SimpleFieldPacket {
     typeNum = 12;
     token: string;
-    simpleFieldList = [new fields.StrField("token")];
 
-    constructor(token?: string) { super(); this.token = token; }
+    constructor(token?: string) { super([new fields.StrField("token")]); this.token = token; }
 }
 
 export enum ContactType {
@@ -331,14 +314,12 @@ export class ContactsManagePacket extends SimpleFieldPacket {
     action: ContactAction;
     id:     number;
 
-    simpleFieldList = [
-        new fields.NumField("type",   1),
-        new fields.NumField("action", 1),
-        new fields.NumField("id",     8)
-    ];
-
     constructor(t?: ContactType, a?: ContactAction, id?: number) {
-        super();
+        super([
+            new fields.NumField("type",   1),
+            new fields.NumField("action", 1),
+            new fields.NumField("id",     8)
+        ]);
         this.type   = t;
         this.action = a;
         this.id     = id;
@@ -348,9 +329,8 @@ export class ContactsManagePacket extends SimpleFieldPacket {
 export class UserSearchPacket extends SimpleFieldPacket {
     typeNum = 14;
     name: string;
-    simpleFieldList = [new fields.StrField("name")];
 
-    constructor(name?: string) { super(); this.name = name; }
+    constructor(name?: string) { super([new fields.StrField("name")]); this.name = name; }
 }
 
 export class InviteResolvePacket extends SimpleFieldPacket {
@@ -358,12 +338,13 @@ export class InviteResolvePacket extends SimpleFieldPacket {
     code: string;
     add:  boolean;
 
-    simpleFieldList = [
-        new fields.NumField("add", 1),
-        new fields.StrField("invite")
-    ];
-
-    constructor(c?: string, a?: boolean) { super(); this.code = c; this.add = a; }
+    constructor(c?: string, a?: boolean) { super([
+            new fields.NumField("add", 1),
+            new fields.StrField("invite")
+        ]);
+        this.code = c;
+        this.add = a;
+    }
 }
 
 export class BotCreatePacket extends SimpleFieldPacket {
@@ -374,12 +355,13 @@ export class BotCreatePacket extends SimpleFieldPacket {
     nameToken: string;     // C->S: name
                            // S->C: token
 
-    simpleFieldList = [
-        new fields.NumField("id",        8),
-        new fields.StrField("nameToken", 8)
-    ];
-
-    constructor(n?: string) { super(); this.nameToken = n; }
+    constructor(n?: string) {
+        super([
+            new fields.NumField("id", 8),
+            new fields.StrField("nameToken")
+        ]);
+        this.nameToken = n;
+    }
 }
 
 export class BotInvitePacket extends SimpleFieldPacket {
@@ -387,12 +369,13 @@ export class BotInvitePacket extends SimpleFieldPacket {
     bot:   number;
     group: number;
 
-    simpleFieldList = [
-        new fields.NumField("bot",   8),
-        new fields.NumField("group", 8)
-    ];
-
-    constructor(b?: number, g?: number) { super(); this.bot = b; this.group = g; }
+    constructor(b?: number, g?: number) {
+        super([
+            new fields.NumField("bot",   8),
+            new fields.NumField("group", 8)
+        ]);
+        this.bot = b; this.group = g;
+    }
 }
 
 export class IdentificationPacket extends SimpleFieldPacket {
@@ -400,18 +383,21 @@ export class IdentificationPacket extends SimpleFieldPacket {
     protocol:            number;
     supportsCompression: boolean;
 
-    simpleFieldList = [
-        new fields.NumField("protocol", 4),
-        new fields.BoolField("supportsCompression")
-    ];
-
-    constructor(p?: number, sc?: boolean) { super(); this.protocol = p; this.supportsCompression = sc; }
+    constructor(p?: number, sc?: boolean) {
+        super([
+            new fields.NumField("protocol", 4),
+            new fields.BoolField("supportsCompression")
+        ]);
+        this.protocol = p; this.supportsCompression = sc;
+    }
 }
 
 export class ClientIdentityPacket extends SimpleFieldPacket {
     typeNum = 19;
     userId: number;
-    simpleFieldList = [new fields.NumField("userId", 8)];
 
-    constructor(id?: number) { super(); this.userId = id; }
+    constructor(id?: number) {
+        super([new fields.NumField("userId", 8)]);
+        this.userId = id;
+    }
 }

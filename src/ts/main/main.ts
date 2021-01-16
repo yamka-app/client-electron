@@ -8,6 +8,7 @@ import fs   from "fs";
 import DataTypes    from "../protocol/dataTypes";
 import * as packets from "../protocol/packets";
 import { File }     from "../protocol/entities";
+import { LoginPacket } from "../protocol/packets";
 
 const dataHomePath = path.join(app.getPath("appData"), "ordermsg");
 const configPath   = path.join(dataHomePath, "order_config.json");
@@ -117,8 +118,9 @@ const webprotSettings = {
     host:                 "ordermsg.tk",
     port:                 1746,
     filePort:             1747,
-    version:              5,
-    compressionThreshold: 32
+    version:              4,
+    supportsComp:         true,
+    compressionThreshold: 32,
 };
 
 var webprotState = {
@@ -145,7 +147,12 @@ function webprotData(bytes: Buffer) {
         bytes = zlib.gunzipSync(bytes);
 
     const packet = packets.Packet.decode(bytes);
-    ipcSend({ type: "webprot.packet-recv", packet: packet });
+    delete packet.encode;
+    delete packet.encode;
+    delete packet.decodePayload;
+    delete packet.encodePayload;
+    delete packet["simpleFieldList"]; // clear all unnecessary fields before sending them to the renderer
+    ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name });
 }
 
 function webprotSendBytes(bytes: Buffer) {
@@ -159,7 +166,18 @@ function webprotSendBytes(bytes: Buffer) {
     webprotState.socket.write(bytes);
 }
 
-function webprotSendPacket(packet: packets.Packet) {
+function webprotSendPacket(packet: any, type?: string) {
+    // Make the packet "full" if requested
+    if(type !== undefined) {
+        const proto = {
+            "LoginPacket": new LoginPacket()
+        }[type];
+
+        if(proto === undefined)
+            throw new Error(`Unknown packet type when trying to encode: ${type}`);
+
+        packet = Object.assign(proto, packet);
+    }
     // Encode the packet
     var buf = packet.encode();
 
@@ -174,6 +192,8 @@ function webprotSendPacket(packet: packets.Packet) {
         DataTypes.encNum(buf.length, 4),
         buf
     ]);
+
+    webprotSendBytes(buf);
 }
 
 function ipcSend(data) {
@@ -214,6 +234,10 @@ function webprotConnect() {
         webprotState.connected = true;
         webprotState.connecting = false;
 
+        // Tell the server our protocol version
+        // and the fact that we support compression
+        webprotSendPacket(new packets.IdentificationPacket(webprotSettings.version, webprotSettings.supportsComp))
+
         // Send the packets in the queue
         webprotState.queue.forEach((bytes) => {
             webprotSendBytes(bytes)
@@ -245,7 +269,7 @@ ipcMain.on("asynchronous-message", (event, arg) => {
     if(arg.action === "webprot.connect") {
         webprotConnect();
     } else if(arg.action === "webprot.send-packet") {
-        webprotSendPacket(arg.packet);
+        webprotSendPacket(arg.packet, arg.type);
     }/* else if(arg.action == "webprot.blob-dl") {
         // Refuse if there"s already a blob operation
         const existing = webprotState.blobStates.find(x => x.id == arg.id);

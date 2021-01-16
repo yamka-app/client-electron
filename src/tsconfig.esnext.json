@@ -8,5 +8,5 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["./ts/protocol/**/*", "./ts/renderer/**/*"]
+  "include": ["./ts/protocol.s/**/*", "./ts/renderer/**/*"]
 }
