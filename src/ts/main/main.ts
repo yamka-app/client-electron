@@ -118,7 +118,7 @@ const webprotSettings = {
     host:                 "ordermsg.tk",
     port:                 1746,
     filePort:             1747,
-    version:              4,
+    version:              5,
     supportsComp:         true,
     compressionThreshold: 32,
 };
