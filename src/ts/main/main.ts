@@ -131,9 +131,11 @@ var webprotState = {
     queue:         [],
     selfId:        0,
     self:          {},
+    pingSent:      0,
+    pingTime:      0,
 
-    blobStates: [],
-    reqStates:  []
+    blobStates:    [],
+    reqStates:     []
 }
 
 function webprotData(bytes: Buffer) {
@@ -146,12 +148,23 @@ function webprotData(bytes: Buffer) {
     if(compressed) bytes = zlib.gunzipSync(bytes);
 
     const packet = packets.Packet.decode(bytes);
-    if(packet instanceof packets.PongPacket) return; // ignore pong packets
-    delete packet.encode;
+
+    // Measure ping to the server
+    if(packet instanceof packets.PongPacket) {
+        webprotState.pingTime = new Date().getTime() - webprotState.pingSent;
+        if(webprotState.pingSent !== 0)
+            ipcSend({ type: "webprot.status", message: `Protocol ping (round trip): ${webprotState.pingTime}ms` });
+        return;
+    }
+
+    delete packet.encode; // clear all unnecessary fields before sending the packet to the renderer
     delete packet.encode;
     delete packet.decodePayload;
     delete packet.encodePayload;
-    delete packet["simpleFieldList"]; // clear all unnecessary fields before sending them to the renderer
+    delete packet.replyTo;
+    delete packet.seq;
+    delete packet.typeNum;
+    delete packet["simpleFieldList"];
     ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name });
 }
 
@@ -170,8 +183,9 @@ function webprotSendPacket(packet: any, type?: string) {
     // Make the packet "full" if requested
     if(type !== undefined) {
         const proto = {
-            "LoginPacket": new packets.LoginPacket(),
-            "SignupPacket": new packets.SignupPacket()
+            "LoginPacket":     new packets.LoginPacket(),
+            "SignupPacket":    new packets.SignupPacket(),
+            "ContTokenPacket": new packets.ContTokenPacket()
         }[type];
 
         if(proto === undefined)
@@ -179,6 +193,10 @@ function webprotSendPacket(packet: any, type?: string) {
 
         packet = Object.assign(proto, packet);
     }
+    // Measure ping to the server
+    if(packet instanceof packets.PingPacket)
+        webprotState.pingSent = new Date().getTime();
+
     // Encode the packet
     var buf = packet.encode();
 
@@ -211,6 +229,7 @@ function webprotConnect() {
     webprotState.seqId = 1;
     webprotState.selfId = 0;
     webprotState.self = {};
+    webprotState.pingSent = 0;
 
     // Initiate a TLS connection to the server
     const logMessage = `Connecting to ${webprotSettings.host}:${webprotSettings.port} with protocol version ${webprotSettings.version}`;

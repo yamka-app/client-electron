@@ -1980,13 +1980,7 @@ function _rendererFunc() {
                 setTimeout(() => hideElm(elementById("connecting-screen-bg")), 1000); // kinda wait \(-_-)/
                 // Send the continuation token
                 const contToken = configGet("contToken");
-                if(contToken) {
-                    ipcSend({
-                        action:   "webprot.login",
-                        email:    "___@cont@token@___",
-                        password: contToken
-                    });
-                }
+                if(contToken) sendPacket(new packets.ContTokenPacket(contToken));
                 break;
             case "webprot.disconnected":
                 break;
@@ -1994,7 +1988,8 @@ function _rendererFunc() {
             case "webprot.packet-recv":
                 // "restore" the packet because of RPC...
                 const proto = {
-                    "StatusPacket": new packets.StatusPacket(),
+                    "StatusPacket":         new packets.StatusPacket(),
+                    "ContTokenPacket":      new packets.ContTokenPacket(),
                     "ClientIdentityPacket": new packets.ClientIdentityPacket()
                 }[arg.pType];
                 onPacket(Object.assign(proto, arg.packet));

@@ -14,7 +14,7 @@ import { Entity, File } from "./entities.js";
 export class Packet {
     static nextSeq: number = 1;
 
-    protected typeNum?: number;
+    typeNum?: number;
     seq?:     number;
     replyTo?: number;
     captcha?: string;
@@ -87,7 +87,7 @@ export class SimpleFieldPacket extends Packet {
 }
 
 export class LoginPacket extends SimpleFieldPacket {
-    protected typeNum = 1;
+    typeNum = 1;
     login:    string;
     password: string;
 
@@ -156,7 +156,7 @@ export class StatusPacket extends SimpleFieldPacket {
 }
 
 export class SignupPacket extends SimpleFieldPacket {
-    protected typeNum = 5;
+    typeNum = 5;
     email:    string;
     name:     string;
     password: string;
