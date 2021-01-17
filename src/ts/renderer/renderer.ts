@@ -1930,7 +1930,7 @@ function _rendererFunc() {
                     showBox("FRIEND REQUEST SENT", packet.message);
                     break;
             }
-        } else if(packet instanceof packets.ClientIdentityPacket) { // Logged in or signed up successfully
+        } else if(packet instanceof packets.ClientIdentityPacket) { // Logged in successfully
             // Save our ID
             remote.getGlobal("webprotState").selfId = packet.userId;
             remote.getGlobal("webprotState").sendPings = true;
@@ -1959,6 +1959,9 @@ function _rendererFunc() {
             viewingChan = 0;
             viewingContactGroup = 0;
             resetMsgInput();
+        } else if(packet instanceof packets.AccessTokenPacket) {
+            configSet("accessToken", packet.token);
+            sendPacket(new packets.AccessTokenPacket(packet.token)); // Try to login immediately
         }
     }
 
@@ -1979,8 +1982,8 @@ function _rendererFunc() {
             case "webprot.connected":
                 setTimeout(() => hideElm(elementById("connecting-screen-bg")), 1000); // kinda wait \(-_-)/
                 // Send the continuation token
-                const contToken = configGet("contToken");
-                if(contToken) sendPacket(new packets.ContTokenPacket(contToken));
+                const accessToken = configGet("accessToken");
+                if(accessToken) sendPacket(new packets.AccessTokenPacket(accessToken));
                 break;
             case "webprot.disconnected":
                 break;
@@ -1989,7 +1992,7 @@ function _rendererFunc() {
                 // "restore" the packet because of RPC...
                 const proto = {
                     "StatusPacket":         new packets.StatusPacket(),
-                    "ContTokenPacket":      new packets.ContTokenPacket(),
+                    "AccessTokenPacket":    new packets.AccessTokenPacket(),
                     "ClientIdentityPacket": new packets.ClientIdentityPacket()
                 }[arg.pType];
                 onPacket(Object.assign(proto, arg.packet));
@@ -2150,11 +2153,6 @@ function _rendererFunc() {
                 });
                 break;
 
-            case "webprot.cont-token":
-                // Store the token
-                configSet("contToken", arg.token)
-                break;
-
             case "webprot.completion-notification":
                 // Call the callback
                 var cb = endCallbacks[arg.operId];
@@ -2192,7 +2190,9 @@ function _rendererFunc() {
     elementById("login-button").onclick = (e) => {
         const email    = (elementById("login-email")    as HTMLInputElement).value;
         const password = (elementById("login-password") as HTMLInputElement).value;
-        sendPacket(new packets.LoginPacket(email, password));
+        // hack: all permissions except the bot one. I'm too lazy to list all of them here :)
+        const permissions = []; for(var i = 0; i < packets.AccessTokenPermission.BOT; i++) permissions.push(i);
+        sendPacket(new packets.LoginPacket(email, password, permissions));
     };
 
     elementById("login-signup-button").onclick = (e) => {

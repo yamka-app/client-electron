@@ -11,18 +11,52 @@ export class Packet {
     captcha?: string;
 }
 
-export class SimpleFieldPacket extends Packet {
+export class SimpleFieldPacket extends Packet { }
+
+export enum AccessTokenPermission {
+    SEE_PROFILE         = 0,
+    SEE_RELATIONSHIPS   = 1,
+    SEE_GROUPS          = 2,
+    SEE_DIRECT_MESSAGES = 3,
+    EDIT_PROFILE        = 4,
+    EDIT_RELATIONSHIPS  = 5,
+
+    SEND_GROUP_MESSAGES         = 6,
+    SEND_DIRECT_MESSAGES        = 7,
+    RECEIVE_GROUP_MESSAGES      = 8,
+    READ_GROUP_MESSAGE_HISTORY  = 9,
+    RECEIVE_DIRECT_MESSAGES     = 10,
+    READ_DIRECT_MESSAGE_HISTORY = 11,
+    DELETE_GROUP_MESSAGES       = 12,
+    DELETE_DIRECT_MESSAGES      = 13,
+
+    CREATE_GROUPS          = 14,
+    EDIT_GROUPS            = 15,
+    DELETE_GROUPS          = 16,
+    JOIN_GROUPS            = 17,
+    LEAVE_GROUPS           = 18,
+    BAN_MEMBER             = 19,
+    KICK_MEMBERS           = 20,
+    MANAGE_ROLES           = 21,
+    DELETE_OTHERS_MESSAGES = 22,
+
+    READ_OWN_WALL     = 23,
+    READ_OTHERS_WALLS = 24,
+    POST_ON_OWN_WALL  = 25,
+
+    BOT = 26
 }
-
 export class LoginPacket extends SimpleFieldPacket {
-    static typeNum = 1;
-    login:    string;
-    password: string;
+    typeNum = 1;
+    login:       string;
+    password:    string;
+    permissions: AccessTokenPermission[];
 
-    constructor(l?: string, p?: string) {
+    constructor(l?: string, p?: string, perms?: AccessTokenPermission[]) {
         super();
-        this.login    = l;
-        this.password = p;
+        this.login       = l;
+        this.password    = p;
+        this.permissions = perms;
     }
 }
 
@@ -45,13 +79,13 @@ export enum StatusCode {
     INVALID_CONNECTION_STATE      = 2,
     LOGIN_ERROR                   = 3,
     MFA_REQUIRED                  = 4,
-    LOGIN_SUCCESS                 = 5,
+    SIGNUP_SUCCESS                = 5,
     SIGNUP_ERROR                  = 6,
     RATE_LIMITING                 = 7,
     INVALID_ID                    = 8,
     FILE_TOO_LARGE                = 9,
     PERMISSION_DENIED             = 10,
-    INVALID_CONT_TOKEN            = 11,
+    INVALID_ACCESS_TOKEN          = 11,
     USER_NOT_PENDING              = 12,
     CONTACT_ACTION_NOT_APPLICABLE = 13,
     INVALID_USERNAME              = 14,
@@ -152,7 +186,7 @@ export class FileUploadTokenRequestPacket extends SimpleFieldPacket {
     constructor(f?: File) { super(); this.file = f; }
 }
 
-export class ContTokenPacket extends SimpleFieldPacket {
+export class AccessTokenPacket extends SimpleFieldPacket {
     typeNum = 12;
     token: string;
 

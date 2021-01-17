@@ -183,9 +183,9 @@ function webprotSendPacket(packet: any, type?: string) {
     // Make the packet "full" if requested
     if(type !== undefined) {
         const proto = {
-            "LoginPacket":     new packets.LoginPacket(),
-            "SignupPacket":    new packets.SignupPacket(),
-            "ContTokenPacket": new packets.ContTokenPacket()
+            "LoginPacket":       new packets.LoginPacket(),
+            "SignupPacket":      new packets.SignupPacket(),
+            "AccessTokenPacket": new packets.AccessTokenPacket()
         }[type];
 
         if(proto === undefined)
