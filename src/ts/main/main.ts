@@ -230,6 +230,7 @@ function webprotConnect() {
     webprotState.selfId = 0;
     webprotState.self = {};
     webprotState.pingSent = 0;
+    packets.Packet.nextSeq = 1;
 
     // Initiate a TLS connection to the server
     const logMessage = `Connecting to ${webprotSettings.host}:${webprotSettings.port} with protocol version ${webprotSettings.version}`;

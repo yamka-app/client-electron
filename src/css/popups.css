@@ -37,6 +37,7 @@
 
     background-color: var(--shade-3);
     border-radius:    5px 0 0 5px;
+    box-shadow:       15px 0 15px -15px var(--shadow);
 
     display:        flex;
     flex-direction: column;
@@ -103,17 +104,17 @@ input[type="radio"].settings-radio:checked + label {
 .settings-subsection {
     box-sizing: border-box;
 
-    width: 100%;
+    width:  100%;
     height: fit-content;
 
     margin-bottom: 20px;
-    padding: 20px;
+    padding:       20px;
 
     background-color: var(--shade-3);
-    border-radius: 5px;
-    box-shadow: 0 0 5px var(--shadow);
+    border-radius:    5px;
+    box-shadow:       0 0 15px var(--shadow);
 
-    display: flex;
+    display:        flex;
     flex-direction: column;
 }
 
