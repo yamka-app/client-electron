@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline' https://hcaptcha.com https://assets.hcaptcha.com file://*; img-src 'self' https://twemoji.maxcdn.com/ https://i.ytimg.com/ data:; script-src 'self' https://twemoji.maxcdn.com/ https://hcaptcha.com https://*.hcaptcha.com; frame-src https://hcaptcha.com https://*.hcaptcha.com https://*.youtube.com https://youtube.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com file://*; img-src 'self' https://twemoji.maxcdn.com/ https://i.ytimg.com/ data:; script-src 'self' https://twemoji.maxcdn.com/ https://hcaptcha.com https://*.hcaptcha.com; frame-src https://hcaptcha.com https://*.hcaptcha.com https://*.youtube.com https://youtube.com; connect-src https://hcaptcha.com https://*.hcaptcha.com">
 
     <title>Order</title>
 
@@ -47,14 +47,6 @@
 
     <div id="floating-image-bg" class="darken-bg" style="display: none;">
       <!--The floating image will be here-->
-    </div>
-
-    <div id="captcha-bg" class="darken-bg" style="display: none;">
-      <div id="captcha">
-        <form>
-          <div class="h-captcha" data-sitekey="17f785c4-62b5-45e0-b863-ba6c80cc1051"></div>
-        </form>
-      </div>
     </div>
 
     <div id="group-delete-box-bg" class="darken-bg" style="display: none;">
@@ -619,6 +611,8 @@
         <br>
         <span class="input-container"><input id="signup-password" type="password" class="fill-width"/></span>
         <br>
+
+        <!--<div class="h-captcha" data-sitekey="ab9931fb-9173-4aac-9f25-86f53f709396" data-theme="dark" data-callback="captchaSolved"></div>-->
   
         <button id="signup-button" class="accent-button fill-width">SIGN UP</button>
         <button id="signup-back-button" class="fill-width">BACK</button>

@@ -1885,41 +1885,6 @@ function _rendererFunc() {
         if(packet instanceof packets.StatusPacket) {
             const code = packet.status;
             switch(code) {
-                case packets.StatusCode.LOGIN_SUCCESS:
-                    // Show the main UI
-                    hideElm(elementById("login-form"));
-                    hideElm(elementById("mfa-form"));
-                    hideElm(elementById("signup-form"));
-                    showElm(elementById("main-layout-container"));
-
-                    // Request info about self
-                    ipcSend({
-                        action: "webprot.entity-get",
-                        entities: [
-                            { type: "user", id: 0 }
-                        ]
-                    });
-
-                    // Clear input fields
-                    (elementById("login-email")     as HTMLInputElement).value = "";
-                    (elementById("login-password")  as HTMLInputElement).value = "";
-                    (elementById("login-mfa-code")  as HTMLInputElement).value = "";
-                    (elementById("signup-username") as HTMLInputElement).value = "";
-                    (elementById("signup-email")    as HTMLInputElement).value = "";
-                    (elementById("signup-password") as HTMLInputElement).value = "";
-
-                    // Reset all caches
-                    entityCache = {};
-                    blobCache = {};
-                    endCallbacks = [];
-
-                    // Reset the view
-                    viewingGroup = 0;
-                    viewingChan = 0;
-                    viewingContactGroup = 0;
-                    resetMsgInput();
-                    break;
-
                 case packets.StatusCode.MFA_REQUIRED:
                     hideElm(elementById("login-form"));
                     showElm(elementById("mfa-form"));
@@ -1948,7 +1913,52 @@ function _rendererFunc() {
                         shell.openExternal("https://ordermsg.tk/download")
                     });
                     break;
+
+                case packets.StatusCode.RATE_LIMITING:
+                    showBox("RATE LIMITING", packet.message);
+                    break;
+                case packets.StatusCode.INVALID_USERNAME:
+                    showBox("INVALID USERNAME", packet.message);
+                    break;
+                case packets.StatusCode.INVALID_INVITE:
+                    showBox("INVALID INVITE", packet.message);
+                    break;
+                case packets.StatusCode.INTERNAL_ERROR:
+                    showBox("INTERNAL ERROR", packet.message);
+                    break;
+                case packets.StatusCode.FRIEND_REQUEST_SENT:
+                    showBox("FRIEND REQUEST SENT", packet.message);
+                    break;
             }
+        } else if(packet instanceof packets.ClientIdentityPacket) { // Logged in or signed up successfully
+            // Save our ID
+            remote.getGlobal("webprotState").selfId = packet.userId;
+            remote.getGlobal("webprotState").sendPings = true;
+
+            // Show the main UI
+            hideElm(elementById("login-form"));
+            hideElm(elementById("mfa-form"));
+            hideElm(elementById("signup-form"));
+            showElm(elementById("main-layout-container"));
+
+            // Clear input fields
+            (elementById("login-email")     as HTMLInputElement).value = "";
+            (elementById("login-password")  as HTMLInputElement).value = "";
+            (elementById("login-mfa-code")  as HTMLInputElement).value = "";
+            (elementById("signup-username") as HTMLInputElement).value = "";
+            (elementById("signup-email")    as HTMLInputElement).value = "";
+            (elementById("signup-password") as HTMLInputElement).value = "";
+
+            // Reset all caches
+            entityCache = {};
+            blobCache = {};
+            endCallbacks = [];
+
+            // Reset the view
+            viewingGroup = 0;
+            viewingChan = 0;
+            viewingContactGroup = 0;
+            resetMsgInput();
         }
     }
 
@@ -1984,25 +1994,10 @@ function _rendererFunc() {
             case "webprot.packet-recv":
                 // "restore" the packet because of RPC...
                 const proto = {
-                    "StatusPacket": new packets.StatusPacket()
+                    "StatusPacket": new packets.StatusPacket(),
+                    "ClientIdentityPacket": new packets.ClientIdentityPacket()
                 }[arg.pType];
                 onPacket(Object.assign(proto, arg.packet));
-                break;
-
-            case "webprot.rate-limit":
-                showBox("RATE LIMITING", arg.message);
-                break;
-            case "webprot.invalid-username":
-                showBox("INVALID USERNAME", arg.message);
-                break;
-            case "webprot.invalid-invite":
-                showBox("INVALID INVITE", arg.message);
-                break;
-            case "webprot.internal-error":
-                showBox("INTERNAL ERROR", arg.message);
-                break;
-            case "webprot.friend-rq-sent":
-                showBox("FRIEND REQUEST SENT", arg.message);
                 break;
 
             case "webprot.entities":
@@ -2163,7 +2158,7 @@ function _rendererFunc() {
             case "webprot.cont-token":
                 // Store the token
                 configSet("contToken", arg.token)
-                break
+                break;
 
             case "webprot.completion-notification":
                 // Call the callback
@@ -2174,7 +2169,7 @@ function _rendererFunc() {
                 delete endCallbacks[arg.operId];
                 if(endCallbacks.every(x => x === undefined))
                     endCallbacks = [];
-                break
+                break;
 
             case "webprot.bot-created":
                 showBox("BOT CREATED", "Bot ID: " + arg.id + "<br>Bot token: " + arg.token
@@ -2283,14 +2278,7 @@ function _rendererFunc() {
             hideElm(nameRequired);
         }
 
-        if(proceed) {
-            ipcSend({
-                action:   "webprot.signup",
-                email:    email,
-                name:     username,
-                password: password
-            });
-        }
+        if(proceed) sendPacket(new packets.SignupPacket(email, username, password));
     };
 
     function stopPropagation(evt: Event) {
@@ -2433,7 +2421,7 @@ function _rendererFunc() {
         shell.openExternal("https://patreon.com/portasynthinca3")
     }
     elementById("connecting-tweet").onclick = (e) => {
-        shell.openExternal("https://twitter.com/portasynthinca3")
+        shell.openExternal("https://twitter.com/ordermsg")
     }
 
     // Friend control buttons
@@ -2764,3 +2752,7 @@ function _rendererFunc() {
 }
 
 window.addEventListener("load", _rendererFunc);
+
+function captchaSolved(token: string) {
+    console.log(token);
+}

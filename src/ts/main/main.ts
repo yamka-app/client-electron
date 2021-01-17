@@ -1,14 +1,13 @@
 import { app, BrowserWindow, Tray, Menu, ipcMain, remote } from "electron";
-import zlib from "zlib";
-import tmp  from "tmp";
-import path from "path";
-import tls  from "tls";
-import fs   from "fs";
+import zlib    from "zlib";
+import tmp     from "tmp";
+import path    from "path";
+import tls     from "tls";
+import fs      from "fs";
 
 import DataTypes    from "../protocol/dataTypes";
 import * as packets from "../protocol/packets";
 import { File }     from "../protocol/entities";
-import { LoginPacket } from "../protocol/packets";
 
 const dataHomePath = path.join(app.getPath("appData"), "ordermsg");
 const configPath   = path.join(dataHomePath, "order_config.json");
@@ -83,8 +82,9 @@ function loadConfig() {
 }
 
 app.on("ready", () => {
+    global["webprotState"] = webprotState;
     loadConfig();
-
+    
     // Create the window
     createWindow();
 
@@ -103,8 +103,7 @@ app.on("ready", () => {
 
     // Ping the server occasionally
     setInterval(() => {
-        if(!webprotState.sendPings)
-            return;
+        if(!webprotState.sendPings) return;
 
         webprotSendPacket(new packets.PingPacket(123));
     }, 5000);
@@ -120,7 +119,7 @@ const webprotSettings = {
     filePort:             1747,
     version:              5,
     supportsComp:         true,
-    compressionThreshold: 32,
+    compressionThreshold: 256,
 };
 
 var webprotState = {
@@ -130,6 +129,7 @@ var webprotState = {
     socket:        null,
     seqId:         1,
     queue:         [],
+    selfId:        0,
     self:          {},
 
     blobStates: [],
@@ -143,10 +143,10 @@ function webprotData(bytes: Buffer) {
     const compressed = DataTypes.decBool(bytes.slice(0, 1));
     const totalLen =   DataTypes.decNum (bytes.slice(1, 5));
     bytes = bytes.slice(5, 5 + totalLen);
-    if(compressed)
-        bytes = zlib.gunzipSync(bytes);
+    if(compressed) bytes = zlib.gunzipSync(bytes);
 
     const packet = packets.Packet.decode(bytes);
+    if(packet instanceof packets.PongPacket) return; // ignore pong packets
     delete packet.encode;
     delete packet.encode;
     delete packet.decodePayload;
@@ -162,7 +162,7 @@ function webprotSendBytes(bytes: Buffer) {
         return;
     }
 
-    console.log("Sending:", bytes);
+    console.log("Sending: ", bytes);
     webprotState.socket.write(bytes);
 }
 
@@ -170,7 +170,8 @@ function webprotSendPacket(packet: any, type?: string) {
     // Make the packet "full" if requested
     if(type !== undefined) {
         const proto = {
-            "LoginPacket": new LoginPacket()
+            "LoginPacket": new packets.LoginPacket(),
+            "SignupPacket": new packets.SignupPacket()
         }[type];
 
         if(proto === undefined)
@@ -182,9 +183,8 @@ function webprotSendPacket(packet: any, type?: string) {
     var buf = packet.encode();
 
     // Compress the data
-    const compressed = buf.length >= webprotSettings.compressionThreshold
-    if(compressed)
-        buf = zlib.gzipSync(buf);
+    const compressed = buf.length >= webprotSettings.compressionThreshold;
+    if(compressed) buf = zlib.gzipSync(buf);
 
     // Add a compression header
     buf = Buffer.concat([
@@ -209,11 +209,13 @@ function webprotConnect() {
     webprotState.connecting = true;
     webprotState.sendPings = false;
     webprotState.seqId = 1;
+    webprotState.selfId = 0;
     webprotState.self = {};
 
     // Initiate a TLS connection to the server
-    console.log("Connecting to " + webprotSettings.host + ":" + webprotSettings.port);
-    ipcSend({ type: "webprot.status", message: "Connecting" });
+    const logMessage = `Connecting to ${webprotSettings.host}:${webprotSettings.port} with protocol version ${webprotSettings.version}`;
+    console.log(logMessage);
+    ipcSend({ type: "webprot.status", message: logMessage });
     ipcSend({ type: "webprot.connecting" });
 
     var timeStart = new Date().getTime();

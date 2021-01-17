@@ -83,8 +83,9 @@ export class SignupPacket extends SimpleFieldPacket {
 
     constructor(e?: string, l?: string, p?: string) {
         super();
-        this.name            = l;
-        this.password        = p;
+        this.name     = l;
+        this.password = p;
+        this.email    = e;
     }
 }
 

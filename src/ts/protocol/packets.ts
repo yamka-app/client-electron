@@ -156,7 +156,7 @@ export class StatusPacket extends SimpleFieldPacket {
 }
 
 export class SignupPacket extends SimpleFieldPacket {
-    typeNum = 5;
+    protected typeNum = 5;
     email:    string;
     name:     string;
     password: string;
@@ -167,8 +167,9 @@ export class SignupPacket extends SimpleFieldPacket {
             new fields.StrField("name"),
             new fields.StrField("password")
         ]);
-        this.name            = l;
-        this.password        = p;
+        this.name     = l;
+        this.password = p;
+        this.email    = e;
     }
 }
 

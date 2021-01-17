@@ -318,18 +318,22 @@ input[type="radio"].settings-radio:checked + label {
     bottom: 0;
 
     margin:  auto;
-    padding: 40px;
+    padding: 20px;
 
     border-radius:    5px;
-    background-color: var(--shade-3-trans);
-    backdrop-filter:  blur(5px);
-    box-shadow:       0 0 5px var(--shadow);
+    background-color: var(--shade-3);
+    /*backdrop-filter:  blur(5px);*/
+    box-shadow:       0 0 15px var(--shadow);
 
     font-family: Montserrat;
     font-size:   var(--font-size);
 }
+#floating-box {
+    min-width: 25vw;
+}
 #floating-message {
-    width: fit-content;
+    padding: 10px;
+    width:   fit-content;
 }
 #floating-image {
     width:  unset;
