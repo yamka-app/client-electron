@@ -2413,7 +2413,7 @@ function _rendererFunc() {
         shell.openExternal("https://github.com/ordermsg")
     }
     elementById("donate").onclick = (e) => {
-        shell.openExternal("https://patreon.com/portasynthinca3")
+        shell.openExternal("https://ordermsg.tk/donate")
     }
     elementById("connecting-tweet").onclick = (e) => {
         shell.openExternal("https://twitter.com/ordermsg")
