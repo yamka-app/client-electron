@@ -5,10 +5,11 @@ import * as fields from "./simpleFields.s.js";
 // The main one uses regular files
 
 export class Packet {
-    typeNum?: number;
-    seq?:     number;
-    replyTo?: number;
-    captcha?: string;
+    typeNum?:    number;
+    seq?:        number;
+    replyTo?:    number;
+    captcha?:    string;
+    spontaneous: boolean;
 }
 
 export class SimpleFieldPacket extends Packet { }

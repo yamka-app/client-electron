@@ -146,7 +146,7 @@ function webprotData(bytes: Buffer) {
 
     // Read the compression header and decompress the data
     const compressed = DataTypes.decBool(bytes.slice(0, 1));
-    const totalLen =   DataTypes.decNum (bytes.slice(1, 4));
+    const totalLen   = DataTypes.decNum (bytes.slice(1, 4));
     bytes = bytes.slice(4, 4 + totalLen);
     if(compressed) bytes = zlib.gunzipSync(bytes);
 
@@ -162,6 +162,7 @@ function webprotData(bytes: Buffer) {
 
     // Check references
     const ref = webprotState.references[packet.replyTo];
+    packet.spontaneous = packet.replyTo === 0;
 
     // Clear all unnecessary fields before sending the packet to the renderer
     delete packet.encode;
@@ -172,6 +173,19 @@ function webprotData(bytes: Buffer) {
     delete packet.seq;
     delete packet.typeNum;
     delete packet["simpleFieldList"];
+    // Also clear all nested junk
+    // While we're at it, add types to nested entities
+    if(packet instanceof packets.EntitiesPacket) {
+        packet.entities = packet.entities.map(e => {
+            delete e.simpleFieldList;
+            delete e.encode;
+            delete e.encodeFields;
+            delete e.decodeFields;
+            delete e["typeNum"];
+            e["__type_name"] = e.constructor.name;
+            return e;
+        });
+    }
     ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name, reference: ref });
 }
 
@@ -212,7 +226,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
     // Encode the packet
     var buf = packet.encode();
     // Save the reference ID (encode() sets SEQ)
-    webprotState.references[packet.seq] = ref;
+    if(ref !== undefined)
+        webprotState.references[packet.seq] = ref;
 
     // Compress the data
     const compressed = buf.length >= webprotSettings.compressionThreshold;

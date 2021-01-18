@@ -1,5 +1,4 @@
 import { MessageSection } from "./dataTypes.s.js";
-import * as fields from "./simpleFields.s.js";
 
 // This is a stipped down (.s) version that just contains definitions the renderer process uses.
 // The main one uses regular files
@@ -9,6 +8,7 @@ export class EntityDecodeResult {
     posAfter: number;
 }
 export class Entity {
+    id: number;
 }
 
 export enum UserStatus {
@@ -24,6 +24,25 @@ export enum UserBadge {
 }
 export class User extends Entity {
     static typeNum = 1;
+
+    email:      string;
+    name:       string;
+    tag:        number;
+    status:     UserStatus;
+    statusText: string;
+    avaFile:    number;
+    mfaEnabled: boolean;
+    friends:    number[];
+    blocked:    number[];
+    pendingIn:  number[];
+    pendingOut: number[];
+    channels:   number[];
+    groups:     number[];
+    roles:      number[];
+    color:      string;
+    badges:     UserBadge[];
+    botOwner:   number;
+    ownedBots:  number[];
 }
 
 export class Channel extends Entity {

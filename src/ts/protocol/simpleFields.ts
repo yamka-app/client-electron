@@ -55,15 +55,15 @@ export class BoolField extends SimpleField {
 export class ColorField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 
-    encodingFunc  = (val: string) => DataTypes.encNum(parseInt(val.slice(1)), 16);
+    encodingFunc  = (val: string) => DataTypes.encNum(parseInt(val.slice(1)), 3);
     decodingFunc  = (buf: Buffer) => "#" + ("00000" + DataTypes.decNum(buf).toString(16)).slice(-6);
-    lengthingFunc = (buf: Buffer) => 4;
+    lengthingFunc = (buf: Buffer) => 3;
 }
 
 export class StrField extends SimpleField {
     encodingFunc  = (val: string) => DataTypes.encStr(val);
     decodingFunc  = (buf: Buffer) => DataTypes.decStr(buf);
-    lengthingFunc = (buf: Buffer) => 2 + DataTypes.decNum(buf.slice(0, 2));
+    lengthingFunc = (buf: Buffer) => DataTypes.decNum(buf.slice(0, 2)) + 2;
 }
 
 export class NumListField extends SimpleField {
@@ -73,7 +73,7 @@ export class NumListField extends SimpleField {
 
     encodingFunc  = (val: number[]) => DataTypes.encNumList(val, this.bytes);
     decodingFunc  = (buf: Buffer)   => DataTypes.decNumList(buf, this.bytes);
-    lengthingFunc = (buf: Buffer)   => DataTypes.decNum(buf.slice(0, 2)) * this.bytes;
+    lengthingFunc = (buf: Buffer)   => 2 + (DataTypes.decNum(buf.slice(0, 2)) * this.bytes);
 }
 
 export class StrListField extends SimpleField {
@@ -169,11 +169,13 @@ export function simpleFieldDecoder(t: any, fields: SimpleField[], inclCnt: boole
             while(pos < buf.length && (decoded < limit && limit !== -1)) {
                 const id = DataTypes.decNum(buf.slice(pos, pos + 1));
                 const field = fields.find(x => x.binaryId == id);
-                const slice = buf.slice(pos);
+                var slice = buf.slice(pos + 1);
 
+                const len = field.lengthingFunc(slice);
+                slice = slice.slice(0, len);
                 t[field.prop] = field.decode(slice);
 
-                pos += 2 + field.lengthingFunc(slice);
+                pos += len + 1;
                 decoded++;
             }
 

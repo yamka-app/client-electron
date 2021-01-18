@@ -66,7 +66,7 @@ function _rendererFunc() {
     // Sections in the message we"re sending/editing
     var msgSections: MessageSection[] = [];
     // Operation finish callbacks
-    var packetCallbacks: ((packet: packets.Packet) => any)[] = []; var nextCbId = 0;
+    var packetCallbacks = {}; var nextCbId = 0;
     
     // Sounds
     var sounds = {
@@ -404,7 +404,7 @@ function _rendererFunc() {
         console.log("%c[SENDING]", "color: #00bb00; font-weight: bold;", p);
         ipcRenderer.send("asynchronous-message", {
             action: "webprot.send-packet",
-            cbId: regCallback(cb),
+            reference: regCallback(cb),
             type: p.constructor.name, // we need this so the main process actually knows what we want to send
                                       // because it appears to me that the RPC interface doesn't preserve class info
                                       // because it was designed with pure JS in mind
@@ -518,18 +518,14 @@ function _rendererFunc() {
 
     // Requests entities
     function reqEntities(ents: packets.EntityGetRequest[], force: boolean =false, cb?: (e?: entities.Entity[])=>any) {
-        if(force) {
-            sendPacket(new packets.EntityGetPacket(ents));
-        } else {
-            const remaining_ents = ents.filter(x => !(x.id in entityCache));
-            if(remaining_ents.length === 0 && cb !== undefined) {
-                cb();
-                return;
-            }
-            sendPacket(new packets.EntityGetPacket(remaining_ents), (response: packets.EntitiesPacket) => {
-                cb(response.entities);
-            });
+        const remaining_ents = ents.filter(x => !(x.id in entityCache) || force);
+        if(remaining_ents.length === 0 && cb !== undefined) {
+            cb([]);
+            return;
         }
+        sendPacket(new packets.EntityGetPacket(remaining_ents), (response: packets.EntitiesPacket) => {
+            cb(response.entities);
+        });
     }
 
     // Puts entities
@@ -1852,13 +1848,6 @@ function _rendererFunc() {
     function onPacket(packet: packets.Packet, reference?: number) {
         console.log("%c[RECEIVED]", "color: #bb0000; font-weight: bold;", packet);
 
-        // Call the callback
-        if(reference !== undefined) {
-            const cb = packetCallbacks[reference];
-            delete packetCallbacks[reference];
-            cb(packet);
-        }
-
         if(packet instanceof packets.StatusPacket) {
             const code = packet.status;
             switch(code) {
@@ -1912,13 +1901,6 @@ function _rendererFunc() {
             remote.getGlobal("webprotState").selfId = packet.userId;
             remote.getGlobal("webprotState").sendPings = true;
 
-            // Request the user
-            reqEntities([new packets.EntityGetRequest(entities.User.typeNum, packet.userId)], true, () => {
-                const self = entityCache[packet.userId];
-                console.log("Got client user:", self);
-                remote.getGlobal("webprotState").self = self;
-            })
-
             // Show the main UI
             hideElm(elementById("login-form"));
             hideElm(elementById("mfa-form"));
@@ -1936,16 +1918,77 @@ function _rendererFunc() {
             // Reset all caches
             entityCache = {};
             blobCache = {};
-            packetCallbacks = [];
+            packetCallbacks = {};
+            nextCbId = 0;
 
             // Reset the view
             viewingGroup = 0;
             viewingChan = 0;
             viewingContactGroup = 0;
             resetMsgInput();
+
+            // Request the user
+            reqEntities([new packets.EntityGetRequest(entities.User.typeNum, packet.userId)], true, () => {
+                const self = entityCache[packet.userId];
+                console.log("Got client user:", self);
+                remote.getGlobal("webprotState").self = self;
+            })
         } else if(packet instanceof packets.AccessTokenPacket) {
             configSet("accessToken", packet.token);
             sendPacket(new packets.AccessTokenPacket(packet.token)); // Try to login immediately
+        } else if(packet instanceof packets.EntitiesPacket) {
+            for(const entity of packet.entities) {
+                // Shove the entity into the cache
+                const oldEntity = entityCache[entity.id];
+                entityCache[entity.id] = {...oldEntity, ...entity};
+
+                // Update info about self
+                if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
+                    remote.getGlobal("webprotState").self = entity;
+                    updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
+
+                    // Request own avatar
+                    download(entity.avaFile, (blob) => {
+                        updateSelfAva(blob.path);
+                    });
+
+                    // Update DM, friend and group list
+                    updGroupList();
+                    if(viewingGroup === 0) {
+                        updMemberList();
+                        updChannelList();
+                    }
+
+                    // Check new friend requests
+                    if(packet.spontaneous && oldEntity.pendingIn.length !== entity.pendingIn.length
+                        && shouldReceiveNotif()) {
+                        const newFriends = entity.pendingIn.filter(x => !oldEntity.pendingIn.includes(x));
+                        // Request their entities
+                        reqEntities(newFriends.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {
+                            for(const fid of newFriends) {
+                                const f = entityCache[fid];
+                                // Download avatars of each one
+                                download(f.avaBlob, (ava) => {
+                                    const notification = new Notification(
+                                        f.name + " wants to add you as a friend", {
+                                        icon: ava.path
+                                    })
+                                });
+                            }
+                        });
+                    }
+
+                    // Update the owned bot list
+                    elementById("owned-bot-list").innerHTML = entity.ownedBots.join(", ");
+                }
+            }
+        }
+
+        // Call the callback
+        if(reference !== undefined) {
+            const cb = packetCallbacks[reference];
+            cb(packet);
+            delete packetCallbacks[reference];
         }
     }
 
@@ -1977,9 +2020,24 @@ function _rendererFunc() {
                 const proto = {
                     "StatusPacket":         new packets.StatusPacket(),
                     "AccessTokenPacket":    new packets.AccessTokenPacket(),
-                    "ClientIdentityPacket": new packets.ClientIdentityPacket()
+                    "ClientIdentityPacket": new packets.ClientIdentityPacket(),
+                    "EntitiesPacket":       new packets.EntitiesPacket(),
                 }[arg.pType];
-                onPacket(Object.assign(proto, arg.packet), arg.reference);
+                const packet = Object.assign(proto, arg.packet);
+                if(packet instanceof packets.EntitiesPacket) {
+                    packet.entities = packet.entities.map(e => {
+                        const e_proto = {
+                            "User":    new entities.User(),
+                            "Channel": new entities.Channel(),
+                            "Group":   new entities.Group(),
+                            "Message": new entities.Message(),
+                            "File":    new entities.File()
+                        }[e["__type_name"]];
+                        return Object.assign(e_proto, e);
+                    });
+                }
+
+                onPacket(packet, arg.reference);
                 break;
 
             case "webprot.entities":
@@ -1987,46 +2045,6 @@ function _rendererFunc() {
                     // Add entities to the entity list
                     const oldEntity = entityCache[entity.id];
                     entityCache[entity.id] = { ...entityCache[entity.id], ...entity };
-
-                    // Update info about self
-                    if(entity.id === remote.getGlobal("webprotState").self.id) {
-                        remote.getGlobal("webprotState").self = entity;
-                        updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
-
-                        // Request own avatar
-                        download(entity.avaBlob, (blob) => {
-                            updateSelfAva(blob.path);
-                        });
-
-                        // Update DM, friend and group list
-                        updGroupList();
-                        if(viewingGroup === 0) {
-                            updMemberList();
-                            updChannelList();
-                        }
-
-                        // Check new friend requests
-                        if(arg.spontaneous && oldEntity.pendingIn.length !== entity.pendingIn.length
-                            && shouldReceiveNotif()) {
-                            const newFriends = entity.pendingIn.filter(x => !oldEntity.pendingIn.includes(x));
-                            // Request their entities
-                            reqEntities(newFriends.map(x => { return { type: "user", id: x } }), false, () => {
-                                for(const fid of newFriends) {
-                                    const f = entityCache[fid];
-                                    // Download avatars of each one
-                                    download(f.avaBlob, (ava) => {
-                                        const notification = new Notification(
-                                            f.name + " wants to add you as a friend", {
-                                            icon: ava.path
-                                        })
-                                    });
-                                }
-                            });
-                        }
-
-                        // Update the owned bot list
-                        elementById("owned-bot-list").innerHTML = entity.ownedBots.join(", ");
-                    }
 
                     // Delete messages
                     if(arg.spontaneous && entity.type === "message" && entity.sender === 0)

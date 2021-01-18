@@ -64,8 +64,9 @@ export default class DataTypes {
         return Buffer.concat([this.encNum(utf8.length, 2), utf8]);
     }
     static decStr(bytes: Buffer): string {
-        var len = this.decNum(bytes.slice(0, 2));
-        return bytes.toString("utf8", 2, 2 + len);
+        const len   = this.decNum(bytes.slice(0, 2));
+        const slice = bytes.slice(1, 1 + len);
+        return slice.toString("utf8");
     }
 
     

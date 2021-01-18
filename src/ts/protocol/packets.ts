@@ -14,10 +14,11 @@ import { Entity, File } from "./entities.js";
 export class Packet {
     static nextSeq: number = 1;
 
-    typeNum?: number;
-    seq?:     number;
-    replyTo?: number;
-    captcha?: string;
+    typeNum?:    number;
+    seq?:        number;
+    replyTo?:    number;
+    captcha?:    string;
+    spontaneous: boolean;
 
     constructor() { }
 
@@ -215,17 +216,17 @@ export enum EntityPaginationDirection {
     DOWN = 0
 }
 export class EntityPagination {
-    field: fields.SimpleField;
+    field: number;
     dir:   EntityPaginationDirection;
     from:  number;
     cnt:   number;
 
     encode = () => {
         return Buffer.concat([
-            DataTypes.encNum(this.field.binaryId, 2),
-            DataTypes.encNum(this.dir,            1),
-            DataTypes.encNum(this.from,           8),
-            DataTypes.encNum(this.cnt,            1)
+            DataTypes.encNum(this.field, 1),
+            DataTypes.encNum(this.dir,   1),
+            DataTypes.encNum(this.from,  8),
+            DataTypes.encNum(this.cnt,   1)
         ])
     }
 }
@@ -235,7 +236,7 @@ export class EntityContext {
 
     encode = () => {
         return Buffer.concat([
-            DataTypes.encNum(this.type, 2),
+            DataTypes.encNum(this.type, 1),
             DataTypes.encNum(this.id,   8),
         ])
     }
@@ -252,7 +253,7 @@ export class EntityGetRequest {
         if(this.c !== undefined) pc_bits |= 2;
 
         return Buffer.concat([
-            DataTypes.encNum(this.type, 2),
+            DataTypes.encNum(this.type, 1),
             DataTypes.encNum(this.id,   8),
             DataTypes.encNum(pc_bits,   1),
             (this.p !== undefined) ? this.p.encode() : Buffer.alloc(0),
@@ -289,10 +290,10 @@ export class EntitiesPacket extends Packet {
 
     decodePayload = (b: Buffer) => {
         this.entities = [];
-        var pos = 0;
-        var cnt = DataTypes.decNum(b.slice(0, 2));
+        const cnt = DataTypes.decNum(b.slice(0, 2));
+        var pos = 2;
         for(var i = 0; i < cnt; i++) {
-            var result = Entity.decode(b, pos);
+            const result = Entity.decode(b, pos);
             pos = result.posAfter;
             this.entities.push(result.entity);
         }
