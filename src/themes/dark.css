@@ -13,13 +13,10 @@
     --red:    #e41e1e;
     --yellow: #c7c72c;
     --green:  #2ac02a;
-    --rainbow-grad: linear-gradient(45deg, #e03434 0%,
-                                           #fba02a 16%,
-                                           #ffe923 32%,
-                                           #7bff23 48%,
-                                           #23ffc8 64%,
-                                           #2332ff 80%,
-                                           #ff23cf 100%);
+    --rainbow-grad: linear-gradient(45deg, #fba02a 0%,
+                                           #ffe923 33%,
+                                           #7bff23 66%,
+                                           #23ff7f 100%);
     
     --default-shade-1:       #0e0e0e;
     --default-shade-2:       #111111;

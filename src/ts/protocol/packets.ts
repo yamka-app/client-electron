@@ -28,9 +28,10 @@ export class Packet {
         if(this.typeNum === undefined || this.encodePayload === undefined)
             throw new Error("Can't encode a generic packet");
 
+        this.seq = Packet.nextSeq++;
         return Buffer.concat([
             DataTypes.encNum(this.typeNum, 1),
-            DataTypes.encNum(Packet.nextSeq++, 4),
+            DataTypes.encNum(this.seq, 4),
             DataTypes.encNum(this.replyTo ?? 0, 4),
             DataTypes.encStr(this.captcha),
             this.encodePayload()

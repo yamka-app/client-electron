@@ -12,7 +12,8 @@ const qrcode             = require("qrcode");
 const { highlightBlock } = require("highlight.js");
 const blurhash           = require("blurhash");
 
-import * as packets from "../protocol.s/packets.s.js";
+import * as packets  from "../protocol.s/packets.s.js";
+import * as entities from "../protocol.s/entities.s.js";
 import { configGet, configSet } from "./settings.js";
 
 interface MessageSection {
@@ -65,7 +66,7 @@ function _rendererFunc() {
     // Sections in the message we"re sending/editing
     var msgSections: MessageSection[] = [];
     // Operation finish callbacks
-    var endCallbacks: (() => any)[] = [];
+    var packetCallbacks: ((packet: packets.Packet) => any)[] = []; var nextCbId = 0;
     
     // Sounds
     var sounds = {
@@ -87,7 +88,7 @@ function _rendererFunc() {
     });
     
     // Load sounds
-    sounds.notification = new Audio(path.join(__dirname, "sounds/notification.wav"));
+    //sounds.notification = new Audio(path.join(__dirname, "sounds/notification.wav"));
 
     // Try to connect every 2 seconds
     setInterval(() => ipcSend({
@@ -225,7 +226,7 @@ function _rendererFunc() {
     function groupSettingsShowRole(id: number) {
         editingRole = id;
 
-        reqEntities([{ type: "role", id: id }], false, () => {
+        reqEntities([new packets.EntityGetRequest(entities.Role.typeNum, id)], false, () => {
             const role = entityCache[id];
             (elementById("role-name-change") as HTMLInputElement).value = role.name;
     
@@ -399,10 +400,11 @@ function _rendererFunc() {
             console.log("%c[R->M]", "color: #bbbb00; font-weight: bold;", data);
         ipcRenderer.send("asynchronous-message", data);
     }
-    function sendPacket(p: packets.Packet) {
+    function sendPacket(p: packets.Packet, cb?: (r: packets.Packet) => any) {
         console.log("%c[SENDING]", "color: #00bb00; font-weight: bold;", p);
         ipcRenderer.send("asynchronous-message", {
             action: "webprot.send-packet",
+            cbId: regCallback(cb),
             type: p.constructor.name, // we need this so the main process actually knows what we want to send
                                       // because it appears to me that the RPC interface doesn't preserve class info
                                       // because it was designed with pure JS in mind
@@ -506,40 +508,27 @@ function _rendererFunc() {
     }
 
     // Registers a callback
-    function regCallback(cb: () => any): number {
-        if(cb === undefined)
-            return undefined;
+    function regCallback(cb: ((packet: packets.Packet) => any)|undefined): number|undefined {
+        if(cb === undefined) return undefined;
         
-        var idx = endCallbacks.length;
-        endCallbacks[idx] = cb;
-        return idx;
+        const id = nextCbId++;
+        packetCallbacks[id] = cb;
+        return id;
     }
 
     // Requests entities
-    function reqEntities(ents: {type:       string,
-                                id:         number,
-                                pageField?: number,
-                                pageFrom?:  number,
-                                pageDir?:   boolean,
-                                pageCnt?:   number}[], force: boolean =false, cb?: () => any) {
+    function reqEntities(ents: packets.EntityGetRequest[], force: boolean =false, cb?: (e?: entities.Entity[])=>any) {
         if(force) {
-            ipcSend({
-                action:   "webprot.entity-get",
-                entities: ents,
-                operId:   regCallback(cb)
-            });
+            sendPacket(new packets.EntityGetPacket(ents));
         } else {
-            let remaining_ents = ents.filter(x => !(x.id in entityCache));
-            if(remaining_ents.length > 0) {
-                ipcSend({
-                    action:   "webprot.entity-get",
-                    entities: remaining_ents,
-                    operId:   regCallback(cb)
-                });
-            } else {
-                if(cb !== undefined)
-                    cb();
+            const remaining_ents = ents.filter(x => !(x.id in entityCache));
+            if(remaining_ents.length === 0 && cb !== undefined) {
+                cb();
+                return;
             }
+            sendPacket(new packets.EntityGetPacket(remaining_ents), (response: packets.EntitiesPacket) => {
+                cb(response.entities);
+            });
         }
     }
 
@@ -553,7 +542,7 @@ function _rendererFunc() {
 
     // Updates all information about a group
     function updateGroup(id: number, force: boolean=false) {
-        reqEntities([{ type: "group", id: id }], force, () => {
+        reqEntities([new packets.EntityGetRequest(entities.Group.typeNum, id)], force, () => {
             const group = entityCache[id];
             // Update icons
             const icons = document.getElementsByClassName("group-icon-" + id) as HTMLCollectionOf<HTMLImageElement>;
@@ -584,7 +573,7 @@ function _rendererFunc() {
 
     // Updates all information about a user
     function updateUser(id: number) {
-        reqEntities([{ type: "user", id: id }], false, () => {
+        reqEntities([new packets.EntityGetRequest(entities.User.typeNum, id)], false, () => {
             const user = entityCache[id];
             // Update avatars
             const avas = document.getElementsByClassName("user-avatar-" + id) as HTMLCollectionOf<HTMLImageElement>;
@@ -717,14 +706,9 @@ function _rendererFunc() {
                 // Get all channel entities
                 var channels = remote.getGlobal("webprotState").self.channels;
                 for(var i = 0; i < channels.length; i++) {
-                    channels[i] = {
-                        type:      "channel",
-                        id:        channels[i],
-                        pageField: 2, // members,
-                        pageFrom:  0,
-                        pageDir:   true, // older first
-                        pageCnt:   50
-                    }
+                    channels[i] = new packets.EntityGetRequest(entities.Channel.typeNum, channels[i],
+                                        new packets.EntityPagination(2 /* members */,
+                                            packets.EntityPaginationDirection.UP, 0, 50));
                 }
                 reqEntities(channels, false, () => {
                     for(const chanId of remote.getGlobal("webprotState").self.channels) {
@@ -788,7 +772,7 @@ function _rendererFunc() {
             }
 
             // Request users
-            const users = userIds.map(id => { return { type: "user", id: id } });
+            const users = userIds.map(id => new packets.EntityGetRequest(entities.User.typeNum, id));
             reqEntities(users, false, () => {
                 // Create summaries for each one and append them to the member list
                 userIds.forEach(id => {
@@ -1517,9 +1501,9 @@ function _rendererFunc() {
                             e.stopImmediatePropagation();
                             showFloatingMessage(section.blob);
                         })
-                        reqEntities([{ type: "message", id: section.blob }], false, () => {
+                        reqEntities([new packets.EntityGetRequest(entities.Message.typeNum, section.blob)], false, () => {
                             const replyMsg = entityCache[section.blob];
-                            reqEntities([{ type: "user", id: replyMsg.sender }], false, () => {
+                            reqEntities([new packets.EntityGetRequest(entities.User.typeNum, replyMsg.sender)], false, () => {
                                 const replyAvaContainer = document.createElement("div");
                                 replyAvaContainer.classList.add("reply-avatar-container", "flex-row");
                                 sectionElement.insertBefore(replyAvaContainer, txt);
@@ -1589,14 +1573,9 @@ function _rendererFunc() {
     function appendMembersBottom(role: number, id_from: number, callback?: () => void, clear: boolean =false) {
         const memberList = elementById("member-list-bar")
         
-        reqEntities([{
-            type:      "role",
-            id:        role,
-            pageField: 6, // members
-            pageFrom:  id_from,
-            pageDir:   false, // has no meaning in the the role entity
-            pageCnt:   50
-        }], true, () => {
+        reqEntities([new packets.EntityGetRequest(entities.Role.typeNum, role,
+                new packets.EntityPagination(6 /* members */,
+                    packets.EntityPaginationDirection.DOWN, id_from, 50))], true, () => {
             var members = [...entityCache[role].members];
             members.sort();
             members = members.map(x => { return { type: "user", id: x } });
@@ -1632,14 +1611,9 @@ function _rendererFunc() {
         const msgArea = elementById("message-area");
         const header = elementById("message-area-header");
         
-        reqEntities([{
-            type:      "channel",
-            id:        viewingChan,
-            pageField: 4, // messages
-            pageFrom:  id_from,
-            pageDir:   false, // older than the supplied ID
-            pageCnt:   50
-        }], true, () => {
+        reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, viewingChan,
+                new packets.EntityPagination(4 /* messages */,
+                    packets.EntityPaginationDirection.DOWN, id_from, 50))], true, () => {
             var msgs = [...entityCache[viewingChan].messages];
             msgs.sort();
             msgs = msgs.map(x => { return { type: "message", id: x } });
@@ -1669,12 +1643,8 @@ function _rendererFunc() {
 
                 // Request senders (uncached, because they might have different colors in different groups)
                 if(viewingGroup !== 0) {
-                    let senders = msgs.map(x => { return {
-                        type:          "user",
-                        id:            x.sender,
-                        contextEntity: 3,
-                        contextId:     viewingGroup
-                    } });
+                    let senders = msgs.map(x => new packets.EntityGetRequest(entities.User.typeNum, x.sender,
+                        undefined, new packets.EntityContext(entities.Group.typeNum, viewingGroup)))
 
                     // Only request those cached from a different group
                     senders = senders.filter(x => entityCache[x.id] === undefined || entityCache[x.id].ctxGroup !== viewingGroup);
@@ -1715,7 +1685,7 @@ function _rendererFunc() {
             appendMsgsTop(0xFFFFFFFFFFFFF, undefined, true);
 
         // Show the title
-        reqEntities([{ type: "channel", id: viewingChan }], false, () => {
+        reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, viewingChan)], false, () => {
             const channel = entityCache[viewingChan];
             const label = elementById("channel-name");
             if(channel.name === "DM") {
@@ -1879,8 +1849,15 @@ function _rendererFunc() {
     }
     
     // Packet handler
-    function onPacket(packet: packets.Packet) {
+    function onPacket(packet: packets.Packet, reference?: number) {
         console.log("%c[RECEIVED]", "color: #bb0000; font-weight: bold;", packet);
+
+        // Call the callback
+        if(reference !== undefined) {
+            const cb = packetCallbacks[reference];
+            delete packetCallbacks[reference];
+            cb(packet);
+        }
 
         if(packet instanceof packets.StatusPacket) {
             const code = packet.status;
@@ -1935,6 +1912,13 @@ function _rendererFunc() {
             remote.getGlobal("webprotState").selfId = packet.userId;
             remote.getGlobal("webprotState").sendPings = true;
 
+            // Request the user
+            reqEntities([new packets.EntityGetRequest(entities.User.typeNum, packet.userId)], true, () => {
+                const self = entityCache[packet.userId];
+                console.log("Got client user:", self);
+                remote.getGlobal("webprotState").self = self;
+            })
+
             // Show the main UI
             hideElm(elementById("login-form"));
             hideElm(elementById("mfa-form"));
@@ -1952,7 +1936,7 @@ function _rendererFunc() {
             // Reset all caches
             entityCache = {};
             blobCache = {};
-            endCallbacks = [];
+            packetCallbacks = [];
 
             // Reset the view
             viewingGroup = 0;
@@ -1995,7 +1979,7 @@ function _rendererFunc() {
                     "AccessTokenPacket":    new packets.AccessTokenPacket(),
                     "ClientIdentityPacket": new packets.ClientIdentityPacket()
                 }[arg.pType];
-                onPacket(Object.assign(proto, arg.packet));
+                onPacket(Object.assign(proto, arg.packet), arg.reference);
                 break;
 
             case "webprot.entities":
@@ -2061,7 +2045,7 @@ function _rendererFunc() {
                         (entity.channel !== viewingChan ||  // either we"re sitting in another channel
                          !document.hasFocus())              // or the window is out of focus
                          && shouldReceiveNotif()) {         // (notifications must be enabled)
-                        reqEntities([{ type: "user", id: entity.sender}], false, () => {
+                        reqEntities([new packets.EntityGetRequest(entities.User.typeNum, entity.sender)], false, () => {
                             const sender = entityCache[entity.sender];
                             if(sender.id != remote.getGlobal("webprotState").self.id) {
                                 // Download the avatar of the sender
@@ -2104,7 +2088,7 @@ function _rendererFunc() {
                 blobCache[blob.id] = blob;
 
                 // Trigger the download end trigger
-                var cb = endCallbacks[arg.state.operId];
+                var cb = packetCallbacks[arg.state.operId];
                 if(cb !== undefined)
                     (cb as (b: any) => any)(blob);
                 break
@@ -2115,18 +2099,18 @@ function _rendererFunc() {
                 blobCache[blob.id] = blob;
 
                 // Trigger the upload end trigger
-                (endCallbacks[arg.state.operId] as (b: any) => any)(blob.id);
+                (packetCallbacks[arg.state.operId] as (b: any) => any)(blob.id);
                 break
 
             case "webprot.ul-progress":
                 // Call the callback
-                (endCallbacks[arg.operId] as (p: any, m: any) => any)(arg.progress, arg.max);
+                (packetCallbacks[arg.operId] as (p: any, m: any) => any)(arg.progress, arg.max);
                 break;
 
             case "webprot.blob-preview-available":
                 // Call the callback
-                if(endCallbacks[arg.operId] !== undefined)
-                    (endCallbacks[arg.operId] as (name: string, size: string, preview: string, hash: Uint8Array, length: number) => any)
+                if(packetCallbacks[arg.operId] !== undefined)
+                    (packetCallbacks[arg.operId] as (name: string, size: string, preview: string, hash: Uint8Array, length: number) => any)
                     (arg.name, arg.size, arg.preview, arg.hash, arg.length);
                 break;
 
@@ -2151,17 +2135,6 @@ function _rendererFunc() {
 
                     triggerAppear(elementById("mfa-qr-banner"), true);
                 });
-                break;
-
-            case "webprot.completion-notification":
-                // Call the callback
-                var cb = endCallbacks[arg.operId];
-                cb();
-
-                // Remove the element
-                delete endCallbacks[arg.operId];
-                if(endCallbacks.every(x => x === undefined))
-                    endCallbacks = [];
                 break;
 
             case "webprot.bot-created":
@@ -2409,15 +2382,9 @@ function _rendererFunc() {
     }
 
     // "About Order" buttons
-    elementById("view-on-github").onclick = (e) => {
-        shell.openExternal("https://github.com/ordermsg")
-    }
-    elementById("donate").onclick = (e) => {
-        shell.openExternal("https://ordermsg.tk/donate")
-    }
-    elementById("connecting-tweet").onclick = (e) => {
-        shell.openExternal("https://twitter.com/ordermsg")
-    }
+    elementById("view-on-github")  .onclick = (e) => shell.openExternal("https://github.com/ordermsg");
+    elementById("donate")          .onclick = (e) => shell.openExternal("https://ordermsg.tk/donate")
+    elementById("connecting-tweet").onclick = (e) => shell.openExternal("https://twitter.com/ordermsg")
 
     // Friend control buttons
     elementById("friends-all").onclick = (e) => {

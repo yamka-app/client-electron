@@ -128,20 +128,39 @@ export enum EntityPaginationDirection {
     DOWN = 0
 }
 export class EntityPagination {
-    field: fields.SimpleField;
+    field: number;
     dir:   EntityPaginationDirection;
     from:  number;
     cnt:   number;
+
+    constructor(f: number, dir: EntityPaginationDirection, from: number, cnt: number) {
+        this.field = f;
+        this.dir = dir;
+        this.from = from;
+        this.cnt = cnt;
+    }
 }
 export class EntityContext {
     type: number;
     id:   number;
+
+    constructor(t: number, id: number) {
+        this.type = t;
+        this.id = id;
+    }
 }
 export class EntityGetRequest {
     type: number;
     id:   number;
     p?:   EntityPagination;
     c?:   EntityContext;
+
+    constructor(t: number, id: number, p?: EntityPagination, c?: EntityContext) {
+        this.type = t;
+        this.id = id;
+        this.p = p;
+        this.c = c;
+    }
 }
 export class EntityGetPacket extends Packet {
     static typeNum = 6;

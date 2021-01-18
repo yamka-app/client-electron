@@ -5,9 +5,11 @@ import path    from "path";
 import tls     from "tls";
 import fs      from "fs";
 
-import DataTypes    from "../protocol/dataTypes";
-import * as packets from "../protocol/packets";
+import DataTypes     from "../protocol/dataTypes";
+import * as packets  from "../protocol/packets";
+import * as entities from "../protocol/entities";
 import { File }     from "../protocol/entities";
+import { EntitiesPacket } from "../protocol.s/packets.s";
 
 const dataHomePath = path.join(app.getPath("appData"), "ordermsg");
 const configPath   = path.join(dataHomePath, "order_config.json");
@@ -37,6 +39,7 @@ var windowCreated = false;
 tmp.setGracefulCleanup();
 var tmpDir = tmp.dirSync().name;
 console.log("Temporary directory: " + tmpDir);
+console.log("Config and auth: " + configPath);
 
 function createWindow() {
     if(!windowCreated){
@@ -135,7 +138,7 @@ var webprotState = {
     pingTime:      0,
 
     blobStates:    [],
-    reqStates:     []
+    references:    {}
 }
 
 function webprotData(bytes: Buffer) {
@@ -143,8 +146,8 @@ function webprotData(bytes: Buffer) {
 
     // Read the compression header and decompress the data
     const compressed = DataTypes.decBool(bytes.slice(0, 1));
-    const totalLen =   DataTypes.decNum (bytes.slice(1, 5));
-    bytes = bytes.slice(5, 5 + totalLen);
+    const totalLen =   DataTypes.decNum (bytes.slice(1, 4));
+    bytes = bytes.slice(4, 4 + totalLen);
     if(compressed) bytes = zlib.gunzipSync(bytes);
 
     const packet = packets.Packet.decode(bytes);
@@ -157,7 +160,11 @@ function webprotData(bytes: Buffer) {
         return;
     }
 
-    delete packet.encode; // clear all unnecessary fields before sending the packet to the renderer
+    // Check references
+    const ref = webprotState.references[packet.replyTo];
+
+    // Clear all unnecessary fields before sending the packet to the renderer
+    delete packet.encode;
     delete packet.encode;
     delete packet.decodePayload;
     delete packet.encodePayload;
@@ -165,7 +172,7 @@ function webprotData(bytes: Buffer) {
     delete packet.seq;
     delete packet.typeNum;
     delete packet["simpleFieldList"];
-    ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name });
+    ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name, reference: ref });
 }
 
 function webprotSendBytes(bytes: Buffer) {
@@ -179,19 +186,24 @@ function webprotSendBytes(bytes: Buffer) {
     webprotState.socket.write(bytes);
 }
 
-function webprotSendPacket(packet: any, type?: string) {
+function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?: number) {
     // Make the packet "full" if requested
     if(type !== undefined) {
         const proto = {
             "LoginPacket":       new packets.LoginPacket(),
             "SignupPacket":      new packets.SignupPacket(),
-            "AccessTokenPacket": new packets.AccessTokenPacket()
+            "AccessTokenPacket": new packets.AccessTokenPacket(),
+            "EntityGetPacket":   new packets.EntityGetPacket()
         }[type];
 
         if(proto === undefined)
             throw new Error(`Unknown packet type when trying to encode: ${type}`);
 
         packet = Object.assign(proto, packet);
+
+        // Specialized restoration
+        if(packet instanceof packets.EntityGetPacket)
+            packet.entities = packet.entities.map(e => Object.assign(new packets.EntityGetRequest(), e));
     }
     // Measure ping to the server
     if(packet instanceof packets.PingPacket)
@@ -199,6 +211,8 @@ function webprotSendPacket(packet: any, type?: string) {
 
     // Encode the packet
     var buf = packet.encode();
+    // Save the reference ID (encode() sets SEQ)
+    webprotState.references[packet.seq] = ref;
 
     // Compress the data
     const compressed = buf.length >= webprotSettings.compressionThreshold;
@@ -207,7 +221,7 @@ function webprotSendPacket(packet: any, type?: string) {
     // Add a compression header
     buf = Buffer.concat([
         DataTypes.encBool(compressed),
-        DataTypes.encNum(buf.length, 4),
+        DataTypes.encNum(buf.length, 3),
         buf
     ]);
 
@@ -291,7 +305,7 @@ ipcMain.on("asynchronous-message", (event, arg) => {
     if(arg.action === "webprot.connect") {
         webprotConnect();
     } else if(arg.action === "webprot.send-packet") {
-        webprotSendPacket(arg.packet, arg.type);
+        webprotSendPacket(arg.packet, arg.type, arg.reference);
     }/* else if(arg.action == "webprot.blob-dl") {
         // Refuse if there"s already a blob operation
         const existing = webprotState.blobStates.find(x => x.id == arg.id);
