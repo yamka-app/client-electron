@@ -25,46 +25,67 @@ export enum UserBadge {
 export class User extends Entity {
     static typeNum = 1;
 
-    email:      string;
-    name:       string;
-    tag:        number;
-    status:     UserStatus;
-    statusText: string;
-    avaFile:    number;
-    mfaEnabled: boolean;
-    friends:    number[];
-    blocked:    number[];
-    pendingIn:  number[];
-    pendingOut: number[];
-    channels:   number[];
-    groups:     number[];
-    roles:      number[];
-    color:      string;
-    badges:     UserBadge[];
-    botOwner:   number;
-    ownedBots:  number[];
+    email?:      string;
+    name?:       string;
+    tag?:        number;
+    status?:     UserStatus;
+    statusText?: string;
+    avaFile?:    number;
+    mfaEnabled?: boolean;
+    friends?:    number[];
+    blocked?:    number[];
+    pendingIn?:  number[];
+    pendingOut?: number[];
+    channels?:   number[];
+    groups?:     number[];
+    roles?:      number[];
+    color?:      string;
+    badges?:     UserBadge[];
+    botOwner?:   number;
+    ownedBots?:  number[];
 }
 
 export class Channel extends Entity {
     static typeNum = 2;
+
+    name?:     string;
+    members?:  number[];
+    group?:    number;
+    messages?: number[];
+    typing?:   number[];
+    rules?:    boolean;
 }
 
 export class Group extends Entity {
     static typeNum = 3;
+
+    name?:         string;
+    channels?:     number[];
+    owner?:        number;
+    roles?:        number[];
+    icon?:         number;
+    invites?:      string[];
+    everyoneRole?: number;
 }
 
 export class Message extends Entity {
     static typeNum = 4;
 
-    id:       number;
-    sections: MessageSection[];
-    channel:  number;
-    edited:   boolean;
-    sender:   number;
+    sections?: MessageSection[];
+    channel?:  number;
+    edited?:   boolean;
+    sender?:   number;
 }
 
 export class Role extends Entity {
     static typeNum = 5;
+
+    name?:     string;
+    color?:    string;
+    group?:    number;
+    priority?: number;
+    perms?:    Buffer;
+    members?:  number[];
 }
 
 export class File extends Entity {

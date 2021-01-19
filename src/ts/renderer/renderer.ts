@@ -14,14 +14,15 @@ const blurhash           = require("blurhash");
 
 import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
+import * as types    from "../protocol.s/dataTypes.s.js";
 import { configGet, configSet } from "./settings.js";
 
 interface MessageSection {
-    type:     string;
+    type:     types.MessageSectionType;
     blob?:    number;
-    typeElm?: HTMLElement;
+    typeElm:  HTMLElement;
     text?:    string;
-    elm?:     HTMLElement;
+    elm:      HTMLElement;
 }
 
 // Cached entities and blobs
@@ -297,14 +298,9 @@ function _rendererFunc() {
             remove.innerHTML = "REVOKE INVITE";
             remove.onclick = (e) => {
                 invites = invites.filter(x => x != inv);
-                ipcSend({
-                    action: "webprot.entity-put",
-                    entities: [{
-                        type:    "group",
-                        id:      viewingGroup,
-                        invites: invites
-                    }]
-                });
+                const group = new entities.Group();
+                group.id = viewingGroup; group.invites = invites;
+                putEntities([group]);
             }
             elm.appendChild(remove);
         }
@@ -474,16 +470,11 @@ function _rendererFunc() {
 
     // Change info about self
     function sendSelfValue(key: string, val: any) {
-        var entity = {
-            type: "user",
-            id:   0
-        };
+        const entity = new entities.User();
+        entity.id = remote.getGlobal("webprotState").selfId;
         entity[key] = val;
 
-        ipcSend({
-            action:   "webprot.entity-put",
-            entities: [entity]
-        });
+        putEntities([entity]);
     }
     function setSelfStatus(status: number) {
         updateSelfStatus(status);
@@ -529,11 +520,8 @@ function _rendererFunc() {
     }
 
     // Puts entities
-    function putEntities(ents: {}[]) {
-        ipcSend({
-            action:   "webprot.entity-put",
-            entities: ents
-        });
+    function putEntities(ents: entities.Entity[]) {
+        sendPacket(new packets.EntitiesPacket(ents));
     }
 
     // Updates all information about a group
@@ -809,16 +797,18 @@ function _rendererFunc() {
         var sects = msgSections;
 
         for(var i = 0; i < sects.length; i++) {
-            const typeName = sects[i].type;
+            const type = sects[i].type;
 
             // Abort if any of the files haven"t been uploaded yet
-            if(typeName === "file" && sects[i].blob === undefined)
+            if(type === types.MessageSectionType.FILE && sects[i].blob === undefined)
                 return;
 
             if(sects[i].typeElm === undefined)
                 return;
-            if(["text", "code", "quote"].indexOf(typeName) > -1)
-                sects[i].text = (sects[i].typeElm as HTMLTextAreaElement).value;
+            if([types.MessageSectionType.TEXT,
+                types.MessageSectionType.CODE,
+                types.MessageSectionType.QUOTE].indexOf(type) > -1)
+                    sects[i].text = (sects[i].typeElm as HTMLTextAreaElement).value;
         }
 
         for(var i = 0; i < sects.length; i++) {
@@ -828,12 +818,8 @@ function _rendererFunc() {
 
         // Reset the typing status and send the message
         setTimeout(() => {
-            clearTyping([{
-                type:     "message",
-                id:       editingMessage,
-                sections: sects,
-                channel:  viewingChan
-            }]);
+            const msg = new entities.Message();
+            msg.id = editingMessage; msg.sections = sects;
             resetMsgInput();
             editingMessage = 0;
         }, 50);
@@ -852,12 +838,14 @@ function _rendererFunc() {
             createInputSection(srcSect.type, sid, () => removeInputSection(sid));
             
             const section = msgSections[sid];
-            const typeName = section.type;
+            const type = section.type;
             section.text = srcSect.text;
             section.blob = srcSect.blob;
 
-            if(["text", "code", "quote"].indexOf(typeName) > -1)
-                (section.typeElm as HTMLInputElement).value = section.text;
+            if([types.MessageSectionType.TEXT,
+                types.MessageSectionType.CODE,
+                types.MessageSectionType.QUOTE].indexOf(type) > -1)
+                    (section.typeElm as HTMLInputElement).value = section.text;
         }
 
         elementById("message-editing").innerHTML = escapeHtml("Editing message");
@@ -875,12 +863,9 @@ function _rendererFunc() {
             clearTimeout(typingClearTimer);
         // Send the typing notification
         currentlyTyping = true;
-        putEntities([{
-            type:   "channel",
-            id:     viewingChan,
-            group:  viewingGroup,
-            typing: [0]
-        }]);
+        const chan = new entities.Channel();
+        chan.id = viewingChan; chan.typing = [0];
+        putEntities([chan]);
         // Create a typing clear timer
         typingClearTimer = setTimeout(() => {
             clearTyping()
@@ -888,15 +873,12 @@ function _rendererFunc() {
     }
 
     // Says "no, we"re not typing anymore"
-    function clearTyping(additionalEntities?: {}[]) {
+    function clearTyping(additionalEntities?: entities.Entity[]) {
         currentlyTyping = false;
         clearTimeout(typingClearTimer);
-        putEntities([{
-            type:   "channel",
-            id:     viewingChan,
-            group:  viewingGroup,
-            typing: []
-        }, ...(additionalEntities ?? [])]);
+        const chan = new entities.Channel();
+        chan.id = viewingChan; chan.typing = [];
+        putEntities([chan, ...(additionalEntities ?? [])]);
     }
 
     function updTyping(txt: string) {
@@ -907,7 +889,7 @@ function _rendererFunc() {
     }
 
     // Creates an input message section
-    function createInputSection(type: string, id: number, removeCb: Function, filename?: string, fileSize?: number) {
+    function createInputSection(type: types.MessageSectionType, id: number, removeCb: Function, filename?: string, fileSize?: number) {
         const section = document.createElement("div");
         section.classList.add("message-section", "message-section-" + type, "flex-row", "message-section-" + id);
         section.id = "message-section-" + id;
@@ -924,14 +906,14 @@ function _rendererFunc() {
         var typeElm;
 
         switch(type) {
-            case "text":
+            case types.MessageSectionType.TEXT:
                 typeElm = document.createElement("textarea");
                 typeElm.classList.add("message-input", "fill-width");
                 typeElm.placeholder = "Text section";
                 typeElm.rows = 1;
                 typeElm.oninput = () => { adjTaHeight(typeElm); updTyping(typeElm.value) };
                 break
-            case "file":
+            case types.MessageSectionType.FILE:
                 typeElm = document.createElement("div");
                 typeElm.classList.add("message-file-section", "flex-col");
 
@@ -954,7 +936,7 @@ function _rendererFunc() {
                     progress.value = 0;
                 }
                 break
-            case "code":
+            case types.MessageSectionType.CODE:
                 typeElm = document.createElement("textarea");
                 typeElm.classList.add("code-input", "fill-width");
                 typeElm.placeholder = "Code section";
@@ -962,7 +944,7 @@ function _rendererFunc() {
                 typeElm.oninput = () => { adjTaHeight(typeElm); updTyping(typeElm.value) };
                 typeElm.spellcheck = false;
                 break
-            case "quote":
+            case types.MessageSectionType.QUOTE:
                 typeElm = document.createElement("textarea");
                 typeElm.classList.add("message-input", "fill-width", "message-quote-section");
                 typeElm.placeholder = "Quote section";
@@ -1025,7 +1007,7 @@ function _rendererFunc() {
         if(!fullReset) {
             // Add a default section
             const id = msgSections.length;
-            createInputSection("text", id, () => {
+            createInputSection(types.MessageSectionType.TEXT, id, () => {
                 removeInputSection(id);
             });
     
@@ -1246,10 +1228,12 @@ function _rendererFunc() {
         bar.classList.add("message-action-bar", "flex-row");
 
         // The set of all message action buttons
+        const msg = new entities.Message();
+        msg.id = id; msg.sender = 0;
         const buttons: {icon: string, selfOnly: boolean, onclick: (this: GlobalEventHandlers, ev: MouseEvent) => any}[] = [
             { icon: "reply", selfOnly: false, onclick: (e) => {
                 const sectionId = msgSections.length
-                createInputSection("quote", sectionId, () => {
+                createInputSection(types.MessageSectionType.QUOTE, sectionId, () => {
                     removeInputSection(sectionId);
                 })
     
@@ -1258,7 +1242,7 @@ function _rendererFunc() {
                 (msgSections[sectionId].typeElm as HTMLInputElement).value = messageSummary(id);
                 adjTaHeight(msgSections[sectionId].typeElm as HTMLTextAreaElement);
             } },
-            { icon: "delete", selfOnly: true, onclick: (e) => putEntities([{ type: "message", id: id, sender: 0 }]) },
+            { icon: "delete", selfOnly: true, onclick: (e) => putEntities([msg]) },
             { icon: "edit",   selfOnly: true, onclick: (e) => editMessage(id) }
         ];
 
@@ -2383,26 +2367,21 @@ function _rendererFunc() {
             ]
         });
         if(newIconPath === undefined)
-            return
+            return;
 
         newIconPath = newIconPath[0];
         upload(newIconPath, (id) => {
-            download(id)
-            ipcSend({
-                action: "webprot.entity-put",
-                entities: [{
-                    type: "group",
-                    id: viewingGroup,
-                    icon: id
-                }]
-            });
+            download(id);
+            const group = new entities.Group();
+            group.id = viewingGroup; group.icon = id;
+            putEntities([group]);
         });
     }
 
     // "About Order" buttons
     elementById("view-on-github")  .onclick = (e) => shell.openExternal("https://github.com/ordermsg");
-    elementById("donate")          .onclick = (e) => shell.openExternal("https://ordermsg.tk/donate")
-    elementById("connecting-tweet").onclick = (e) => shell.openExternal("https://twitter.com/ordermsg")
+    elementById("donate")          .onclick = (e) => shell.openExternal("https://ordermsg.tk/donate");
+    elementById("connecting-tweet").onclick = (e) => shell.openExternal("https://twitter.com/ordermsg");
 
     // Friend control buttons
     elementById("friends-all").onclick = (e) => {
@@ -2443,7 +2422,7 @@ function _rendererFunc() {
     // Message section buttons
     elementById("message-text-section-button").onclick = (e) => {
         const id = msgSections.length;
-        createInputSection("text", id, () => {
+        createInputSection(types.MessageSectionType.TEXT, id, () => {
             removeInputSection(id);
         });
     };
@@ -2465,7 +2444,7 @@ function _rendererFunc() {
 
         // Add the section
         const id = msgSections.length;
-        createInputSection("file", id, () => {
+        createInputSection(types.MessageSectionType.FILE, id, () => {
             removeInputSection(id);
         }, filePath, fs.statSync(filePath).size);
 
@@ -2489,7 +2468,7 @@ function _rendererFunc() {
             const fileName = path.join(remote.getGlobal("tmpDir"), "tmpimg.png");
             fs.writeFile(fileName, img.toPNG(), () => {
                 const id = msgSections.length;
-                createInputSection("file", id, () => {
+                createInputSection(types.MessageSectionType.FILE, id, () => {
                     removeInputSection(id);
                 }, fileName, fs.statSync(fileName).size);
         
@@ -2509,13 +2488,13 @@ function _rendererFunc() {
     }
     elementById("message-code-section-button").addEventListener("click", (e) => {
         const id = msgSections.length;
-        createInputSection("code", id, () => {
+        createInputSection(types.MessageSectionType.CODE, id, () => {
             removeInputSection(id);
         });
     })
     elementById("message-quote-section-button").addEventListener("click", (e) => {
         const id = msgSections.length;
-        createInputSection("quote", id, () => {
+        createInputSection(types.MessageSectionType.QUOTE, id, () => {
             removeInputSection(id);
         });
     })
@@ -2543,15 +2522,9 @@ function _rendererFunc() {
     // Create/join a group
     elementById("group-icon-add").onclick = showGroupCreateBox;
     elementById("group-create-ok").onclick = (e) => {
-        ipcSend({
-            action: "webprot.entity-put",
-            entities: [{
-                type: "group",
-                id:   0,
-                name: (elementById("group-create-name") as HTMLInputElement).value
-            }],
-            operId: regCallback(hideGroupCreateBox)
-        });
+        const group = new entities.Group();
+        group.id = 0; group.name = (elementById("group-create-name") as HTMLInputElement).value;
+        putEntities([group]);
     }
     elementById("group-join-ok").onclick = (e) => {
         ipcSend({
@@ -2569,120 +2542,70 @@ function _rendererFunc() {
     const groupNameChange = elementById("group-name-change") as HTMLInputElement;
     groupNameChange.onkeypress = (evt) => {
         if(evt.keyCode === 13) {
-            ipcSend({
-                action: "webprot.entity-put",
-                entities: [{
-                    type: "group",
-                    id:   viewingGroup,
-                    name: groupNameChange.value
-                }]
-            });
+            const group = new entities.Group();
+            group.id = viewingGroup; group.name = groupNameChange.value;
+            putEntities([group]);
         }
     }
 
     elementById("channel-add-button").onclick = (e) => {
-        ipcSend({
-            action: "webprot.entity-put",
-            entities: [{
-                type:  "channel",
-                id:    0,
-                name:  "Text channel",
-                group: viewingGroup
-            }]
-        });
+        const channel = new entities.Channel();
+        channel.id = 0; channel.name = "Text channel"; channel.group = viewingGroup;
+        putEntities([channel]);
     }
 
     const chanNameChange = elementById("channel-name-change") as HTMLInputElement;
     chanNameChange.onkeypress = (e) => {
         if(e.keyCode === 13) {
-            ipcSend({
-                action: "webprot.entity-put",
-                entities: [{
-                    type:  "channel",
-                    id:    editingChan,
-                    name:  chanNameChange.value,
-                    group: viewingGroup
-                }]
-            });
+            const channel = new entities.Channel();
+            channel.id = editingChan; channel.name = chanNameChange.value; channel.group = viewingGroup;
+            putEntities([channel]);
         }
     }
 
     elementById("channel-remove-button").onclick = (e) => {
-        ipcSend({
-            action: "webprot.entity-put",
-            entities: [{
-                type:  "channel",
-                id:    editingChan,
-                group: 0
-            }]
-        });
+        const channel = new entities.Channel();
+        channel.id = editingChan; channel.group = 0;
+        putEntities([channel]);
     }
 
     elementById("invite-create-button").onclick = (e) => {
-        const invites = entityCache[viewingGroup].invites
-        ipcSend({
-            action: "webprot.entity-put",
-            entities: [{
-                type:    "group",
-                id:      viewingGroup,
-                invites: [...invites, ""]
-            }]
-        });
+        const invites = entityCache[viewingGroup].invites;
+        const group = new entities.Group();
+        group.id = viewingGroup; group.invites = [...invites, ""];
+        putEntities([group]);
     }
 
     elementById("role-add-button").onclick = (e) => {
-        ipcSend({
-            action: "webprot.entity-put",
-            entities: [{
-                type:  "role",
-                id:    0,
-                name:  "Role",
-                color: "#ffffff",
-                group: viewingGroup
-            }]
-        });
+        const role = new entities.Role();
+        role.id = 0; role.name = "New role"; role.color = "#ffffff"; role.group = viewingGroup;
+        putEntities([role]);
     }
 
     const roleNameChane = elementById("role-name-change") as HTMLInputElement;
     roleNameChane.onkeypress = (e) => {
         if(e.keyCode === 13) {
-            ipcSend({
-                action: "webprot.entity-put",
-                entities: [{
-                    type:  "role",
-                    id:    editingRole,
-                    name:  roleNameChane.value,
-                    group: viewingGroup
-                }]
-            });
+            const role = new entities.Role();
+            role.id = editingRole; role.name = roleNameChane.value;
+            putEntities([role]);
         }
     }
 
     elementById("role-remove-button").onclick = (e) => {
-        ipcSend({
-            action: "webprot.entity-put",
-            entities: [{
-                type:  "role",
-                id:    editingRole,
-                group: 0
-            }]
-        });
+        const role = new entities.Role();
+        role.id = editingRole; role.group = 0;
+        putEntities([role]);
     }
 
     const roleColorChange = elementById("role-color-change") as HTMLInputElement;
     roleColorChange.onchange = (e) => {
-        ipcSend({
-            action: "webprot.entity-put",
-            entities: [{
-                type:  "role",
-                id:    editingRole,
-                color: roleColorChange.value
-            }]
-        });
+        const role = new entities.Role();
+        role.id = editingRole; role.color = roleColorChange.value;
+        putEntities([role]);
     }
 
     elementById("group-leave").onclick = (e) => {
-        stopPropagation(e)
+        stopPropagation(e);
         ipcSend({
             action:      "webprot.manage-contacts",
             contactType: "group",
@@ -2694,14 +2617,10 @@ function _rendererFunc() {
     elementById("group-delete-revert").onclick = (e) => { triggerDisappear(elementById("group-delete-box"), true); }
     elementById("group-delete-confirm").onclick = (e) => {
         if((elementById("group-delete-name-input") as HTMLInputElement).value === entityCache[viewingGroup].name) {
-            ipcSend({ // change da world, my final message.. goodbye
-                action: "webprot.entity-put",
-                entities: [{
-                    type:  "group",
-                    id:    viewingGroup,
-                    owner: 0
-                }]
-            });
+            // change da world, my final message.. goodbye
+            const group = new entities.Group();
+            group.id = viewingGroup; group.owner = 0;
+            putEntities([group]);
             viewingGroup = 0;
             viewingChan = 0;
             editingChan = 0;

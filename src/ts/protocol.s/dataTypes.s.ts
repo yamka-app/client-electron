@@ -12,8 +12,8 @@ export enum MessageSectionType {
 }
 export class MessageSection {
     type: MessageSectionType;
-    blob: number;
-    text: string;
+    blob?: number;
+    text?: string;
 
     constructor(t?: MessageSectionType, b?: number, s?: string) {
         this.type = t;
