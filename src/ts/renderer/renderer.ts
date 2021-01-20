@@ -173,15 +173,8 @@ function _rendererFunc() {
             hideElm(elementById("main-layout-container"));
             showElm(elementById("login-form"));
 
-            // Clear the continuation token
-            localStorage.removeItem("contToken");
-
-            // Send a logout notification to the server
-            ipcSend({
-                action:   "webprot.login",
-                email:    "___@logout@___",
-                password: ""
-            });
+            // Clear the access token
+            localStorage.removeItem("accessToken");
             return;
         }
 
