@@ -174,7 +174,7 @@ function _rendererFunc() {
             showElm(elementById("login-form"));
 
             // Clear the access token
-            localStorage.removeItem("accessToken");
+            configSet("accessToken", "");
             return;
         }
 
