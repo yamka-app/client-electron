@@ -398,6 +398,14 @@ function _rendererFunc() {
     }
     function sendPacket(p: packets.Packet, cb?: (r: packets.Packet) => any) {
         console.log("%c[SENDING]", "color: #00bb00; font-weight: bold;", p);
+        // Add types to nested entities
+        if(p instanceof packets.EntitiesPacket) {
+            p.entities = p.entities.map(e => {
+                e["__type_name"] = e.constructor.name;
+                return e;
+            });
+        }
+        // send the packet
         ipcRenderer.send("asynchronous-message", {
             action: "webprot.send-packet",
             reference: regCallback(cb),

@@ -26,7 +26,7 @@ export class Entity {
     }
 
     encode: () => Buffer = function() {
-        if(this.encodePayload === undefined)
+        if(this.encodeFields === undefined)
             throw new Error("Can't encode a generic entity");
 
         return Buffer.concat([

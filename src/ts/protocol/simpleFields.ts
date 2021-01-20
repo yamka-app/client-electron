@@ -27,7 +27,7 @@ export class SimpleField {
             Buffer.alloc(0),
         this.encodingFunc(val)]);
 
-    decode = (buf: Buffer) => this.decodingFunc(buf.slice(this.hasBinaryId() ? 1 : 0));
+    decode = (buf: Buffer) => this.decodingFunc(buf);
 
     hasBinaryId = () => this.binaryId !== undefined;
     
@@ -61,8 +61,10 @@ export class ColorField extends SimpleField {
 }
 
 export class StrField extends SimpleField {
+    constructor(p: string, bid?: number) { super(p, bid); }
+
     encodingFunc  = (val: string) => DataTypes.encStr(val);
-    decodingFunc  = (buf: Buffer) => DataTypes.decStr(buf);
+    decodingFunc  = (buf: Buffer) => { console.log(buf); return DataTypes.decStr(buf) };
     lengthingFunc = (buf: Buffer) => DataTypes.decNum(buf.slice(0, 2)) + 2;
 }
 
@@ -142,16 +144,13 @@ export function simpleFieldEncoder(t: any, fields: SimpleField[], inclCnt: boole
     checkBinaryIdExistence(fields);
 
     return () => {
-        const remaining = fields.map(f => 
-            (t[f.prop] === undefined) ?
-                Buffer.alloc(0) :
-                f.encode(t[f.prop]));
+        const remaining = fields.filter(f => t[f.prop] !== undefined);
 
         return Buffer.concat([
             inclCnt ?
                 DataTypes.encNum(remaining.length, 1) :
                 Buffer.alloc(0),
-            ...remaining
+            ...remaining.map(f => f.encode(t[f.prop]))
         ])
     }
 }
@@ -169,11 +168,10 @@ export function simpleFieldDecoder(t: any, fields: SimpleField[], inclCnt: boole
             while(pos < buf.length && (decoded < limit && limit !== -1)) {
                 const id = DataTypes.decNum(buf.slice(pos, pos + 1));
                 const field = fields.find(x => x.binaryId == id);
-                var slice = buf.slice(pos + 1);
+                const slice = buf.slice(pos + 1);
 
                 const len = field.lengthingFunc(slice);
-                slice = slice.slice(0, len);
-                t[field.prop] = field.decode(slice);
+                t[field.prop] = field.decode(slice.slice(0, len));
 
                 pos += len + 1;
                 decoded++;

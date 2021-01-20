@@ -207,7 +207,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
             "LoginPacket":       new packets.LoginPacket(),
             "SignupPacket":      new packets.SignupPacket(),
             "AccessTokenPacket": new packets.AccessTokenPacket(),
-            "EntityGetPacket":   new packets.EntityGetPacket()
+            "EntityGetPacket":   new packets.EntityGetPacket(),
+            "EntitiesPacket":    new packets.EntitiesPacket()
         }[type];
 
         if(proto === undefined)
@@ -218,6 +219,18 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
         // Specialized restoration
         if(packet instanceof packets.EntityGetPacket)
             packet.entities = packet.entities.map(e => Object.assign(new packets.EntityGetRequest(), e));
+        if(packet instanceof packets.EntitiesPacket) {
+            packet.entities = packet.entities.map(e => {
+                const e_proto = {
+                    "User":    new entities.User(),
+                    "Channel": new entities.Channel(),
+                    "Group":   new entities.Group(),
+                    "Message": new entities.Message(),
+                    "File":    new entities.File()
+                }[e["__type_name"]];
+                return Object.assign(e_proto, e);
+            });
+        }
     }
     // Measure ping to the server
     if(packet instanceof packets.PingPacket)
