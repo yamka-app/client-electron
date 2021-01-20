@@ -64,7 +64,7 @@ export class StrField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 
     encodingFunc  = (val: string) => DataTypes.encStr(val);
-    decodingFunc  = (buf: Buffer) => { console.log(buf); return DataTypes.decStr(buf) };
+    decodingFunc  = (buf: Buffer) => DataTypes.decStr(buf);
     lengthingFunc = (buf: Buffer) => DataTypes.decNum(buf.slice(0, 2)) + 2;
 }
 
