@@ -286,9 +286,9 @@ function ipcSend(data) {
         mainWindow.webContents.send("message", data);
 }
 
-function webprotConnect() {
+function webprotConnect(force: boolean =false) {
     // Abort if connected already
-    if(webprotState.connecting || webprotState.connected)
+    if((webprotState.connecting || webprotState.connected) && !force)
         return;
 
     webprotState.connecting = true;
@@ -357,6 +357,8 @@ function webprotConnect() {
 ipcMain.on("asynchronous-message", (event, arg) => {
     if(arg.action === "webprot.connect") {
         webprotConnect();
+    } else if(arg.action === "webprot.force-connect") {
+        webprotConnect(true);
     } else if(arg.action === "webprot.send-packet") {
         webprotSendPacket(arg.packet, arg.type, arg.reference);
     }

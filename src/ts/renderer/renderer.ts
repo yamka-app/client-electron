@@ -169,6 +169,7 @@ function _rendererFunc() {
 
             // Clear the access token
             configSet("accessToken", "");
+            ipcSend({ action: "webprot.force-connect" });
             return;
         }
 
