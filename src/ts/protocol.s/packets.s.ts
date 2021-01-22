@@ -178,18 +178,11 @@ export class EntitiesPacket extends Packet {
     constructor(e?: Entity[]) { super(); this.entities = e; }
 }
 
-export class FileTokenRequestPacket extends SimpleFieldPacket {
+export class FileDownloadRequestPacket extends SimpleFieldPacket {
     typeNum = 8;
     id: number;
 
     constructor(id?: number) { super(); this.id = id; }
-}
-
-export class FileTokenPacket extends SimpleFieldPacket {
-    typeNum = 9;
-    token: string;
-
-    constructor(token?: string) { super(); this.token = token; }
 }
 
 export class MFASecretPacket extends SimpleFieldPacket {
@@ -197,13 +190,6 @@ export class MFASecretPacket extends SimpleFieldPacket {
     secret: string;
 
     constructor(secret?: string) { super(); this.secret = secret; }
-}
-
-export class FileUploadTokenRequestPacket extends SimpleFieldPacket {
-    typeNum = 11;
-    file: File;
-
-    constructor(f?: File) { super(); this.file = f; }
 }
 
 export class AccessTokenPacket extends SimpleFieldPacket {

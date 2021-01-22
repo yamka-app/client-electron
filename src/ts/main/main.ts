@@ -37,7 +37,7 @@ var windowCreated = false;
 
 // Create a temporary directory for downloaded files
 tmp.setGracefulCleanup();
-var tmpDir = tmp.dirSync().name;
+const tmpDir = tmp.dirSync().name;
 console.log("Temporary directory: " + tmpDir);
 console.log("Config and auth: " + configPath);
 
@@ -137,7 +137,10 @@ var webprotState = {
     pingSent:      0,
     pingTime:      0,
 
-    blobStates:    [],
+    // file operations
+    downStates:    {},
+    upStates:      {},
+
     references:    {}
 }
 
@@ -157,6 +160,20 @@ function webprotData(bytes: Buffer) {
         webprotState.pingTime = new Date().getTime() - webprotState.pingSent;
         if(webprotState.pingSent !== 0)
             ipcSend({ type: "webprot.status", message: `Protocol ping (round trip): ${webprotState.pingTime}ms` });
+        return;
+    }
+
+    // File downloading
+    if(packet instanceof packets.FileDataChunkPacket) {
+        const stream = webprotState.downStates[packet.replyTo].stream as fs.WriteStream;
+        stream.write(packet.data);
+        return;
+    }
+
+    if(packet instanceof packets.StatusPacket && packet.status == packets.StatusCode.STREAM_END) {
+        const state = webprotState.downStates[packet.replyTo];
+        (state.stream as fs.WriteStream).close();
+        ipcSend({ type: "webprot.trigger-reference", reason: "download-finished", reference: state.ref, args: [state.path] });
         return;
     }
 
@@ -204,11 +221,12 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
     // Make the packet "full" if requested
     if(type !== undefined) {
         const proto = {
-            "LoginPacket":       new packets.LoginPacket(),
-            "SignupPacket":      new packets.SignupPacket(),
-            "AccessTokenPacket": new packets.AccessTokenPacket(),
-            "EntityGetPacket":   new packets.EntityGetPacket(),
-            "EntitiesPacket":    new packets.EntitiesPacket()
+            "LoginPacket":               new packets.LoginPacket(),
+            "SignupPacket":              new packets.SignupPacket(),
+            "AccessTokenPacket":         new packets.AccessTokenPacket(),
+            "EntityGetPacket":           new packets.EntityGetPacket(),
+            "EntitiesPacket":            new packets.EntitiesPacket(),
+            "FileDownloadRequestPacket": new packets.FileDownloadRequestPacket()
         }[type];
 
         if(proto === undefined)
@@ -241,6 +259,13 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
     // Save the reference ID (encode() sets SEQ)
     if(ref !== undefined)
         webprotState.references[packet.seq] = ref;
+
+    // Create a download state
+    if(packet instanceof packets.FileDownloadRequestPacket) {
+        const p = path.join(tmpDir, `file_${packet.id}`);
+        const stream = fs.createWriteStream(p);
+        webprotState.downStates[packet.seq] = { id: packet.id, path: p, stream: stream, ref: ref };
+    }
 
     // Compress the data
     const compressed = buf.length >= webprotSettings.compressionThreshold;
@@ -334,46 +359,7 @@ ipcMain.on("asynchronous-message", (event, arg) => {
         webprotConnect();
     } else if(arg.action === "webprot.send-packet") {
         webprotSendPacket(arg.packet, arg.type, arg.reference);
-    }/* else if(arg.action == "webprot.blob-dl") {
-        // Refuse if there"s already a blob operation
-        const existing = webprotState.blobStates.find(x => x.id == arg.id);
-        if(existing) {
-            return;
-        } else {
-            // Create a new state object
-            webprotState.blobStates.push({
-                id:               arg.id,
-                state:            "awaitingInfo",
-                progress:         0,
-                received:         0,
-                operId:           arg.blobOperId,
-                previewOperId:    arg.previewOperId,
-                actuallyDownload: arg.actuallyDownload
-            });
-
-            // Get blob info
-            webprotSendPacket(new packets.FileTokenRequestPacket(arg.id));
-        }
-    } else if(arg.action == "webprot.blob-ul") {
-        // Get file length
-        var len = fs.statSync(arg.path).size
-        
-        // Create a new state object
-        webprotState.blobStates.push({
-            id:             0,
-            path:           arg.path,
-            length:         len,
-            state:          "awaitingUploadToken",
-            progress:       0,
-            sent:           0,
-            operId:         arg.blobOperId,
-            progressOperId: arg.progressOperId,
-        })
-
-        // Get the upload token
-        
-        webprotSendPacket(new packets.FileUploadTokenRequestPacket(new File()));
-    }*/
+    }
 });
 
 ipcMain.on("synchronous-message", (event, arg) => {

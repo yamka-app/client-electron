@@ -52,10 +52,10 @@ export class Packet {
             new SignupPacket(),
             new EntityGetPacket(),
             new EntitiesPacket(),
-            new FileTokenRequestPacket(),
-            new FileTokenPacket(),
+            new FileDownloadRequestPacket(),
+            new FileDataChunkPacket(),
             new MFASecretPacket(),
-            new FileUploadTokenRequestPacket(),
+            undefined,
             new AccessTokenPacket(),
             new ContactsManagePacket(),
             new UserSearchPacket(),
@@ -179,7 +179,10 @@ export enum StatusCode {
     INVALID_INVITE                = 17,
     INTERNAL_ERROR                = 18,
     UNKNOWN_PACKET                = 19,
-    FRIEND_REQUEST_SENT           = 20
+    FRIEND_REQUEST_SENT           = 20,
+    PACKET_PARSING_ERROR          = 21,
+    START_UPLOADING               = 22,
+    STREAM_END                    = 23
 }
 export class StatusPacket extends SimpleFieldPacket {
     typeNum = 4;
@@ -301,18 +304,25 @@ export class EntitiesPacket extends Packet {
     }
 }
 
-export class FileTokenRequestPacket extends SimpleFieldPacket {
+export class FileDownloadRequestPacket extends SimpleFieldPacket {
     typeNum = 8;
     id: number;
 
     constructor(id?: number) { super([new fields.NumField("id", 8)]); this.id = id; }
 }
 
-export class FileTokenPacket extends SimpleFieldPacket {
+export class FileDataChunkPacket extends SimpleFieldPacket {
     typeNum = 9;
-    token: string;
+    position: number;
+    length:   number;
+    data:     Buffer;
 
-    constructor(token?: string) { super([new fields.StrField("token")]); this.token = token; }
+    constructor() {
+        super([
+            new fields.NumField("position", 4),
+            new fields.BinField("data"),
+        ]);
+    }
 }
 
 export class MFASecretPacket extends SimpleFieldPacket {
@@ -320,13 +330,6 @@ export class MFASecretPacket extends SimpleFieldPacket {
     secret: string;
 
     constructor(secret?: string) { super([new fields.StrField("secret")]); this.secret = secret; }
-}
-
-export class FileUploadTokenRequestPacket extends SimpleFieldPacket {
-    typeNum = 11;
-    file: File;
-
-    constructor(f?: File) { super([new fields.EntityField("file")]); this.file = f; }
 }
 
 export class AccessTokenPacket extends SimpleFieldPacket {

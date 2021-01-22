@@ -94,6 +94,14 @@ export class PermsField extends SimpleField {
     lengthingFunc = (buf: Buffer)      => Permissions.len;
 }
 
+export class BinField extends SimpleField {
+    constructor(p: string, bid?: number) { super(p, bid); }
+
+    encodingFunc  = (val: Buffer) => val;
+    decodingFunc  = (buf: Buffer) => buf;
+    lengthingFunc = (buf: Buffer) => buf.length;
+}
+
 export class MsgSectionsField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 

@@ -27,7 +27,7 @@ interface MessageSection {
 
 // Cached entities and blobs
 var entityCache: {} = {};
-var blobCache: {} = {};
+var blobPaths: {} = {};
 
 // Max between messages to minify them
 const messageTimeThres: number = 300000;
@@ -105,20 +105,14 @@ function _rendererFunc() {
             progressOperId: regCallback(onProgressMade as (() => any))
         });
     }
-    function download(id: number, onEnd?: (blob: any) => any,
-            onPreviewAvailable?: (name: string, size: string, preview: string, hash: Uint8Array, length: number) => any,
-            actuallyDownload: boolean =true, force:boolean =false) {
-        if(blobCache[id] !== undefined && onPreviewAvailable === undefined && onEnd !== undefined && !force) {
-            onEnd(blobCache[id]);
-        } else {
-            ipcSend({
-                action:           "webprot.blob-dl",
-                id:               id,
-                blobOperId:       regCallback(onEnd              as (() => any)),
-                previewOperId:    regCallback(onPreviewAvailable as (() => any)),
-                actuallyDownload: actuallyDownload
-            });
-        }
+    function download(id: number, onEnd?: (path: string) => any) {
+        sendPacket(new packets.FileDownloadRequestPacket(id), (r: packets.Packet) => {
+            // Trust me, it's a string
+            // IT'S A STRING
+            // I KNOW FOR SURE IT'S A STRING
+            // IT'S ALWAYS GOING TO BE A STRING
+            onEnd((r as unknown) as string);
+        });
     }
 
     // Determines whether we sould receive notifications
@@ -313,7 +307,7 @@ function _rendererFunc() {
 
         if(group.icon !== 0) {
             download(group.icon, (b) => {
-                (elementById("group-icon-huge") as HTMLImageElement).src = "file://" + b.path
+                (elementById("group-icon-huge") as HTMLImageElement).src = "file://" + b
             });
         }
 
@@ -534,7 +528,7 @@ function _rendererFunc() {
             if(icons.length > 0 && group.icon !== 0) {
                 download(group.icon, (blob) => {
                     for(const icon of icons)
-                        icon.src = "file://" + blob.path;
+                        icon.src = "file://" + blob;
                 })
             } else if(group.icon === 0) {
                 for(const icon of icons)
@@ -565,7 +559,7 @@ function _rendererFunc() {
             if(avas.length > 0) {
                 download(user.avaBlob, (blob) => {
                     for(const ava of avas)
-                        ava.src = "file://" + blob.path;
+                        ava.src = "file://" + blob;
                 })
             }
     
@@ -1181,7 +1175,7 @@ function _rendererFunc() {
         download(id, (blob) => {
             floatingImage = document.createElement("img");
             floatingImage.id = "floating-image";
-            (floatingImage as HTMLImageElement).src = "file://" + blob.path;
+            (floatingImage as HTMLImageElement).src = "file://" + blob;
             floatingImageBg.appendChild(floatingImage);
             triggerAppear(floatingImage, true);
         })
@@ -1362,8 +1356,9 @@ function _rendererFunc() {
                     copyImg.src = path.join(__dirname, "icons/copy.png");
                     copyButton.appendChild(copyImg);
 
-                    break
+                    break;
                 case "file":
+                    /*
                     const fileSectionElement = document.createElement("div"); // a temporary replacement
                     content.appendChild(fileSectionElement);
                     download(section.blob, undefined, (name, size, preview, hash, length) => { // called when info becomes available
@@ -1464,7 +1459,7 @@ function _rendererFunc() {
                             dlBtn.appendChild(dlBtnIcon);
                         }
                     }, false) // don"t actually download, just request information
-                    break
+                    break;*/
                 case "quote":
                     // Just plain text
                     sectionElement = document.createElement("div");
@@ -1715,7 +1710,7 @@ function _rendererFunc() {
                     elm.innerHTML = groupNameAcronym(group.name);
                 } else {
                     elm = document.createElement("img");
-                    download(group.icon, (blob) => (elm as HTMLImageElement).src = "file://" + blob.path);
+                    download(group.icon, (blob) => (elm as HTMLImageElement).src = "file://" + blob);
                 }
                 // Add the default classes and a click listener
                 elm.classList.add("group-icon", "group-icon-" + group.id);
@@ -1902,7 +1897,6 @@ function _rendererFunc() {
 
             // Reset all caches
             entityCache = {};
-            blobCache = {};
             packetCallbacks = {};
             nextCbId = 0;
 
@@ -1934,7 +1928,7 @@ function _rendererFunc() {
 
                     // Request own avatar
                     download(entity.avaFile, (blob) => {
-                        updateSelfAva(blob.path);
+                        updateSelfAva(blob);
                     });
 
                     // Update DM, friend and group list
@@ -1956,8 +1950,8 @@ function _rendererFunc() {
                                 download(f.avaBlob, (ava) => {
                                     const notification = new Notification(
                                         f.name + " wants to add you as a friend", {
-                                        icon: ava.path
-                                    })
+                                        icon: ava
+                                    });
                                 });
                             }
                         });
@@ -1979,7 +1973,7 @@ function _rendererFunc() {
 
     // Main process handler
     function ipcRecv(evt: Event, arg: any) {
-        if(["webprot.status", "webprot.ul-progress", "webprot.completion-notification",
+        if(["webprot.status", "webprot.trigger-reference",
             "webprot.packet-recv", "webprot.connected", "webprot.connecting", "webprot.disconnected"]
                 .indexOf(arg.type) === -1)
             console.log("%c[M->R]", "color: #bb00bb; font-weight: bold;", arg);
@@ -2025,6 +2019,12 @@ function _rendererFunc() {
                 onPacket(packet, arg.reference);
                 break;
 
+            case "webprot.trigger-reference":
+                console.log("%c[REFERENCE]", "color: #bb0077; font-weight: bold;", arg);
+                const cb = packetCallbacks[arg.reference];
+                cb(...arg.args);
+                break;
+
             case "webprot.entities":
                 arg.entities.forEach((entity) => {
                     // Add entities to the entity list
@@ -2055,7 +2055,7 @@ function _rendererFunc() {
                                 download(sender.avaBlob, (senderAvatar) => {
                                     const notification = new Notification(sender.name, {
                                         body: messageSummary(entity.id),
-                                        icon: senderAvatar.path
+                                        icon: senderAvatar
                                     });
                                     // Shitch to the channel when a notification has been clicked
                                     notification.onclick = (e) => {
@@ -2084,26 +2084,6 @@ function _rendererFunc() {
                         updateGroup(entity.group);
                 })
                 break;
-
-            case "webprot.dl-end":
-                // Add the blob to the blob cache
-                var blob = arg.state.info;
-                blobCache[blob.id] = blob;
-
-                // Trigger the download end trigger
-                var cb = packetCallbacks[arg.state.operId];
-                if(cb !== undefined)
-                    (cb as (b: any) => any)(blob);
-                break
-
-            case "webprot.ul-end":
-                // Add the blob to the blob cache
-                var blob = arg.state.info;
-                blobCache[blob.id] = blob;
-
-                // Trigger the upload end trigger
-                (packetCallbacks[arg.state.operId] as (b: any) => any)(blob.id);
-                break
 
             case "webprot.ul-progress":
                 // Call the callback
@@ -2353,7 +2333,7 @@ function _rendererFunc() {
         upload(newAvaPath, (id) => {
             // When uploaded, download it (so it is cached and appears in out temp dir)
             download(id, (blob) => {
-                updateSelfAva(blob.path);
+                updateSelfAva(blob);
             });
             // Update the blob ID
             sendSelfValue("avaBlob", id);
