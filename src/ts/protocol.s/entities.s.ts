@@ -90,4 +90,9 @@ export class Role extends Entity {
 
 export class File extends Entity {
     static typeNum = 6;
+
+    name?:    string;
+    size?:    string;
+    preview?: string;
+    length?:  number;
 }

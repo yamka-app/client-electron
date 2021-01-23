@@ -511,7 +511,8 @@ function _rendererFunc() {
             return;
         }
         sendPacket(new packets.EntityGetPacket(remaining_ents), (response: packets.EntitiesPacket) => {
-            cb(response.entities);
+            if(cb !== undefined)
+                cb(response.entities);
         });
     }
 
@@ -1359,15 +1360,16 @@ function _rendererFunc() {
 
                     break;
                 case "file":
-                    /*
                     const fileSectionElement = document.createElement("div"); // a temporary replacement
                     content.appendChild(fileSectionElement);
-                    download(section.blob, undefined, (name, size, preview, hash, length) => { // called when info becomes available
+                    reqEntities([new packets.EntityGetRequest(entities.File.typeNum, section.blob)], false,
+                            (files) => {
+                        const file = files[0] as entities.File;
                         // Check if it"s an image
-                        const extenstion = name.split(".").pop();
+                        const extenstion = file.name.split(".").pop();
                         if(["png", "jpeg", "jpg", "gif", "bmp"].includes(extenstion)) {
-                            const w = Number(size.split("x")[0]);
-                            const h = Number(size.split("x")[1]);
+                            const w = Number(file.size.split("x")[0]);
+                            const h = Number(file.size.split("x")[1]);
                             fileSectionElement.classList.add("message-img-section-container");
 
                             const fake = document.createElement("img"); // to force container dimensions
@@ -1380,14 +1382,14 @@ function _rendererFunc() {
                             let imgElement = document.createElement("img");
                             imgElement.classList.add("message-img-section");
                             fileSectionElement.appendChild(imgElement);
-                            if(preview !== "") {
+                            if(file.preview !== "") {
                                 canvasElement = document.createElement("canvas");
                                 canvasElement.classList.add("message-img-section");
                                 canvasElement.width  = w;
                                 canvasElement.height = h;
     
                                 const adjW = Number((32 * w / h).toFixed(0)); // to preserve the aspect ratio
-                                const pixels = blurhash.decode(preview, adjW, 32);
+                                const pixels = blurhash.decode(file.preview, adjW, 32);
                                 const ctx = canvasElement.getContext("2d");
                                 const imageData = ctx.createImageData(adjW, 32);
                                 imageData.data.set(pixels);
@@ -1407,7 +1409,7 @@ function _rendererFunc() {
 
                             // Download the image
                             download(section.blob, (blob) => {
-                                imgElement.src = "file://" + blob.path;
+                                imgElement.src = "file://" + blob;
                                 fileSectionElement.appendChild(imgElement);
                                 // Deblur the preview element
                                 if(canvasElement)
@@ -1417,7 +1419,7 @@ function _rendererFunc() {
                                     stopPropagation(e);
                                     showFloatingImage(section.blob);
                                 }
-                            }, undefined, true, true);
+                            });
                         } else {
                             fileSectionElement.classList.add("message-file-section", "flex-row");
 
@@ -1450,17 +1452,15 @@ function _rendererFunc() {
                                     return;
 
                                 // Download the file
-                                download(section.blob, (blob) => {
-                                    fs.copyFileSync(blob.path, filePath);
-                                })
+                                download(section.blob, (blob) => fs.copyFileSync(blob, filePath));
                             }
 
                             const dlBtnIcon = document.createElement("img");
                             dlBtnIcon.src = path.join(__dirname, "icons/download.png");
                             dlBtn.appendChild(dlBtnIcon);
                         }
-                    }, false) // don"t actually download, just request information
-                    break;*/
+                    })
+                    break;
                 case "quote":
                     // Just plain text
                     sectionElement = document.createElement("div");

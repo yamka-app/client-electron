@@ -43,7 +43,8 @@ export class Entity {
             new Channel(),
             new Group(),
             new Message(),
-            new Role()
+            new Role(),
+            new File()
         ][type];
         var posAfter = entity.decodeFields(buf, undefined, pos + 1) as number;
         return { entity: entity, posAfter: posAfter };
@@ -157,6 +158,12 @@ export class Role extends Entity {
 
 export class File extends Entity {
     typeNum = 6;
+
+    name?:    string;
+    size?:    string;
+    preview?: string;
+    length?:  number;
+
     constructor() {
         super([
             new fields.NumField("id", 8,     0),
