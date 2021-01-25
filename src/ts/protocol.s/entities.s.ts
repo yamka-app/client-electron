@@ -91,6 +91,8 @@ export class Role extends Entity {
 export class File extends Entity {
     static typeNum = 6;
 
+    path?: string; // only used in main-to-renderer communication
+
     name?:    string;
     size?:    string;
     preview?: string;

@@ -314,14 +314,15 @@ export class FileDownloadRequestPacket extends SimpleFieldPacket {
 export class FileDataChunkPacket extends SimpleFieldPacket {
     typeNum = 9;
     position: number;
-    length:   number;
     data:     Buffer;
 
-    constructor() {
+    constructor(p?: number, d?: Buffer) {
         super([
             new fields.NumField("position", 4),
             new fields.BinField("data"),
         ]);
+        this.position = p;
+        this.data     = d;
     }
 }
 

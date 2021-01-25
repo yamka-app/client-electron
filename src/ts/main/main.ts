@@ -123,6 +123,7 @@ const webprotSettings = {
     version:              5,
     supportsComp:         true,
     compressionThreshold: 256,
+    fileChunkSize:        1024*10
 };
 
 var webprotState = {
@@ -170,11 +171,28 @@ function webprotData(bytes: Buffer) {
         return;
     }
 
-    if(packet instanceof packets.StatusPacket && packet.status == packets.StatusCode.STREAM_END) {
-        const state = webprotState.downStates[packet.replyTo];
-        (state.stream as fs.WriteStream).close();
-        ipcSend({ type: "webprot.trigger-reference", reason: "download-finished", reference: state.ref, args: [state.path] });
-        return;
+    // File uploading
+    if(packet instanceof packets.StatusPacket) {
+        if(packet.status == packets.StatusCode.STREAM_END) {
+            const state = webprotState.downStates[packet.replyTo];
+            (state.stream as fs.WriteStream).close();
+            ipcSend({ type: "webprot.trigger-reference", reason: "download-finished", reference: state.ref, args: [state.path] });
+            return;
+        } else if(packet.status == packets.StatusCode.START_UPLOADING) {
+            const state = webprotState.upStates[packet.replyTo];
+            const stream = state.stream as fs.ReadStream;
+            const bytesTotal = fs.statSync(state.path).size;
+            // Send data in chunks
+            stream.on("data", (chunk: Buffer) => {
+                const bytesAvailable = stream.readableLength;
+                const dataPacket = new packets.FileDataChunkPacket(bytesAvailable, chunk);
+                dataPacket.replyTo = packet.seq;
+                webprotSendPacket(dataPacket);
+                ipcSend({ type: "webprot.trigger-reference", reason: "upload-progress", reference: state.ref2,
+                    args: [bytesAvailable, bytesTotal] });
+            })
+            return;
+        }
     }
 
     // Check references
@@ -217,7 +235,7 @@ function webprotSendBytes(bytes: Buffer) {
     webprotState.socket.write(bytes);
 }
 
-function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?: number) {
+function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?: number, ref2?: number) {
     // Make the packet "full" if requested
     if(type !== undefined) {
         const proto = {
@@ -260,11 +278,21 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
     if(ref !== undefined)
         webprotState.references[packet.seq] = ref;
 
-    // Create a download state
+    // Create a up-/download state
     if(packet instanceof packets.FileDownloadRequestPacket) {
         const p = path.join(tmpDir, `file_${packet.id}`);
         const stream = fs.createWriteStream(p);
         webprotState.downStates[packet.seq] = { id: packet.id, path: p, stream: stream, ref: ref };
+    }
+    if(packet instanceof packets.EntitiesPacket) {
+        for(const entity of packet.entities) {
+            if(!(entity instanceof entities.File))
+                continue;
+
+            const p = entity.path;
+            const stream = fs.createReadStream(p); // the renderer actually sends the path here
+            webprotState.upStates[packet.seq] = { path: p, stream: stream, ref: ref, ref2: ref2 };
+        }
     }
 
     // Compress the data
@@ -360,7 +388,7 @@ ipcMain.on("asynchronous-message", (event, arg) => {
     } else if(arg.action === "webprot.force-connect") {
         webprotConnect(true);
     } else if(arg.action === "webprot.send-packet") {
-        webprotSendPacket(arg.packet, arg.type, arg.reference);
+        webprotSendPacket(arg.packet, arg.type, arg.reference, arg.ref2);
     }
 });
 

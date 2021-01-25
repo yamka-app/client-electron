@@ -97,13 +97,14 @@ function _rendererFunc() {
     }), 2000);
 
     // Upload and download blobs
-    function upload(path: string, onEnd: (id: number) => any, onProgressMade?: (p: number, m: number) => any) {
-        ipcSend({
-            action:         "webprot.blob-ul",
-            path:           path,
-            blobOperId:     regCallback(onEnd          as (() => any)),
-            progressOperId: regCallback(onProgressMade as (() => any))
-        });
+    function upload(filePath: string, onEnd: (id: number) => any, onProgressMade?: (p: number, m: number) => any) {
+        const file = new entities.File();
+        file.id = 0; file.length = fs.statSync(filePath).size;
+        file.path = filePath; file.name = path.basename(filePath);
+        sendPacket(new packets.EntitiesPacket([file]), (resp: packets.EntitiesPacket) => {
+           // There's only a single entity in the packet
+           onEnd(resp.entities[0].id);
+        }, onProgressMade);
     }
     function download(id: number, onEnd?: (path: string) => any) {
         sendPacket(new packets.FileDownloadRequestPacket(id), (r: packets.Packet) => {
@@ -384,7 +385,7 @@ function _rendererFunc() {
             console.log("%c[R->M]", "color: #bbbb00; font-weight: bold;", data);
         ipcRenderer.send("asynchronous-message", data);
     }
-    function sendPacket(p: packets.Packet, cb?: (r: packets.Packet) => any) {
+    function sendPacket(p: packets.Packet, cb?: (r: packets.Packet) => any, additional_ref?: (...args: any[]) => any) {
         console.log("%c[SENDING]", "color: #00bb00; font-weight: bold;", p);
         // Add types to nested entities
         if(p instanceof packets.EntitiesPacket) {
@@ -397,6 +398,7 @@ function _rendererFunc() {
         ipcRenderer.send("asynchronous-message", {
             action: "webprot.send-packet",
             reference: regCallback(cb),
+            ref2: regCallback(additional_ref),
             type: p.constructor.name, // we need this so the main process actually knows what we want to send
                                       // because it appears to me that the RPC interface doesn't preserve class info
                                       // because it was designed with pure JS in mind
@@ -559,7 +561,7 @@ function _rendererFunc() {
             // Update avatars
             const avas = document.getElementsByClassName("user-avatar-" + id) as HTMLCollectionOf<HTMLImageElement>;
             if(avas.length > 0) {
-                download(user.avaBlob, (blob) => {
+                download(user.avaFile, (blob) => {
                     for(const ava of avas)
                         ava.src = "file://" + blob;
                 })
@@ -1948,7 +1950,7 @@ function _rendererFunc() {
                             for(const fid of newFriends) {
                                 const f = entityCache[fid];
                                 // Download avatars of each one
-                                download(f.avaBlob, (ava) => {
+                                download(f.avaFile, (ava) => {
                                     const notification = new Notification(
                                         f.name + " wants to add you as a friend", {
                                         icon: ava
@@ -2053,7 +2055,7 @@ function _rendererFunc() {
                             const sender = entityCache[entity.sender];
                             if(sender.id != remote.getGlobal("webprotState").self.id) {
                                 // Download the avatar of the sender
-                                download(sender.avaBlob, (senderAvatar) => {
+                                download(sender.avaFile, (senderAvatar) => {
                                     const notification = new Notification(sender.name, {
                                         body: messageSummary(entity.id),
                                         icon: senderAvatar
@@ -2337,7 +2339,7 @@ function _rendererFunc() {
                 updateSelfAva(blob);
             });
             // Update the blob ID
-            sendSelfValue("avaBlob", id);
+            sendSelfValue("avaFile", id);
         });
     }
 
