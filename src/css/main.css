@@ -256,6 +256,10 @@ button.icon-button {
 button.icon-button:hover {
     filter: brightness(1.5);
 }
+button.icon-button img {
+    width:  16px;
+    height: 16px;
+}
 
 .cg-button:not(.group-icon) {
     padding: 5px;
@@ -379,7 +383,6 @@ label {
 }
 #member-list-friend-header {
     padding:       10px;
-    border-left:   2px solid var(--shade-2);
     border-bottom: 2px solid var(--shade-2);
 }
 #member-list-group-header,
@@ -684,7 +687,7 @@ input[type="color"] {
 
     border-radius:    10px;
     background-color: var(--shade-2);
-    box-shadow:       0 0 5px var(--shadow);
+    box-shadow:       0 0 15px var(--shadow);
 }
 
 textarea.message-input {
@@ -769,7 +772,7 @@ span.fg-1 {
 
 
 
-#message-layout {
+#central-layout {
     position: absolute;
     top:      0;
     left:     0;
@@ -799,7 +802,7 @@ span.fg-1 {
 
     background-color: var(--shade-1);
     border-radius:    10px;
-    box-shadow:       0 0 5px var(--shadow);
+    box-shadow:       0 0 15px var(--shadow);
 }
 #message-area-header p,
 #message-area-explainer p {
@@ -964,16 +967,6 @@ img.large-emoji {
     width: 40px;
 }
 
-#message-layout-header {
-    height:  20px;
-    padding: 10px;
-    background-color: var(--shade-4);
-}
-#channel-name {
-    font-family: Montserrat;
-    font-size: var(--font-size);
-}
-
 
 .message > .message-action-bar {
     position: absolute;
@@ -993,83 +986,6 @@ img.large-emoji {
 }
 
 
-
-#group-list-sidebar-container {
-    width: 10px;
-    padding: 0;
-    background-color: var(--shade-1);
-}
-#group-list-sidebar {
-    padding: 5px;
-    height: 100%;
-
-    align-items: center;
-    overflow: hidden scroll;
-}
-#group-list-sidebar::-webkit-scrollbar {
-    display: none;
-}
-
-.group-icon {
-    width:  48px;
-    height: 48px;
-
-    margin-bottom: 5px;
-
-    background-color: var(--shade-4);
-    border-radius: 24px;
-    transition: background-color 0.1s ease,
-                border-radius    0.1s ease,
-                color            0.1s ease,
-                box-shadow       0.1s ease;
-    box-shadow: 0 0 2px var(--shadow);
-
-    cursor: pointer;
-
-    text-overflow: clip;
-    white-space:   nowrap;
-    overflow:      hidden;
-
-    display:         flex;
-    align-items:     center;
-    justify-content: center;
-
-    font-weight: 500;
-    font-size:   var(--font-size);
-    color:       var(--foregound);
-}
-.group-icon:hover {
-    background-color: var(--accent);
-    border-radius:    12px;
-    color:            var(--accent-foreground);
-    box-shadow:       0 0 5px var(--shadow);
-}
-img.group-icon,
-img.group-icon:hover {
-    background-color: unset;
-}
-
-#group-icon-add {
-    background-color: var(--accent-trans);
-}
-#group-icon-add:hover {
-    background-color: var(--accent);
-}
-
-.group-icon img { /* special icons have an image in them */
-    max-width:  inherit;
-    max-height: inherit;
-}
-
-.group-icon-separator {
-    width:  32px;
-    height: 1px;
-
-    margin-top:     5px;
-    margin-bottom: 10px;
-
-    background-color: var(--shade-7);
-}
 
 #group-create-box {
     align-items: center;

@@ -1,0 +1,100 @@
+#group-panel-area {
+    display:         flex;
+    flex-wrap:       wrap;
+    justify-content: flex-start;
+    align-items:     flex-start;
+}
+
+.group-panel,
+.group-action-panel {
+    margin:  20px;
+
+    background-color: var(--shade-1);
+    border-radius:    10px;
+    box-shadow:       0 0 15px var(--shadow);
+    cursor:           pointer;
+
+    display:         flex;
+    flex-direction:  column;
+    justify-content: center;
+    align-items:     center;
+
+    width: 300px;
+}
+
+.group-action-panel {
+    padding: 20px;
+}
+.group-action-panel>img {
+    width:  36px;
+    height: 36px;
+    margin-bottom: 10px;
+}
+.group-action-panel>span {
+    font-family: Montserrat;
+    font-size:   var(--font-size);
+    color:       var(--foreground);
+}
+
+.group-panel>:nth-child(1) {
+    background-color: var(--shade-2);
+    border-radius: 10px 10px 0 0;
+    padding: 10px;
+
+    display:        flex;
+    flex-direction: row;
+}
+.group-panel>:nth-child(1)>img {
+    width:  48px;
+    height: 48px;
+    border-radius: 24px;
+    margin-right:  10px;
+}
+.group-panel>:nth-child(1)>div {
+    display:         flex;
+    flex-direction:  column;
+    justify-content: center;
+    align-items:     flex-start;
+}
+
+.group-panel>:nth-child(2) {
+    padding: 10px;
+
+    display:         flex;
+    flex-direction:  column;
+    justify-content: flex-start;
+    align-items:     flex-start;
+}
+
+.gp-name {
+    font-family: Montserrat;
+    font-size:   var(--font-size);
+    color:       var(--foreground);
+}
+.gp-unread {
+    margin-top: 10px;
+}
+.gp-unread,
+.gp-channel {
+    font-family: Montserrat;
+    font-size:   calc(var(--font-size) - 2pt);
+    color:       var(--foreground-1);
+    transition:  color 0.1s ease;
+
+    display:         flex;
+    flex-direction:  row;
+    justify-content: flex-start;
+    align-items:     center;
+}
+.gp-channel:not(.more):hover {
+    color: var(--foreground);
+}
+.gp-channel.more {
+    padding-left: 16px;
+}
+.gp-unread  img,
+.gp-channel img {
+    width:   12px;
+    height:  12px;
+    padding: 2px;
+}

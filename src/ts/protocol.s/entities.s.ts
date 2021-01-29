@@ -48,12 +48,14 @@ export class User extends Entity {
 export class Channel extends Entity {
     static typeNum = 2;
 
-    name?:     string;
-    members?:  number[];
-    group?:    number;
-    messages?: number[];
-    typing?:   number[];
-    rules?:    boolean;
+    name?:        string;
+    members?:     number[];
+    group?:       number;
+    messages?:    number[];
+    typing?:      number[];
+    rules?:       boolean;
+    unread?:      number;
+    firstUnread?: number;
 }
 
 export class Group extends Entity {

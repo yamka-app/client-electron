@@ -1647,6 +1647,9 @@ function _rendererFunc() {
 
     // Updates the message area
     function updMessageArea(updMessages: boolean =true) {
+        // Hide the panel list if we're viewing messages
+        setElmVisibility(elementById("message-container-area"), viewingChan !== 0);
+
         if(viewingChan === 0) {
             const msgArea = elementById("message-area");
             for(var i = msgArea.children.length - 1; i >= 0; i--) {
@@ -1657,8 +1660,6 @@ function _rendererFunc() {
             return;
         }
 
-        // Show the hedaer
-        showElm(elementById("message-area-header"));
         // Get channel messages
         if(viewingChan !== 0 && updMessages)
             appendMsgsTop(0xFFFFFFFFFFFFF, undefined, true);
@@ -1693,33 +1694,78 @@ function _rendererFunc() {
         })
     }
 
+    // Creates a group panel
+    function createGroupPanel(id: number) {
+        const group = entityCache[id] as entities.Group;
+        const panel = document.createElement("div");
+
+        const top = document.createElement("div");
+        const icon = document.createElement("img"); top.appendChild(icon);
+        download(group.icon, (s) => icon.src = "file://" + s);
+        const nameUnread = document.createElement("div"); top.appendChild(nameUnread);
+
+        const name = document.createElement("span"); nameUnread.appendChild(name);
+        name.innerHTML = escapeHtml(group.name);
+        const unread = document.createElement("span"); nameUnread.appendChild(unread);
+
+        // Fetch the channels to determine how many messages are unread
+        reqEntities(group.channels.map(x => new packets.EntityGetRequest(entities.Channel.typeNum, x)), false, (e) => {
+            var unreadMsgs = 0, unreadChans: {t: string, u: number}[];
+            for(const c of e) {
+                const chan = c as entities.Channel;
+                unreadMsgs += chan.unread;
+                if(chan.unread > 0)
+                    unreadChans.push({
+                        t: chan.name,
+                        u: chan.unread
+                    });
+            }
+
+            unread.innerHTML = `<img src="icons/message.png"/> ${escapeHtml(unreadMsgs)} NEW` + 
+                               `<img src="icons/channel.png"/> ${unreadChans.length}</span>`
+
+            // Create the bottom panel
+            if(unreadChans.length === 0)
+                return;
+
+            const bottom = document.createElement("div"); panel.appendChild(bottom);
+            var i; // to reference the leftover channel count later
+            unreadChans = unreadChans.sort((a, b) => b.u - a.u); // reverse sort by unread count (most uptop)
+            for(i = 0; i < Math.min(3, unreadChans.length); i++) {
+                const desc = unreadChans[i];
+                const chan = document.createElement("div"); bottom.appendChild(chan);
+                chan.classList.add("gp-channel");
+                chan.innerHTML = `<img src="icons/channel.png"/>${escapeHtml(desc.t)} • ${escapeHtml(desc.u)}`;
+            }
+
+            const left = unreadChans.length - i;
+            const more = document.createElement("div"); bottom.appendChild(more);
+            more.classList.add("gp-channel", "more");
+            more.innerHTML = `<img src="icons/channel.png"/>${escapeHtml(left)} MORE`;
+        });
+
+        return panel;
+    }
+
     // Updates the group list
     function updGroupList() {
-        const groupList = elementById("group-list");
+        const groupPanels = elementById("group-panel-area");
 
-        // Request the groups the user"s in
-        const groups = remote.getGlobal("webprotState").self.groups
-        reqEntities(groups.map(x => { return { type: "group", id: x } }), false, () => {
-            // Delete old icons
-            while(groupList.firstChild)
-                groupList.firstChild.remove();
-            // Add new ones
-            for(let groupId of groups) {
-                const group = entityCache[groupId];
-                // We want the groupbar icon to be an image if an icon of the group is set
-                let elm: HTMLElement;
-                if(group.icon == 0) {
-                    elm = document.createElement("div");
-                    elm.innerHTML = groupNameAcronym(group.name);
-                } else {
-                    elm = document.createElement("img");
-                    download(group.icon, (blob) => (elm as HTMLImageElement).src = "file://" + blob);
-                }
-                // Add the default classes and a click listener
-                elm.classList.add("group-icon", "group-icon-" + group.id);
-                elm.onclick = (e) => { viewingGroup = group.id; viewingChan = group.channels[0]; updLayout() };
-                groupList.append(elm);
+        // Hide the panel list if we're viewing messages
+        setElmVisibility(groupPanels, viewingChan === 0);
+
+        // Request the groups the user's in
+        const groups = remote.getGlobal("webprotState").self.groups;
+        reqEntities(groups.map(x => new packets.EntityGetRequest(entities.Group.typeNum, x)), false, () => {
+            // Delete old panels except for the "create" one
+            for(var i = groupPanels.children.length - 1; i >= 0; i--) {
+                const child = groupPanels.children[i];
+                if(!child.classList.contains("group-action-panel"))
+                    child.remove();
             }
+            // Add new ones
+            for(const groupId of groups)
+                groupPanels.append(createGroupPanel(groupId));
         })
     }
 
@@ -1914,6 +1960,8 @@ function _rendererFunc() {
                 const self = entityCache[packet.userId];
                 console.log("Got client user:", self);
                 remote.getGlobal("webprotState").self = self;
+                
+                updLayout();
             })
         } else if(packet instanceof packets.AccessTokenPacket) {
             configSet("accessToken", packet.token);
@@ -2504,7 +2552,7 @@ function _rendererFunc() {
     msgScrollArea.onscroll = loadingFunc;
 
     // Create/join a group
-    elementById("group-icon-add").onclick = showGroupCreateBox;
+    elementById("group-create-join-panel").onclick = showGroupCreateBox;
     elementById("group-create-ok").onclick = (e) => {
         const group = new entities.Group();
         group.id = 0; group.name = (elementById("group-create-name") as HTMLInputElement).value;
@@ -2518,9 +2566,6 @@ function _rendererFunc() {
             operId: regCallback(hideGroupCreateBox)
         });
     }
-
-    // Open the home menu
-    elementById("group-icon-home").onclick = (e) => { viewingGroup = 0; viewingChan = 0; updLayout() };
 
     // Group settings
     const groupNameChange = elementById("group-name-change") as HTMLInputElement;

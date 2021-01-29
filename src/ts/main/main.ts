@@ -197,10 +197,10 @@ function webprotData(bytes: Buffer) {
 
     // Check references
     const ref = webprotState.references[packet.replyTo];
+    console.log(ref);
     packet.spontaneous = packet.replyTo === 0;
 
     // Clear all unnecessary fields before sending the packet to the renderer
-    delete packet.encode;
     delete packet.encode;
     delete packet.decodePayload;
     delete packet.encodePayload;

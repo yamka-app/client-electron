@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="./css/main.css">
     <link rel="stylesheet" type="text/css" href="./css/switch.css">
     <link rel="stylesheet" type="text/css" href="./css/popups.css">
+    <link rel="stylesheet" type="text/css" href="./css/group_panels.css">
     <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
     <link rel="stylesheet" href="../node_modules/highlight.js/styles/a11y-dark.css">
 
@@ -446,18 +447,6 @@
         </div>
 
         <table id="main-layout"><tbody><tr>
-          <td id="group-list-sidebar-container">
-            <div id="group-list-sidebar" class="flex-col">
-              <div id="group-icon-home" class="group-icon icon-button cg-button"><img src="icons/home.png"/></div>
-              <div class="group-icon-separator"></div>
-              <div id="group-list" class="flex-col">
-                <!--Group icons reside here-->
-              </div>
-              <div id="insert-groups-before" class="group-icon-separator"></div>
-              <div id="group-icon-add" class="group-icon icon-button"><img src="icons/group_add.png"/></div>
-            </div>
-          </td>
-
           <td id="channel-list-sidebar">
             <div id="channel-list-container" class="flex-col">
               <div id="channel-list-header" class="flex-row">
@@ -473,43 +462,49 @@
           </td>
 
           <td id="central-field">
-            <div id="message-layout" class="flex-col">
-              <div id="message-layout-header" class="flex-row">
-                <span id="channel-name"></span>
-              </div>
-
-              <div id="message-scroll-area" class="scroll-area">
-                <div id="message-area" class="flex-col">
-                  <!-- Messages reside here -->
-                  <div id="message-area-header" style="display: none">
-                    <p>You've reached the start of this channel</p>
-                  </div>
-                  <div id="message-area-explainer">
-                    <p>It's quite quiet here...</p>
-                    <p>Find a few friends, click on them in the right bar and have a chat!</p>
-                  </div>
+            <div id="central-layout" class="flex-col">
+              <div id="group-panel-area" class="scroll-area">
+                <!-- Group panels reside here -->
+                <div class="group-action-panel" id="group-create-join-panel">
+                  <img src="icons/group_add.png">
+                  <span>Create or join a group</span>
                 </div>
               </div>
-              
-              <div id="message-input-popup" class="flex-row">
-                <div id="message-input-container" class="input-container">
-                  <!-- Message sections reside here -->
-                  <div id="message-section-add-btns" class="flex-row">
-                    <button id="message-text-section-button"  class="icon-button cg-button"><img src="icons/add_text.png"></button>
-                    <button id="message-file-section-button"  class="icon-button cg-button"><img src="icons/add_file.png"></button>
-                    <button id="message-code-section-button"  class="icon-button cg-button"><img src="icons/add_code.png"></button>
-                    <button id="message-quote-section-button" class="icon-button cg-button"><img src="icons/add_quote.png"></button>
-                    <span id="message-editing"></span>
-                    <span id="channel-typing"></span>
-                    <div id="typing-dots" class="flex-row" style="display: none;">
-                      <div id="typing-dot-1"></div>
-                      <div id="typing-dot-2"></div>
-                      <div id="typing-dot-3"></div>
+
+              <div id="message-container-area" class="flex-col">
+                <div id="message-scroll-area" class="scroll-area">
+                  <div id="message-area" class="flex-col">
+                    <!-- Messages reside here -->
+                    <div id="message-area-header" style="display: none">
+                      <p>You've reached the start of this channel</p>
+                    </div>
+                    <div id="message-area-explainer">
+                      <p>It's quite quiet here...</p>
+                      <p>Find a few friends, click on them in the right bar and have a chat!</p>
                     </div>
                   </div>
                 </div>
-                <div>
-                  <button id="message-send-button" class="icon-button cg-button"><img src="icons/send.png"></button>
+                
+                <div id="message-input-popup" class="flex-row">
+                  <div id="message-input-container" class="input-container">
+                    <!-- Message sections reside here -->
+                    <div id="message-section-add-btns" class="flex-row">
+                      <button id="message-text-section-button"  class="icon-button cg-button"><img src="icons/add_text.png"></button>
+                      <button id="message-file-section-button"  class="icon-button cg-button"><img src="icons/add_file.png"></button>
+                      <button id="message-code-section-button"  class="icon-button cg-button"><img src="icons/add_code.png"></button>
+                      <button id="message-quote-section-button" class="icon-button cg-button"><img src="icons/add_quote.png"></button>
+                      <span id="message-editing"></span>
+                      <span id="channel-typing"></span>
+                      <div id="typing-dots" class="flex-row" style="display: none;">
+                        <div id="typing-dot-1"></div>
+                        <div id="typing-dot-2"></div>
+                        <div id="typing-dot-3"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <button id="message-send-button" class="icon-button cg-button"><img src="icons/send.png"></button>
+                  </div>
                 </div>
               </div>
             </div>
