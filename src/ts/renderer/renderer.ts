@@ -2009,7 +2009,8 @@ function _rendererFunc() {
                     }
 
                     // Update the owned bot list
-                    elementById("owned-bot-list").innerHTML = entity.ownedBots.join(", ");
+                    if(entity.ownedBots !== undefined)
+                        elementById("owned-bot-list").innerHTML = entity.ownedBots.join(", ");
                 }
             }
         }
