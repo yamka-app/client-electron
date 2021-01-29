@@ -246,7 +246,7 @@ button:active {
 
 button.icon-button {
     background-color: transparent;
-    transition:       filter 0.1s ease;
+    transition: filter 0.1s ease, transform 0.1s ease;
     box-shadow: none;
 
     border:  none;

@@ -13,7 +13,7 @@
 
     background-color: var(--shade-3-trans);
     border-radius: 5px;
-    box-shadow: 0 0 5px var(--shadow);
+    box-shadow: 0 0 15px var(--shadow);
     backdrop-filter: blur(5px);
 
     display: flex;
