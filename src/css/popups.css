@@ -274,6 +274,7 @@ input[type="radio"].settings-radio:checked + label {
 
     height: 10px;
     background-color: var(--shade-7);
+    box-shadow:       0 0 10px var(--shadow);
 }
 .trackbar::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -281,6 +282,7 @@ input[type="radio"].settings-radio:checked + label {
     width:  10px;
     height: 20px;
     background: var(--accent);
+    box-shadow: 0 0 3px var(--accent);
     border-radius: 5px;
 
     cursor: pointer;

@@ -2681,7 +2681,3 @@ function _rendererFunc() {
 }
 
 window.addEventListener("load", _rendererFunc);
-
-function captchaSolved(token: string) {
-    console.log(token);
-}

@@ -609,6 +609,7 @@ input[type="radio"].hidden-radio:checked + label {
 input[type="color"],
 input[type="range"] {
     border: none;
+    border-radius: 10px;
 }
 input[type="color"] {
     padding: 0;
