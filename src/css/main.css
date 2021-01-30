@@ -144,7 +144,7 @@ input {
     border: 0px solid transparent;
     transition: border-color 0.1s ease,
                 box-shadow   0.1s ease;
-    box-shadow: 0 0 5px var(--shadow) inset;
+    box-shadow: 0 0 3px var(--shadow) inset;
 
     color: var(--foreground);
     font-family: Montserrat;

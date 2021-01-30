@@ -424,9 +424,9 @@ function _rendererFunc() {
 
         // Update the explainer below the switch
         var explainer = [
-            "Everyone will think you\"re offline, but you\"ll still have access to everything",
+            "Everyone will think you're offline, but you'll still have access to everything",
             "You will appear online",
-            "Everyone will think you\"re asleep, but you\"ll still have access to everything",
+            "Everyone will think you're away, but you'll still have access to everything",
             "You will not receive any notifications"
         ][status];
         elementById("self-status-explainer").innerHTML = explainer;
