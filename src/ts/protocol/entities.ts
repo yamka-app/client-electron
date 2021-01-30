@@ -137,8 +137,7 @@ export class Message extends Entity {
             new fields.NumField        ("id", 8,      0),
             new fields.MsgSectionsField("sections",   1),
             new fields.NumField        ("channel", 8, 2),
-            new fields.NumField        ("edited", 1,  3),
-            new fields.NumField        ("sender", 8,  4),
+            new fields.NumField        ("sender", 8,  3),
         ]);
     }
 }
