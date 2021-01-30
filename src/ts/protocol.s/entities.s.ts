@@ -45,6 +45,10 @@ export class User extends Entity {
     ownedBots?:  number[];
 }
 
+export enum ChannelType {
+    NORMAL = 0,
+    WALL   = 1
+}
 export class Channel extends Entity {
     static typeNum = 2;
 
@@ -53,7 +57,7 @@ export class Channel extends Entity {
     group?:       number;
     messages?:    number[];
     typing?:      number[];
-    rules?:       boolean;
+    type?:        ChannelType;
     unread?:      number;
     firstUnread?: number;
 }
@@ -75,7 +79,6 @@ export class Message extends Entity {
 
     sections?: MessageSection[];
     channel?:  number;
-    edited?:   boolean;
     sender?:   number;
 }
 

@@ -100,7 +100,7 @@ export class Channel extends Entity {
             new fields.NumField    ("group", 8,       3),
             new fields.NumListField("messages", 8,    4),
             new fields.NumListField("typing", 8,      5),
-            new fields.NumListField("rules", 1,       6),
+            new fields.NumField    ("type", 1,        6),
             new fields.NumField    ("unread", 4,      7),
             new fields.NumField    ("firstUnread", 8, 8),
         ]);
@@ -129,7 +129,6 @@ export class Message extends Entity {
     id:       number;
     sections: MessageSection[];
     channel:  number;
-    edited:   boolean;
     sender:   number;
 
     constructor() {
