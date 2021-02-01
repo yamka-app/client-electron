@@ -244,7 +244,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
             "AccessTokenPacket":         new packets.AccessTokenPacket(),
             "EntityGetPacket":           new packets.EntityGetPacket(),
             "EntitiesPacket":            new packets.EntitiesPacket(),
-            "FileDownloadRequestPacket": new packets.FileDownloadRequestPacket()
+            "FileDownloadRequestPacket": new packets.FileDownloadRequestPacket(),
+            "UserSearchPacket":          new packets.UserSearchPacket()
         }[type];
 
         if(proto === undefined)
@@ -258,11 +259,12 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
         if(packet instanceof packets.EntitiesPacket) {
             packet.entities = packet.entities.map(e => {
                 const e_proto = {
-                    "User":    new entities.User(),
-                    "Channel": new entities.Channel(),
-                    "Group":   new entities.Group(),
-                    "Message": new entities.Message(),
-                    "File":    new entities.File()
+                    "User":         new entities.User(),
+                    "Channel":      new entities.Channel(),
+                    "Group":        new entities.Group(),
+                    "Message":      new entities.Message(),
+                    "File":         new entities.File(),
+                    "MessageState": new entities.MessageState()
                 }[e["__type_name"]];
                 return Object.assign(e_proto, e);
             });

@@ -127,16 +127,16 @@ export class Message extends Entity {
     typeNum = 4;
 
     id:       number;
-    sections: MessageSection[];
+    states:   number[];
     channel:  number;
     sender:   number;
 
     constructor() {
         super([
-            new fields.NumField        ("id", 8,      0),
-            new fields.MsgSectionsField("sections",   1),
-            new fields.NumField        ("channel", 8, 2),
-            new fields.NumField        ("sender", 8,  3),
+            new fields.NumField    ("id", 8,      0),
+            new fields.NumListField("states", 8,  1),
+            new fields.NumField    ("channel", 8, 2),
+            new fields.NumField    ("sender", 8,  3),
         ]);
     }
 }
@@ -173,6 +173,22 @@ export class File extends Entity {
             new fields.StrField("size",      2),
             new fields.StrField("preview",   3),
             new fields.NumField("length", 4, 4),
+        ]);
+    }
+}
+
+export class MessageState extends Entity {
+    typeNum = 7;
+
+    id:       number;
+    msg_id:   number;
+    sections: MessageSection[];
+
+    constructor() {
+        super([
+            new fields.NumField        ("id", 8,     0),
+            new fields.NumField        ("msg_id", 8, 1),
+            new fields.MsgSectionsField("sections",  2)
         ]);
     }
 }

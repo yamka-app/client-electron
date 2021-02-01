@@ -27,7 +27,7 @@ interface MessageSection {
 
 // Cached entities and blobs
 var entityCache: {} = {};
-var blobPaths: {} = {};
+var filePaths: {} = {};
 
 // Max between messages to minify them
 const messageTimeThres: number = 300000;
@@ -107,12 +107,23 @@ function _rendererFunc() {
         }, onProgressMade);
     }
     function download(id: number, onEnd?: (path: string) => any) {
+        // Files, like message states and unlike all other entities,
+        // are immutable. This means that we can cache them heavily.
+        // If a file (like an avatar, icon, etc.) changes, it actually doesn't.
+        // A new file with a new ID is created.
+        const existingPath = filePaths[id];
+        if(existingPath !== undefined) {
+            onEnd(existingPath);
+            return;
+        }
         sendPacket(new packets.FileDownloadRequestPacket(id), (r: packets.Packet) => {
             // Trust me, it's a string
             // IT'S A STRING
             // I KNOW FOR SURE IT'S A STRING
             // IT'S ALWAYS GOING TO BE A STRING
-            onEnd((r as unknown) as string);
+            const filePath = (r as unknown) as string;
+            filePaths[id] = filePath;
+            onEnd(filePath);
         });
     }
 
@@ -798,7 +809,7 @@ function _rendererFunc() {
         for(var i = 0; i < sects.length; i++) {
             const type = sects[i].type;
 
-            // Abort if any of the files haven"t been uploaded yet
+            // Abort if any of the files haven't been uploaded yet
             if(type === types.MessageSectionType.FILE && sects[i].blob === undefined)
                 return;
 
@@ -817,8 +828,14 @@ function _rendererFunc() {
 
         // Reset the typing status and send the message
         setTimeout(() => {
+            const state = new entities.MessageState();
+            // The server will assign its own id. The number
+            // we pass here is just a remporary reference
+            state.id = 100; state.sections = sects;
             const msg = new entities.Message();
-            msg.id = editingMessage; msg.sections = sects;
+            msg.id = editingMessage; msg.states = [100];
+            putEntities([state, msg]);
+
             resetMsgInput();
             editingMessage = 0;
         }, 50);
@@ -1967,10 +1984,13 @@ function _rendererFunc() {
             configSet("accessToken", packet.token);
             sendPacket(new packets.AccessTokenPacket(packet.token)); // Try to login immediately
         } else if(packet instanceof packets.EntitiesPacket) {
-            for(const entity of packet.entities) {
+            for(var entity of packet.entities) {
                 // Shove the entity into the cache
+                // And merge the new fields with the old ones
                 const oldEntity = entityCache[entity.id];
-                entityCache[entity.id] = {...oldEntity, ...entity};
+                if(oldEntity !== undefined)
+                    entity = Object.assign(oldEntity, entity);
+                entityCache[entity.id] = entity;
 
                 // Update info about self
                 if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
@@ -2058,11 +2078,12 @@ function _rendererFunc() {
                 if(packet instanceof packets.EntitiesPacket) {
                     packet.entities = packet.entities.map(e => {
                         const e_proto = {
-                            "User":    new entities.User(),
-                            "Channel": new entities.Channel(),
-                            "Group":   new entities.Group(),
-                            "Message": new entities.Message(),
-                            "File":    new entities.File()
+                            "User":         new entities.User(),
+                            "Channel":      new entities.Channel(),
+                            "Group":        new entities.Group(),
+                            "Message":      new entities.Message(),
+                            "File":         new entities.File(),
+                            "MessageState": new entities.MessageState()
                         }[e["__type_name"]];
                         return Object.assign(e_proto, e);
                     });
@@ -2446,10 +2467,8 @@ function _rendererFunc() {
         toggleElm(elementById("user-search-bar"));
     };
     elementById("friend-add-commit").onclick = (e) => {
-        ipcSend({
-            action: "webprot.search-user",
-            name:   (elementById("user-search-input") as HTMLInputElement).value
-        });
+        sendPacket(new packets.UserSearchPacket(
+            (elementById("user-search-input") as HTMLInputElement).value));
     };
 
     // Message section buttons

@@ -77,7 +77,7 @@ export class Group extends Entity {
 export class Message extends Entity {
     static typeNum = 4;
 
-    sections?: MessageSection[];
+    states?:   number[];
     channel?:  number;
     sender?:   number;
 }
@@ -102,4 +102,12 @@ export class File extends Entity {
     size?:    string;
     preview?: string;
     length?:  number;
+}
+
+export class MessageState extends Entity {
+    typeNum = 7;
+
+    id:       number;
+    msg_id:   number;
+    sections: MessageSection[];
 }
