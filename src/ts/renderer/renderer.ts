@@ -1976,8 +1976,8 @@ function _rendererFunc() {
                 const self = entityCache[packet.userId];
                 console.log("Got client user:", self);
                 remote.getGlobal("webprotState").self = self;
-                
-                updLayout();
+
+                updMessageArea();
             })
         } else if(packet instanceof packets.AccessTokenPacket) {
             configSet("accessToken", packet.token);
