@@ -25,24 +25,26 @@ export enum UserBadge {
 export class User extends Entity {
     static typeNum = 1;
 
-    email?:      string;
-    name?:       string;
-    tag?:        number;
-    status?:     UserStatus;
-    statusText?: string;
-    avaFile?:    number;
-    mfaEnabled?: boolean;
-    friends?:    number[];
-    blocked?:    number[];
-    pendingIn?:  number[];
-    pendingOut?: number[];
-    channels?:   number[];
-    groups?:     number[];
-    roles?:      number[];
-    color?:      string;
-    badges?:     UserBadge[];
-    botOwner?:   number;
-    ownedBots?:  number[];
+    email?:          string;
+    name?:           string;
+    tag?:            number;
+    status?:         UserStatus;
+    statusText?:     string;
+    avaFile?:        number;
+    mfaEnabled?:     boolean;
+    friends?:        number[];
+    blocked?:        number[];
+    pendingIn?:      number[];
+    pendingOut?:     number[];
+    channels?:       number[];
+    groups?:         number[];
+    roles?:          number[];
+    color?:          string;
+    badges?:         UserBadge[];
+    botOwner?:       number;
+    ownedBots?:      number[];
+    wall?:           number;
+    emailConfirmed?: boolean;
 }
 
 export enum ChannelType {

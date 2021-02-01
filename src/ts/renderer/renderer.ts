@@ -16,6 +16,7 @@ import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
 import { configGet, configSet } from "./settings.js";
+import { EMLINK } from "constants";
 
 interface MessageSection {
     type:     types.MessageSectionType;
@@ -75,7 +76,7 @@ function _rendererFunc() {
     };
 
     // Regular expressions
-    const emailRegex = /(?:[a-z0-9!#$%&"*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&"*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
+    const emailRegex = /(?:[a-z0-9!#$%&"*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&"*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/i;
     const allEmojiRegex = /^<span>\p{Emoji}{1,5}<\/span>$/gum;
 
     // Initialize libs
@@ -1995,6 +1996,8 @@ function _rendererFunc() {
                 if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
                     remote.getGlobal("webprotState").self = entity;
                     updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
+
+                    setElmVisibility(elementById("email-unconfirmed-bar-container"), !entity.emailConfirmed);
 
                     // Request own avatar
                     download(entity.avaFile, (blob) => {
