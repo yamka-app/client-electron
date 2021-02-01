@@ -661,12 +661,14 @@ function _rendererFunc() {
             friendRemoveBtn.classList.add("icon-button");
             friendRemoveBtn.classList.add("friend-remove-button");
             friendRemoveBtn.addEventListener("click", (e) => {
-                ipcSend({
-                    action:      "webprot.manage-contacts",
-                    contactType: special,
-                    method:      "remove",
-                    id:          id
-                });
+                sendPacket(new packets.ContactsManagePacket({
+                        "friends":     packets.ContactType.FRIEND,
+                        "pending-in":  packets.ContactType.PENDING_IN,
+                        "pending-out": packets.ContactType.PENDING_OUT,
+                        "blocked":     packets.ContactType.BLOCKED,
+                    }[special],
+                    packets.ContactAction.REMOVE, id));
+                stopPropagation(e);
             });
             elm.appendChild(friendRemoveBtn);
     
@@ -681,12 +683,9 @@ function _rendererFunc() {
             friendAcceptBtn.classList.add("icon-button");
             friendAcceptBtn.classList.add("friend-accept-button");
             friendAcceptBtn.addEventListener("click", (e) => {
-                ipcSend({
-                    action:      "webprot.manage-contacts",
-                    contactType: "friend",
-                    method:      "add",
-                    id:          id
-                });
+                sendPacket(new packets.ContactsManagePacket(packets.ContactType.FRIEND,
+                    packets.ContactAction.ADD, id));
+                stopPropagation(e);
             });
             elm.appendChild(friendAcceptBtn);
     

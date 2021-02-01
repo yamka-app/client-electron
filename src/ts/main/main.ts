@@ -245,7 +245,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
             "EntityGetPacket":           new packets.EntityGetPacket(),
             "EntitiesPacket":            new packets.EntitiesPacket(),
             "FileDownloadRequestPacket": new packets.FileDownloadRequestPacket(),
-            "UserSearchPacket":          new packets.UserSearchPacket()
+            "UserSearchPacket":          new packets.UserSearchPacket(),
+            "ContactsManagePacket":      new packets.ContactsManagePacket()
         }[type];
 
         if(proto === undefined)
