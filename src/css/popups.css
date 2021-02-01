@@ -367,7 +367,7 @@ input[type="radio"].settings-radio:checked + label {
     height:  55vh;
     padding: 0;
 
-    box-shadow: 0 0 5px var(--shadow);
+    box-shadow: 0 0 15px var(--shadow);
 }
 #profile-topbar {
     height: fit-content;
@@ -380,7 +380,7 @@ input[type="radio"].settings-radio:checked + label {
 
     background-color: var(--shade-3);
     border-radius:    5px 5px 0 0;
-    box-shadow:       0 0 5px var(--shadow);
+    box-shadow:       0 0 15px var(--shadow);
 
     align-items: center;
 }
@@ -424,7 +424,7 @@ input[type="radio"].settings-radio:checked + label {
 }
 .mutual-thing:hover {
     background-color: var(--shade-4);
-    box-shadow:       0 0 5px var(--shadow);
+    box-shadow:       0 0 15px var(--shadow);
 }
 
 #login-form, #mfa-form, #signup-form {

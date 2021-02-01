@@ -756,10 +756,10 @@ function _rendererFunc() {
 
                 friendType.innerHTML = escapeHtml(
                     ["ALL FRIENDS",
-                    "ONLINE FRIENDS",
-                    "INCOMING REQUESTS",
-                    "OUTGOING REQUESTS",
-                    "BANNED"][viewingContactGroup]);
+                     "ONLINE FRIENDS",
+                     "INCOMING REQUESTS",
+                     "OUTGOING REQUESTS",
+                     "BLOCKED"][viewingContactGroup]);
 
                 userIds = [self.friends, self.friends, self.pendingIn, self.pendingOut, self.blocked][viewingContactGroup];
             }

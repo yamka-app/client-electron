@@ -189,7 +189,7 @@ button {
                  background-color 0.1s ease,
                  transform        0.1s ease;
 
-    box-shadow: 0 0 5px var(--shadow);
+    box-shadow: 0 0 15px var(--shadow);
 
     cursor: pointer;
 }
@@ -586,7 +586,7 @@ img.verified-badge:not(.true) {
     background-color: var(--shade-3);
     border: 1px solid transparent;
     border-radius:    5px;
-    box-shadow:       0 0 5px var(--shadow);
+    box-shadow:       0 0 15px var(--shadow);
 
     color:      var(--foreground-1);
     transition: color 0.25s;
@@ -658,7 +658,7 @@ input[type="color"] {
 
     background-color: var(--shade-3);
     border-radius: 5px;
-    box-shadow: 0 0 5px var(--shadow);
+    box-shadow: 0 0 15px var(--shadow);
 
     display: flex;
     flex-direction: column;
@@ -761,7 +761,7 @@ textarea.code-input {
     font-size:   var(--font-size);
 
     justify-content: space-between;
-    box-shadow: 0 0 5px var(--shadow);
+    box-shadow: 0 0 15px var(--shadow);
 }
 .message-file-header {
     color: var(--foreground-1);
@@ -831,7 +831,7 @@ span.fg-1 {
 }
 .message:hover {
     background-color: var(--shade-2);
-    box-shadow:       0 0 5px var(--shadow);
+    box-shadow:       0 0 15px var(--shadow);
     z-index:          250;
 }
 
@@ -887,7 +887,7 @@ span.fg-1 {
     background-color: var(--shade-1) !important;
 
     border-radius: 5px;
-    box-shadow: 0 0 5px var(--shadow);
+    box-shadow: 0 0 15px var(--shadow);
 }
 div.message-quote-section {
     cursor: pointer;
@@ -980,7 +980,7 @@ img.large-emoji {
 
     border-radius:    5px;
     background-color: var(--shade-3);
-    box-shadow:       0 0 5px var(--shadow);
+    box-shadow:       0 0 15px var(--shadow);
 }
 .message:hover > .message-action-bar {
     opacity: 1;
@@ -1031,7 +1031,7 @@ img.large-emoji {
 .channel-button:hover,
 .channel-button-selected {
     background-color: var(--shade-4);
-    box-shadow: 0 0 5px var(--shadow);
+    box-shadow: 0 0 15px var(--shadow);
 }
 
 .role-button {
