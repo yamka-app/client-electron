@@ -662,7 +662,7 @@ function _rendererFunc() {
             friendRemoveBtn.classList.add("friend-remove-button");
             friendRemoveBtn.addEventListener("click", (e) => {
                 sendPacket(new packets.ContactsManagePacket({
-                        "friends":     packets.ContactType.FRIEND,
+                        "friend":      packets.ContactType.FRIEND,
                         "pending-in":  packets.ContactType.PENDING_IN,
                         "pending-out": packets.ContactType.PENDING_OUT,
                         "blocked":     packets.ContactType.BLOCKED,
