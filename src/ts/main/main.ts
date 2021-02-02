@@ -197,7 +197,6 @@ function webprotData(bytes: Buffer) {
 
     // Check references
     const ref = webprotState.references[packet.replyTo];
-    console.log(ref);
     packet.spontaneous = packet.replyTo === 0;
 
     // Clear all unnecessary fields before sending the packet to the renderer
@@ -329,6 +328,9 @@ function webprotConnect(force: boolean =false) {
     webprotState.self = {};
     webprotState.pingSent = 0;
     packets.Packet.nextSeq = 1;
+
+    // Disconnect if connected
+    webprotState.socket?.end();
 
     // Initiate a TLS connection to the server
     const logMessage = `Connecting to ${webprotSettings.host}:${webprotSettings.port} with protocol version ${webprotSettings.version}`;

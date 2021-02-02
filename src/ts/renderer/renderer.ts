@@ -2012,6 +2012,9 @@ function _rendererFunc() {
                     }
 
                     // Check new friend requests
+                    const pin = entity.pendingIn;
+                    elementById("pending-in-count").innerHTML = escapeHtml(pin.length);
+                    setElmVisibility(elementById("pin-cnt-container"), pin.length > 0);
                     if(packet.spontaneous && oldEntity.pendingIn.length !== entity.pendingIn.length
                         && shouldReceiveNotif()) {
                         const newFriends = entity.pendingIn.filter(x => !oldEntity.pendingIn.includes(x));
@@ -2034,6 +2037,10 @@ function _rendererFunc() {
                     if(entity.ownedBots !== undefined)
                         elementById("owned-bot-list").innerHTML = entity.ownedBots.join(", ");
                 }
+
+                // Update info about other users
+                if(entity instanceof entities.User)
+                    updateUser(entity.id);
             }
         }
 
@@ -2143,10 +2150,6 @@ function _rendererFunc() {
                             }
                         });
                     }
-
-                    // Update info about other users
-                    if(entity.type === "user")
-                        updateUser(entity.id);
 
                     // Update info about groups and channels
                     if(arg.spontaneous && entity.type === "group")
