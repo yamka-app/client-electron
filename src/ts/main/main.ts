@@ -269,6 +269,13 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
                 return Object.assign(e_proto, e);
             });
         }
+        if(packet instanceof packets.EntityGetPacket) {
+            const e = packet.entities;
+            for(var i = 0; i < e.length; i++) {
+                if(e[i].p !== undefined) e[i].p = Object.assign(new packets.EntityPagination(), e[i].p);
+                if(e[i].c !== undefined) e[i].c = Object.assign(new packets.EntityContext(),    e[i].c);
+            }
+        }
     }
     // Measure ping to the server
     if(packet instanceof packets.PingPacket)

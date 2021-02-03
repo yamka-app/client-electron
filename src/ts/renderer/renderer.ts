@@ -697,23 +697,11 @@ function _rendererFunc() {
         if(special === "friend") {
             // Friends (open DMs when clicked)
             elm.onclick = (e) => {
-                // Get all channel entities
-                var channels = remote.getGlobal("webprotState").self.channels;
-                for(var i = 0; i < channels.length; i++) {
-                    channels[i] = new packets.EntityGetRequest(entities.Channel.typeNum, channels[i],
-                                        new packets.EntityPagination(2 /* members */,
-                                            packets.EntityPaginationDirection.UP, 0, 50));
-                }
-                reqEntities(channels, false, () => {
-                    for(const chanId of remote.getGlobal("webprotState").self.channels) {
-                        // The DM channel with two members (self and target user) is the resulting channel
-                        const members = entityCache[chanId].members
-                        if(members.length === 2
-                            && members.every(mId => mId === id || mId === remote.getGlobal("webprotState").self.id)) {
-                            viewingChan = chanId;
-                            updLayout();
-                        }
-                    }
+                // Get the channel
+                const channel = entityCache[id].dmChannel;
+                reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, channel)], false, () => {
+                    viewingChan = channel;
+                    updLayout();
                 });
             }
         } else {

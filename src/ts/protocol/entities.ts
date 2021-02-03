@@ -79,7 +79,7 @@ export class User extends Entity {
             new fields.NumListField("blocked", 8,     10),
             new fields.NumListField("pendingIn", 8,   11),
             new fields.NumListField("pendingOut", 8,  12),
-            new fields.NumListField("channels", 8,    13),
+            new fields.NumField    ("dmChannel", 8,   13),
             new fields.NumListField("groups", 8,      14),
             new fields.NumListField("roles", 8,       15),
             new fields.ColorField  ("color",          16),

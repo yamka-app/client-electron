@@ -36,7 +36,7 @@ export class User extends Entity {
     blocked?:        number[];
     pendingIn?:      number[];
     pendingOut?:     number[];
-    channels?:       number[];
+    dmChannel?:      number;
     groups?:         number[];
     roles?:          number[];
     color?:          string;
