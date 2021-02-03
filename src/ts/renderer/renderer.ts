@@ -1622,8 +1622,10 @@ function _rendererFunc() {
                     updateRelatedUsers(id);
                 })
 
-                lastChanSender[viewingChan] = msgs[0].sender;
-                lastChanMsg   [viewingChan] = msgs[0].id;
+                if(msgs.length > 0) {
+                    lastChanSender[viewingChan] = msgs[0].sender;
+                    lastChanMsg   [viewingChan] = msgs[0].id;
+                }
 
                 // Request senders (uncached, because they might have different colors in different groups)
                 if(viewingGroup !== 0) {
@@ -1669,24 +1671,13 @@ function _rendererFunc() {
         if(viewingChan !== 0 && updMessages)
             appendMsgsTop(0xFFFFFFFFFFFFF, undefined, true);
 
-        // Show the title
         reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, viewingChan)], false, () => {
             const channel = entityCache[viewingChan];
-            const label = elementById("channel-name");
-            if(channel.name === "DM") {
-                // If the channel is a DM channel, get the ID of the other person and show their name instead
-                const members = channel.members;
-                let   otherId = members[0];
-                if(otherId === remote.getGlobal("webprotState").self.id)
-                    otherId = members[1];
-                channel.name = "@" + entityCache[otherId].name;
-            }
-            label.innerHTML = escapeHtml(channel.name);
             // Show the list of people that are typing
             const typingElm  = elementById("channel-typing");
             const typingAnim = elementById("typing-dots");
             const typing = channel.typing.filter(x => x !== remote.getGlobal("webprotState").self.id);
-            reqEntities(typing.map(x => { return { type: "user", id: x } }), false, () => {
+            reqEntities(typing.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {
                 var content = "";
                 const verb = (typing.length === 1) ? "is" : "are";
                 if(typing.length > 0) {
