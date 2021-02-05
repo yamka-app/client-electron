@@ -383,7 +383,7 @@ label {
 #member-list-friend-type,
 #member-list-group-header,
 #user-search-bar {
-    height: 20px;
+    height: 40px;
     width:  250px;
     padding: 0 10px 0 10px;
     position: relative;
@@ -396,13 +396,7 @@ label {
     align-items: center;
 }
 #member-list-friend-header {
-    padding:       10px;
     border-bottom: 2px solid var(--shade-2);
-}
-#member-list-group-header,
-#member-list-friend-type {
-    padding-top:    5px;
-    padding-bottom: 5px;
 }
 #member-list-group-header {
     height:      29px;
@@ -525,7 +519,7 @@ img.verified-badge:not(.true) {
 
     height: 48px;
 
-    margin: 4px;
+    margin: 8px 8px 0 8px;
     padding: 0;
 
     background-color: var(--shade-1);
@@ -816,6 +810,18 @@ span.fg-1 {
     right:    0;
 
     height: 100%;
+}
+
+#message-area-title {
+    background-color: var(--shade-4);
+    width:      100%;
+    min-height: 40px;
+    padding:    0 0 0 10px;
+
+    display:         flex;
+    flex-direction:  row;
+    align-items:     center;
+    justify-content: flex-start;
 }
 
 #message-container-area {

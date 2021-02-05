@@ -2425,27 +2425,27 @@ function _rendererFunc() {
     elementById("friends-all").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 0;
-        updLayout();
+        updMemberList();
     };
     elementById("friends-online").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 1;
-        updLayout();
+        updMemberList();
     };
     elementById("friends-pending-in").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 2;
-        updLayout();
+        updMemberList();
     };
     elementById("friends-pending-out").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 3;
-        updLayout();
+        updMemberList();
     };
     elementById("friends-blocked").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 4;
-        updLayout();
+        updMemberList();
     };
     elementById("friend-add").onclick = (e) => {
         toggleElm(elementById("user-search-bar"));
@@ -2453,6 +2453,12 @@ function _rendererFunc() {
     elementById("friend-add-commit").onclick = (e) => {
         sendPacket(new packets.UserSearchPacket(
             (elementById("user-search-input") as HTMLInputElement).value));
+    };
+
+    elementById("message-area-leave").onclick = (e) => {
+        viewingGroup = 0;
+        viewingChan = 0;
+        updLayout();
     };
 
     // Message section buttons

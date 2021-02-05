@@ -43,7 +43,7 @@ function _settingsFunc() {
     
     // Set default settings
     for(const nv of defaultSettings)
-        if(configGet(nv.name) !== undefined || configGet(nv.name) !== null)
+        if(configGet(nv.name) === undefined || configGet(nv.name) === null)
             configSet(nv.name, nv.value);
 
     // Assign event handlers and existing values to toggle switches
@@ -123,6 +123,7 @@ function _settingsFunc() {
 
     // Loads a (presumably custom) theme
     function loadTheme(theme: string, custom: boolean =true) {
+        console.log(`Loading ${custom?"":"non-"}custom theme ${theme}`);
         const themeLink = document.getElementById("theme-css") as HTMLLinkElement;
         themeLink.href = (custom ? "file://" : "") + theme;
         setTimeout(recomputeStyling, 100); // TODO: fix :^)
