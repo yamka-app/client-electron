@@ -216,7 +216,6 @@ function webprotData(bytes: Buffer) {
             delete e.encodeFields;
             delete e.decodeFields;
             delete e["typeNum"];
-            e["__type_name"] = e.constructor.name;
             return e;
         });
     }
@@ -265,8 +264,12 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
                     "Message":      new entities.Message(),
                     "File":         new entities.File(),
                     "MessageState": new entities.MessageState()
-                }[e["__type_name"]];
-                return Object.assign(e_proto, e);
+                }[e["__type_name"]];;
+                const ent = Object.assign(e_proto, e);
+                // Handle nested entities
+                if(ent instanceof entities.Message)
+                    ent.latest = Object.assign(new entities.MessageState(), ent.latest);
+                return ent;
             });
         }
         if(packet instanceof packets.EntityGetPacket) {

@@ -110,7 +110,18 @@ export class Channel extends Entity {
 }
 
 export class Group extends Entity {
+    __type_name = "Group";
     typeNum = 3;
+
+    id?:           number;
+    name?:         string;
+    channels?:     number[];
+    owner?:        number;
+    roles?:        number[];
+    icon?:         number;
+    invites?:      string[];
+    everyoneRole?: number;
+
     constructor() {
         super([
             new fields.NumField    ("id", 8,           0),
@@ -126,12 +137,14 @@ export class Group extends Entity {
 }
 
 export class Message extends Entity {
+    __type_name = "Message";
     typeNum = 4;
 
     id:       number;
     states:   number[];
     channel:  number;
     sender:   number;
+    latest:   MessageState;
 
     constructor() {
         super([
@@ -139,12 +152,23 @@ export class Message extends Entity {
             new fields.NumListField("states", 8,  1),
             new fields.NumField    ("channel", 8, 2),
             new fields.NumField    ("sender", 8,  3),
+            new fields.EntityField ("latest",     4),
         ]);
     }
 }
 
 export class Role extends Entity {
+    __type_name = "Role";
     typeNum = 5;
+
+    id?:       number;
+    name?:     string;
+    color?:    string;
+    group?:    number;
+    priority?: number;
+    perms?:    Permissions;
+    members?:  number[];
+
     constructor() {
         super([
             new fields.NumField    ("id", 8,       0),
@@ -159,6 +183,7 @@ export class Role extends Entity {
 }
 
 export class File extends Entity {
+    __type_name = "File";
     typeNum = 6;
 
     path?: string; // only used in main-to-renderer communication
@@ -180,6 +205,7 @@ export class File extends Entity {
 }
 
 export class MessageState extends Entity {
+    __type_name = "MessageState";
     typeNum = 7;
 
     id:       number;

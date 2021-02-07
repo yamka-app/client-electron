@@ -23,6 +23,7 @@ export enum UserBadge {
     BOT      = 3
 }
 export class User extends Entity {
+    __type_name = "User";
     static typeNum = 1;
 
     email?:          string;
@@ -52,6 +53,7 @@ export enum ChannelType {
     WALL   = 1
 }
 export class Channel extends Entity {
+    __type_name = "Channel";
     static typeNum = 2;
 
     name?:        string;
@@ -65,6 +67,7 @@ export class Channel extends Entity {
 }
 
 export class Group extends Entity {
+    __type_name = "Group";
     static typeNum = 3;
 
     name?:         string;
@@ -77,14 +80,17 @@ export class Group extends Entity {
 }
 
 export class Message extends Entity {
+    __type_name = "Message";
     static typeNum = 4;
 
     states?:   number[];
     channel?:  number;
     sender?:   number;
+    latest?:   MessageState;
 }
 
 export class Role extends Entity {
+    __type_name = "Role";
     static typeNum = 5;
 
     name?:     string;
@@ -96,6 +102,7 @@ export class Role extends Entity {
 }
 
 export class File extends Entity {
+    __type_name = "File";
     static typeNum = 6;
 
     path?: string; // only used in main-to-renderer communication
@@ -107,6 +114,7 @@ export class File extends Entity {
 }
 
 export class MessageState extends Entity {
+    __type_name = "MessageState";
     typeNum = 7;
 
     id:       number;

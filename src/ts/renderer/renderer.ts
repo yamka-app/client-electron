@@ -399,13 +399,6 @@ function _rendererFunc() {
     }
     function sendPacket(p: packets.Packet, cb?: (r: packets.Packet) => any, additional_ref?: (...args: any[]) => any) {
         console.log("%c[SENDING]", "color: #00bb00; font-weight: bold;", p);
-        // Add types to nested entities
-        if(p instanceof packets.EntitiesPacket) {
-            p.entities = p.entities.map(e => {
-                e["__type_name"] = e.constructor.name;
-                return e;
-            });
-        }
         // send the packet
         ipcRenderer.send("asynchronous-message", {
             action: "webprot.send-packet",
@@ -817,11 +810,9 @@ function _rendererFunc() {
         // Reset the typing status and send the message
         setTimeout(() => {
             const state = new entities.MessageState();
-            // The server will assign its own id. The number
-            // we pass here is just a remporary reference
-            state.id = 100; state.sections = sects;
             const msg = new entities.Message();
-            msg.id = editingMessage; msg.states = [100];
+            state.sections = sects;
+            msg.id = editingMessage; msg.latest = state;
             putEntities([state, msg]);
 
             resetMsgInput();
@@ -1285,7 +1276,7 @@ function _rendererFunc() {
     // Creates a message box seen in the message area
     function createMessage(id: number, short: boolean =false): HTMLDivElement {
         // Get the message entity by the id
-        const msg = entityCache[id];
+        const msg = entityCache[id] as entities.Message;
 
         const elm = document.createElement("div")
         elm.classList.add("message", "message-" + msg.id, "flex-row");
@@ -1323,14 +1314,14 @@ function _rendererFunc() {
     
             const timeElm = document.createElement("span");
             timeElm.classList.add("message-time");
-            timeElm.innerHTML = escapeHtml(idToTime(id) + (msg.edited ? " (edited)" : ""));
+            timeElm.innerHTML = escapeHtml(idToTime(id) + ((msg.states.length > 1) ? " (edited)" : ""));
             nicknameContainer.appendChild(timeElm);
         }
 
-        for(const section of msg.sections) {
+        for(const section of msg.latest.sections) {
             var sectionElement = null;
             switch(section.type) {
-                case "text":
+                case types.MessageSectionType.TEXT:
                     // Just plain text
                     sectionElement = document.createElement("div");
                     sectionElement.classList.add("message-text-section");
@@ -1345,7 +1336,7 @@ function _rendererFunc() {
                             emoji.classList.add("large-emoji");
                     }
                     break
-                case "code":
+                case types.MessageSectionType.CODE:
                     // A code box with highlighting and a copy button
                     sectionElement = document.createElement("pre");
                     sectionElement.classList.add("message-code-section");
@@ -1366,7 +1357,7 @@ function _rendererFunc() {
                     copyButton.appendChild(copyImg);
 
                     break;
-                case "file":
+                case types.MessageSectionType.FILE:
                     const fileSectionElement = document.createElement("div"); // a temporary replacement
                     content.appendChild(fileSectionElement);
                     reqEntities([new packets.EntityGetRequest(entities.File.typeNum, section.blob)], false,
@@ -1468,7 +1459,7 @@ function _rendererFunc() {
                         }
                     })
                     break;
-                case "quote":
+                case types.MessageSectionType.QUOTE:
                     // Just plain text
                     sectionElement = document.createElement("div");
                     sectionElement.classList.add("message-quote-section");
@@ -2073,7 +2064,11 @@ function _rendererFunc() {
                             "File":         new entities.File(),
                             "MessageState": new entities.MessageState()
                         }[e["__type_name"]];
-                        return Object.assign(e_proto, e);
+                        const ent = Object.assign(e_proto, e);
+                        // Handle nested entities
+                        if(ent instanceof entities.Message)
+                            ent.latest = Object.assign(new entities.MessageState(), ent.latest);
+                        return ent;
                     });
                 }
 
