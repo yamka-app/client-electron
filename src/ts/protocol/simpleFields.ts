@@ -107,24 +107,33 @@ export class MsgSectionsField extends SimpleField {
 
     encodingFunc  = (val: MessageSection[]) => Buffer.concat([
         DataTypes.encNum(val.length, 1),
-        ...val.map(x => x.encode())
+        ...val.map(x => Buffer.concat([
+            DataTypes.encNum(x.type, 1),
+            DataTypes.encNum(x.blob, 8),
+            DataTypes.encStr(x.text)
+        ]))
     ]);
 
-    decodingFunc  = (buf: Buffer)           => {
+    decodingFunc = (buf: Buffer) => {
         const cnt = DataTypes.decNum(buf.slice(0, 1));
         var s = []; var pos = 1;
         for(var i = 0; i < cnt; i++) {
-            s.push(MessageSection.decode(buf.slice(pos)));
-            pos += MessageSection.len(buf.slice(pos));
+            const slice = buf.slice(pos);
+            s.push(new MessageSection(
+                DataTypes.decNum(slice.slice(0, 1)),
+                DataTypes.decNum(slice.slice(1, 9)),
+                DataTypes.decStr(slice.slice(9))
+            ));
+            pos += 9 + DataTypes.decNum(slice.slice(9, 11));
         }
         return s;
     };
 
-    lengthingFunc = (buf: Buffer)           => {
+    lengthingFunc = (buf: Buffer) => {
         const cnt = DataTypes.decNum(buf.slice(0, 1));
         var pos = 1;
         for(var i = 0; i < cnt; i++)
-            pos += MessageSection.len(buf.slice(pos));
+            pos += 11 + DataTypes.decNum(buf.slice(pos + 9, pos + 11))
         return pos;
     };
 }

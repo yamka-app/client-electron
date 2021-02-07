@@ -211,6 +211,12 @@ function webprotData(bytes: Buffer) {
     // While we're at it, add types to nested entities
     if(packet instanceof packets.EntitiesPacket) {
         packet.entities = packet.entities.map(e => {
+            if(e instanceof entities.Message) {
+                delete e.latest.simpleFieldList;
+                delete e.latest.encode;
+                delete e.latest.encodeFields;
+                delete e.latest.decodeFields;
+            }
             delete e.simpleFieldList;
             delete e.encode;
             delete e.encodeFields;
@@ -264,7 +270,7 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
                     "Message":      new entities.Message(),
                     "File":         new entities.File(),
                     "MessageState": new entities.MessageState()
-                }[e["__type_name"]];;
+                }[e["__type_name"]];
                 const ent = Object.assign(e_proto, e);
                 // Handle nested entities
                 if(ent instanceof entities.Message)

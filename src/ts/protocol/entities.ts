@@ -44,7 +44,8 @@ export class Entity {
             new Group(),
             new Message(),
             new Role(),
-            new File()
+            new File(),
+            new MessageState()
         ][type];
         var posAfter = entity.decodeFields(buf, undefined, pos + 1) as number;
         return { entity: entity, posAfter: posAfter };
@@ -63,7 +64,29 @@ export enum UserBadge {
     BOT      = 3
 }
 export class User extends Entity {
-    typeNum = 1;
+    __type_name = "User";
+    static typeNum = 1;
+
+    email?:          string;
+    name?:           string;
+    tag?:            number;
+    status?:         UserStatus;
+    statusText?:     string;
+    avaFile?:        number;
+    mfaEnabled?:     boolean;
+    friends?:        number[];
+    blocked?:        number[];
+    pendingIn?:      number[];
+    pendingOut?:     number[];
+    dmChannel?:      number;
+    groups?:         number[];
+    roles?:          number[];
+    color?:          string;
+    badges?:         UserBadge[];
+    botOwner?:       number;
+    ownedBots?:      number[];
+    wall?:           number;
+    emailConfirmed?: boolean;
 
     constructor() {
         super([
@@ -92,8 +115,24 @@ export class User extends Entity {
     }
 }
 
+export enum ChannelType {
+    NORMAL = 0,
+    WALL   = 1
+}
 export class Channel extends Entity {
+    __type_name = "Channel";
     typeNum = 2;
+
+    id?:          number;
+    name?:        string;
+    members?:     number[];
+    group?:       number;
+    messages?:    number[];
+    typing?:      number[];
+    type?:        ChannelType;
+    unread?:      number;
+    firstUnread?: number;
+
     constructor() {
         super([
             new fields.NumField    ("id", 8,          0),

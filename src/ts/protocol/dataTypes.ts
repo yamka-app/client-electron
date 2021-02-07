@@ -128,18 +128,4 @@ export class MessageSection {
         this.blob = b;
         this.text = s;
     }
-
-    encode = () => Buffer.concat([
-        DataTypes.encNum(this.type, 1),
-        DataTypes.encNum(this.blob, 8),
-        DataTypes.encStr(this.text)
-    ]);
-
-    static decode = (buf: Buffer) => new MessageSection(
-        DataTypes.decNum(buf.slice(0, 1)),
-        DataTypes.decNum(buf.slice(1, 9)),
-        DataTypes.decStr(buf.slice(9))
-    );
-
-    static len = (buf: Buffer) => 9 + DataTypes.decNum(buf.slice(9, 11));
 }

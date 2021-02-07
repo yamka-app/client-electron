@@ -800,6 +800,9 @@ function _rendererFunc() {
                 types.MessageSectionType.CODE,
                 types.MessageSectionType.QUOTE].indexOf(type) > -1)
                     sects[i].text = (sects[i].typeElm as HTMLTextAreaElement).value;
+
+            if(sects[i].blob === undefined) sects[i].blob = 0;
+            if(sects[i].text === undefined) sects[i].text = "";
         }
 
         for(var i = 0; i < sects.length; i++) {
@@ -811,9 +814,12 @@ function _rendererFunc() {
         setTimeout(() => {
             const state = new entities.MessageState();
             const msg = new entities.Message();
+            state.id = 0;
             state.sections = sects;
-            msg.id = editingMessage; msg.latest = state;
-            putEntities([state, msg]);
+            msg.id = editingMessage;
+            msg.latest = state;
+            msg.channel = viewingChan;
+            putEntities([msg]);
 
             resetMsgInput();
             editingMessage = 0;
@@ -1021,7 +1027,7 @@ function _rendererFunc() {
     function messageSummary(id: number): string {
         const msg = entityCache[id];
         var summary = "";
-        for(const section of msg.sections) {
+        for(const section of msg.latest.sections) {
             if(["text", "code"].indexOf(section.type) !== -1) {
                 summary = section.text;
                 break;
@@ -1266,7 +1272,7 @@ function _rendererFunc() {
 
         const msg = entityCache[id];
 
-        for(const section of msg.sections)
+        for(const section of msg.latest.sections)
             if(section.type === "quote" && section.blob !== 0)
                 updateRelatedUsers(section.blob, deep - 1);
 
@@ -1591,7 +1597,7 @@ function _rendererFunc() {
                     packets.EntityPaginationDirection.DOWN, id_from, 50))], true, () => {
             var msgs = [...entityCache[viewingChan].messages];
             msgs.sort();
-            msgs = msgs.map(x => { return { type: "message", id: x } });
+            msgs = msgs.map(x => new packets.EntityGetRequest(entities.Message.typeNum, x));
             // Request messages
             reqEntities(msgs, false, () => {
                 // Clear previous messages if needed
