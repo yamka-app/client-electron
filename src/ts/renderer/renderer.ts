@@ -16,7 +16,6 @@ import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
 import { configGet, configSet } from "./settings.js";
-import { EMLINK } from "constants";
 
 interface MessageSection {
     type:     types.MessageSectionType;
@@ -108,6 +107,8 @@ function _rendererFunc() {
         }, onProgressMade);
     }
     function download(id: number, onEnd?: (path: string) => any) {
+        if(id === undefined)
+            throw new Error();
         // Files, like message states and unlike all other entities,
         // are immutable. This means that we can cache them heavily.
         // If a file (like an avatar, icon, etc.) changes, it actually doesn't.
@@ -513,13 +514,16 @@ function _rendererFunc() {
     // Requests entities
     function reqEntities(ents: packets.EntityGetRequest[], force: boolean =false, cb?: (e?: entities.Entity[])=>any) {
         const remaining_ents = ents.filter(x => !(x.id in entityCache) || force);
+        const triggerCb = (newEnts: entities.Entity[]) => {
+            cb(ents.map(r => entityCache[r.id]));
+        };
         if(remaining_ents.length === 0 && cb !== undefined) {
-            cb([]);
+            triggerCb([]);
             return;
         }
         sendPacket(new packets.EntityGetPacket(remaining_ents), (response: packets.EntitiesPacket) => {
             if(cb !== undefined)
-                cb(response.entities);
+                triggerCb(response.entities);
         });
     }
 
@@ -1433,11 +1437,11 @@ function _rendererFunc() {
 
                             const sizeElm = document.createElement("div");
                             sizeElm.classList.add("message-file-header");
-                            sizeElm.innerHTML = "File (" + readableFileSize(length) + ")";
+                            sizeElm.innerHTML = "File (" + readableFileSize(file.length) + ")";
                             info.appendChild(sizeElm);
 
                             const nameElm = document.createElement("code");
-                            nameElm.innerHTML = escapeHtml(name);
+                            nameElm.innerHTML = escapeHtml(file.name);
                             info.appendChild(nameElm);
 
                             const dlBtn = document.createElement("button");
@@ -1968,8 +1972,12 @@ function _rendererFunc() {
                     entity = Object.assign(oldEntity, entity);
                 entityCache[entity.id] = entity;
 
+                // Append messages to the open channel
+                if(packet.spontaneous && entity instanceof entities.Message && entity.channel === viewingChan)
+                    appendMessage(entity.id);
+
                 // Update info about self
-                if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
+                else if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
                     remote.getGlobal("webprotState").self = entity;
                     updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
 
@@ -2100,10 +2108,6 @@ function _rendererFunc() {
                     // Edit messages
                     else if(arg.spontaneous && entity.type === "message" && entity.edited)
                         editExistingMesssage(entity.id);
-
-                    // Append messages to the open channel
-                    else if(arg.spontaneous && entity.type === "message" && entity.channel === viewingChan)
-                        appendMessage(entity.id);
 
                     // Send message notifications
                     if(arg.spontaneous && entity.type === "message" && entity.sender !== 0 &&

@@ -184,12 +184,12 @@ function webprotData(bytes: Buffer) {
             const bytesTotal = fs.statSync(state.path).size;
             // Send data in chunks
             stream.on("data", (chunk: Buffer) => {
-                const bytesAvailable = stream.readableLength;
-                const dataPacket = new packets.FileDataChunkPacket(bytesAvailable, chunk);
+                const bytesRead = stream.bytesRead;
+                const dataPacket = new packets.FileDataChunkPacket(bytesRead, chunk);
                 dataPacket.replyTo = packet.seq;
                 webprotSendPacket(dataPacket);
                 ipcSend({ type: "webprot.trigger-reference", reason: "upload-progress", reference: state.ref2,
-                    args: [bytesAvailable, bytesTotal] });
+                    args: [bytesRead, bytesTotal] });
             })
             return;
         }
