@@ -785,13 +785,18 @@ textarea.code-input {
     min-width: 200px;
 
     margin-top: 5px;
-    padding:    5px;
+    padding:    10px;
 
-    font-family: NotoSans;
+    font-family: Montserrat;
     font-size:   var(--font-size);
 
     justify-content: space-between;
     box-shadow: 0 0 15px var(--shadow);
+}
+.file-section-name {
+    margin-top:  5px;
+    font-family: Montserrat;
+    font-size:   var(--font-size);
 }
 .message-file-header {
     color: var(--foreground-1);

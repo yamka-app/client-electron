@@ -1441,6 +1441,7 @@ function _rendererFunc() {
                             info.appendChild(sizeElm);
 
                             const nameElm = document.createElement("code");
+                            nameElm.classList.add("file-section-name");
                             nameElm.innerHTML = escapeHtml(file.name);
                             info.appendChild(nameElm);
 
@@ -1453,7 +1454,8 @@ function _rendererFunc() {
                                 e.stopPropagation()
                                 // Ask where to save it
                                 var filePath = dialog.showSaveDialogSync(browserWindow, {
-                                    properties: [ "showOverwriteConfirmation", "createDirectory" ]
+                                    properties: [ "showOverwriteConfirmation", "createDirectory" ],
+                                    defaultPath: "~/" + file.name
                                 });
                                 // Don"t continue if the user decided not to
                                 if(filePath == undefined)
