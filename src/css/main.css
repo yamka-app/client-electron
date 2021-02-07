@@ -953,13 +953,8 @@ div.message-quote-section {
 
 .message-img-section-container {
     position: relative;
-
-    max-width:  500px;
-    max-height: 250px;
 }
 .message-img-section-fake {
-    margin-top: 5px;
-
     max-width:  500px;
     max-height: 250px;
     width:   auto;
@@ -969,10 +964,6 @@ div.message-quote-section {
 }
 .message-img-section {
     display: block;
-
-    position: absolute;
-    top:      0;
-    left:     0;
 
     margin-top: 5px;
 
