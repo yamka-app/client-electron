@@ -1978,6 +1978,9 @@ function _rendererFunc() {
                 if(packet.spontaneous && entity instanceof entities.Message && entity.channel === viewingChan)
                     appendMessage(entity.id);
 
+                if(packet.spontaneous && entity instanceof entities.Channel && entity.id === viewingChan)
+                    updMessageArea(false);
+
                 // Update info about self
                 else if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
                     remote.getGlobal("webprotState").self = entity;
