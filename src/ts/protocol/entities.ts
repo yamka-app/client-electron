@@ -65,7 +65,7 @@ export enum UserBadge {
 }
 export class User extends Entity {
     __type_name = "User";
-    static typeNum = 1;
+    typeNum = 1;
 
     email?:          string;
     name?:           string;

@@ -172,7 +172,8 @@ export function simpleFieldEncoder(t: any, fields: SimpleField[], inclCnt: boole
     }
 }
 
-export function simpleFieldDecoder(t: any, fields: SimpleField[], inclCnt: boolean = false): (buf: Buffer, limit?: number, pos?: number) => void|number|any {
+export function simpleFieldDecoder(t: any, fields: SimpleField[], inclCnt: boolean = false):
+        (buf: Buffer, limit?: number, pos?: number) => void|number|any {
     const allHaveId = checkBinaryIdExistence(fields);
 
     if(allHaveId) {

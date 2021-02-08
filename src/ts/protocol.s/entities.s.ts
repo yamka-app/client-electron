@@ -115,7 +115,7 @@ export class File extends Entity {
 
 export class MessageState extends Entity {
     __type_name = "MessageState";
-    typeNum = 7;
+    static typeNum = 7;
 
     id:       number;
     msg_id:   number;
