@@ -40,7 +40,7 @@
     "code-prettify": "^0.1.0",
     "escape-html": "^1.0.3",
     "highlight.js": "^10.5.0",
-    "marked": "^1.2.7",
+    "marked": "^2.0.0",
     "qrcode": "^1.4.4",
     "remark": "^13.0.0",
     "remark-gemoji-to-emoji": "^1.1.0",
