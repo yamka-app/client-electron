@@ -4,7 +4,7 @@ const electron   = require("electron");
 
 // Default settings
 const defaultSettings: {name: string, value: any}[] = [
-    { name: "accentColor",   value: "#b42fe4"         },
+    { name: "accentColor",   value: "#fa671b"         },
     { name: "fontSize",      value: 9                 },
     { name: "customTheme",   value: false             },
     { name: "theme",         value: "themes/dark.css" },

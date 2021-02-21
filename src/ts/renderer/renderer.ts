@@ -382,7 +382,7 @@ function _rendererFunc() {
     // Converts an ID into a time string
     function idToTime(id: number): string {
         const timestamp = (BigInt(id) >> BigInt(16)) + 1577836800000n;
-        const date = new Date();
+        const date = new Date(Number(timestamp));
         return date.toLocaleDateString(undefined, {
             year:   "numeric",
             month:  "long",

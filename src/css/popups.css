@@ -205,9 +205,6 @@ input[type="radio"].settings-radio:checked + label {
     font-family: Montserrat;
     font-size: 20px;
     background: var(--rainbow-grad);
-    background-size: 400% 400%;
-    animation: gradientAnimation 10s ease infinite;
-    transition: background 0.5s ease;
     color: transparent;
             background-clip: text;
     -webkit-background-clip: text;
@@ -257,14 +254,6 @@ input[type="radio"].settings-radio:checked + label {
     width: 64px;
     height: 64px;
     margin-right: 64px;
-    border-radius: 10px;
-    background: var(--rainbow-grad);
-    background-size: 400% 400%;
-    animation: gradientAnimation 10s ease infinite;
-}
-#about-logo > img {
-    width: inherit;
-    height: inherit;
 }
 
 .trackbar {
