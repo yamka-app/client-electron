@@ -1103,18 +1103,18 @@ function _rendererFunc() {
 
     // Generates a summary text of the message
     function messageSummary(id: number): string {
-        const msg = entityCache[id];
+        const msg = entityCache[id] as entities.Message;
         var summary = "";
         for(const section of msg.latest.sections) {
-            if(["text", "code"].indexOf(section.type) !== -1) {
+            if([types.MessageSectionType.CODE, types.MessageSectionType.TEXT].indexOf(section.type) !== -1) {
                 summary = section.text;
                 break;
             }
-            if(section.type === "quote") {
+            if(section.type === types.MessageSectionType.QUOTE) {
                 summary = "Quote: " + section.text;
                 break;
             }
-            if(section.type === "file") {
+            if(section.type === types.MessageSectionType.FILE) {
                 summary = "File";
                 break;
             }
