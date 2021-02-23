@@ -1,4 +1,4 @@
-const _clientVersion = "0.1.2";
+const _clientVersion = "0.2.0";
 
 const { ipcRenderer, remote, shell, clipboard } = require("electron");
 const { BrowserWindow, dialog } = remote;
