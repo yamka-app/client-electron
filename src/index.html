@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com file://*; img-src 'self' https://twemoji.maxcdn.com/ https://i.ytimg.com/ data:; script-src 'self' https://twemoji.maxcdn.com/ https://hcaptcha.com https://*.hcaptcha.com; frame-src https://hcaptcha.com https://*.hcaptcha.com https://*.youtube.com https://youtube.com; connect-src https://hcaptcha.com https://*.hcaptcha.com">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.youtube.com/; style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com file://*; img-src 'self' https://twemoji.maxcdn.com/ https://i.ytimg.com/ data:; script-src 'self' https://twemoji.maxcdn.com/ https://hcaptcha.com https://*.hcaptcha.com; frame-src https://hcaptcha.com https://*.hcaptcha.com https://*.youtube.com https://youtube.com; connect-src https://hcaptcha.com https://*.hcaptcha.com https://ordermsg.tk">
 
     <title>Order</title>
 
@@ -96,6 +96,14 @@
         <input id="group-join-code" class="fill-width" placeholder="Invite code"/>
         <button id="group-join-ok" class="fill-width">JOIN</button>
       </div>
+    </div>
+
+    <div id="update-popup" class="flex-col" style="display: none;">
+      <span style="font-size: 15px;">NEW VERSION AVAILABLE</span>
+      <span id="update-popup-text">OLD → NEW</span>
+
+      <button id="update-popup-upd" class="accent-button fill-width" style="margin-top: 20px;">UPDATE</button>
+      <button id="update-popup-ign" class="              fill-width" style="margin-top: 20px;">IGNORE</button>
     </div>
 
     <table id="capital-layout">
@@ -227,7 +235,7 @@
 
             <div id="user-settings-section-about" class="settings-section user-settings-section" style="display: none;">
               <img id="about-logo" src="logo.png"><br>
-              Client version 0.1.2-beta
+              <span class="flex-row">Client version&nbsp;<span id="client-version"></span>&nbsp;[beta]</span>
               <p>ABOUT</p>
               Order is a messaging app that does not track you, does not have ads,
               does not impose age restrictions, does not ban people or groups and

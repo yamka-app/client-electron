@@ -1,3 +1,5 @@
+const _clientVersion = "0.1.2";
+
 const { ipcRenderer, remote, shell, clipboard } = require("electron");
 const { BrowserWindow, dialog } = remote;
 const escapeHtml = require("escape-html");
@@ -11,6 +13,7 @@ const fs                 = require("fs");
 const qrcode             = require("qrcode");
 const { highlightBlock } = require("highlight.js");
 const blurhash           = require("blurhash");
+const compareVersions    = require('compare-versions');
 
 import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
@@ -98,6 +101,28 @@ function _rendererFunc() {
         action: "webprot.connect"
     }), 2000);
 
+    // Check the client version
+    function checkClientVersion() {
+        console.log(`Retrieving the latest version number for platform "${remote.process.platform}"`);
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState === 4 && this.status === 200) {
+                const version = xhttp.responseText;
+                console.log(`Newest version: ${version}`);
+                if(compareVersions(version, _clientVersion) === 1)
+                    showUpdBox(`${_clientVersion} → ${version}`);
+            } else if(this.readyState === 4) {
+                console.error("Unable to get the latest version");
+            }
+        };
+        xhttp.open("GET", `https://ordermsg.tk/latest_version/${remote.process.platform}`, true);
+        xhttp.send();
+    }
+    checkClientVersion();
+    setInterval(checkClientVersion, 600000); // 10 minutes
+
+    elementById("client-version").innerHTML = escapeHtml(_clientVersion);
+
     // Upload and download blobs
     function upload(filePath: string, onEnd: (id: number) => any, onProgressMade?: (p: number, m: number) => any) {
         const file = new entities.File();
@@ -113,7 +138,7 @@ function _rendererFunc() {
             throw new Error();
         // Files, like message states and unlike all other entities,
         // are immutable. This means that we can cache them heavily.
-        // If a file (like an avatar, icon, etc.) changes, it actually doesn't.
+        // If a file (like an avatar, group icon, etc.) changes, it actually doesn't.
         // A new file with a new ID is created.
         const existingPath = filePaths[id];
         if(existingPath !== undefined) {
@@ -122,9 +147,6 @@ function _rendererFunc() {
         }
         sendPacket(new packets.FileDownloadRequestPacket(id), (r: packets.Packet) => {
             // Trust me, it's a string
-            // IT'S A STRING
-            // I KNOW FOR SURE IT'S A STRING
-            // IT'S ALWAYS GOING TO BE A STRING
             const filePath = (r as unknown) as string;
             filePaths[id] = filePath;
             onEnd(filePath);
@@ -357,7 +379,16 @@ function _rendererFunc() {
         (elementById(name + "-sel") as HTMLInputElement).checked = true
     }
 
-    // Show a floating box
+    // Show the update box
+    function showUpdBox(text: string) {
+        const box = elementById("update-popup");
+        elementById("update-popup-text").innerHTML = escapeHtml(text);
+        showElm(box);
+        box.classList.remove("sliding-in");
+        box.classList.add("sliding-in");
+    }
+
+    // Show the floating message box
     function showBox(header: string, text: string, showUpdate: boolean =false, updCb?:Function) {
         elementById("floating-box-header").innerHTML = header;
         elementById("floating-box-text").innerHTML = text;
@@ -2743,14 +2774,14 @@ function _rendererFunc() {
         const role = new entities.Role();
         role.id = editingRole; role.group = 0;
         putEntities([role]);
-    }
+    };
 
     const roleColorChange = elementById("role-color-change") as HTMLInputElement;
     roleColorChange.onchange = (e) => {
         const role = new entities.Role();
         role.id = editingRole; role.color = roleColorChange.value;
         putEntities([role]);
-    }
+    };
 
     elementById("group-leave").onclick = (e) => {
         stopPropagation(e);
@@ -2760,7 +2791,7 @@ function _rendererFunc() {
             method:      "remove",
             id:          viewingGroup
         });
-    }
+    };
 
     elementById("group-delete-revert").onclick = (e) => { triggerDisappear(elementById("group-delete-box"), true); }
     elementById("group-delete-confirm").onclick = (e) => {
@@ -2775,14 +2806,14 @@ function _rendererFunc() {
             updLayout();
             triggerDisappear(elementById("group-delete-box"), true);
         }
-    }
+    };
 
     elementById("create-bot").onclick = (e) => {
         ipcSend({
             action: "webprot.create-bot",
             name:   (elementById("create-bot-name") as HTMLInputElement).value
         });
-    }
+    };
 
     elementById("invite-bot-button").onclick = (e) => {
         ipcSend({
@@ -2790,7 +2821,14 @@ function _rendererFunc() {
             bot:    (elementById("invite-bot-id") as HTMLInputElement).value,
             group:  viewingGroup
         });
-    }
+    };
+
+    elementById("update-popup-upd").onclick = (e) => {
+        shell.openExternal("https://ordermsg.tk/download");
+        hideElm(elementById("update-popup"));
+    };
+    elementById("update-popup-ign").onclick = (e) =>
+        hideElm(elementById("update-popup"));
 
     // Blur the window if it"s unfocused
     const mainLayoutCont = elementById("main-layout-container");
