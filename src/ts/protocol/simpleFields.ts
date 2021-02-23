@@ -124,7 +124,7 @@ export class MsgSectionsField extends SimpleField {
                 DataTypes.decNum(slice.slice(1, 9)),
                 DataTypes.decStr(slice.slice(9))
             ));
-            pos += 9 + DataTypes.decNum(slice.slice(9, 11));
+            pos += 11 + DataTypes.decNum(slice.slice(9, 11));
         }
         return s;
     };
