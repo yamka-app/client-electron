@@ -1,8 +1,8 @@
 @charset "UTF-8"; 
 
 @font-face {
-    font-family: NotoSans;
-    src: url(../fonts/NotoSans-Regular.ttf)
+    font-family: Roboto;
+    src: url(../fonts/Roboto-Regular.ttf)
 }
 
 @font-face {
@@ -72,7 +72,7 @@ span {
 p {
     margin: 5px 0 5px 0;
 
-    font-family: NotoSans;
+    font-family: Roboto;
     font-size:   var(--font-size);
     color:       var(--foregound);
 }
@@ -407,7 +407,16 @@ label {
 #friends-pending-in {
     position: relative;
 }
-#friends-pending-in > div {
+
+#message-unread-sep {
+    position: relative;
+    z-index:  2000;
+    margin:   0 20px 0 20px;
+    height:   1px;
+    background: var(--accent);
+}
+
+.bubble {
     display:         flex;
     justify-content: center;
     align-items:     center;
@@ -421,15 +430,31 @@ label {
 
     background: var(--danger);
 }
-#friends-pending-in > div > span {
+.bubble.hidden {
+    display: none;
+}
+.user-avatar-container > .bubble {
+    top:   -3px;
+    right: -5px;
+}
+#message-unread-sep > .bubble {
+    top:   -6px;
+    right: 0px;
+    background: var(--accent);
+}
+.bubble > span {
     font-size: 8pt;
     color:     var(--danger-foreground);
 }
+#message-unread-sep > .bubble > span {
+    color:     var(--accent-foreground);
+}
 
 .user-avatar-container {
+    width:       fit-content;
     margin-left: 8px;
     margin-top:  8px;
-    position: relative;
+    position:    relative;
 }
 .user-avatar {
     width:  32px;
@@ -504,7 +529,7 @@ img.verified-badge:not(.true) {
     overflow:      hidden;
     text-overflow: ellipsis;
     
-    font-family: NotoSans;
+    font-family: Roboto;
     font-size:   var(--font-size);
 }
 
@@ -721,7 +746,7 @@ textarea.message-input {
     box-shadow: none;
     height:     unset;
 
-    font-family: NotoSans;
+    font-family: Roboto;
 }
 textarea.code-input {
     font-family: JetBrainsMono;
@@ -856,8 +881,8 @@ span.fg-1 {
 .message {
     position: relative;
 
-    margin:  0 5px 0 5px;
-    padding: 7px;
+    margin:  8px 5px 0 5px;
+    padding: 7px 7px 0 7px;
 
     background-color: var(--shade-3);
     transition:       box-shadow       0.1s ease,
@@ -867,8 +892,8 @@ span.fg-1 {
     vertical-align: top;
 }
 .message.short-message {
-    padding: 0 2px 4px 2px;
-    margin:  0 0 0 42px;
+    padding: 0 2px 2px 2px;
+    margin:  3px 0 0 42px;
 }
 .message:hover {
     background-color: var(--shade-2);
@@ -881,6 +906,8 @@ span.fg-1 {
     font-size:   var(--font-size);
 }
 .message-avatar-container {
+    width: 32px;
+    height: 32px;
     position: relative;
 }
 .reply-avatar-container {
@@ -902,7 +929,7 @@ span.fg-1 {
     margin-top: 5px;
     vertical-align: baseline;
 
-    font-family: NotoSans;
+    font-family: Roboto;
     user-select: text;
 
     display: flex;
@@ -1114,13 +1141,4 @@ img.large-emoji {
 #connecting-screen > span:nth-child(1) {
     color:     var(--accent);
     font-size: calc(var(--font-size) + 2pt);
-}
-
-
-
-
-
-.h-captcha {
-    align-self: center;
-    margin: 10px;
 }

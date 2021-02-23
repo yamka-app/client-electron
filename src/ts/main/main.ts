@@ -160,7 +160,7 @@ function webprotData(bytes: Buffer) {
     if(packet instanceof packets.PongPacket) {
         webprotState.pingTime = new Date().getTime() - webprotState.pingSent;
         if(webprotState.pingSent !== 0)
-            ipcSend({ type: "webprot.status", message: `Protocol ping (round trip): ${webprotState.pingTime}ms` });
+            ipcSend({ type: "webprot.status", message: `Latency (round trip): ${webprotState.pingTime}ms` });
         return;
     }
 

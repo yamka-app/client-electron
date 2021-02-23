@@ -28,6 +28,7 @@ interface MessageSection {
 // Cached entities and blobs
 var entityCache: {} = {};
 var filePaths: {} = {};
+var userDm: {} = {};
 
 // Max between messages to minify them
 const messageTimeThres: number = 300000;
@@ -56,6 +57,7 @@ const kaomoji: [string, string][] = [
 function _rendererFunc() {
     // UI state
     var viewingGroup: number = 0, viewingChan: number = 0, viewingContactGroup: number = 0;
+    var previousChannel: number = 0;
     var editingChan: number = 0,  editingRole: number = 0;
     var editingMessage: number = 0;
     var lastChanSender = {}; var lastChanMsg = {};
@@ -381,7 +383,7 @@ function _rendererFunc() {
 
     // Converts an ID into a time string
     function idToTime(id: number): string {
-        const timestamp = (BigInt(id) >> BigInt(16)) + 1577836800000n;
+        const timestamp = (BigInt(id) >> BigInt(16)) + BigInt(1577836800000);
         const date = new Date(Number(timestamp));
         return date.toLocaleDateString(undefined, {
             year:   "numeric",
@@ -566,7 +568,7 @@ function _rendererFunc() {
     // Updates all information about a user
     function updateUser(id: number) {
         reqEntities([new packets.EntityGetRequest(entities.User.typeNum, id)], false, () => {
-            const user = entityCache[id];
+            const user = entityCache[id] as entities.User;
             // Update avatars
             const avas = document.getElementsByClassName("user-avatar-" + id) as HTMLCollectionOf<HTMLImageElement>;
             if(avas.length > 0) {
@@ -610,51 +612,81 @@ function _rendererFunc() {
                 for(const b of verifiedBadges)
                     b.classList.add("true");
             }
+
+            // Update the unread bubbles
+            const dm = entityCache[user.dmChannel] as entities.Channel;
+            if(dm !== undefined) {
+                const bubbles = document.getElementsByClassName("bubble-" + id);
+                const bubbleCnts = document.getElementsByClassName("bubble-cnt-" + id);
+                for(const bubble of bubbles) {
+                    if(viewingGroup !== 0 || dm.unread === 0)
+                        bubble.classList.add("hidden");
+                    else
+                        bubble.classList.remove("hidden");
+                }
+                for(const cnt of bubbleCnts) {
+                    cnt.innerHTML = escapeHtml(dm.unread);
+                }
+            }
         });
     }
 
     // Creates an element that should be placed in the member list
-    function createUserSummary(id: number, special?: string) {
+    function createUserSummary(id: number, special?: string, showUnread: boolean =false) {
         // Elements applied to all users
-        var elm = document.createElement("div");
+        const user = entityCache[id] as entities.User;
+        const dm = entityCache[user.dmChannel] as entities.Channel;
+        const elm = document.createElement("div");
         elm.classList.add("user-summary", "user-summary-" + id);
     
-        var avaContainer = document.createElement("div");
+        const avaContainer = document.createElement("div");
         avaContainer.classList.add("user-avatar-container");
         elm.appendChild(avaContainer);
     
-        var ava = document.createElement("img");
+        const ava = document.createElement("img");
         ava.classList.add("user-avatar", "user-avatar-" + id);
         avaContainer.appendChild(ava);
+
+        if(showUnread) {
+            const bubble = document.createElement("div");
+            bubble.classList.add("bubble", "bubble-" + id);
+            if(dm.unread === 0) bubble.classList.add("hidden");
+            avaContainer.appendChild(bubble);
+
+            const cnt = document.createElement("span");
+            cnt.classList.add("bubble-cnt-" + id);
+            bubble.appendChild(cnt);
+            cnt.innerHTML = escapeHtml(dm.unread);
+        }
     
-        var status = document.createElement("img");
+        const status = document.createElement("img");
         status.classList.add("user-online", "user-online-" + id);
         avaContainer.appendChild(status);
     
-        var statusText = document.createElement("span");
+        const statusText = document.createElement("span");
         statusText.classList.add("user-status", "user-status-" + id);
         elm.appendChild(statusText);
     
-        var nicknameContainer = document.createElement("div");
+        const nicknameContainer = document.createElement("div");
         nicknameContainer.classList.add("flex-row", "user-nickname-container");
         elm.appendChild(nicknameContainer);
     
-        var verifiedBadge = document.createElement("img");
+        const verifiedBadge = document.createElement("img");
         verifiedBadge.classList.add("verified-badge", "verified-badge-" + id);
         verifiedBadge.src = path.join(__dirname, "icons/badges/verified.png");
         nicknameContainer.appendChild(verifiedBadge);
     
-        var nickname = document.createElement("span");
+        const nickname = document.createElement("span");
         nickname.classList.add("user-nickname", "user-nickname-" + id);
         nicknameContainer.appendChild(nickname);
     
-        var tag = document.createElement("span");
+        const tag = document.createElement("span");
         tag.classList.add("user-tag", "user-tag-" + id);
         nicknameContainer.appendChild(tag);
     
         // Special users (friends, pending, blocked)
         if(special !== undefined) {
-            var friendRemoveBtn = document.createElement("button");
+            const friendRemoveBtn = document.createElement("button");
             friendRemoveBtn.classList.add("hover-show-button");
             friendRemoveBtn.classList.add("icon-button");
             friendRemoveBtn.classList.add("friend-remove-button");
@@ -670,13 +702,13 @@ function _rendererFunc() {
             });
             elm.appendChild(friendRemoveBtn);
     
-            var friendRemoveImg = document.createElement("img");
+            const friendRemoveImg = document.createElement("img");
             friendRemoveImg.src = path.join(__dirname, "icons/friend_remove.png");
             friendRemoveBtn.appendChild(friendRemoveImg);
         }
         // Pending in users (add an accept button)
         if(special === "pending-in") {
-            var friendAcceptBtn = document.createElement("button");
+            const friendAcceptBtn = document.createElement("button");
             friendAcceptBtn.classList.add("hover-show-button");
             friendAcceptBtn.classList.add("icon-button");
             friendAcceptBtn.classList.add("friend-accept-button");
@@ -687,7 +719,7 @@ function _rendererFunc() {
             });
             elm.appendChild(friendAcceptBtn);
     
-            var friendAcceptImg = document.createElement("img");
+            const friendAcceptImg = document.createElement("img");
             friendAcceptImg.src = path.join(__dirname, "icons/approve.png");
             friendAcceptBtn.appendChild(friendAcceptImg);
         }
@@ -706,7 +738,7 @@ function _rendererFunc() {
             elm.onclick = (e) => showProfile(id);
         }
     
-        return elm
+        return elm;
     }
 
     // Updates the member list sidebar
@@ -753,23 +785,29 @@ function _rendererFunc() {
             // Request users
             const users = userIds.map(id => new packets.EntityGetRequest(entities.User.typeNum, id));
             reqEntities(users, false, () => {
-                // Create summaries for each one and append them to the member list
-                userIds.forEach(id => {
-                    if(viewingGroup === 0) { // special case for DMs
-                        let add = true;
-                        if(viewingContactGroup == 1 && entityCache[id].status === 0) // don"t add offline friends if we only want to see online ones
-                            add = false;
-                        if(add) {
-                            memberList.appendChild(createUserSummary(
-                                id, ["friend", "friend", "pending-in", "pending-out", "blocked"][viewingContactGroup]
-                            ));
-                            updateUser(id);
+                // Request channels (we want to be able to show the unread count right away)
+                const dms = userIds.map(id => new packets.EntityGetRequest(entities.Channel.typeNum,
+                    (entityCache[id] as entities.User).dmChannel));
+                reqEntities(dms, false, () => {
+                    // Create summaries for each one and append them to the member list
+                    userIds.forEach(id => {
+                        if(viewingGroup === 0) { // special case for DMs
+                            let add = true;
+                            if(viewingContactGroup == 1 && entityCache[id].status === 0) // don"t add offline friends if we only want to see online ones
+                                add = false;
+                            if(add) {
+                                memberList.appendChild(createUserSummary(
+                                    id, ["friend", "friend", "pending-in", "pending-out", "blocked"][viewingContactGroup],
+                                    true
+                                ));
+                                updateUser(id);
+                            }
+                        } else {
+                            const elm = createUserSummary(id);
+                            elm.style.animationDelay = (0.2 * userIds.indexOf(id) / userIds.length) + "s";
+                            memberList.appendChild(elm);
                         }
-                    } else {
-                        const elm = createUserSummary(id);
-                        elm.style.animationDelay = (0.2 * userIds.indexOf(id) / userIds.length) + "s";
-                        memberList.appendChild(elm);
-                    }
+                    });
                 });
             });
         } else {
@@ -824,6 +862,11 @@ function _rendererFunc() {
             msg.latest = state;
             msg.channel = viewingChan;
             putEntities([msg]);
+            clearTyping();
+
+            markRead(viewingChan);
+            markRead(viewingChan, true);
+            elementById("message-unread-sep")?.remove();
 
             resetMsgInput();
             editingMessage = 0;
@@ -1282,6 +1325,20 @@ function _rendererFunc() {
 
         updateUser(msg.sender);
     }
+    
+    // Creates an "unread separator"
+    function createUnreadSep() {
+        const sep = document.createElement("div");
+        sep.id = "message-unread-sep";
+        const bubble = document.createElement("div");
+        bubble.classList.add("bubble");
+        sep.appendChild(bubble);
+        const bubbleCnt = document.createElement("span");
+        bubbleCnt.innerHTML = escapeHtml(" NEW ↴");
+        bubble.appendChild(bubbleCnt);
+
+        return sep;
+    }
 
     // Creates a message box seen in the message area
     function createMessage(id: number, short: boolean =false): HTMLDivElement {
@@ -1617,13 +1674,18 @@ function _rendererFunc() {
 
                 msgs.reverse();
                 msgs = msgs.map(x => entityCache[x.id]);
-                msgs.forEach(msg => {
+                msgs.forEach((msg: entities.Message) => {
                     const id = msg.id;
                     const lastMsg = msgs[msgs.indexOf(msg) + 1];
-                    const short = lastMsg ? (msg.sender === lastMsg.sender && timeDiff(lastMsg.id, msg.id) <= messageTimeThres) : false;
-                    header.after(createMessage(id, short)); // bundling
+                    const short = lastMsg ? (msg.sender === lastMsg.sender
+                        && timeDiff(lastMsg.id, msg.id) <= messageTimeThres) : false; // bundling
+                    header.after(createMessage(id, short));
+
+                    const chan = entityCache[msg.channel] as entities.Channel;
+                    if(id === chan.firstUnread && chan.unread > 0)
+                        header.after(createUnreadSep());
                     updateRelatedUsers(id);
-                })
+                });
 
                 if(msgs.length > 0) {
                     lastChanSender[viewingChan] = msgs[0].sender;
@@ -1655,10 +1717,28 @@ function _rendererFunc() {
         })
     }
 
+    function markRead(channel: number, local: boolean =false) {
+        if(local) {
+            const chan = entityCache[viewingChan] as entities.Channel;
+            chan.unread = 0;
+            chan.firstUnread = lastChanMsg[chan.id];
+            if(userDm[chan.id] !== undefined)
+                updateUser(userDm[chan.id]);
+            return;
+        }
+        const chan = new entities.Channel();
+        chan.id = channel;
+        chan.unread = 0;
+        putEntities([chan]);
+    }
     // Updates the message area
     function updMessageArea(updMessages: boolean =true) {
         // Hide the panel list if we're viewing messages
         setElmVisibility(elementById("message-container-area"), viewingChan !== 0);
+
+        if(viewingChan !== previousChannel && previousChannel !== 0)
+            markRead(previousChannel);
+        previousChannel = viewingChan;
 
         if(viewingChan === 0) {
             const msgArea = elementById("message-area");
@@ -1672,7 +1752,7 @@ function _rendererFunc() {
 
         // Get channel messages
         if(viewingChan !== 0 && updMessages)
-            appendMsgsTop(0xFFFFFFFFFFFFF, undefined, true);
+            appendMsgsTop(0xFFFFFFFFFFFFF, () => markRead(viewingChan, true), true);
 
         reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, viewingChan)], false, () => {
             const channel = entityCache[viewingChan];
@@ -1689,8 +1769,8 @@ function _rendererFunc() {
                 } else
                     hideElm(typingAnim);
                 typingElm.innerHTML = content;
-            })
-        })
+            });
+        });
     }
 
     // Creates a group panel
@@ -1840,12 +1920,18 @@ function _rendererFunc() {
 
         // Create the message
         const msg = entityCache[id];
-        const msgElm = createMessage(id, msg.sender === lastChanSender[msg.channel] && timeDiff(lastChanMsg[msg.channel].id, msg.id) <= messageTimeThres);
+        const msgElm = createMessage(id,
+            msg.sender === lastChanSender[msg.channel]
+            && timeDiff(lastChanMsg[msg.channel].id, msg.id) <= messageTimeThres);
         msgArea.appendChild(msgElm);
         updateRelatedUsers(msg.id);
 
+        // Store metadata
         lastChanSender[msg.channel] = msg.sender;
         lastChanMsg   [msg.channel] = msg.id;
+        const chan = entityCache[viewingChan] as entities.Channel;
+        chan.unread = 0;
+        chan.firstUnread = msg.id;
 
         // Scroll down again if it was like that before
         if(scrolled) {
@@ -1946,6 +2032,7 @@ function _rendererFunc() {
             // Reset all caches
             entityCache = {};
             packetCallbacks = {};
+            userDm = {};
             nextCbId = 0;
 
             // Reset the view
@@ -1974,6 +2061,18 @@ function _rendererFunc() {
                     entity = Object.assign(oldEntity, entity);
                 entityCache[entity.id] = entity;
 
+                if(entity instanceof entities.User && entity.dmChannel !== undefined)
+                    userDm[entity.dmChannel] = entity.id;
+
+                // Update the unread bubble, just in case
+                if(packet.spontaneous && entity instanceof entities.Message) {
+                    const chan = entityCache[entity.channel] as entities.Channel;
+                    if(chan.unread !== 0)
+                        chan.unread++;
+                    chan.firstUnread = entity.id;
+                }
+                if(packet.spontaneous && entity instanceof entities.Message && viewingGroup === 0)
+                    updateUser(entity.sender);
                 // Append messages to the open channel
                 if(packet.spontaneous && entity instanceof entities.Message && entity.channel === viewingChan)
                     appendMessage(entity.id);
