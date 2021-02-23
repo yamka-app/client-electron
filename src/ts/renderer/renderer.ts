@@ -1,4 +1,4 @@
-const _clientVersion = "0.2.0";
+const _clientVersion = "1";
 
 const { ipcRenderer, remote, shell, clipboard } = require("electron");
 const { BrowserWindow, dialog } = remote;
@@ -174,14 +174,14 @@ function _rendererFunc() {
     }
 
     // Apply "appearing" or "disappearing" animations (optionally hiding and showing the parent element)
-    function triggerAppear(element: HTMLElement, affectParent?: boolean) {
+    function triggerAppear(element: HTMLElement, affectParent: boolean =false) {
         if(affectParent)
             showElm(element.parentElement);
 
         element.classList.remove("disappearing");
         element.classList.add   ("appearing");
     }
-    function triggerDisappear(element: HTMLElement, affectParent?: boolean) {
+    function triggerDisappear(element: HTMLElement, affectParent: boolean =false) {
         if(affectParent) // 200 ms is the animation duration
             setTimeout(() => hideElm(element.parentElement), 200);
 
@@ -678,7 +678,7 @@ function _rendererFunc() {
         ava.classList.add("user-avatar", "user-avatar-" + id);
         avaContainer.appendChild(ava);
 
-        if(showUnread) {
+        if(showUnread && dm !== undefined) {
             const bubble = document.createElement("div");
             bubble.classList.add("bubble", "bubble-" + id);
             if(dm.unread === 0) bubble.classList.add("hidden");
@@ -743,11 +743,11 @@ function _rendererFunc() {
             friendAcceptBtn.classList.add("hover-show-button");
             friendAcceptBtn.classList.add("icon-button");
             friendAcceptBtn.classList.add("friend-accept-button");
-            friendAcceptBtn.addEventListener("click", (e) => {
+            friendAcceptBtn.onclick = (e) => {
                 sendPacket(new packets.ContactsManagePacket(packets.ContactType.FRIEND,
                     packets.ContactAction.ADD, id));
                 stopPropagation(e);
-            });
+            };
             elm.appendChild(friendAcceptBtn);
     
             const friendAcceptImg = document.createElement("img");
@@ -797,28 +797,28 @@ function _rendererFunc() {
                 memberList.removeChild(memberList.firstChild);
 
             // Determine what users should end up in the member list
-            let userIds = [];
-            // Group 0 = own direct messages
-            if(viewingGroup === 0) {
-                const self = remote.getGlobal("webprotState").self;
-                const friendType = elementById("member-list-friend-type");
+            const self = remote.getGlobal("webprotState").self;
+            const friendType = elementById("member-list-friend-type");
 
-                friendType.innerHTML = escapeHtml(
-                    ["ALL FRIENDS",
-                     "ONLINE FRIENDS",
-                     "INCOMING REQUESTS",
-                     "OUTGOING REQUESTS",
-                     "BLOCKED"][viewingContactGroup]);
-
-                userIds = [self.friends, self.friends, self.pendingIn, self.pendingOut, self.blocked][viewingContactGroup];
-            }
+            friendType.innerHTML = escapeHtml(
+                ["ALL FRIENDS",
+                    "ONLINE FRIENDS",
+                    "INCOMING REQUESTS",
+                    "OUTGOING REQUESTS",
+                    "BLOCKED"][viewingContactGroup]);
+            const userIds =
+                [self.friends,
+                    self.friends,
+                    self.pendingIn,
+                    self.pendingOut,
+                    self.blocked][viewingContactGroup];
 
             // Request users
             const users = userIds.map(id => new packets.EntityGetRequest(entities.User.typeNum, id));
             reqEntities(users, false, () => {
                 // Request channels (we want to be able to show the unread count right away)
                 const dms = userIds.map(id => new packets.EntityGetRequest(entities.Channel.typeNum,
-                    (entityCache[id] as entities.User).dmChannel));
+                    (entityCache[id] as entities.User).dmChannel)).filter(x => x.id !== undefined);
                 reqEntities(dms, false, () => {
                     // Create summaries for each one and append them to the member list
                     userIds.forEach(id => {
@@ -1270,6 +1270,14 @@ function _rendererFunc() {
             triggerDisappear(floatingImage, true);
     }
 
+    // Shows/hides the message history
+    function showMessageHistory(id: number, x: number, y: number) {
+
+    }
+    function hideMessageHistory() {
+
+    }
+
     // Shows/hides the group create box
     function showGroupCreateBox() {
         const groupCreateBox = elementById("group-create-box");
@@ -1321,8 +1329,9 @@ function _rendererFunc() {
                 (msgSections[sectionId].typeElm as HTMLInputElement).value = messageSummary(id);
                 adjTaHeight(msgSections[sectionId].typeElm as HTMLTextAreaElement);
             } },
-            { icon: "delete", selfOnly: true, onclick: (e) => putEntities([msg]) },
-            { icon: "edit",   selfOnly: true, onclick: (e) => editMessage(id) }
+            { icon: "delete",  selfOnly: true,  onclick: (e) => putEntities([msg]) },
+            { icon: "edit",    selfOnly: true,  onclick: (e) => editMessage(id) },
+            { icon: "history", selfOnly: false, onclick: (e) => showMessageHistory(id, e.clientX, e.clientY) }
         ];
 
         for(const btnDesc of buttons) {
@@ -1468,10 +1477,10 @@ function _rendererFunc() {
                             const h = Number(file.size.split("x")[1]);
                             fileSectionElement.classList.add("message-img-section-container");
 
-                            const fake = document.createElement("img"); // to force container dimensions
+                            /*const fake = document.createElement("img"); // to force container dimensions
                             fileSectionElement.appendChild(fake);
                             fake.classList.add("message-img-section-fake");
-                            fake.width = w; fake.height = h;
+                            fake.width = w; fake.height = h;*/
                             
                             // Create the preview element
                             let canvasElement: HTMLCanvasElement;
@@ -1497,7 +1506,7 @@ function _rendererFunc() {
                                     ctx.scale(w / adjW, h / 32);
                                     ctx.drawImage(imageObj, 0, 0);
                                 }
-                                fake.src = canvasElement.toDataURL();
+                                //fake.src = canvasElement.toDataURL();
                                 imageObj.src = canvasElement.toDataURL();
     
                                 fileSectionElement.appendChild(canvasElement);
@@ -1969,6 +1978,7 @@ function _rendererFunc() {
             //msgScrollArea.scrollBy({ top: -msgElm.offsetHeight, left: 0 });
             msgElm.scrollIntoView({ block: "end", behavior: "smooth" });
         }
+        triggerAppear(msgElm, false);
     }
 
     // Deletes a message
@@ -2094,6 +2104,13 @@ function _rendererFunc() {
 
                 if(entity instanceof entities.User && entity.dmChannel !== undefined)
                     userDm[entity.dmChannel] = entity.id;
+
+                // Request the DM channel for new friends
+                if(entity instanceof entities.User
+                        && remote.getGlobal("webprotState").self.friends !== undefined
+                        && remote.getGlobal("webprotState").self.friends.includes(entity.id)
+                        && entity.dmChannel === undefined)
+                    reqEntities([new packets.EntityGetRequest(entities.User.typeNum, entity.id)], true, undefined);
 
                 // Update the unread bubble, just in case
                 if(packet.spontaneous && entity instanceof entities.Message) {
@@ -2834,6 +2851,12 @@ function _rendererFunc() {
     const mainLayoutCont = elementById("main-layout-container");
     browserWindow.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.add   ("unfocused") });
     browserWindow.addListener("focus", (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.remove("unfocused") });
+
+    window.addEventListener("keydown", (e) => {
+        console.log("keydown");
+        if(e.key === "F4" && e.altKey)
+            browserWindow.minimize();
+    });
 }
 
 window.addEventListener("load", _rendererFunc);

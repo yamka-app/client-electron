@@ -86,6 +86,7 @@ function loadConfig() {
 
 app.on("ready", () => {
     global["webprotState"] = webprotState;
+    global["tmpDir"] = tmpDir;
     loadConfig();
     
     // Create the window
@@ -95,8 +96,8 @@ app.on("ready", () => {
     tray = new Tray(path.join(__dirname, "../../../logo.png"));
     tray.setToolTip("Order");
     tray.setContextMenu(Menu.buildFromTemplate([
-        { label: "Open Order", type: "normal", click() { createWindow() } },
-        { label: "Exit Order", type: "normal", click() {
+        { label: "Open", type: "normal", click() { createWindow() } },
+        { label: "Exit", type: "normal", click() {
             // Clean temporary files
             fs.rmdir(tmpDir, { recursive: true }, () => {});
             mainWindow.destroy();
