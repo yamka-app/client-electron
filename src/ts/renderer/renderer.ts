@@ -1,4 +1,4 @@
-const _clientVersion = "1";
+const _clientVersion = "0.3.0";
 
 const { ipcRenderer, remote, shell, clipboard } = require("electron");
 const { BrowserWindow, dialog } = remote;
@@ -2122,7 +2122,7 @@ function _rendererFunc() {
                 entityCache[entity.id] = entity;
 
                 // message states are immutable, no need to "merge" them with the old version
-                if(entity instanceof entities.Message)
+                if(entity instanceof entities.Message && entity.latest !== undefined)
                     entityCache[entity.latest.id] = entity.latest;
 
                 if(entity instanceof entities.User && entity.dmChannel !== undefined)
@@ -2138,18 +2138,25 @@ function _rendererFunc() {
                 // Update the unread bubble, just in case
                 if(packet.spontaneous && entity instanceof entities.Message) {
                     const chan = entityCache[entity.channel] as entities.Channel;
-                    if(chan.unread !== 0)
+                    if(chan.unread !== 0 && entity.sender !== 0) {
+                        chan.firstUnread = entity.id;
                         chan.unread++;
-                    chan.firstUnread = entity.id;
+                    }
+                    else if(entity.sender === 0)
+                        chan.unread--; // the message was deleted
                 }
-                if(packet.spontaneous && entity instanceof entities.Message && viewingGroup === 0)
+                if(packet.spontaneous && entity instanceof entities.Message && viewingGroup === 0 && entity.sender !== 0)
                     updateUser(entity.sender);
 
-                // append/edit messages in the open channel
-                if(packet.spontaneous && entity instanceof entities.Message && entity.channel === viewingChan && oldEntity === undefined)
-                    appendMessage(entity.id);
-                else if(oldEntity !== undefined)
-                    editExistingMesssage(entity.id);
+                // append/edit/delete messages in the open channel
+                if(packet.spontaneous && entity instanceof entities.Message && entity.channel === viewingChan) {
+                    if(oldEntity === undefined && entity.sender !== 0)
+                        appendMessage(entity.id);
+                    else if(oldEntity !== undefined && entity.sender !== 0)
+                        editExistingMesssage(entity.id);
+                    else if(entity.sender === 0)
+                        removeMesssage(entity.id);
+                }
 
                 if(packet.spontaneous && entity instanceof entities.Channel && entity.id === viewingChan)
                     updMessageArea(false);

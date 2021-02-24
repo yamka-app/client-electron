@@ -212,7 +212,7 @@ function webprotData(bytes: Buffer) {
     // While we're at it, add types to nested entities
     if(packet instanceof packets.EntitiesPacket) {
         packet.entities = packet.entities.map(e => {
-            if(e instanceof entities.Message) {
+            if(e instanceof entities.Message && e.latest !== undefined) {
                 delete e.latest.simpleFieldList;
                 delete e.latest.encode;
                 delete e.latest.encodeFields;
