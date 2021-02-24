@@ -449,3 +449,54 @@ input[type="radio"].settings-radio:checked + label {
 #mfa-code-manual {
     user-select: text;
 }
+
+
+
+
+
+#message-history {
+    position:       absolute;
+    display:        flex;
+    flex-direction: column;
+
+    width:         300px;
+    padding:       15px 0 15px 0;
+    background:    var(--shade-1);
+    box-shadow:    0 0 15px var(--shadow);
+    border-radius: 15px;
+
+    pointer-events: all;
+}
+.message-state {
+    display:        flex;
+    flex-direction: column;
+
+    padding:    7px 15px 7px 15px;
+    cursor:     pointer;
+    background: var(--shade-1);
+    transition: background 0.2s ease;
+}
+.message-state:hover {
+    background: var(--shade-3);
+}
+.message-state > span:nth-child(1) {
+    color: var(--foreground);
+    display:        flex;
+    flex-direction: row;
+    align-items:    center;
+}
+.message-state > span:nth-child(1) > span {
+    color: var(--danger);
+    font-size: calc(var(--font-size) - 1pt);
+}
+.message-state > span:nth-child(1) > span:not(.current) {
+    display: none;
+}
+.message-state > span:nth-child(2) {
+    color:     var(--foreground-1);
+    font-size: calc(var(--font-size) - 1pt);
+
+    white-space:   nowrap;
+    overflow:      hidden;
+    text-overflow: ellipsis;
+}

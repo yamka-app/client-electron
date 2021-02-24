@@ -1102,28 +1102,20 @@ function _rendererFunc() {
     }
 
     // Generates a summary text of the message
-    function messageSummary(id: number): string {
+    function messageSummary(id: number) {
         const msg = entityCache[id] as entities.Message;
-        var summary = "";
-        for(const section of msg.latest.sections) {
-            if([types.MessageSectionType.CODE, types.MessageSectionType.TEXT].indexOf(section.type) !== -1) {
-                summary = section.text;
-                break;
-            }
-            if(section.type === types.MessageSectionType.QUOTE) {
-                summary = "Quote: " + section.text;
-                break;
-            }
-            if(section.type === types.MessageSectionType.FILE) {
-                summary = "File";
-                break;
-            }
+        return messageStateSummary(msg.latest);
+    }
+    function messageStateSummary(state: entities.MessageState): string {
+        for(const section of state.sections) {
+            if([types.MessageSectionType.CODE, types.MessageSectionType.TEXT].includes(section.type))
+                return section.text;
+            if(section.type === types.MessageSectionType.QUOTE)
+                return "Quote: " + section.text;
+            if(section.type === types.MessageSectionType.FILE)
+                return "File";
         }
-        // If there"s still nothing
-        if(summary === "")
-            summary = "Empty message"
-
-        return summary;
+        return "Empty message";
     }
 
     // Prepares message text (sanitizes it and inserts line breaks)
@@ -1149,17 +1141,17 @@ function _rendererFunc() {
     }
 
     // Shows/hides a floating message
-    function showFloatingMessage(id: number) {
+    function showFloatingMessage(state: entities.MessageState) {
         const floatingMessage = elementById("floating-message")
         // Remove old junk
         while(floatingMessage.firstChild)
             floatingMessage.firstChild.remove();
 
         // Create the message
-        const message = createMessage(id);
+        const message = createMessage(state);
         message.style.margin = "0";
         floatingMessage.appendChild(message);
-        updateRelatedUsers(id);
+        updateRelatedUsers(state);
 
         triggerAppear(floatingMessage, true);
     }
@@ -1272,7 +1264,30 @@ function _rendererFunc() {
 
     // Shows/hides the message history
     function showMessageHistory(id: number, x: number, y: number) {
+        const msg     = entityCache[id] as entities.Message
+        const history = elementById("message-history");
+        const bg      = elementById("message-history-bg");
 
+        while(history.lastChild) history.lastChild.remove();
+
+        reqEntities(msg.states.map(x => new packets.EntityGetRequest(entities.MessageState.typeNum, x)), false, () => {
+            const states = msg.states.map(x => entityCache[x] as entities.MessageState);
+            for(const state of states) {
+                const marker = state.id == msg.latest.id ? "&nbsp;· LATEST" : "";
+                const elm = document.createElement("div");
+                elm.classList.add("message-state");
+                elm.innerHTML = `<span>${idToTime(state.id)}<span class="current">${marker}</span>
+                    </span><span>${messageStateSummary(state)}</span>`;
+                elm.onclick = (e) => showFloatingMessage(state);
+                history.appendChild(elm);
+            }
+
+            history.style.right  = `${window.innerWidth  - x}px`;
+            history.style.bottom = `${window.innerHeight - y}px`;
+            triggerAppear(history, true);
+
+            bg.onclick = (e) => triggerDisappear(history, true);
+        });
     }
     function hideMessageHistory() {
 
@@ -1353,15 +1368,16 @@ function _rendererFunc() {
     }
 
     // Calls updateUser() for every user related to the message
-    function updateRelatedUsers(id: number, deep:number =5) {
+    function updateRelatedUsers(state: entities.MessageState, deep:number =5) {
         if(deep <= 0)
             return;
 
-        const msg = entityCache[id];
+        const msg = entityCache[state.msg_id] as entities.Message;
 
-        for(const section of msg.latest.sections)
-            if(section.type === "quote" && section.blob !== 0)
-                updateRelatedUsers(section.blob, deep - 1);
+        for(const section of state.sections)
+            if(section.type === types.MessageSectionType.QUOTE && section.blob !== 0)
+                updateRelatedUsers((entityCache[section.blob] as entities.Message)
+                    .latest, deep - 1);
 
         updateUser(msg.sender);
     }
@@ -1381,9 +1397,9 @@ function _rendererFunc() {
     }
 
     // Creates a message box seen in the message area
-    function createMessage(id: number, short: boolean =false): HTMLDivElement {
+    function createMessage(state: entities.MessageState, short: boolean =false): HTMLDivElement {
         // Get the message entity by the id
-        const msg = entityCache[id] as entities.Message;
+        const msg = entityCache[state.msg_id] as entities.Message;
 
         const elm = document.createElement("div")
         elm.classList.add("message", "message-" + msg.id, "flex-row");
@@ -1421,11 +1437,11 @@ function _rendererFunc() {
     
             const timeElm = document.createElement("span");
             timeElm.classList.add("message-time");
-            timeElm.innerHTML = escapeHtml(idToTime(id) + ((msg.states.length > 1) ? " (edited)" : ""));
+            timeElm.innerHTML = escapeHtml(idToTime(state.msg_id) + ((msg.states.length > 1) ? " (edited)" : ""));
             nicknameContainer.appendChild(timeElm);
         }
 
-        for(const section of msg.latest.sections) {
+        for(const section of state.sections) {
             var sectionElement = null;
             switch(section.type) {
                 case types.MessageSectionType.TEXT:
@@ -1583,7 +1599,7 @@ function _rendererFunc() {
                     if(section.blob !== 0) {
                         sectionElement.addEventListener("click", (e) => {
                             e.stopImmediatePropagation();
-                            showFloatingMessage(section.blob);
+                            showFloatingMessage((entityCache[section.blob] as entities.Message).latest);
                         })
                         reqEntities([new packets.EntityGetRequest(entities.Message.typeNum, section.blob)], false, () => {
                             const replyMsg = entityCache[section.blob];
@@ -1615,7 +1631,7 @@ function _rendererFunc() {
         }
 
         // Edit on double-click
-        elm.ondblclick = () => { if(msg.sender === remote.getGlobal("webprotState").self.id) editMessage(id) };
+        elm.ondblclick = () => { if(msg.sender === remote.getGlobal("webprotState").self.id) editMessage(state.msg_id) };
 
         // When clicking a link, open it in the user"s browser
         const links = elm.getElementsByTagName("a");
@@ -1648,7 +1664,7 @@ function _rendererFunc() {
         }
 
         // Add the action bar
-        elm.appendChild(createMessageActionBar(id));
+        elm.appendChild(createMessageActionBar(state.msg_id));
 
         return elm;
     }
@@ -1719,12 +1735,12 @@ function _rendererFunc() {
                     const lastMsg = msgs[msgs.indexOf(msg) + 1];
                     const short = lastMsg ? (msg.sender === lastMsg.sender
                         && timeDiff(lastMsg.id, msg.id) <= messageTimeThres) : false; // bundling
-                    header.after(createMessage(id, short));
+                    header.after(createMessage(msg.latest, short));
 
                     const chan = entityCache[msg.channel] as entities.Channel;
                     if(id === chan.firstUnread && chan.unread > 0)
                         header.after(createUnreadSep());
-                    updateRelatedUsers(id);
+                    updateRelatedUsers(msg.latest);
                 });
 
                 if(msgs.length > 0) {
@@ -1959,12 +1975,12 @@ function _rendererFunc() {
         const scrolled = msgScrollArea.scrollTop - (msgScrollArea.scrollHeight - msgScrollArea.offsetHeight) <= 100;
 
         // Create the message
-        const msg = entityCache[id];
-        const msgElm = createMessage(id,
+        const msg = entityCache[id] as entities.Message;
+        const msgElm = createMessage(msg.latest,
             msg.sender === lastChanSender[msg.channel]
             && timeDiff(lastChanMsg[msg.channel].id, msg.id) <= messageTimeThres);
         msgArea.appendChild(msgElm);
-        updateRelatedUsers(msg.id);
+        updateRelatedUsers(msg.latest);
 
         // Store metadata
         lastChanSender[msg.channel] = msg.sender;
@@ -1992,9 +2008,10 @@ function _rendererFunc() {
     function editExistingMesssage(id: number): boolean {
         const msgs = document.getElementsByClassName("message-" + id);
         for(const msg of msgs) {
-            const newMsg = createMessage(id, msg.classList.contains("short-message"));
+            const state = (entityCache[id] as entities.Message).latest;
+            const newMsg = createMessage(state, msg.classList.contains("short-message"));
             msg.replaceWith(newMsg);
-            updateRelatedUsers(id);
+            updateRelatedUsers(state);
         }
         return msgs.length !== 0;
     }
@@ -2101,6 +2118,10 @@ function _rendererFunc() {
                 if(oldEntity !== undefined)
                     entity = Object.assign(oldEntity, entity);
                 entityCache[entity.id] = entity;
+
+                // message states are immutable, no need to "merge" them with the old version
+                if(entity instanceof entities.Message)
+                    entityCache[entity.latest.id] = entity.latest;
 
                 if(entity instanceof entities.User && entity.dmChannel !== undefined)
                     userDm[entity.dmChannel] = entity.id;
