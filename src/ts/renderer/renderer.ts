@@ -912,7 +912,8 @@ function _rendererFunc() {
         resetMsgInput(true);
 
         // Create input sections
-        for(const srcSect of entityCache[id].sections) {
+        const msg = entityCache[id] as entities.Message;
+        for(const srcSect of msg.latest.sections) {
             const sid = msgSections.length;
             createInputSection(srcSect.type, sid, () => removeInputSection(sid));
             
@@ -1270,7 +1271,8 @@ function _rendererFunc() {
 
         while(history.lastChild) history.lastChild.remove();
 
-        reqEntities(msg.states.map(x => new packets.EntityGetRequest(entities.MessageState.typeNum, x)), false, () => {
+        reqEntities(msg.states.sort().reverse().map(x =>
+                    new packets.EntityGetRequest(entities.MessageState.typeNum, x)), false, () => {
             const states = msg.states.map(x => entityCache[x] as entities.MessageState);
             for(const state of states) {
                 const marker = state.id == msg.latest.id ? "&nbsp;· LATEST" : "";
@@ -2142,9 +2144,12 @@ function _rendererFunc() {
                 }
                 if(packet.spontaneous && entity instanceof entities.Message && viewingGroup === 0)
                     updateUser(entity.sender);
-                // Append messages to the open channel
-                if(packet.spontaneous && entity instanceof entities.Message && entity.channel === viewingChan)
+
+                // append/edit messages in the open channel
+                if(packet.spontaneous && entity instanceof entities.Message && entity.channel === viewingChan && oldEntity === undefined)
                     appendMessage(entity.id);
+                else if(oldEntity !== undefined)
+                    editExistingMesssage(entity.id);
 
                 if(packet.spontaneous && entity instanceof entities.Channel && entity.id === viewingChan)
                     updMessageArea(false);
@@ -2268,68 +2273,9 @@ function _rendererFunc() {
                 cb(...arg.args);
                 break;
 
-            case "webprot.entities":
-                arg.entities.forEach((entity) => {
-                    // Add entities to the entity list
-                    const oldEntity = entityCache[entity.id];
-                    entityCache[entity.id] = { ...entityCache[entity.id], ...entity };
-
-                    // Delete messages
-                    if(arg.spontaneous && entity.type === "message" && entity.sender === 0)
-                        removeMesssage(entity.id);
-
-                    // Edit messages
-                    else if(arg.spontaneous && entity.type === "message" && entity.edited)
-                        editExistingMesssage(entity.id);
-
-                    // Send message notifications
-                    if(arg.spontaneous && entity.type === "message" && entity.sender !== 0 &&
-                        (entity.channel !== viewingChan ||  // either we"re sitting in another channel
-                         !document.hasFocus())              // or the window is out of focus
-                         && shouldReceiveNotif()) {         // (notifications must be enabled)
-                        reqEntities([new packets.EntityGetRequest(entities.User.typeNum, entity.sender)], false, () => {
-                            const sender = entityCache[entity.sender];
-                            if(sender.id != remote.getGlobal("webprotState").self.id) {
-                                // Download the avatar of the sender
-                                download(sender.avaFile, (senderAvatar) => {
-                                    const notification = new Notification(sender.name, {
-                                        body: messageSummary(entity.id),
-                                        icon: senderAvatar
-                                    });
-                                    // Shitch to the channel when a notification has been clicked
-                                    notification.onclick = (e) => {
-                                        viewingChan = entity.channel;
-                                        updLayout();
-                                        browserWindow.focus();
-                                    }
-                                });
-                                sounds.notification.play()
-                            }
-                        });
-                    }
-
-                    // Update info about groups and channels
-                    if(arg.spontaneous && entity.type === "group")
-                        updateGroup(entity.id);
-                    //if(arg.spontaneous && entity.type === "channel" && entity.group !== 0)
-                    //    updateGroup(entity.group);
-                    if(arg.spontaneous && entity.type === "channel" && entity.id === viewingChan)
-                        updMessageArea(false);
-                    if(arg.spontaneous && entity.type === "role")
-                        updateGroup(entity.group);
-                })
-                break;
-
             case "webprot.ul-progress":
                 // Call the callback
                 (packetCallbacks[arg.operId] as (p: any, m: any) => any)(arg.progress, arg.max);
-                break;
-
-            case "webprot.blob-preview-available":
-                // Call the callback
-                if(packetCallbacks[arg.operId] !== undefined)
-                    (packetCallbacks[arg.operId] as (name: string, size: string, preview: string, hash: Uint8Array, length: number) => any)
-                    (arg.name, arg.size, arg.preview, arg.hash, arg.length);
                 break;
 
             case "webprot.mfa-secret":

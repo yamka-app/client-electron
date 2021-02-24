@@ -752,6 +752,7 @@ input[type="color"] {
 }
 
 textarea.message-input {
+    padding-top: 5px;
     border:     none;
     background: none;
     box-shadow: none;
