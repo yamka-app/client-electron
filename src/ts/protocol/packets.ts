@@ -383,7 +383,7 @@ export class InviteResolvePacket extends SimpleFieldPacket {
 
     constructor(c?: string, a?: boolean) { super([
             new fields.NumField("add", 1),
-            new fields.StrField("invite")
+            new fields.StrField("code")
         ]);
         this.code = c;
         this.add = a;

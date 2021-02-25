@@ -81,23 +81,23 @@ export default class DataTypes {
     }
     static decStrList(bytes: Buffer): string[] {
         const cnt = this.decNum(bytes.slice(0, 2));
-        var arr = [];
+        var arr = [], pos = 2;
     
-        for(var i = 0; i < cnt;) {
-            arr.push(this.decStr(bytes.slice(i + 2)));
-            i += 2 + this.decNum(bytes.slice(i + 2, i + 4));
+        for(var i = 0; i < cnt; i++) {
+            arr.push(this.decStr(bytes.slice(pos)));
+            pos += 2 + this.decNum(bytes.slice(pos, pos + 2));
         }
     
         return arr;
     }
     static strListLen(bytes: Buffer): number {
         const cnt = this.decNum(bytes.slice(0, 2));
-        var len;
+        var len = 2;
     
-        for(len = 0; len < cnt;)
-            len += 2 + this.decNum(bytes.slice(len + 2, len + 4));
+        for(var i = 0; i < cnt; i++)
+            len += 2 + this.decNum(bytes.slice(len, len + 2));
     
-        return len + 2;
+        return len;
     }
 }
 

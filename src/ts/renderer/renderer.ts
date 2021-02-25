@@ -1,4 +1,4 @@
-const _clientVersion = "0.3.0";
+const _clientVersion = "0.4.0";
 
 const { ipcRenderer, remote, shell, clipboard } = require("electron");
 const { BrowserWindow, dialog } = remote;
@@ -280,7 +280,7 @@ function _rendererFunc() {
         const roleList = elementById("group-settings-role-list");
         const roles    = entityCache[viewingGroup].roles;
         // Force because the roles might have changed their priorities
-        reqEntities(roles.map(x => { return { type: "role", id: x } }), true, () => {
+        reqEntities(roles.map(x => new packets.EntityGetRequest(entities.Role.typeNum, x)), true, () => {
             // Remove previous buttons
             while(roleList.firstChild)
                 roleList.firstChild.remove();
@@ -319,9 +319,20 @@ function _rendererFunc() {
             code.innerHTML = escapeHtml(inv);
             elm.appendChild(code);
 
+            const share = document.createElement("button");
+            share.classList.add("accent-button");
+            share.innerHTML = "SHARE";
+            share.onclick = (e) => {
+                const id = msgSections.length;
+                createInputSection(types.MessageSectionType.INVITE, id, () => {
+                    removeInputSection(id);
+                }, inv);
+            }
+            elm.appendChild(share);
+
             const remove = document.createElement("button");
             remove.classList.add("danger-button");
-            remove.innerHTML = "REVOKE INVITE";
+            remove.innerHTML = "REVOKE";
             remove.onclick = (e) => {
                 invites = invites.filter(x => x != inv);
                 const group = new entities.Group();
@@ -335,20 +346,17 @@ function _rendererFunc() {
     // Shows/hides group settings
     function showGroupSettings() {
         // Load group info
-        const group = entityCache[viewingGroup];
+        const group = entityCache[viewingGroup] as entities.Group;
         (elementById("group-name-change") as HTMLInputElement).value = escapeHtml(group.name);
         triggerAppear(elementById("group-settings"), true);
 
         showGroupSettingsTab("group-settings-section-general");
-        groupSettingsShowChannel(entityCache[viewingGroup].channels[0]);
+        groupSettingsShowChannel(group.channels[0]);
         // The earliest created role is @everyone, and it hast the smallest ID of them all
-        groupSettingsShowRole(entityCache[viewingGroup].roles.sort((a, b) => a - b)[0]);
+        groupSettingsShowRole(group.roles.sort((a, b) => a - b)[0]);
 
-        if(group.icon !== 0) {
-            download(group.icon, (b) => {
-                (elementById("group-icon-huge") as HTMLImageElement).src = "file://" + b
-            });
-        }
+        download(group.icon, (b) =>
+            (elementById("group-icon-huge") as HTMLImageElement).src = "file://" + b);
 
         // Load settings
         try { // these might throw an exception if the user has no access to group settings
@@ -624,7 +632,7 @@ function _rendererFunc() {
             for(const name of nicknames) {
                 name.innerHTML = escapeHtml(user.name);
                 // Set colors
-                if(user.color !== undefined)
+                if(user.color !== undefined && user.color !== "#00000000")
                     name.style.color = user.color;
                 else
                     name.style.color = "unset";
@@ -871,7 +879,8 @@ function _rendererFunc() {
                 return;
             if([types.MessageSectionType.TEXT,
                 types.MessageSectionType.CODE,
-                types.MessageSectionType.QUOTE].indexOf(type) > -1)
+                types.MessageSectionType.QUOTE,
+                types.MessageSectionType.INVITE].includes(type))
                     sects[i].text = (sects[i].typeElm as HTMLTextAreaElement).value;
 
             if(sects[i].blob === undefined) sects[i].blob = 0;
@@ -924,7 +933,8 @@ function _rendererFunc() {
 
             if([types.MessageSectionType.TEXT,
                 types.MessageSectionType.CODE,
-                types.MessageSectionType.QUOTE].indexOf(type) > -1)
+                types.MessageSectionType.QUOTE,
+                types.MessageSectionType.INVITE].includes(type))
                     (section.typeElm as HTMLInputElement).value = section.text;
         }
 
@@ -992,7 +1002,7 @@ function _rendererFunc() {
                 typeElm.placeholder = "Text section";
                 typeElm.rows = 1;
                 typeElm.oninput = () => { adjTaHeight(typeElm); updTyping(typeElm.value) };
-                break
+                break;
             case types.MessageSectionType.FILE:
                 typeElm = document.createElement("div");
                 typeElm.classList.add("message-file-section", "flex-col");
@@ -1015,7 +1025,7 @@ function _rendererFunc() {
                     progress.max = 100;
                     progress.value = 0;
                 }
-                break
+                break;
             case types.MessageSectionType.CODE:
                 typeElm = document.createElement("textarea");
                 typeElm.classList.add("code-input", "fill-width");
@@ -1023,14 +1033,22 @@ function _rendererFunc() {
                 typeElm.rows = 1;
                 typeElm.oninput = () => { adjTaHeight(typeElm); updTyping(typeElm.value) };
                 typeElm.spellcheck = false;
-                break
+                break;
             case types.MessageSectionType.QUOTE:
                 typeElm = document.createElement("textarea");
                 typeElm.classList.add("message-input", "fill-width", "message-quote-section");
                 typeElm.placeholder = "Quote section";
                 typeElm.rows = 1;
                 typeElm.oninput = () => { adjTaHeight(typeElm); updTyping(typeElm.value) };
-                break
+                break;
+            case types.MessageSectionType.INVITE:
+                typeElm = document.createElement("textarea");
+                typeElm.classList.add("message-input", "fill-width");
+                typeElm.placeholder = "Text section";
+                typeElm.rows = 1;
+                typeElm.value = filename;
+                typeElm.disabled = true;
+                break;
         }
         section.appendChild(typeElm);
 
@@ -1115,6 +1133,8 @@ function _rendererFunc() {
                 return "Quote: " + section.text;
             if(section.type === types.MessageSectionType.FILE)
                 return "File";
+            if(section.type === types.MessageSectionType.INVITE)
+                return "Invite";
         }
         return "Empty message";
     }
@@ -1677,7 +1697,7 @@ function _rendererFunc() {
         
         reqEntities([new packets.EntityGetRequest(entities.Role.typeNum, role,
                 new packets.EntityPagination(6 /* members */,
-                    packets.EntityPaginationDirection.DOWN, id_from, 50))], true, () => {
+                    packets.EntityPaginationDirection.UP, id_from, 50))], true, () => {
             var members = [...entityCache[role].members];
             members.sort();
             members = members.map(x => { return { type: "user", id: x } });
@@ -1835,8 +1855,9 @@ function _rendererFunc() {
     function createGroupPanel(id: number) {
         const group = entityCache[id] as entities.Group;
         const panel = document.createElement("div");
+        panel.classList.add("group-panel");
 
-        const top = document.createElement("div");
+        const top = document.createElement("div"); panel.appendChild(top);
         const icon = document.createElement("img"); top.appendChild(icon);
         download(group.icon, (s) => icon.src = "file://" + s);
         const nameUnread = document.createElement("div"); top.appendChild(nameUnread);
@@ -1847,7 +1868,7 @@ function _rendererFunc() {
 
         // Fetch the channels to determine how many messages are unread
         reqEntities(group.channels.map(x => new packets.EntityGetRequest(entities.Channel.typeNum, x)), false, (e) => {
-            var unreadMsgs = 0, unreadChans: {t: string, u: number}[];
+            var unreadMsgs = 0, unreadChans: {t: string, u: number}[] = [];
             for(const c of e) {
                 const chan = c as entities.Channel;
                 unreadMsgs += chan.unread;
@@ -1862,8 +1883,10 @@ function _rendererFunc() {
                                `<img src="icons/channel.png"/> ${unreadChans.length}</span>`
 
             // Create the bottom panel
-            if(unreadChans.length === 0)
+            if(unreadChans.length === 0) {
+                panel.classList.add("bottomless");
                 return;
+            }
 
             const bottom = document.createElement("div"); panel.appendChild(bottom);
             var i; // to reference the leftover channel count later
@@ -1880,6 +1903,12 @@ function _rendererFunc() {
             more.classList.add("gp-channel", "more");
             more.innerHTML = `<img src="icons/channel.png"/>${escapeHtml(left)} MORE`;
         });
+
+        panel.onclick = (e) => {
+            viewingGroup = id;
+            viewingChan = group.channels[0];
+            updLayout();
+        }
 
         return panel;
     }
@@ -2121,6 +2150,10 @@ function _rendererFunc() {
                     entity = Object.assign(oldEntity, entity);
                 entityCache[entity.id] = entity;
 
+                // Update group settings
+                if(entity instanceof entities.Group && entity.id === viewingGroup)
+                    updateGroup(entity.id);
+
                 // message states are immutable, no need to "merge" them with the old version
                 if(entity instanceof entities.Message && entity.latest !== undefined)
                     entityCache[entity.latest.id] = entity.latest;
@@ -2130,10 +2163,15 @@ function _rendererFunc() {
 
                 // Request the DM channel for new friends
                 if(entity instanceof entities.User
-                        && remote.getGlobal("webprotState").self.friends !== undefined
-                        && remote.getGlobal("webprotState").self.friends.includes(entity.id)
-                        && entity.dmChannel === undefined)
-                    reqEntities([new packets.EntityGetRequest(entities.User.typeNum, entity.id)], true, undefined);
+                        && oldEntity instanceof entities.User
+                        && entity.id === remote.getGlobal("webprotState").selfId
+                        && entity.friends.length !== oldEntity.friends.length) {
+                    const friends    = entity.friends;
+                    const oldFriends = oldEntity.friends;
+                    const newFriends = friends.filter(x => !oldFriends.includes(x));
+                    reqEntities(newFriends.map(x =>
+                        new packets.EntityGetRequest(entities.User.typeNum, x)), true, undefined);
+                }
 
                 // Update the unread bubble, just in case
                 if(packet.spontaneous && entity instanceof entities.Message) {
@@ -2162,7 +2200,7 @@ function _rendererFunc() {
                     updMessageArea(false);
 
                 // Update info about self
-                else if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
+                if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
                     remote.getGlobal("webprotState").self = entity;
                     updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
 
@@ -2260,6 +2298,7 @@ function _rendererFunc() {
                             "Channel":      new entities.Channel(),
                             "Group":        new entities.Group(),
                             "Message":      new entities.Message(),
+                            "Role":         new entities.Role(),
                             "File":         new entities.File(),
                             "MessageState": new entities.MessageState()
                         }[e["__type_name"]];
@@ -2700,12 +2739,10 @@ function _rendererFunc() {
         putEntities([group]);
     }
     elementById("group-join-ok").onclick = (e) => {
-        ipcSend({
-            action: "webprot.resolve-invite",
-            code:   (elementById("group-join-code") as HTMLInputElement).value,
-            add:    true,
-            operId: regCallback(hideGroupCreateBox)
-        });
+        sendPacket(new packets.InviteResolvePacket(
+            (elementById("group-join-code") as HTMLInputElement).value,
+            true
+        ));
     }
 
     // Group settings

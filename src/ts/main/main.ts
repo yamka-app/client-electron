@@ -251,7 +251,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
             "EntitiesPacket":            new packets.EntitiesPacket(),
             "FileDownloadRequestPacket": new packets.FileDownloadRequestPacket(),
             "UserSearchPacket":          new packets.UserSearchPacket(),
-            "ContactsManagePacket":      new packets.ContactsManagePacket()
+            "ContactsManagePacket":      new packets.ContactsManagePacket(),
+            "InviteResolvePacket":       new packets.InviteResolvePacket()
         }[type];
 
         if(proto === undefined)

@@ -733,13 +733,10 @@ input[type="color"] {
 
 #central-field {
     position: relative;
-    height: 100%;
+    height: 100%;   
 }
 
 
-#message-input-popup {
-    margin-top: 20px;
-}
 #message-input-container {
     height: fit-content;
     width:   100%;
@@ -848,9 +845,12 @@ span.fg-1 {
     height: 100%;
 }
 
+#message-area {
+    padding-bottom: 20px;
+}
 #message-area-title {
     background-color: var(--shade-4);
-    width:      100%;
+    width:      -webkit-fill-available;
     min-height: 40px;
     padding:    0 0 0 10px;
 
@@ -1124,6 +1124,8 @@ img.large-emoji {
     font-size:   var(--font-size);
 
     cursor: pointer;
+
+    align-items: center;
 }
 #channel-list-header:hover {
     background-color: var(--shade-5);
