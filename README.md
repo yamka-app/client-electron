@@ -5,7 +5,7 @@
 :construction: **!!!WARNING!!!** We're transitioning to new major breaking API changes both on the client and the back end. **This project is _not_ going to work completely at the moment** :construction:\
 
 [//]: # (:construction: **!WARNING!** Both the client the back-end are in their beta stage right now. :construction:\)
-Latest version: **0.4.0**
+Latest version: **0.4.1**
 
 ## Contributing
 We ask of you here the same things we ask of you when you use our service: be kind and respectful to people. Treat every cotribution equally no matter its size. Even if it's just a letter change in a comment somewhere. Even if it's just a tiny bug report.

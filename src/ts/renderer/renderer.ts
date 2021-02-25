@@ -1,4 +1,4 @@
-const _clientVersion = "0.4.0";
+const _clientVersion = "0.4.1";
 
 const { ipcRenderer, remote, shell, clipboard } = require("electron");
 const { BrowserWindow, dialog } = remote;
@@ -1700,7 +1700,7 @@ function _rendererFunc() {
                     packets.EntityPaginationDirection.UP, id_from, 50))], true, () => {
             var members = [...entityCache[role].members];
             members.sort();
-            members = members.map(x => { return { type: "user", id: x } });
+            members = members.map(x => new packets.EntityGetRequest(entities.User.typeNum, x));
             // Request members
             reqEntities(members, false, () => {
                 // Clear previous members if needed
