@@ -237,7 +237,7 @@ function _rendererFunc() {
 
         const channelList = elementById("group-settings-channel-list");
         const channels    = entityCache[viewingGroup].channels;
-        reqEntities(channels.map(x => { return { type: "channel", id: x } }), false, () => {
+        reqEntities(channels.map(x => new packets.EntityGetRequest(entities.Channel.typeNum, x)), false, () => {
             // Remove previous buttons
             while(channelList.firstChild)
                 channelList.firstChild.remove();
@@ -1868,14 +1868,15 @@ function _rendererFunc() {
 
         // Fetch the channels to determine how many messages are unread
         reqEntities(group.channels.map(x => new packets.EntityGetRequest(entities.Channel.typeNum, x)), false, (e) => {
-            var unreadMsgs = 0, unreadChans: {t: string, u: number}[] = [];
+            var unreadMsgs = 0, unreadChans: {t: string, u: number, i: number}[] = [];
             for(const c of e) {
                 const chan = c as entities.Channel;
                 unreadMsgs += chan.unread;
                 if(chan.unread > 0)
                     unreadChans.push({
                         t: chan.name,
-                        u: chan.unread
+                        u: chan.unread,
+                        i: chan.id
                     });
             }
 
@@ -1896,12 +1897,19 @@ function _rendererFunc() {
                 const chan = document.createElement("div"); bottom.appendChild(chan);
                 chan.classList.add("gp-channel");
                 chan.innerHTML = `<img src="icons/channel.png"/>${escapeHtml(desc.t)} • ${escapeHtml(desc.u)}`;
+                chan.onclick = (e) => {
+                    viewingGroup = id;
+                    viewingChan = desc.i;
+                    updLayout();
+                }
             }
 
             const left = unreadChans.length - i;
-            const more = document.createElement("div"); bottom.appendChild(more);
-            more.classList.add("gp-channel", "more");
-            more.innerHTML = `<img src="icons/channel.png"/>${escapeHtml(left)} MORE`;
+            if(left !== 0) {
+                const more = document.createElement("div"); bottom.appendChild(more);
+                more.classList.add("gp-channel", "more");
+                more.innerHTML = `${escapeHtml(left)} MORE`;
+            }
         });
 
         panel.onclick = (e) => {
@@ -2182,6 +2190,9 @@ function _rendererFunc() {
                     }
                     else if(entity.sender === 0)
                         chan.unread--; // the message was deleted
+
+                    if(chan.group !== 0 && viewingGroup === 0)
+                        updGroupList();
                 }
                 if(packet.spontaneous && entity instanceof entities.Message && viewingGroup === 0 && entity.sender !== 0)
                     updateUser(entity.sender);
