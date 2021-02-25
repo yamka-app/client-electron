@@ -1,4 +1,4 @@
-const _clientVersion = "0.4.1";
+const _clientVersion = "0.4.2";
 
 const { ipcRenderer, remote, shell, clipboard } = require("electron");
 const { BrowserWindow, dialog } = remote;
@@ -107,7 +107,7 @@ function _rendererFunc() {
         const xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState === 4 && this.status === 200) {
-                const version = xhttp.responseText;
+                const version = xhttp.responseText.replace(/^\s+|\s+$/g,"").trim();
                 console.log(`Newest version: ${version}`);
                 if(compareVersions(version, _clientVersion) === 1)
                     showUpdBox(`${_clientVersion} → ${version}`);
