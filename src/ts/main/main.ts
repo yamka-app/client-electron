@@ -1,4 +1,5 @@
-import { app, BrowserWindow, Tray, Menu, ipcMain, remote } from "electron";
+import { app, BrowserWindow, Tray, Menu, ipcMain } from "electron";
+import { initialize as remoteInit } from "@electron/remote/main";
 import zlib    from "zlib";
 import tmp     from "tmp";
 import path    from "path";
@@ -8,8 +9,6 @@ import fs      from "fs";
 import DataTypes     from "../protocol/dataTypes";
 import * as packets  from "../protocol/packets";
 import * as entities from "../protocol/entities";
-import { File }     from "../protocol/entities";
-import { EntitiesPacket } from "../protocol.s/packets.s";
 
 const dataHomePath = path.join(app.getPath("appData"), "ordermsg");
 const configPath   = path.join(dataHomePath, "order_config.json");
@@ -41,6 +40,8 @@ const tmpDir = tmp.dirSync().name;
 console.log("Temporary directory: " + tmpDir);
 console.log("Config and auth: " + configPath);
 
+remoteInit();
+
 function createWindow() {
     if(!windowCreated){
         // Create the window
@@ -53,8 +54,9 @@ function createWindow() {
             minWidth:    1000,
             minHeight:   600,
             webPreferences: {
-                nodeIntegration:    true,
-                enableRemoteModule: true
+                contextIsolation: false,
+                enableRemoteModule: true,
+                preload: path.join(__dirname, "../../esnext/renderer/preload.js")
             },
             width:  (config && config.bounds) ? config.bounds.width  : 1280,
             height: (config && config.bounds) ? config.bounds.height : 720

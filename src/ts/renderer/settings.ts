@@ -1,6 +1,8 @@
-const escapeHtml = require("escape-html");
-const tinycolor  = require("tinycolor2");
-const electron   = require("electron");
+const _modules = window["_modules"];
+
+const electron   = _modules.electron;
+const tinycolor  = _modules.tinycolor;
+const escapeHtml = _modules.escapeHtml;
 
 // Default settings
 const defaultSettings: {name: string, value: any}[] = [
@@ -23,7 +25,7 @@ const toggleSettings: {name: string, element: string}[] = [
 ];
 
 // Set ot get a setting
-const ipcRenderer_settings = require("electron").ipcRenderer
+const ipcRenderer_settings = electron.ipcRenderer;
 export function configGet(k: string): any {
     return ipcRenderer_settings.sendSync("synchronous-message", {
         action: "config.get",

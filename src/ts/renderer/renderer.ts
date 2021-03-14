@@ -1,19 +1,22 @@
 const _clientVersion = "0.4.2";
 
-const { ipcRenderer, remote, shell, clipboard } = require("electron");
-const { BrowserWindow, dialog } = remote;
-const escapeHtml = require("escape-html");
-const marked     = require("marked");
+const _modules = window["_modules"];
 
-const path               = require("path");
-const remark             = require("remark");
-const gemojiToEmoji      = require("remark-gemoji-to-emoji");
-const twemoji            = require("twemoji");
-const fs                 = require("fs");
-const qrcode             = require("qrcode");
-const { highlightBlock } = require("highlight.js");
-const blurhash           = require("blurhash");
-const compareVersions    = require('compare-versions');
+const remote                            = _modules.remote;
+const { BrowserWindow, dialog }         = remote;
+const { ipcRenderer, shell, clipboard } = _modules.electron;
+
+const escapeHtml      = _modules.escapeHtml;
+const marked          = _modules.marked;
+const path            = _modules.path;
+const remark          = _modules.remark;
+const gemojiToEmoji   = _modules.gemojiToEmoji;
+const twemoji         = _modules.twemoji;
+const fs              = _modules.fs;
+const qrcode          = _modules.qrcode;
+const highlightBlock  = _modules.highlightBlock;
+const blurhash        = _modules.blurhash;
+const compareVersions = _modules.compareVersions;
 
 import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
