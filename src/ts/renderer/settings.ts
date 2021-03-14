@@ -6,8 +6,8 @@ const escapeHtml = _modules.escapeHtml;
 
 // Default settings
 const defaultSettings: {name: string, value: any}[] = [
-    { name: "accentColor",   value: "#fa671b"         },
-    { name: "fontSize",      value: 9                 },
+    { name: "accentColor",   value: "#fa3c1b"         },
+    { name: "fontSize",      value: 10                },
     { name: "customTheme",   value: false             },
     { name: "theme",         value: "themes/dark.css" },
     { name: "notifications", value: true              },
@@ -100,23 +100,11 @@ function _settingsFunc() {
         // Change accent color vars
         const black = "#000000"; const white = "#ffffff";
         docStyle.setProperty("--accent",            tinycolor(color).toString());
+        docStyle.setProperty("--accent-alt",        tinycolor(color).spin(-15).toString());
+        docStyle.setProperty("--accent-trans",      color + "90");
         docStyle.setProperty("--accent-dim",        tinycolor(color).darken(10).toString());
         docStyle.setProperty("--accent-dim-2",      tinycolor(color).darken(20).toString());
-        docStyle.setProperty("--accent-trans",      tinycolor(color).setAlpha(0x48).toString());
         docStyle.setProperty("--accent-foreground", tinycolor(color).isLight() ? black : white);
-
-        // Set the shade colors (used for background), also mixing in a little bit of the accent color
-        const tc = tinycolor(color);
-        for(let i = 1; i <= 7; i++) {
-            const original =  tinycolor(docStyleComp.getPropertyValue("--default-shade-" + i));
-            const colorzied = tinycolor.mix(original, tc, 1);
-            docStyle.setProperty("--shade-" + i, colorzied.toString());
-
-            if(i === 3 || i === 4) {
-                const originalTrans = tinycolor(docStyleComp.getPropertyValue("--default-shade-" + i + "-trans"));
-                docStyle.setProperty("--shade-" + i + "-trans", colorzied.setAlpha(originalTrans.getAlpha()).toString());
-            }
-        }
 
         // Set theme name and author fields
         document.getElementById("theme-name")  .innerHTML = escapeHtml(docStyleComp.getPropertyValue("--theme-name"));

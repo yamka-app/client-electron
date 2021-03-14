@@ -16,9 +16,9 @@
     bottom:  0;
     z-index: 500;
 
-    background-color: var(--shade-3-trans);
+    background: var(--background-trans);
     border-radius: 5px;
-    box-shadow: 0 0 15px var(--shadow);
+    box-shadow: var(--shadow);
     backdrop-filter: blur(5px);
 
     display: flex;
@@ -40,9 +40,9 @@
     padding-bottom: 20px;
     padding-right:  20px;
 
-    background-color: var(--shade-3);
+    background: var(--background);
     border-radius:    5px 0 0 5px;
-    box-shadow:       15px 0 15px -15px var(--shadow);
+    box-shadow: var(--shadow);
 
     display:        flex;
     flex-direction: column;
@@ -103,7 +103,7 @@ input[type="radio"].settings-radio:checked + label {
 
     margin: 5px auto 5px auto;
 
-    background-color: var(--shade-7);
+    background: var(--background);
 }
 
 .settings-subsection {
@@ -115,9 +115,9 @@ input[type="radio"].settings-radio:checked + label {
     margin-bottom: 20px;
     padding:       20px;
 
-    background-color: var(--shade-3);
+    background: var(--background);
     border-radius:    5px;
-    box-shadow:       0 0 15px var(--shadow);
+    box-shadow: var(--shadow);
 
     display:        flex;
     flex-direction: column;
@@ -142,7 +142,7 @@ input[type="radio"].settings-radio:checked + label {
     top: 0px;
     z-index: 500;
 
-    background-color: black;
+    background: black;
     opacity: 0;
     transition: opacity 0.25s;
     border-radius: 32px;
@@ -245,7 +245,7 @@ input[type="radio"].settings-radio:checked + label {
     align-items:     center;
 }
 .group-invite-entry:not(:nth-child(1)) {
-    border-top: 1px solid var(--shade-7);
+    border-top: 1px solid var(--background);
 }
 .group-invite-entry button {
     margin: 0 !important;
@@ -267,8 +267,8 @@ input[type="radio"].settings-radio:checked + label {
     outline: none;
 
     height: 10px;
-    background-color: var(--shade-7);
-    box-shadow:       0 0 10px var(--shadow);
+    background: var(--background);
+    box-shadow: var(--shadow);
 }
 .trackbar::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -276,7 +276,7 @@ input[type="radio"].settings-radio:checked + label {
     width:  10px;
     height: 20px;
     background: var(--accent);
-    box-shadow: 0 0 3px var(--accent);
+    box-shadow: var(--shadow);
     border-radius: 5px;
 
     cursor: pointer;
@@ -319,9 +319,9 @@ input[type="radio"].settings-radio:checked + label {
     padding: 20px;
 
     border-radius:    5px;
-    background-color: var(--shade-3);
+    background: var(--background);
     /*backdrop-filter:  blur(5px);*/
-    box-shadow:       0 0 15px var(--shadow);
+    box-shadow: var(--shadow);
 
     font-family: Montserrat;
     font-size:   var(--font-size);
@@ -348,7 +348,7 @@ input[type="radio"].settings-radio:checked + label {
     max-width:  80vw;
     max-height: 80vh;
 
-    background-color: unset;
+    background: unset;
     border-radius:    0;
     padding:          unset;
     backdrop-filter:  unset;
@@ -370,7 +370,7 @@ input[type="radio"].settings-radio:checked + label {
     height:  55vh;
     padding: 0;
 
-    box-shadow: 0 0 15px var(--shadow);
+    box-shadow: var(--shadow);
 }
 #profile-topbar {
     height: fit-content;
@@ -381,7 +381,7 @@ input[type="radio"].settings-radio:checked + label {
     margin:  0;
     padding: 20px;
 
-    background-color: var(--shade-2);
+    background: var(--background);
     border-radius:    5px 5px 0 0;
 
     align-items: center;
@@ -413,7 +413,7 @@ input[type="radio"].settings-radio:checked + label {
 .mutual-thing {
     padding:          10px;
     margin-bottom:    10px;
-    background-color: var(--shade-3-trans);
+    background: var(--background-trans);
     transition:       box-shadow       0.1s ease,
                       background-color 0.1s ease;
     border-radius:    5px;
@@ -425,8 +425,8 @@ input[type="radio"].settings-radio:checked + label {
     cursor: pointer;
 }
 .mutual-thing:hover {
-    background-color: var(--shade-4);
-    box-shadow:       0 0 15px var(--shadow);
+    background: var(--background);
+    box-shadow: var(--shadow);
 }
 
 #login-form, #mfa-form, #signup-form {
@@ -440,8 +440,8 @@ input[type="radio"].settings-radio:checked + label {
 
     font-family:      Montserrat;
     font-size:        var(--font-size);
-    background-color: var(--shade-3-trans);
-    box-shadow:       0 0 15px var(--shadow);
+    background: var(--background-trans);
+    box-shadow: var(--shadow);
 }
 
 #owned-bot-list,
@@ -461,8 +461,8 @@ input[type="radio"].settings-radio:checked + label {
 
     width:         300px;
     padding:       15px 0 15px 0;
-    background:    var(--shade-1);
-    box-shadow:    0 0 15px var(--shadow);
+    background:    var(--background);
+    box-shadow: var(--shadow);
     border-radius: 15px;
 
     pointer-events: all;
@@ -473,11 +473,11 @@ input[type="radio"].settings-radio:checked + label {
 
     padding:    7px 15px 7px 15px;
     cursor:     pointer;
-    background: var(--shade-1);
+    background: var(--background);
     transition: background 0.2s ease;
 }
 .message-state:hover {
-    background: var(--shade-3);
+    background: var(--background);
 }
 .message-state > span:nth-child(1) {
     color: var(--foreground);
