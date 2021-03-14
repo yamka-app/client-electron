@@ -26,14 +26,14 @@ cd client-electron
 npm instead
 ```
 
-Use this to produce a [hrt](https://github.com/portasynthinca3/hrt) file
+Use this to produce a [`hrt`](https://github.com/portasynthinca3/hrt) artifact
 ```sh
 git clone https://github.com/ordermsg/client-electron.git
 cd client-electron
 npm run dist-hrt
 ```
 
-Use this to produce AppImage and exe files:
+Use this to produce `AppImage` and `exe` artifacts:
 ```sh
 git clone https://github.com/ordermsg/client-electron.git
 cd client-electron
