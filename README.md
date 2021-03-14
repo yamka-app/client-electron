@@ -19,17 +19,25 @@ Please disclose security vulnerabilities responsively. E-Mail me (`portasynthinc
 I will receive your report and do my best to mitigate the vulnerability. Feel free to disclose it two weeks after the patch has been pushed to master if it's client-related, or immediately after me saying it's fixed if it's backend-related. Thank you.
 
 ## Build
-Clone the repository, enter the cloned directory and run `npm run dist`, that's it!
-```sh
-git clone https://github.com/ordermsg/client-electron.git
-cd client-electron
-npm run dist
-```
-Or, if you want to just run it wuthout actually building the wrole thing, do `npm start` instead:
+Do `npm start` to run the app without producing any artifacts:
 ```sh
 git clone https://github.com/ordermsg/client-electron.git
 cd client-electron
 npm instead
+```
+
+Use this to produce a [hrt](https://github.com/portasynthinca3/hrt) file
+```sh
+git clone https://github.com/ordermsg/client-electron.git
+cd client-electron
+npm run dist-hrt
+```
+
+Use this to produce AppImage and exe files:
+```sh
+git clone https://github.com/ordermsg/client-electron.git
+cd client-electron
+npm run dist
 ```
 
 ## Or download binaries
