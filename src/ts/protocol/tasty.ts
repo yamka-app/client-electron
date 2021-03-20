@@ -7,10 +7,11 @@ import * as dataTypes from "./dataTypes";
 
 export const TASTY_PORT = 1746;
 
-export class TastyClient {
-    private sock: dgram.Socket;
-    private key:  KeyObject;
-    private iv:   Buffer;
+export default class TastyClient {
+    private sock:    dgram.Socket;
+    private key:     KeyObject;
+    private iv:      Buffer;
+    private session: Buffer;
 
     constructor(keyCreated: (key: Buffer) => void) {
         const keyBytes = crypto.randomBytes(128 / 8);
@@ -20,7 +21,9 @@ export class TastyClient {
         keyCreated(Buffer.concat([keyBytes, this.iv]));
     }
 
-    finish(addr: string) {
+    finish(addr: string, session: Buffer) {
+        this.session = session;
+
         // create socket
         this.sock = dgram.createSocket("udp4");
         this.sock.connect(TASTY_PORT, addr);

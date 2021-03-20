@@ -9,6 +9,7 @@ import fs      from "fs";
 import DataTypes     from "../protocol/dataTypes";
 import * as packets  from "../protocol/packets";
 import * as entities from "../protocol/entities";
+import TastyClient   from "../protocol/tasty";
 
 const dataHomePath = path.join(app.getPath("appData"), "ordermsg");
 const configPath   = path.join(dataHomePath, "order_config.json");
@@ -129,24 +130,37 @@ const webprotSettings = {
     fileChunkSize:        1024*10
 };
 
-var webprotState = {
-    connected:     false,
-    connecting:    false,
-    sendPings:     false,
-    socket:        null,
-    seqId:         1,
-    queue:         [],
-    selfId:        0,
-    self:          {},
-    pingSent:      0,
-    pingTime:      0,
-
-    // file operations
-    downStates:    {},
-    upStates:      {},
-
-    references:    {}
-}
+const webprotState: {
+    connected:  boolean,
+    connecting: boolean,
+    sendPings:  boolean,
+    socket:     any,
+    seqId:      number,
+    queue:      Buffer[],
+    selfId:     number,
+    self:       entities.User | {},
+    pingSent:   number,
+    pingTime:   number,
+    tasty:      TastyClient | null,
+    downStates: any,
+    upStates:   any,
+    references: any
+} = {
+    connected:  false,
+    connecting: false,
+    sendPings:  false,
+    socket:     null,
+    seqId:      1,
+    queue:      [],
+    selfId:     0,
+    self:       {},
+    pingSent:   0,
+    pingTime:   0,
+    tasty:      null,
+    downStates: {},
+    upStates:   {},
+    references: {}
+};
 
 function webprotData(bytes: Buffer) {
     console.log("Received:", bytes);
@@ -171,6 +185,16 @@ function webprotData(bytes: Buffer) {
     if(packet instanceof packets.FileDataChunkPacket) {
         const stream = webprotState.downStates[packet.replyTo].stream as fs.WriteStream;
         stream.write(packet.data);
+        return;
+    }
+
+    // Voice join approval
+    if(packet instanceof packets.VoiceJoinPacket) {
+        if(webprotState.tasty === null)
+            throw new Error("Spurious voice join approval");
+
+        webprotState.tasty.finish(packet.addr, packet.crypto);
+
         return;
     }
 
@@ -347,6 +371,7 @@ function webprotConnect(force: boolean =false) {
     webprotState.selfId = 0;
     webprotState.self = {};
     webprotState.pingSent = 0;
+    webprotState.tasty = null;
     packets.Packet.nextSeq = 1;
 
     // Disconnect if connected
@@ -382,7 +407,7 @@ function webprotConnect(force: boolean =false) {
 
         // Send the packets in the queue
         webprotState.queue.forEach((bytes) => {
-            webprotSendBytes(bytes)
+            webprotSendBytes(bytes);
         });
         webprotState.queue = [];
     })
@@ -414,6 +439,11 @@ ipcMain.on("asynchronous-message", (event, arg) => {
         webprotConnect(true);
     } else if(arg.action === "webprot.send-packet") {
         webprotSendPacket(arg.packet, arg.type, arg.reference, arg.ref2);
+    } else if(arg.action === "tasty.connect") {
+        // ask the server to join a voice channel
+        webprotState.tasty = new TastyClient((key) => {
+            webprotSendPacket(new packets.VoiceJoinPacket(arg.channel, "", key));
+        });
     }
 });
 

@@ -444,3 +444,19 @@ export class ClientIdentityPacket extends SimpleFieldPacket {
         this.userId = id;
     }
 }
+
+export class VoiceJoinPacket extends SimpleFieldPacket {
+    typeNum = 20;
+    chanId: number;
+    addr:   string;
+    crypto: Buffer;
+
+    constructor(cid?: number, a?: string, c?: Buffer) {
+        super([
+            new fields.NumField("chanId", 8),
+            new fields.StrField("addr"),
+            new fields.BinField("crypto")
+        ]);
+        this.chanId = cid; this.addr = a; this.crypto = c;
+    }
+}
