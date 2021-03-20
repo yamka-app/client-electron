@@ -17,3 +17,4 @@ _modules["compareVersions"] = require('compare-versions');
 _modules["tinycolor"]       = require('tinycolor2');
 
 window["_modules"] = _modules;
+window["__dirname"] = _modules["path"].join(__dirname, "../../../");

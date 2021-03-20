@@ -120,7 +120,7 @@ app.on("window-all-closed", () => { windowCreated = false; });
 // =========================================== PROTOCOL SECTION
 
 const webprotSettings = {
-    host:                 "ordermsg.tk",
+    host:                 "api.ordermsg.tk",
     port:                 1746,
     filePort:             1747,
     version:              5,

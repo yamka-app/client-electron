@@ -97,7 +97,7 @@ function _rendererFunc() {
     });
     
     // Load sounds
-    //sounds.notification = new Audio(path.join(__dirname, "sounds/notification.wav"));
+    //sounds.notification = new Audio(path.join(window["__dirname"], "sounds/notification.wav"));
 
     // Try to connect every 2 seconds
     setInterval(() => ipcSend({
@@ -461,7 +461,7 @@ function _rendererFunc() {
         return ["offline", "online", "sleep", "dnd"][status];
     }
     function statusIconPath(status: number): string {
-        return path.join(__dirname, "icons/" + statusStr(status) + ".png");
+        return path.join(window["__dirname"], "icons/" + statusStr(status) + ".png");
     }
 
     // Update info about self
@@ -715,7 +715,7 @@ function _rendererFunc() {
     
         const verifiedBadge = document.createElement("img");
         verifiedBadge.classList.add("verified-badge", "verified-badge-" + id);
-        verifiedBadge.src = path.join(__dirname, "icons/badges/verified.png");
+        verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
         nicknameContainer.appendChild(verifiedBadge);
     
         const nickname = document.createElement("span");
@@ -745,7 +745,7 @@ function _rendererFunc() {
             elm.appendChild(friendRemoveBtn);
     
             const friendRemoveImg = document.createElement("img");
-            friendRemoveImg.src = path.join(__dirname, "icons/friend_remove.png");
+            friendRemoveImg.src = path.join(window["__dirname"], "icons/friend_remove.png");
             friendRemoveBtn.appendChild(friendRemoveImg);
         }
         // Pending in users (add an accept button)
@@ -762,7 +762,7 @@ function _rendererFunc() {
             elm.appendChild(friendAcceptBtn);
     
             const friendAcceptImg = document.createElement("img");
-            friendAcceptImg.src = path.join(__dirname, "icons/approve.png");
+            friendAcceptImg.src = path.join(window["__dirname"], "icons/approve.png");
             friendAcceptBtn.appendChild(friendAcceptImg);
         }
         if(special === "friend") {
@@ -993,7 +993,7 @@ function _rendererFunc() {
         removeBtn.addEventListener("click", (e) => removeCb());
 
         const removeImg = document.createElement("img");
-        removeImg.src = path.join(__dirname, "icons/remove_section.png");
+        removeImg.src = path.join(window["__dirname"], "icons/remove_section.png");
         removeBtn.appendChild(removeImg);
 
         var typeElm;
@@ -1216,7 +1216,7 @@ function _rendererFunc() {
             badges.firstChild.remove();
         // Add badges
         for(const bid of user.badges) {
-            const file = path.join(__dirname, "icons", "badges", ["verified", "staff", "bot"][bid - 1] + ".png")
+            const file = path.join(window["__dirname"], "icons", "badges", ["verified", "staff", "bot"][bid - 1] + ".png")
             const abbr = ["This user is who they claim to be",
                           "This user is a member of the core Order team",
                           "This user is a bot"][bid - 1]
@@ -1453,7 +1453,7 @@ function _rendererFunc() {
 
             var verifiedBadge = document.createElement("img");
             verifiedBadge.classList.add("verified-badge", "verified-badge-" + msg.sender);
-            verifiedBadge.src = path.join(__dirname, "icons/badges/verified.png");
+            verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
             nicknameContainer.appendChild(verifiedBadge);
     
             const nickname = document.createElement("span");
@@ -1501,7 +1501,7 @@ function _rendererFunc() {
                     }
 
                     const copyImg = document.createElement("img");
-                    copyImg.src = path.join(__dirname, "icons/copy.png");
+                    copyImg.src = path.join(window["__dirname"], "icons/copy.png");
                     copyButton.appendChild(copyImg);
 
                     break;
@@ -1604,7 +1604,7 @@ function _rendererFunc() {
                             }
 
                             const dlBtnIcon = document.createElement("img");
-                            dlBtnIcon.src = path.join(__dirname, "icons/download.png");
+                            dlBtnIcon.src = path.join(window["__dirname"], "icons/download.png");
                             dlBtn.appendChild(dlBtnIcon);
                         }
                     })
