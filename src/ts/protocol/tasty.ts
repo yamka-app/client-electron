@@ -5,6 +5,10 @@ import crypto, { KeyObject } from "crypto";
 
 import * as dataTypes from "./dataTypes";
 
+import { OpusEncoder } from "@discordjs/opus";
+import Speaker         from "speaker";
+import Microphone      from "node-microphone";
+
 export const TASTY_PORT = 1746;
 
 export default class TastyClient {
