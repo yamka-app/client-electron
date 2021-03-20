@@ -10,33 +10,41 @@
     --apply-dim-1: #1d861d;
     --apply-dim-2: #146414;
 
-    --red:    #e41e1e;
-    --yellow: #c7c72c;
-    --green:  #2ac02a;
+    --red:          linear-gradient(90deg, #f31c00, #eb5600);
+    --red-trans:    #f31c0090;
+    --yellow:       linear-gradient(90deg, #e2df0e, #d9e718);
+    --yellow-trans: #e2df0e90;
+    --green:        linear-gradient(90deg, #2ac02a, #2ac087);
+    --green-trans:  #2ac02a90;
     --rainbow-grad: linear-gradient(90deg, #fa1b1b, #fab31b);
     
-    --background-c1:      #e7e7e7;
-    --background-c2:      #f7f7f7;
-    --background-c1-trans:#e7e7e7af;
-    --background-c2-trans:#f7f7f7af;
+    --background-c1:      #e9f0f1;
+    --background-c2:      #e5edee;
+    --background-c1-trans:#e9f0f1af;
+    --background-c2-trans:#e5edeeaf;
 
-    --shadow-dark:  #41414125;
-    --shadow-light: #ffffffd5;
+    --shadow-dark:  #3e404125;
+    --shadow-light: #f6fcffe8;
     
     --danger-foreground: #efefef;
     --apply-foreground:  #efefef;
     --foreground-1:      #3e4c50;
     --foreground-2:      #283235;
-    --foreground:        #202729;
+    --foreground:        #555555;
 
     --shadow:  3px  3px 8px var(--shadow-dark),
               -3px -3px 8px var(--shadow-light);
 
-    --shadow-active:  3px  3px 8px var(--shadow-dark),
-                     -3px -3px 8px var(--shadow-light)
-                     inset;
+    --shadow-active:  1px  1px 4px var(--shadow-dark),
+                     -1px -1px 4px var(--shadow-light),
+                      2px  2px 6px var(--shadow-dark)  inset,
+                     -2px -2px 6px var(--shadow-light) inset;
 
-    --border: 1px solid #ffffff20;
+    --shadow-accent-active:  1px  1px 4px var(--shadow-dark),
+                            -1px -1px 4px var(--shadow-light);
+
+    --border:       1px solid #f2fcff20;
+    --border-thicc: 3px solid #f2fcff20;
 
     --darken-icon: 80%;
 }

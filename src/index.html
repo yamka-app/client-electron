@@ -257,7 +257,7 @@
               Thanks to:<br><br>
               Icons8 for providing icons<br>
               Twitter for providing Twemoji<br>
-              The Montserrat Project Authors for providing the Montserrat font<br>
+              The RFlex, Montserrat Project Authors for providing the RFlex, Montserrat font<br>
               Google for providing Noto Sans<br>
               JetBrains for providing JetBrains Mono<br><br>
               hetyh and LukasTM for suporting the project financially<br>
@@ -589,10 +589,10 @@
       </div>
 
       <tr style="height: fit-content"><td style="padding: 0"><div id="login-form" style="display: show;" class="flex-col">
-        E-MAIL
+        <span class="form-head">E-MAIL</span>
         <span class="input-container"><input id="login-email" style="margin-bottom: 10px;" class="fill-width"/></span>
   
-        <span style="padding-top: 10px;">PASSWORD</span>
+        <span class="form-head">PASSWORD</span>
         <span class="input-container" class="fill-width"><input id="login-password" type="password" class="fill-width"/></span>
   
         <button id="login-button" class="accent-button fill-width">LOGIN</button>
@@ -609,20 +609,20 @@
       </div></td></tr>
 
       <tr style="height: fit-content"><td style="padding: 0"><div id="signup-form" style="display: none;">
-        USERNAME
+        <span class="form-head">USERNAME</span>
         <label id="username-required" style="color: #aa3a3a; display: none;">REQUIRED</label>
         <br>
         <span class="input-container"><input id="signup-username" style="margin-bottom: 10px;" class="fill-width"/></span>
         <br>
   
-        <span style="padding-top: 10px;">E-MAIL</span>
+        <span class="form-head">E-MAIL</span>
         <label id="email-required" style="color: #aa3a3a; display: none;">INVALID</label>
         <br>
         <span class="input-container"><input id="signup-email" style="margin-bottom: 10px;" class="fill-width"/></span>
         <br>
   
-        <span style="padding-top: 10px;">PASSWORD</span>
-        <label id="password-strength-text" style="color: #3a3a3a"></label>
+        <span class="form-head">PASSWORD</span>
+        <label id="password-strength-text" style="-webkit-background-clip: text;"></label>
         <br>
         <progress id="password-strength-meter" value="0" max="3" class="fill-width password-weak"></progress>
         <br>

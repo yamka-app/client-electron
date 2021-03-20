@@ -15,28 +15,33 @@
     --green:  #2ac02a;
     --rainbow-grad: linear-gradient(90deg, #fa1b1b, #fab31b);
     
-    --background-c1:       #1a1a1a;
-    --background-c2:       #1d1d1d;
-    --background-c1-trans: #1a1a1aaf;
-    --background-c2-trans: #1d1d1daf;
+    --background-c1:       #131519;
+    --background-c2:       #15181d;
+    --background-c1-trans: #131519af;
+    --background-c2-trans: #15181daf;
 
-    --shadow-dark:  #20202025;
+    --shadow-dark:  #11111125;
     --shadow-light: #b3b3b30f;
 
     --danger-foreground: #efefef;
     --apply-foreground:  #efefef;
-    --foreground:        #efefef;
-    --foreground-1:      #7e7d7d;
-    --foreground-2:      #adadad;
+    --foreground:        #b1b1b1;
+    --foreground-1:      #a7a7a7;
+    --foreground-2:      #979797;
 
     --shadow:  3px  3px 8px var(--shadow-dark),
               -3px -3px 8px var(--shadow-light);
 
-    --shadow-active:  3px  3px 8px var(--shadow-dark),
-                     -3px -3px 8px var(--shadow-light)
-                     inset;
+    --shadow-active:  1px  1px 4px var(--shadow-dark),
+                     -1px -1px 4px var(--shadow-light),
+                      2px  2px 6px var(--shadow-dark)  inset,
+                     -2px -2px 6px var(--shadow-light) inset;
 
-    --border: 1px solid #ffffff04;
+    --shadow-accent-active:  1px  1px 4px var(--shadow-dark)  inset,
+                            -1px -1px 4px var(--shadow-light) inset;
+
+    --border:       1px solid #ffffff04;
+    --border-thicc: 3px solid #ffffff04;
 
     --darken-icon: 0%;
 }

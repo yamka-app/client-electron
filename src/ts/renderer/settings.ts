@@ -7,7 +7,7 @@ const escapeHtml = _modules.escapeHtml;
 // Default settings
 const defaultSettings: {name: string, value: any}[] = [
     { name: "accentColor",   value: "#fa3c1b"         },
-    { name: "fontSize",      value: 10                },
+    { name: "fontSize",      value: 10.5              },
     { name: "customTheme",   value: false             },
     { name: "theme",         value: "themes/dark.css" },
     { name: "notifications", value: true              },

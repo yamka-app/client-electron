@@ -24,16 +24,16 @@
     border-radius: 16px;
 }
 
-.slider:before {
-    position: absolute;
-    content:  "";
-    height:   12px;
-    width:    12px;
-    left:     2px;
-    bottom:   2px;
-    background: var(--foreground);
-    transition: background-color 0.25s;
-    transition: transform 0.25s;
+.slider::before {
+    position:      absolute;
+    content:       "";
+    height:        12px;
+    width:         12px;
+    left:          2px;
+    bottom:        2px;
+    background:    var(--foreground);
+    transition:    background-color 0.25s;
+    transition:    transform 0.25s;
     border-radius: 50%;
 }
 

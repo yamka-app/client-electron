@@ -2,12 +2,17 @@
 
 @font-face {
     font-family: Roboto;
-    src: url(../fonts/Roboto-Regular.ttf)
+    src: url(../fonts/Roboto-Regular.ttf);
 }
 
 @font-face {
     font-family: Montserrat;
-    src: url(../fonts/Montserrat-Bold.ttf)
+    src: url(../fonts/Montserrat-Bold.ttf);
+}
+
+@font-face {
+    font-family: RFlex;
+    src: url(../fonts/RFlexBold.ttf);
 }
 
 @font-face {
@@ -34,8 +39,9 @@
 }
 
 :root {
-    --background:  linear-gradient(-45deg, var(--background-c2), var(--background-c1));
-    --accent-grad: linear-gradient(-45deg, var(--accent), var(--accent-alt));
+    --background:        linear-gradient(-45deg, var(--background-c2), var(--background-c1));
+    --background-active: linear-gradient(-45deg, var(--background-c1), var(--background-c2));
+    --accent-grad:       linear-gradient(-45deg, var(--accent), var(--accent-alt));
 }
 
 body {
@@ -44,7 +50,7 @@ body {
 
     background: var(--background);
 
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     color:       var(--foreground);
 
     user-select: none;
@@ -93,7 +99,7 @@ pre {
 
 h6 {
     margin:      0 0 20px 0;
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
     color:       var(--foreground);
 }
@@ -126,7 +132,7 @@ h6 {
     border-radius:    0 0 5px 5px;
 }
 #email-unconfirmed-bar span {
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
     color:       var(--danger-foreground);
 }
@@ -148,36 +154,24 @@ textarea,
 input {
     outline: none !important;
 
-    box-sizing:border-box;
-    padding-left:  10px;
-    padding-right: 10px;
+    box-sizing: border-box;
+    padding:    0 15px 0 15px;
 
-    background: var(--background);
-    border-radius: 3px;
-    border: 0px solid transparent;
-    transition: border-color 0.1s ease,
-                box-shadow   0.1s ease;
-    box-shadow: var(--shadow);
+    background:    var(--background-active);
+    border-radius: 15px;
+    border:        var(--border);
+    box-shadow:    var(--shadow-active);
 
-    color: var(--foreground);
-    font-family: Montserrat;
-    font-size: var(--font-size);
+    color:       var(--foreground);
+    font-family: RFlex, Montserrat;
+    font-size:   var(--font-size);
 }
 textarea {
     resize: none;
 }
 input {
-    height: 35px;
+    height:     40px;
     margin-top: 5px;
-}
-input:hover {
-    border:     1px solid var(--accent-dim);
-    box-shadow: var(--shadow);
-}
-input:focus {
-    border:     1px solid var(--accent);
-    transition: border-color 0.1s;
-    box-shadow: var(--shadow);
 }
 
 .fill-width {
@@ -191,15 +185,16 @@ button {
     height:     35px;
     padding:    0 15px 0 15px;
 
-    background: var(--background);
-    border-radius:    15px;
-    border:           var(--border);
+    background:    var(--background);
+    border-radius: 15px;
+    border:        var(--border);
 
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
     color:       var(--foreground);
     transition:  color      0.1s ease,
-                 transform  0.1s ease,
+                 padding    0.1s ease,
+                 background 0.1s ease,
                  box-shadow 0.1s ease;
 
     box-shadow: var(--shadow);
@@ -208,19 +203,19 @@ button {
 }
 button:active {
     box-shadow: var(--shadow-active);
+    background: var(--background-active);
+    padding:    3px 0 0 3px; /* to move content */
 }
 
 .accent-button {
-    border-bottom:    3px solid var(--accent-dim-2);
-    background: var(--accent);
-    color:            var(--accent-foreground);
-    box-shadow: var(--shadow);
-}
-.accent-button:hover {
-    background: var(--accent-dim);
+    border-bottom: var(--border);
+    background:    var(--accent-grad);
+    color:         var(--accent-foreground);
+    box-shadow:    var(--shadow);
 }
 .accent-button:active {
-    background: var(--accent-dim-2);
+    box-shadow: var(--shadow-accent-active);
+    background: var(--accent-grad);
 }
 
 .danger-button {
@@ -310,31 +305,52 @@ button.icon-button img {
 }
 
 progress {
-    margin-top: 5px;
-    height: 5px;
-
-    border: none;
+    margin-top:    5px;
+    height:        15px;
+    border-radius: 8px;
+    border:        var(--border-thicc);
+    box-shadow:    var(--shadow-active);
+    background:    var(--background-active);
 }
 progress::-webkit-progress-bar {
-    background: var(--background);
-    border-radius: 2px;
+    background:    var(--background-active);
+    border-radius: 8px;
 }
 progress::-webkit-progress-value {
-    transition: width 0.1s ease,
-                color 0.1s ease;
-    border-radius: 2px;
+    transition:    width 0.1s ease,
+                   color 0.1s ease;
+    height:        10px;
+    border-radius: 5px;
 }
 progress.password-strong::-webkit-progress-value {
-    background: var(--green);
-}
-progress.password-weak::-webkit-progress-value {
-    background: var(--red);
+    background:         var(--green);
+    box-shadow: 0 0 4px var(--green-trans);
 }
 progress.password-medium::-webkit-progress-value {
-    background: var(--yellow);
+    background:         var(--yellow);
+    box-shadow: 0 0 4px var(--yellow-trans);
 }
-progress.password-strong::-webkit-progress-value {
-    background: var(--green);
+progress.password-weak::-webkit-progress-value {
+    background:         var(--red);
+    box-shadow: 0 0 4px var(--red-trans);
+}
+
+#password-strength-text {
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+#password-strength-text.password-strong {
+    background:          var(--green);
+    text-shadow: 0 0 4px var(--green-trans);
+}
+#password-strength-text.password-medium {
+    background:          var(--yellow);
+    text-shadow: 0 0 4px var(--yellow-trans);
+}
+#password-strength-text.password-weak {
+    background:          var(--red);
+    text-shadow: 0 0 4px var(--red-trans);
 }
 
 .input-container {
@@ -385,7 +401,7 @@ label {
 
     background: var(--background);
 
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
 
     align-items: center;
@@ -484,7 +500,7 @@ label {
 }
 
 .user-nickname-container {
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
 
     position: absolute;
@@ -514,7 +530,7 @@ img.verified-badge:not(.true) {
 }
 .user-tag {
     color: var(--foreground-1);
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size: var(--font-size);
 }
 
@@ -726,7 +742,7 @@ input[type="color"] {
     justify-content: center;
     align-items: center;
 
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size: var(--font-size);
 }
 
@@ -777,7 +793,7 @@ textarea.code-input {
 #channel-typing,
 #message-editing {
     margin-left: 20px;
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
 }
 #message-editing {
     color: var(--foreground-2);
@@ -838,7 +854,7 @@ textarea.code-input {
     margin-top: 5px;
     padding:    10px;
 
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
 
     justify-content: space-between;
@@ -846,7 +862,7 @@ textarea.code-input {
 }
 .file-section-name {
     margin-top:  5px;
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
 }
 .message-file-header {
@@ -908,7 +924,7 @@ span.fg-1 {
 }
 #message-area-header p,
 #message-area-explainer p {
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
 }
 
 
@@ -937,7 +953,7 @@ span.fg-1 {
 }
 
 .message-user-nickname {
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
 }
 .message-avatar-container {
@@ -1044,7 +1060,7 @@ canvas.message-img-section.deblur {
     margin-left: 10px;
 
     color: var(--foreground-1);
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size: var(--font-size);
 }
 
@@ -1116,7 +1132,7 @@ img.large-emoji {
     border-radius:    5px;
     transition:       background-color 0.1s ease;
 
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
 
     cursor: pointer;
@@ -1143,7 +1159,7 @@ img.large-emoji {
     background: var(--background);
     transition: background-color 0.1s ease;
 
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
 
     cursor: pointer;
@@ -1172,7 +1188,7 @@ img.large-emoji {
     margin-top: 10px;
 }
 #connecting-screen > span {
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
     margin-top:  16px;
 }

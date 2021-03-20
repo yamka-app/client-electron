@@ -16,4 +16,5 @@ _modules["blurhash"]        = require("blurhash");
 _modules["compareVersions"] = require('compare-versions');
 _modules["tinycolor"]       = require('tinycolor2');
 
-window["_modules"] = _modules;
+window["_modules"]  = _modules;
+window["__dirname"] = __dirname;
