@@ -192,9 +192,8 @@ function webprotData(bytes: Buffer) {
     if(packet instanceof packets.VoiceJoinPacket) {
         if(webprotState.tasty === null)
             throw new Error("Spurious voice join approval");
-
         webprotState.tasty.finish(packet.addr, packet.crypto);
-
+        ipcSend({ type: "tasty.connected" });
         return;
     }
 
