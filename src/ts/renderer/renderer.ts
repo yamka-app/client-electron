@@ -2416,22 +2416,22 @@ function _rendererFunc() {
             passwordStrengthText.innerHTML = "";
             passwordStrengthMeter.value = 0;
         } else if(password.length < 6) {
-            passwordStrengthText.style.color = "var(--red)";
+            passwordStrengthText.className = "password-weak";
             passwordStrengthText.innerHTML = "TOO SHORT";
             passwordStrengthMeter.value = 0;
             passwordStrengthMeter.className = "fill-width " + "password-weak";
         } else if(strongRegex.test(password)) {
-            passwordStrengthText.style.color = "var(--green)";
+            passwordStrengthText.className = "password-strong";
             passwordStrengthText.innerHTML = "STRONG";
-            passwordStrengthMeter.value = 0;
+            passwordStrengthMeter.value = 3;
             passwordStrengthMeter.className = "fill-width " + "password-strong";
         } else if(mediumRegex.test(password)) {
-            passwordStrengthText.style.color = "var(--yellow)";
+            passwordStrengthText.className = "password-medium";
             passwordStrengthText.innerHTML = "MEDIUM";
             passwordStrengthMeter.value = 2;
             passwordStrengthMeter.className = "fill-width " + "password-medium";
         } else {
-            passwordStrengthText.style.color = "var(--red)";
+            passwordStrengthText.className = "password-weak";
             passwordStrengthText.innerHTML = "WEAK";
             passwordStrengthMeter.value = 1;
             passwordStrengthMeter.className = "fill-width " + "password-weak";

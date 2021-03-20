@@ -18,30 +18,31 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--shade-7);
-    transition: background-color 0.25s;
+    background: var(--background);
+    transition: background 0.25s;
+    box-shadow: var(--shadow);
     border-radius: 16px;
 }
 
-.slider:before {
-    position: absolute;
-    content:  "";
-    height:   12px;
-    width:    12px;
-    left:     2px;
-    bottom:   2px;
-    background-color: var(--foreground);
-    transition: background-color 0.25s;
-    transition: transform 0.25s;
+.slider::before {
+    position:      absolute;
+    content:       "";
+    height:        12px;
+    width:         12px;
+    left:          2px;
+    bottom:        2px;
+    background:    var(--foreground);
+    transition:    background-color 0.25s;
+    transition:    transform 0.25s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: var(--accent);
+    background: var(--accent-grad);
     transition: transform 0.25s;
 }
 
 input:checked + .slider:before {
     transform: translateX(12px);
-    background-color: var(--accent-foreground);
+    background: var(--accent-foreground);
 }

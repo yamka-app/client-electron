@@ -10,9 +10,9 @@
 .group-action-panel {
     margin:  20px;
 
-    background-color: var(--shade-1);
+    background: var(--background);
     border-radius:    10px;
-    box-shadow:       0 0 15px var(--shadow);
+    box-shadow: var(--shadow);
     cursor:           pointer;
 
     display:         flex;
@@ -26,7 +26,7 @@
     flex-direction: row;
 }
 .group-panel {
-    background-color: var(--shade-2);
+    background: var(--background);
 }
 
 .group-action-panel {
@@ -38,7 +38,7 @@
     margin-right: 10px;
 }
 .group-action-panel>span {
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
     color:       var(--foreground);
 }
@@ -58,7 +58,7 @@
 }
 
 .group-panel>:nth-child(1) {
-    background-color: var(--shade-1);
+    background: var(--background);
     border-radius: 10px 10px 0 0;
     padding: 10px;
     width:   -webkit-fill-available;
@@ -93,7 +93,7 @@
 }
 
 .gp-name {
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   var(--font-size);
     color:       var(--foreground);
 }
@@ -102,7 +102,7 @@
 }
 .gp-unread,
 .gp-channel {
-    font-family: Montserrat;
+    font-family: RFlex, Montserrat;
     font-size:   calc(var(--font-size) - 1pt);
     color:       var(--foreground-1);
     transition:  color 0.1s ease;
