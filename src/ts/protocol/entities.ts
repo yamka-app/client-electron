@@ -119,6 +119,11 @@ export enum ChannelType {
     NORMAL = 0,
     WALL   = 1
 }
+export enum ChannelVoiceStatus {
+    SPEAKING = 1,
+    MUTED    = 2,
+    DEAFENED = 4
+}
 export class Channel extends Entity {
     __type_name = "Channel";
     typeNum = 2;
@@ -133,6 +138,8 @@ export class Channel extends Entity {
     unread?:      number;
     firstUnread?: number;
     voice?:       boolean;
+    voiceUsers?:  number[];
+    voiceStatus?: ChannelVoiceStatus[];
 
     constructor() {
         super([
@@ -146,6 +153,8 @@ export class Channel extends Entity {
             new fields.NumField    ("unread", 4,      7),
             new fields.NumField    ("firstUnread", 8, 8),
             new fields.BoolField   ("voice",          9),
+            new fields.NumListField("voiceUsers", 8,  10),
+            new fields.NumListField("voiceStatus", 1, 11),
         ]);
     }
 }

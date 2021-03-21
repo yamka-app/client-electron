@@ -24,8 +24,9 @@
 }
 
 #voice-members > div > img:nth-child(1) {
-    width:  24px;
-    height: 24px;
+    width:         24px;
+    height:        24px;
+    border-radius: 12px;
 }
 #voice-members > div > span {
     margin: 0 5px;

@@ -62,7 +62,7 @@ const kaomoji: [string, string][] = [
 
 function _rendererFunc() {
     // UI state
-    var viewingGroup: number = 0, viewingChan: number = 0, viewingContactGroup: number = 0;
+    var viewingGroup: number = 0, viewingChan: number = 0, voiceChan: number = 0, viewingContactGroup: number = 0;
     var previousChannel: number = 0;
     var editingChan: number = 0,  editingRole: number = 0;
     var editingMessage: number = 0;
@@ -2048,7 +2048,7 @@ function _rendererFunc() {
     }
 
     // Edits a message
-    function editExistingMesssage(id: number): boolean {
+    function editExistingMesssage(id: number) {
         const msgs = document.getElementsByClassName("message-" + id);
         for(const msg of msgs) {
             const state = (entityCache[id] as entities.Message).latest;
@@ -2057,6 +2057,18 @@ function _rendererFunc() {
             updateRelatedUsers(state);
         }
         return msgs.length !== 0;
+    }
+
+    function createVoiceMember(id: number) {
+        const elm = document.createElement("div");
+        elm.innerHTML = `
+            <img class="user-avatar-${id}/>
+            <span class="user-nickname-${id}"></span>
+            <img src="icons/speaking.png" class="user-speaking-${id}/>
+            <img src="icons/muted.png" class="user-muted-${id}/>
+            <img src="icons/deafened.png" class="user-deafened-${id}/>
+        `;
+        return elm;
     }
     
     // Packet handler
@@ -2139,6 +2151,7 @@ function _rendererFunc() {
             // Reset the view
             viewingGroup = 0;
             viewingChan = 0;
+            voiceChan = 0;
             viewingContactGroup = 0;
             resetMsgInput();
 
@@ -2365,6 +2378,10 @@ function _rendererFunc() {
             case "webprot.bot-created":
                 showBox("BOT CREATED", "Bot ID: " + arg.id + "<br>Bot token: " + arg.token
                     + "<br>This token will be only shown once for security reasons. Please keep it safe.");
+                break;
+
+            case "tasty.status":
+                elementById("voice-status").innerHTML = escapeHtml(`VOICE: ${arg.status.toUpperCase()}`);
                 break;
         }
     }
@@ -2644,6 +2661,10 @@ function _rendererFunc() {
         viewingGroup = 0;
         viewingChan = 0;
         updLayout();
+    };
+    elementById("message-area-voice").onclick = (e) => {
+        voiceChan = viewingChan;
+        ipcSend({ action: "tasty.connect", channel: voiceChan });
     };
 
     // Message section buttons
