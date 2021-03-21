@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="./css/switch.css">
     <link rel="stylesheet" type="text/css" href="./css/popups.css">
     <link rel="stylesheet" type="text/css" href="./css/group_panels.css">
+    <link rel="stylesheet" type="text/css" href="./css/voice.css">
     <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
     <link rel="stylesheet" href="../node_modules/highlight.js/styles/gruvbox-dark.css">
 
@@ -497,8 +498,19 @@
 
               <div id="message-container-area" class="flex-col">
                 <div id="message-area-title">
-                  <button id="message-area-leave" class="icon-button cg-button"><img src="icons/leave.png"></button>
-                  <button id="message-area-voice" class="icon-button cg-button"><img src="icons/voice.png"></button>
+                  <div class="flex-row">
+                    <button id="message-area-leave" class="icon-button cg-button"><img src="icons/leave.png"></button>
+                    <button id="message-area-voice" class="icon-button cg-button"><img src="icons/voice.png"></button>
+                  </div>
+                  <div id="voice-members">
+                    <div>
+                      <img/>
+                      <span>member name</span>
+                      <img src="icons/speaking.png"/>
+                      <img src="icons/muted.png"/>
+                      <img src="icons/deafened.png"/>
+                    </div>
+                  </div>
                 </div>
                 <div id="message-scroll-area" class="scroll-area">
                   <div id="message-area" class="flex-col">

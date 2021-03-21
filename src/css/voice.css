@@ -1,0 +1,36 @@
+#voice-members {
+    display:         flex;
+    flex-flow:       row wrap;
+    justify-content: flex-start;
+    align-items:     center;
+    align-content:   flex-start;
+    
+    width:         -webkit-fill-available;
+    background:    var(--bg-2);
+    border-radius: 0 0 0 5px;
+}
+
+#voice-members:not(:empty) {
+    border-top: 2px solid var(--background);
+}
+
+#voice-members > div {
+    display:         flex;
+    flex-direction:  row;
+    align-items:     center;
+
+    padding: 5px;
+    margin:  5px;
+}
+
+#voice-members > div > img:nth-child(1) {
+    width:  24px;
+    height: 24px;
+}
+#voice-members > div > span {
+    margin: 0 5px;
+}
+#voice-members > div > img:not(:nth-child(1)) {
+    width:  16px;
+    height: 16px;
+}

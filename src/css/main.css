@@ -419,7 +419,6 @@ label {
 }
 #member-list-group-header {
     height:      29px;
-    border-left: 2px solid var(--background);
 }
 
 #user-search-bar {
@@ -895,15 +894,19 @@ span.fg-1 {
     padding-bottom: 20px;
 }
 #message-area-title {
-    background: var(--bg-2);
-    width:      -webkit-fill-available;
-    min-height: 40px;
-    padding:    0 0 0 10px;
+    width:        -webkit-fill-available;
+    height:       fit-content;
+    border-right: 2px solid var(--background);
 
     display:         flex;
-    flex-direction:  row;
-    align-items:     center;
-    justify-content: flex-start;
+    flex-direction:  column;
+    align-items:     flex-start;
+    justify-content: center;
+}
+#message-area-title > div:nth-child(1) {
+    padding:    6px;
+    width:      -webkit-fill-available;
+    background: var(--bg-2);
 }
 
 #message-container-area {
