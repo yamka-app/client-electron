@@ -7,7 +7,7 @@ const escapeHtml = _modules.escapeHtml;
 // Default settings
 const defaultSettings: {name: string, value: any}[] = [
     { name: "accentColor",   value: "#fa3c1b"         },
-    { name: "fontSize",      value: 10.5              },
+    { name: "fontSize",      value: 9                 },
     { name: "customTheme",   value: false             },
     { name: "theme",         value: "themes/dark.css" },
     { name: "notifications", value: true              },
@@ -99,8 +99,10 @@ function _settingsFunc() {
 
         // Change accent color vars
         const black = "#000000"; const white = "#ffffff";
+        const accentAlt = tinycolor(color).spin(-15).toHexString();
         docStyle.setProperty("--accent",            tinycolor(color).toString());
-        docStyle.setProperty("--accent-alt",        tinycolor(color).spin(-15).toString());
+        docStyle.setProperty("--accent-alt",        accentAlt);
+        docStyle.setProperty("--accent-alt-trans",  accentAlt + "90");
         docStyle.setProperty("--accent-trans",      color + "90");
         docStyle.setProperty("--accent-dim",        tinycolor(color).darken(10).toString());
         docStyle.setProperty("--accent-dim-2",      tinycolor(color).darken(20).toString());

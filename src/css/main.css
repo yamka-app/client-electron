@@ -11,11 +11,6 @@
 }
 
 @font-face {
-    font-family: RFlex;
-    src: url(../fonts/RFlexBold.ttf);
-}
-
-@font-face {
     font-family: JetBrainsMono;
     src: url(../fonts/JetBrainsMono-Regular.woff2);
 }
@@ -39,9 +34,9 @@
 }
 
 :root {
-    --background:        linear-gradient(-45deg, var(--background-c2), var(--background-c1));
-    --background-active: linear-gradient(-45deg, var(--background-c1), var(--background-c2));
     --accent-grad:       linear-gradient(-45deg, var(--accent), var(--accent-alt));
+    --accent-shadow:     0 0 8px var(--accent-trans);
+    --accent-alt-shadow: 0 0 8px var(--accent-alt-trans);
 }
 
 body {
@@ -50,7 +45,7 @@ body {
 
     background: var(--background);
 
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     color:       var(--foreground);
 
     user-select: none;
@@ -61,7 +56,7 @@ body {
     transition: filter 0.2s ease;
 }
 #main-layout-container.unfocused {
-    filter: blur(10px);
+    filter: blur(25px);
     pointer-events: none;
 }
 
@@ -99,7 +94,7 @@ pre {
 
 h6 {
     margin:      0 0 20px 0;
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
     color:       var(--foreground);
 }
@@ -118,13 +113,13 @@ h6 {
     text-align:         center;
     line-height:        20px;
     vertical-align:     middle;
-    background:         var(--background-c1);
+    background:         var(--background);
     padding:            0px;
     margin:             0px;
 }
 #email-unconfirmed-bar {
     height:           24px;
-    background: var(--danger-dim-2);
+    background:       var(--danger-dim-2);
     display:          flex;
     flex-direction:   row;
     justify-content:  center;
@@ -132,7 +127,7 @@ h6 {
     border-radius:    0 0 5px 5px;
 }
 #email-unconfirmed-bar span {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
     color:       var(--danger-foreground);
 }
@@ -155,23 +150,34 @@ input {
     outline: none !important;
 
     box-sizing: border-box;
-    padding:    0 15px 0 15px;
+    padding:    0 10px;
 
-    background:    var(--background-active);
-    border-radius: 15px;
-    border:        var(--border);
-    box-shadow:    var(--shadow-active);
+    background:    var(--bg-3);
+    border-radius: 5px;
 
     color:       var(--foreground);
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
 }
 textarea {
     resize: none;
 }
 input {
-    height:     40px;
+    height:     35px;
     margin-top: 5px;
+
+    box-shadow: var(--shadow);
+    border:     1px solid transparent;
+    transition: border     0.1s ease,
+                box-shadow 0.1s ease;
+}
+input:hover {
+    border:     1px solid var(--accent-alt);
+    box-shadow: var(--accent-alt-shadow);
+}
+input:focus {
+    border:     1px solid var(--accent);
+    box-shadow: var(--accent-shadow);
 }
 
 .fill-width {
@@ -185,11 +191,11 @@ button {
     height:     35px;
     padding:    0 15px 0 15px;
 
-    background:    var(--background);
-    border-radius: 15px;
-    border:        var(--border);
+    background:    var(--bg-3);
+    border-radius: 5px;
+    border:        none;
 
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
     color:       var(--foreground);
     transition:  color      0.1s ease,
@@ -202,8 +208,8 @@ button {
     cursor: pointer;
 }
 button:active {
-    box-shadow: var(--shadow-active);
-    background: var(--background-active);
+    box-shadow: var(--shadow);
+    background: var(--background);
     padding:    3px 0 0 3px; /* to move content */
 }
 
@@ -214,7 +220,7 @@ button:active {
     box-shadow:    var(--shadow);
 }
 .accent-button:active {
-    box-shadow: var(--shadow-accent-active);
+    box-shadow: var(--shadow);
     background: var(--accent-grad);
 }
 
@@ -254,9 +260,10 @@ button.icon-button {
     transition: filter 0.1s ease, transform 0.1s ease;
     box-shadow: var(--shadow);
 
-    border:  none;
-    padding: 0 7px 0 7px;
-    margin:  0;
+    border:     none;
+    box-shadow: none;
+    padding:    0 7px 0 7px;
+    margin:     0;
 }
 button.icon-button:hover {
     filter: brightness(1.5);
@@ -270,7 +277,8 @@ button.icon-button img {
     padding: 5px;
     height:  fit-content;
 }
-.cg-button img {
+.cg-button img,
+.cg-img {
     filter: brightness(calc(100% - var(--darken-icon)));
 }
 
@@ -309,11 +317,11 @@ progress {
     height:        15px;
     border-radius: 8px;
     border:        var(--border-thicc);
-    box-shadow:    var(--shadow-active);
-    background:    var(--background-active);
+    box-shadow:    var(--shadow);
+    background:    var(--background);
 }
 progress::-webkit-progress-bar {
-    background:    var(--background-active);
+    background:    var(--background);
     border-radius: 8px;
 }
 progress::-webkit-progress-value {
@@ -385,7 +393,7 @@ label {
 }
 
 #member-list-sidebar {
-    background: var(--background);
+    background: var(--bg-2);
     width: 250px;
     padding: 0;
 }
@@ -399,9 +407,9 @@ label {
     padding: 0 10px 0 10px;
     position: relative;
 
-    background: var(--background);
+    background: var(--bg-2);
 
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
 
     align-items: center;
@@ -500,7 +508,7 @@ label {
 }
 
 .user-nickname-container {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
 
     position: absolute;
@@ -530,7 +538,7 @@ img.verified-badge:not(.true) {
 }
 .user-tag {
     color: var(--foreground-1);
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size: var(--font-size);
 }
 
@@ -558,14 +566,14 @@ img.verified-badge:not(.true) {
     margin: 8px 8px 0 8px;
     padding: 0;
 
-    background: var(--background);
-    border-radius:    5px;
-    transition:       background-color 0.1s ease;
+    background:    transparent;
+    border-radius: 5px;
+    transition:    background-color 0.1s ease;
 
     cursor: pointer;
 }
 .user-summary:hover {
-    background: var(--background);
+    background: var(--bg-3);
     box-shadow: var(--shadow);
 }
 
@@ -742,7 +750,7 @@ input[type="color"] {
     justify-content: center;
     align-items: center;
 
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size: var(--font-size);
 }
 
@@ -769,7 +777,6 @@ textarea.message-input {
     padding-top: 5px;
     border:     none;
     background: none;
-    box-shadow: var(--shadow);
     height:     unset;
 
     font-family: Roboto;
@@ -793,7 +800,7 @@ textarea.code-input {
 #channel-typing,
 #message-editing {
     margin-left: 20px;
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
 }
 #message-editing {
     color: var(--foreground-2);
@@ -854,7 +861,7 @@ textarea.code-input {
     margin-top: 5px;
     padding:    10px;
 
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
 
     justify-content: space-between;
@@ -862,7 +869,7 @@ textarea.code-input {
 }
 .file-section-name {
     margin-top:  5px;
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
 }
 .message-file-header {
@@ -888,7 +895,7 @@ span.fg-1 {
     padding-bottom: 20px;
 }
 #message-area-title {
-    background: var(--background);
+    background: var(--bg-2);
     width:      -webkit-fill-available;
     min-height: 40px;
     padding:    0 0 0 10px;
@@ -924,7 +931,7 @@ span.fg-1 {
 }
 #message-area-header p,
 #message-area-explainer p {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
 }
 
 
@@ -953,7 +960,7 @@ span.fg-1 {
 }
 
 .message-user-nickname {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
 }
 .message-avatar-container {
@@ -1057,10 +1064,10 @@ canvas.message-img-section.deblur {
 }
 
 .message-time {
-    margin-left: 10px;
+    margin-left: 5px;
 
     color: var(--foreground-1);
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size: var(--font-size);
 }
 
@@ -1128,11 +1135,11 @@ img.large-emoji {
     margin-bottom: 10px;
     padding: 10px;
 
-    background: var(--background);
-    border-radius:    5px;
-    transition:       background-color 0.1s ease;
+    background:    var(--background);
+    border-radius: 5px;
+    transition:    background-color 0.1s ease;
 
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
 
     cursor: pointer;
@@ -1140,7 +1147,7 @@ img.large-emoji {
 .role-button:hover,
 .channel-button:hover,
 .channel-button-selected {
-    background: var(--background);
+    background: var(--bg-2);
     box-shadow: var(--shadow);
 }
 
@@ -1156,10 +1163,10 @@ img.large-emoji {
     border-radius: 10px 0 0 10px;
     border-right:  2px solid var(--background);
 
-    background: var(--background);
+    background: var(--bg-2);
     transition: background-color 0.1s ease;
 
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
 
     cursor: pointer;
@@ -1179,7 +1186,7 @@ img.large-emoji {
     width:  100%;
     height: 100%;
 
-    background: var(--background-c1);
+    background: var(--background);
 
     align-items:     center;
     justify-content: center;
@@ -1188,7 +1195,7 @@ img.large-emoji {
     margin-top: 10px;
 }
 #connecting-screen > span {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
     margin-top:  16px;
 }

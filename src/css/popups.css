@@ -16,9 +16,9 @@
     bottom:  0;
     z-index: 500;
 
-    background: var(--background-trans);
-    border-radius: 5px;
-    box-shadow: var(--shadow);
+    background:      var(--background-trans);
+    border-radius:   5px;
+    box-shadow:      var(--shadow);
     backdrop-filter: blur(5px);
 
     display: flex;
@@ -56,7 +56,7 @@
 
     color: var(--foreground-1);
     transition: color 0.1s ease;
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size: 12px;
 
     cursor: pointer;
@@ -84,7 +84,7 @@ input[type="radio"].settings-radio:checked + label {
     flex-direction: column;
 
     color: var(--foreground);
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size: 12px;
 
     overflow-y: scroll;
@@ -207,7 +207,7 @@ input[type="radio"].settings-radio:checked + label {
 }
 
 #user-settings-section-about p {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size: 20px;
     background: var(--rainbow-grad);
     color: transparent;
@@ -323,7 +323,7 @@ input[type="radio"].settings-radio:checked + label {
     /*backdrop-filter:  blur(5px);*/
     box-shadow: var(--shadow);
 
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
 }
 #update-popup {
@@ -361,7 +361,7 @@ input[type="radio"].settings-radio:checked + label {
     height: fit-content;
 }
 #group-delete-box > p {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
 }
 
 
@@ -418,7 +418,7 @@ input[type="radio"].settings-radio:checked + label {
                       background-color 0.1s ease;
     border-radius:    5px;
 
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
     color:       var(--foreground);
     
@@ -436,12 +436,12 @@ input[type="radio"].settings-radio:checked + label {
     padding: 20px;
 
     border:        none;
-    border-radius: 15px;
+    border-radius: 5px;
 
-    font-family:      RFlex, Montserrat;
-    font-size:        var(--font-size);
-    background: var(--background-trans);
-    box-shadow: var(--shadow);
+    font-family: Montserrat, sans-serif;
+    font-size:   var(--font-size);
+    background:  var(--bg-2);
+    box-shadow:  var(--shadow);
 }
 
 .form-head {

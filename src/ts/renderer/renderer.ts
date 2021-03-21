@@ -1,4 +1,4 @@
-const _clientVersion = "0.4.2";
+const _clientVersion = "0.5.0";
 
 const _modules = window["_modules"];
 
@@ -1458,7 +1458,7 @@ function _rendererFunc() {
     
             const timeElm = document.createElement("span");
             timeElm.classList.add("message-time");
-            timeElm.innerHTML = escapeHtml(idToTime(state.msg_id) + ((msg.states.length > 1) ? " (edited)" : ""));
+            timeElm.innerHTML = escapeHtml("· " + idToTime(state.msg_id) + ((msg.states.length > 1) ? " (edited)" : ""));
             nicknameContainer.appendChild(timeElm);
         }
 
@@ -1884,8 +1884,8 @@ function _rendererFunc() {
                     });
             }
 
-            unread.innerHTML = `<img src="icons/message.png"/> ${escapeHtml(unreadMsgs)} NEW` + 
-                               `<img src="icons/channel.png"/> ${unreadChans.length}</span>`
+            unread.innerHTML = `<img src="icons/message.png" class="cg-img"/> ${escapeHtml(unreadMsgs)} NEW` + 
+                               `<img src="icons/channel.png" class="cg-img"/> ${unreadChans.length}</span>`
 
             // Create the bottom panel
             if(unreadChans.length === 0) {
@@ -2880,7 +2880,7 @@ function _rendererFunc() {
     elementById("update-popup-ign").onclick = (e) =>
         hideElm(elementById("update-popup"));
 
-    // Blur the window if it"s unfocused
+    // Blur the window if it's unfocused
     const mainLayoutCont = elementById("main-layout-container");
     browserWindow.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.add   ("unfocused") });
     browserWindow.addListener("focus", (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.remove("unfocused") });

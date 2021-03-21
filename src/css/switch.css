@@ -7,20 +7,20 @@
 
 .switch input {
     opacity: 0;
-    width: 0;
-    height: 0;
+    width:   0;
+    height:  0;
 }
 
 .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--background);
-    transition: background 0.25s;
-    box-shadow: var(--shadow);
+    position:      absolute;
+    cursor:        pointer;
+    top:           0;
+    left:          0;
+    right:         0;
+    bottom:        0;
+    background:    var(--bg-3);
+    transition:    background 0.25s ease;
+    box-shadow:    var(--shadow);
     border-radius: 16px;
 }
 
@@ -32,17 +32,16 @@
     left:          2px;
     bottom:        2px;
     background:    var(--foreground);
-    transition:    background-color 0.25s;
-    transition:    transform 0.25s;
+    transition:    background 0.25s ease,
+                   transform  0.25s ease;
     border-radius: 50%;
 }
 
 input:checked + .slider {
     background: var(--accent-grad);
-    transition: transform 0.25s;
 }
 
-input:checked + .slider:before {
+input:checked + .slider::before {
     transform: translateX(12px);
     background: var(--accent-foreground);
 }

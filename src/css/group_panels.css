@@ -30,7 +30,7 @@
 }
 
 .group-action-panel {
-    padding: 15px;
+    padding: 16px 0;
 }
 .group-action-panel>img {
     width:  36px;
@@ -38,7 +38,7 @@
     margin-right: 10px;
 }
 .group-action-panel>span {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
     color:       var(--foreground);
 }
@@ -93,7 +93,7 @@
 }
 
 .gp-name {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
     color:       var(--foreground);
 }
@@ -102,7 +102,7 @@
 }
 .gp-unread,
 .gp-channel {
-    font-family: RFlex, Montserrat;
+    font-family: Montserrat, sans-serif;
     font-size:   calc(var(--font-size) - 1pt);
     color:       var(--foreground-1);
     transition:  color 0.1s ease;

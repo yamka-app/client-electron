@@ -1,7 +1,7 @@
 {
   "name": "ordermsg",
   "productName": "Order",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A secure messenger with powerful features",
   "main": "src/js/commonjs/main/main.js",
   "scripts": {

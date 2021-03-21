@@ -113,7 +113,7 @@ app.on("ready", () => {
         if(!webprotState.sendPings) return;
 
         webprotSendPacket(new packets.PingPacket(123));
-    }, 5000);
+    }, 20000);
 })
 
 app.on("window-all-closed", () => { windowCreated = false; });
