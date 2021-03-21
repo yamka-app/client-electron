@@ -132,6 +132,7 @@ export class Channel extends Entity {
     type?:        ChannelType;
     unread?:      number;
     firstUnread?: number;
+    voice?:       boolean;
 
     constructor() {
         super([
@@ -144,6 +145,7 @@ export class Channel extends Entity {
             new fields.NumField    ("type", 1,        6),
             new fields.NumField    ("unread", 4,      7),
             new fields.NumField    ("firstUnread", 8, 8),
+            new fields.BoolField   ("voice",          9),
         ]);
     }
 }

@@ -64,6 +64,7 @@ export class Channel extends Entity {
     type?:        ChannelType;
     unread?:      number;
     firstUnread?: number;
+    voice?:       boolean;
 }
 
 export class Group extends Entity {
