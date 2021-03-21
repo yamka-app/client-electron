@@ -224,9 +224,6 @@ function _rendererFunc() {
         (elementById(name + "-sel") as HTMLInputElement).checked = true;
     }
 
-    // Creates an acronym for a group name
-    function groupNameAcronym(name: string): string { return escapeHtml(name.split(" ").map(x => x.charAt(0)).join("")); }
-
     // Shows a channel in the group preferences panel
     function groupSettingsShowChannel(id: number) {
         editingChan = id;
@@ -589,9 +586,6 @@ function _rendererFunc() {
                     for(const icon of icons)
                         icon.src = "file://" + blob;
                 })
-            } else if(group.icon === 0) {
-                for(const icon of icons)
-                    icon.innerHTML = escapeHtml(groupNameAcronym(group.name));
             }
     
             // Update the channel and member list
@@ -1816,6 +1810,8 @@ function _rendererFunc() {
     }
     // Updates the message area
     function updMessageArea(updMessages: boolean =true) {
+        const chan = entityCache[viewingChan] as entities.Channel;
+
         // Hide the panel list if we're viewing messages
         setElmVisibility(elementById("message-container-area"), viewingChan !== 0);
 
@@ -1832,6 +1828,9 @@ function _rendererFunc() {
             }
             return;
         }
+
+        // Set "join voice" button visibility
+        setElmVisibility(elementById("message-area-voice"), chan.voice);
 
         // Get channel messages
         if(viewingChan !== 0 && updMessages)
@@ -1980,7 +1979,7 @@ function _rendererFunc() {
 
         // Request the channels of the group the user is viewing
         const channels = entityCache[viewingGroup].channels;
-        reqEntities(channels.map(x => { return { type: "channel", id: x } }), false, () => {
+        reqEntities(channels.map(x => new packets.EntityGetRequest(entities.Channel.typeNum, x)), false, () => {
             // Delete old icons
             while(channelList.firstChild)
                 channelList.firstChild.remove();
@@ -2887,7 +2886,6 @@ function _rendererFunc() {
     browserWindow.addListener("focus", (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.remove("unfocused") });
 
     window.addEventListener("keydown", (e) => {
-        console.log("keydown");
         if(e.key === "F4" && e.altKey)
             browserWindow.minimize();
     });
