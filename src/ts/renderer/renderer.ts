@@ -230,7 +230,9 @@ function _rendererFunc() {
     // Shows a channel in the group preferences panel
     function groupSettingsShowChannel(id: number) {
         editingChan = id;
-        (elementById("channel-name-change") as HTMLInputElement).value = entityCache[id].name;
+        const chan = entityCache[id] as entities.Channel;
+        (elementById("channel-name-change")  as HTMLInputElement).value   = chan.name;
+        (elementById("channel-voice-change") as HTMLInputElement).checked = chan.voice;
     }
 
     // Updates the channel list in the group preferences panel
@@ -2779,9 +2781,16 @@ function _rendererFunc() {
     chanNameChange.onkeypress = (e) => {
         if(e.keyCode === 13) {
             const channel = new entities.Channel();
-            channel.id = editingChan; channel.name = chanNameChange.value; channel.group = viewingGroup;
+            channel.id = editingChan; channel.name = chanNameChange.value;
             putEntities([channel]);
         }
+    }
+
+    const chanVoiceChange = elementById("channel-voice-change") as HTMLInputElement;
+    chanVoiceChange.onclick = (e) => {
+        const channel = new entities.Channel();
+        channel.id = editingChan; channel.voice = chanVoiceChange.checked;
+        putEntities([channel]);
     }
 
     elementById("channel-remove-button").onclick = (e) => {
