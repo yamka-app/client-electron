@@ -1,6 +1,6 @@
 // Tasty (voice/video) protocol client
 
-import dgram  from "dgram";
+import dgram from "dgram";
 import crypto, { KeyObject } from "crypto";
 
 import * as dataTypes from "./dataTypes";
@@ -9,7 +9,7 @@ import { OpusEncoder } from "@discordjs/opus";
 import Speaker         from "speaker";
 import Microphone      from "node-microphone";
 
-export const TASTY_PORT = 1746;
+export const TASTY_PORT = 1747;
 
 export default class TastyClient {
     private sock:    dgram.Socket;
@@ -18,44 +18,57 @@ export default class TastyClient {
     private session: Buffer;
 
     constructor(keyCreated: (key: Buffer) => void) {
-        const keyBytes = crypto.randomBytes(128 / 8);
-        this.iv        = crypto.randomBytes(128 / 8);
-        this.key = crypto.createSecretKey(keyBytes);
+        const kb = crypto.randomBytes(128 / 8);
+        this.iv  = crypto.randomBytes(128 / 8);
+        this.key = crypto.createSecretKey(kb);
 
-        keyCreated(Buffer.concat([keyBytes, this.iv]));
+        keyCreated(Buffer.concat([kb, this.iv]));
     }
 
-    finish(addr: string, session: Buffer) {
+    finish(addr: string, session: Buffer, finished: () => void) {
         this.session = session;
 
         // create socket
         this.sock = dgram.createSocket("udp4");
-        this.sock.connect(TASTY_PORT, addr);
-        this.sock.on("message", this.recv);
+        this.sock.on("message", (d, r) => this.onRecv(d, r));
 
-        // print info
-        const local = this.sock.address();
-        const remote = this.sock.remoteAddress();
-        console.log(`Tasty client ${local.address}:${local.port} is communicating with ${remote.address}:${remote.port}`);
+        this.sock.on("connect", () => {
+            console.log("TASTY: connected");
+            // authenticate to the remote server
+            this.send(Buffer.concat([
+                Buffer.from([0]),
+                this.session
+            ]));
+
+            // we're done
+            finished();
+        })
+
+        this.sock.on("listening", () => {
+            console.log("TASTY: listening");
+            this.sock.connect(TASTY_PORT, addr);
+        });
+        this.sock.bind();
     }
 
-    private enc(data: Buffer) {
+    encrypt(data: Buffer) {
         // we create a new cipher each time because some packets may be lost because of UDP
-        const cipher = crypto.createCipheriv("aes-128-gcm", this.key, this.iv);
+        const cipher = crypto.createCipheriv("aes-128-cfb", this.key, this.iv);
         return cipher.update(data);
     }
 
-    private dec(data: Buffer) {
-        const decipher = crypto.createDecipheriv("aes-128-ccm", this.key, this.iv);
+    decrypt(data: Buffer) {
+        const decipher = crypto.createDecipheriv("aes-128-cfb", this.key, this.iv);
         return decipher.update(data);
     }
 
-    private recv(data: Buffer, remote: dgram.RemoteInfo) {
-        console.log(`TASTY recv ${data}`);
+    onRecv(data: Buffer, remote: dgram.RemoteInfo) {
+        const payload = this.decrypt(data);
+        console.log("TASTY recv", data, payload);
     }
 
-    private send(data: Buffer) {
-        console.log(`TASTY send ${data}`)
+    send(data: Buffer) {
+        console.log("TASTY send", data);
         this.sock.send(data);
     }
 }

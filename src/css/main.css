@@ -904,9 +904,10 @@ span.fg-1 {
     justify-content: center;
 }
 #message-area-title > div:nth-child(1) {
-    padding:    6px;
-    width:      -webkit-fill-available;
-    background: var(--bg-2);
+    padding:     6px;
+    width:       -webkit-fill-available;
+    background:  var(--bg-2);
+    align-items: center;
 }
 
 #message-container-area {

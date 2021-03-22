@@ -193,9 +193,10 @@ function webprotData(bytes: Buffer) {
         if(webprotState.tasty === null)
             throw new Error("Spurious voice join approval");
 
-        webprotState.tasty.finish(packet.addr, packet.crypto);
-        ipcSend({ type: "tasty.status", status: "connected" });
-        ipcSend({ type: "tasty.connected" });
+        ipcSend({ type: "tasty.status", status: "establishing session" });
+        webprotState.tasty.finish(packet.addr, packet.crypto, () => {
+            ipcSend({ type: "tasty.status", status: "connected" });
+        });
         return;
     }
 
@@ -444,7 +445,7 @@ ipcMain.on("asynchronous-message", (event, arg) => {
         ipcSend({ type: "tasty.status", status: "generating session key" });
         // ask the server to join a voice channel
         webprotState.tasty = new TastyClient((key) => {
-            ipcSend({ type: "tasty.status", status: "joining" });
+            ipcSend({ type: "tasty.status", status: "retrieving session token" });
             webprotSendPacket(new packets.VoiceJoinPacket(arg.channel, "", key));
         });
     }

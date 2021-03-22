@@ -1,3 +1,8 @@
+#voice-status {
+    height: fit-content;
+    margin-left: 16px;
+}
+
 #voice-members {
     display:         flex;
     flex-flow:       row wrap;

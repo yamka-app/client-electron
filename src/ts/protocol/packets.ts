@@ -63,7 +63,8 @@ export class Packet {
             new BotCreatePacket(),
             new BotInvitePacket(),
             new IdentificationPacket(),
-            new ClientIdentityPacket()
+            new ClientIdentityPacket(),
+            new VoiceJoinPacket()
         ][type];
         if(packet === undefined) throw new Error(`Invalid packet type ${type}`);
         packet.replyTo = reply;
