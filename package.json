@@ -11,7 +11,7 @@
     "lint": "eslint -c .eslintrc --ext .ts ./src/ts",
     "dist": "npm run build && electron-builder -wl",
     "dist-hrt": "hrt-packager",
-    "test_html": "electron ."
+    "start-no-comp": "electron ."
   },
   "keywords": [],
   "author": "portasynthinca3",
