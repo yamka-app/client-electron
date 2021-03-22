@@ -12,7 +12,7 @@ export const TASTY_PORT         = 1747;
 export const TASTY_BITRATE      = 24000;
 export const TASTY_SAMPLE_RATE  = 16000;
 export const TASTY_CHANNELS     = 1;
-export const TASTY_FRAME_LENGTH = 0.02;
+export const TASTY_FRAME_LENGTH = 0.04;
 
 export default class TastyClient {
     private sock:    dgram.Socket;
@@ -23,7 +23,7 @@ export default class TastyClient {
     private micStream:        MemoryStream;        
     private encoder:          opus.OpusEncoder;
     private micFrameInterval: NodeJS.Timeout;
-    private speaker:          Speaker;
+    private speakers:         any = {};
 
     constructor(keyCreated: (key: Buffer) => void) {
         const kb = crypto.randomBytes(128 / 8);
@@ -98,15 +98,6 @@ export default class TastyClient {
 
 
     private startVoice() {
-        this.speaker = new Speaker({
-            sampleRate: TASTY_SAMPLE_RATE,
-            channels: TASTY_CHANNELS,
-            // @ts-ignore
-            samplesPerFrame: TASTY_SAMPLE_RATE * TASTY_FRAME_LENGTH,
-            bitDepth: 16,
-            signed: true
-        });
-
         // create opus encoder
         this.encoder = new opus.OpusEncoder(TASTY_SAMPLE_RATE, TASTY_CHANNELS);
         this.encoder.setBitrate(TASTY_BITRATE);
@@ -143,8 +134,21 @@ export default class TastyClient {
         const opus = payload.slice(8);
         const pcm = this.encoder.decode(opus);
         
-        //this.outCb(pcm, user);
-        this.speaker.write(pcm);
+        // each user has a separate output
+        var speaker = this.speakers[user];
+        if(speaker === undefined) {
+            speaker = new Speaker({
+                sampleRate: TASTY_SAMPLE_RATE,
+                channels: TASTY_CHANNELS,
+                // @ts-ignore
+                samplesPerFrame: TASTY_SAMPLE_RATE * TASTY_FRAME_LENGTH,
+                bitDepth: 16,
+                signed: true
+            });
+            this.speakers[user] = speaker;
+        }
+
+        speaker.write(pcm);
     }
 }
 
