@@ -2290,7 +2290,8 @@ function _rendererFunc() {
     // Main process handler
     function ipcRecv(evt: Event, arg: any) {
         if(["webprot.status", "webprot.trigger-reference",
-            "webprot.packet-recv", "webprot.connected", "webprot.connecting", "webprot.disconnected"]
+            "webprot.packet-recv", "webprot.connected", "webprot.connecting", "webprot.disconnected",
+            "tasty.audio"]
                 .indexOf(arg.type) === -1)
             console.log("%c[M->R]", "color: #bb00bb; font-weight: bold;", arg);
         switch(arg.type) {
@@ -2382,6 +2383,10 @@ function _rendererFunc() {
 
             case "tasty.status":
                 elementById("voice-status").innerHTML = escapeHtml(`VOICE: ${arg.status.toUpperCase()}`);
+                break;
+
+            case "tasty.audio":
+                window["tasty_push"](arg.data, arg.from);
                 break;
         }
     }

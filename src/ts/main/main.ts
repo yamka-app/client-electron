@@ -123,7 +123,6 @@ app.on("window-all-closed", () => { windowCreated = false; });
 const webprotSettings = {
     host:                 "api.ordermsg.tk",
     port:                 1746,
-    filePort:             1747,
     version:              5,
     supportsComp:         true,
     compressionThreshold: 256,
@@ -358,7 +357,7 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
 }
 
 function ipcSend(data) {
-    if(mainWindow?.isDestroyed() === false) // yeah (we also need to check for null/undefined, that's why)
+    if(mainWindow?.isDestroyed() === false)
         mainWindow.webContents.send("message", data);
 }
 

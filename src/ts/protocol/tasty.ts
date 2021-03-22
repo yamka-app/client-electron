@@ -3,11 +3,10 @@
 import dgram from "dgram";
 import crypto, { KeyObject } from "crypto";
 
-import * as opus from "@discordjs/opus";
-import Speaker   from "speaker";
-import stream    from "stream";
-import fs        from "fs";
-import DataTypes from "./dataTypes";
+import * as opus   from "@discordjs/opus";
+import stream      from "stream";
+import DataTypes   from "./dataTypes";
+import Speaker     from "speaker";
 
 export const TASTY_PORT         = 1747;
 export const TASTY_BITRATE      = 24000;
@@ -25,8 +24,6 @@ export default class TastyClient {
     private encoder:          opus.OpusEncoder;
     private micFrameInterval: NodeJS.Timeout;
     private speaker:          Speaker;
-
-    private out: fs.WriteStream;
 
     constructor(keyCreated: (key: Buffer) => void) {
         const kb = crypto.randomBytes(128 / 8);
@@ -101,18 +98,20 @@ export default class TastyClient {
 
 
     private startVoice() {
+        this.speaker = new Speaker({
+            sampleRate: TASTY_SAMPLE_RATE,
+            channels: TASTY_CHANNELS,
+            // @ts-ignore
+            samplesPerFrame: TASTY_SAMPLE_RATE * TASTY_FRAME_LENGTH,
+            bitDepth: 16,
+            signed: true
+        });
+
         // create opus encoder
         this.encoder = new opus.OpusEncoder(TASTY_SAMPLE_RATE, TASTY_CHANNELS);
         this.encoder.setBitrate(TASTY_BITRATE);
 
         this.micStream = new MemoryStream();
-
-        // open speaker stream
-        this.speaker = new Speaker({
-            channels: TASTY_CHANNELS,
-            sampleRate: TASTY_SAMPLE_RATE
-        });
-
         this.micFrameInterval = setInterval(() => this.voiceEncFrame(), TASTY_FRAME_LENGTH * 1000);
     }
 
@@ -123,11 +122,10 @@ export default class TastyClient {
 
     stop() {
         clearInterval(this.micFrameInterval);
-        this.speaker.close(true);
     }
 
     private voiceEncFrame() {
-        const targetLen = TASTY_SAMPLE_RATE * TASTY_FRAME_LENGTH * TASTY_CHANNELS;
+        const targetLen = 2 * TASTY_SAMPLE_RATE * TASTY_FRAME_LENGTH * TASTY_CHANNELS;
         const pcm = this.micStream.grab(targetLen);
         if(pcm.length !== targetLen)
             return;
@@ -144,6 +142,8 @@ export default class TastyClient {
         const user = DataTypes.decNum(payload.slice(0, 8));
         const opus = payload.slice(8);
         const pcm = this.encoder.decode(opus);
+        
+        //this.outCb(pcm, user);
         this.speaker.write(pcm);
     }
 }
