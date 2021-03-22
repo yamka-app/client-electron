@@ -448,6 +448,9 @@ ipcMain.on("asynchronous-message", (event, arg) => {
             ipcSend({ type: "tasty.status", status: "retrieving session token" });
             webprotSendPacket(new packets.VoiceJoinPacket(arg.channel, "", key));
         });
+    } else if(arg.action === "tasty.mic-data") {
+        if(webprotState.tasty === null) return;
+        webprotState.tasty.micData(arg.data);
     }
 });
 

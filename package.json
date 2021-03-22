@@ -56,6 +56,7 @@
     "escape-html": "^1.0.3",
     "highlight.js": "^10.5.0",
     "marked": "^2.0.0",
+    "microphone-stream": "^5.3.1",
     "node-microphone": "^0.1.5",
     "qrcode": "^1.4.4",
     "remark": "^13.0.0",
@@ -69,6 +70,7 @@
   "devDependencies": {
     "electron": "^12.0.1",
     "electron-builder": "^22.9.1",
+    "electron-rebuild": "^2.3.5",
     "rollup": "^2.36.2",
     "ts-loader": "^8.0.14",
     "typescript": "^4.1.3"
