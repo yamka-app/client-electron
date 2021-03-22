@@ -25,18 +25,23 @@ function _tasty_plug_func() {
         console.error("mic error", error);
     });
 
-    micStream.on("data", (chunk: Uint8Array) => {
-        const data: Float32Array = MicrophoneStream.toRaw(chunk);
+    micStream.on("format", (format: any) => {
+        const rate = format.sampleRate;
+        const coeff = rate / 16000;
 
-        // convert the array to a raw signed 16-bit 16kHz PCM Buffer
-        const buf = new Int16Array(data.length * 2 / 3);
-        for(var i = 0; i < buf.length; i += 2) {
-            const sampleFloat = data[i * 3 / 2];
-            const sample16 = sampleFloat * 32768;
-            buf[i] = sample16;
-        }
-
-        ipcSend({ action: "tasty.mic-data", data: new Uint8Array(buf) });
+        micStream.on("data", (chunk: Uint8Array) => {
+            const data: Float32Array = MicrophoneStream.toRaw(chunk);
+    
+            // convert the array to a raw signed 16-bit 16kHz PCM Buffer
+            const buf = new Int16Array(data.length / coeff);
+            for(var i = 0; i < buf.length; i++) {
+                const sampleFloat = data[Math.floor(i * coeff)];
+                const sample16 = sampleFloat * 32768;
+                buf[i] = sample16;
+            }
+    
+            ipcSend({ action: "tasty.mic-data", data: new Uint8Array(buf.buffer) });
+        });
     });
 }
 

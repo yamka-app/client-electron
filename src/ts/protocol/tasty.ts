@@ -6,6 +6,8 @@ import crypto, { KeyObject } from "crypto";
 import * as opus from "@discordjs/opus";
 import Speaker   from "speaker";
 import stream    from "stream";
+import fs        from "fs";
+import DataTypes from "./dataTypes";
 
 export const TASTY_PORT         = 1747;
 export const TASTY_BITRATE      = 24000;
@@ -19,11 +21,12 @@ export default class TastyClient {
     private iv:      Buffer;
     private session: Buffer;
 
-    private micBuf = Buffer.alloc(0);
     private micStream:        MemoryStream;        
     private encoder:          opus.OpusEncoder;
     private micFrameInterval: NodeJS.Timeout;
     private speaker:          Speaker;
+
+    private out: fs.WriteStream;
 
     constructor(keyCreated: (key: Buffer) => void) {
         const kb = crypto.randomBytes(128 / 8);
@@ -72,7 +75,6 @@ export default class TastyClient {
 
     private onRecv(data: Buffer, remote: dgram.RemoteInfo) {
         const payload = this.decrypt(data);
-        console.log("TASTY recv", data, payload);
 
         const op = payload[0];
         switch(op) {
@@ -86,7 +88,6 @@ export default class TastyClient {
     }
 
     private send(data: Buffer) {
-        console.log("TASTY send", data);
         this.sock.send(data);
     }
 
@@ -107,9 +108,10 @@ export default class TastyClient {
         this.micStream = new MemoryStream();
 
         // open speaker stream
-        this.speaker = new Speaker({ channels: TASTY_CHANNELS,
-                                     bitDepth: 16,
-                                     sampleRate: TASTY_SAMPLE_RATE });
+        this.speaker = new Speaker({
+            channels: TASTY_CHANNELS,
+            sampleRate: TASTY_SAMPLE_RATE
+        });
 
         this.micFrameInterval = setInterval(() => this.voiceEncFrame(), TASTY_FRAME_LENGTH * 1000);
     }
@@ -133,14 +135,16 @@ export default class TastyClient {
         const opus = this.encoder.encode(pcm);
 
         this.sendEnc(Buffer.concat([
-            Buffer.from([1]), // voice data
+            Buffer.from([0]), // voice data
             opus
         ]));
     }
 
-    private voiceData(data: Buffer) {
-        const pcm = this.encoder.decode(data);
-        //this.speaker.write(pcm);
+    private voiceData(payload: Buffer) {
+        const user = DataTypes.decNum(payload.slice(0, 8));
+        const opus = payload.slice(8);
+        const pcm = this.encoder.decode(opus);
+        this.speaker.write(pcm);
     }
 }
 
