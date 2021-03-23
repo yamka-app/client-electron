@@ -31,10 +31,11 @@ export default class TastyClient {
     private iv:      Buffer;
     private session: Buffer;
 
-    private micStream:        MemoryStream;        
-    private encoder:          opus.OpusEncoder;
-    private micFrameInterval: NodeJS.Timeout;
-    private speakers:         any = {};
+    private micStream:         MemoryStream;        
+    private encoder:           opus.OpusEncoder;
+    private micFrameInterval:  NodeJS.Timeout;
+    private heartbeatInterval: NodeJS.Timeout;
+    private speakers:          any = {};
 
     private statCb: (stats: TastyEncoderStats) => void;
 
@@ -64,7 +65,7 @@ export default class TastyClient {
 
             // we're done
             finished();
-        })
+        });
 
         this.sock.on("listening", () => {
             console.log("TASTY: listening");
@@ -119,6 +120,7 @@ export default class TastyClient {
         this.micStream = new MemoryStream();
         this.micFrameInterval = setInterval(() => this.voiceEncFrames(),
             TASTY_FRAME_LENGTH / TASTY_SAMPLE_RATE * 1000);
+        this.heartbeatInterval = setInterval(() => this.sendEnc(Buffer.from([2])), 10000);
     }
 
     micData(data: Buffer) {
@@ -128,6 +130,8 @@ export default class TastyClient {
 
     stop() {
         clearInterval(this.micFrameInterval);
+        clearInterval(this.heartbeatInterval);
+        this.micStream = null;
     }
 
     private voiceEncFrames() {

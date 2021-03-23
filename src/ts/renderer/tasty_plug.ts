@@ -5,11 +5,13 @@
 //   THE NODE.JS AUDIO FRAMEWORK LANDSCAPE BAD
 
 import { configGet, configSet } from "./settings.js";
+import { logInterp } from "./util.js";
 
 async function _tasty_plug_func() {
     const _modules = window["_modules"];
     const { ipcRenderer } = _modules.electron;
 
+    const elementById = (id: string) => document.getElementById(id);
     function ipcSend(data: any) {
         ipcRenderer.send("asynchronous-message", data);
     }
@@ -22,9 +24,13 @@ async function _tasty_plug_func() {
         var loudness = 0;
         for(var i = 0; i < input.length; i++) {
             input[i] = input[i] * gain;
-            loudness += Math.abs(input[i]);
+            const normabs = Math.abs(input[i] / 32768);
+            loudness += normabs * normabs;
         }
-        loudness /= input.length * 32768;
+        loudness = Math.sqrt(loudness / input.length);
+        console.log(loudness);
+
+        (elementById("mic-vol-val") as HTMLProgressElement).value = loudness;
 
         return { data: input, send: loudness >= thr };
     }
