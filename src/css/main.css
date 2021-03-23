@@ -313,6 +313,7 @@ button.icon-button img {
 }
 
 progress {
+    padding:       0;
     margin-top:    5px;
     height:        10px;
     border-radius: 8px;

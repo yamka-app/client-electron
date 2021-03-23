@@ -71,7 +71,7 @@ function _rendererFunc() {
     var fetchingMsgs: boolean = false;
 
     // Short for "elementById"
-    const elementById = (id: string) => document.getElementById(id);
+    const elmById = (id: string) => document.getElementById(id);
 
     // Sections in the message we"re sending/editing
     var msgSections: MessageSection[] = [];
@@ -125,7 +125,7 @@ function _rendererFunc() {
     checkClientVersion();
     setInterval(checkClientVersion, 600000); // 10 minutes
 
-    elementById("client-version").innerHTML = escapeHtml(_clientVersion);
+    elmById("client-version").innerHTML = escapeHtml(_clientVersion);
 
     // Upload and download blobs
     function upload(filePath: string, onEnd: (id: number) => any, onProgressMade?: (p: number, m: number) => any) {
@@ -194,7 +194,7 @@ function _rendererFunc() {
     }
 
     // Show and hide the user settings panel
-    const userSettingsElm = elementById("user-settings");
+    const userSettingsElm = elmById("user-settings");
     function showUserSettings() {
         // Reset to the profile tab
         showUserSettingsTab("user-settings-section-profile");
@@ -206,8 +206,8 @@ function _rendererFunc() {
     function showUserSettingsTab(name: string) {
         // "Log out" is not really a tab
         if(name === "user-settings-section-logout") {
-            hideElm(elementById("main-layout-container"));
-            showElm(elementById("login-form"));
+            hideElm(elmById("main-layout-container"));
+            showElm(elmById("login-form"));
 
             // Clear the access token
             configSet("accessToken", "");
@@ -221,16 +221,16 @@ function _rendererFunc() {
             hideElm(sections[i]);
 
         // Show the section we need
-        showElm(elementById(name));
-        (elementById(name + "-sel") as HTMLInputElement).checked = true;
+        showElm(elmById(name));
+        (elmById(name + "-sel") as HTMLInputElement).checked = true;
     }
 
     // Shows a channel in the group preferences panel
     function groupSettingsShowChannel(id: number) {
         editingChan = id;
         const chan = entityCache[id] as entities.Channel;
-        (elementById("channel-name-change")  as HTMLInputElement).value   = chan.name;
-        (elementById("channel-voice-change") as HTMLInputElement).checked = chan.voice;
+        (elmById("channel-name-change")  as HTMLInputElement).value   = chan.name;
+        (elmById("channel-voice-change") as HTMLInputElement).checked = chan.voice;
     }
 
     // Updates the channel list in the group preferences panel
@@ -238,7 +238,7 @@ function _rendererFunc() {
         if(viewingGroup === 0)
             return;
 
-        const channelList = elementById("group-settings-channel-list");
+        const channelList = elmById("group-settings-channel-list");
         const channels    = entityCache[viewingGroup].channels;
         reqEntities(channels.map(x => new packets.EntityGetRequest(entities.Channel.typeNum, x)), false, () => {
             // Remove previous buttons
@@ -258,20 +258,20 @@ function _rendererFunc() {
 
         reqEntities([new packets.EntityGetRequest(entities.Role.typeNum, id)], false, () => {
             const role = entityCache[id];
-            (elementById("role-name-change") as HTMLInputElement).value = role.name;
+            (elmById("role-name-change") as HTMLInputElement).value = role.name;
     
             // Show or hide the removal button based on whether the role is @everyone
-            const deleteBtn = elementById("role-remove-button");
+            const deleteBtn = elmById("role-remove-button");
             setElmVisibility(deleteBtn, role.priority !== 0);
 
             // Do the same with the name change field (enable/disable it though)
-            const nameChange = elementById("role-name-change");
+            const nameChange = elmById("role-name-change");
             if(role.priority === 0)
                 nameChange.setAttribute("disabled", "");
             else
                 nameChange.removeAttribute("disabled");
 
-            const colorChange = elementById("role-color-change") as HTMLInputElement;
+            const colorChange = elmById("role-color-change") as HTMLInputElement;
             colorChange.value = role.color;
         })
     }
@@ -280,7 +280,7 @@ function _rendererFunc() {
         if(viewingGroup === 0)
             return;
 
-        const roleList = elementById("group-settings-role-list");
+        const roleList = elmById("group-settings-role-list");
         const roles    = entityCache[viewingGroup].roles;
         // Force because the roles might have changed their priorities
         reqEntities(roles.map(x => new packets.EntityGetRequest(entities.Role.typeNum, x)), true, () => {
@@ -307,7 +307,7 @@ function _rendererFunc() {
         if(viewingGroup === 0)
             return;
 
-        const inviteList = elementById("group-settings-invite-list");
+        const inviteList = elmById("group-settings-invite-list");
         var   invites = entityCache[viewingGroup].invites;
 
         while(inviteList.firstChild)
@@ -350,8 +350,8 @@ function _rendererFunc() {
     function showGroupSettings() {
         // Load group info
         const group = entityCache[viewingGroup] as entities.Group;
-        (elementById("group-name-change") as HTMLInputElement).value = escapeHtml(group.name);
-        triggerAppear(elementById("group-settings"), true);
+        (elmById("group-name-change") as HTMLInputElement).value = escapeHtml(group.name);
+        triggerAppear(elmById("group-settings"), true);
 
         showGroupSettingsTab("group-settings-section-general");
         groupSettingsShowChannel(group.channels[0]);
@@ -359,7 +359,7 @@ function _rendererFunc() {
         groupSettingsShowRole(group.roles.sort((a, b) => a - b)[0]);
 
         download(group.icon, (b) =>
-            (elementById("group-icon-huge") as HTMLImageElement).src = "file://" + b);
+            (elmById("group-icon-huge") as HTMLImageElement).src = "file://" + b);
 
         // Load settings
         try { // these might throw an exception if the user has no access to group settings
@@ -370,14 +370,14 @@ function _rendererFunc() {
         catch { }
     }
     function hideGroupSettings() {
-        triggerDisappear(elementById("group-settings"), true)
+        triggerDisappear(elmById("group-settings"), true)
     }
     function showGroupSettingsTab(name: string) {
         // "Delete group" is not really a tab
         if(name == "group-settings-section-delete") {
             hideGroupSettings();
-            elementById("group-delete-name").innerHTML = escapeHtml(entityCache[viewingGroup].name);
-            triggerAppear(elementById("group-delete-box"), true);
+            elmById("group-delete-name").innerHTML = escapeHtml(entityCache[viewingGroup].name);
+            triggerAppear(elmById("group-delete-box"), true);
             return;
         }
 
@@ -386,14 +386,14 @@ function _rendererFunc() {
         for(const s of sections) hideElm(s);
 
         // Show the tab we need
-        showElm(elementById(name));
-        (elementById(name + "-sel") as HTMLInputElement).checked = true
+        showElm(elmById(name));
+        (elmById(name + "-sel") as HTMLInputElement).checked = true
     }
 
     // Show the update box
     function showUpdBox(text: string) {
-        const box = elementById("update-popup");
-        elementById("update-popup-text").innerHTML = escapeHtml(text);
+        const box = elmById("update-popup");
+        elmById("update-popup-text").innerHTML = escapeHtml(text);
         showElm(box);
         box.classList.remove("sliding-in");
         box.classList.add("sliding-in");
@@ -401,15 +401,15 @@ function _rendererFunc() {
 
     // Show the floating message box
     function showBox(header: string, text: string, showUpdate: boolean =false, updCb?:Function) {
-        elementById("floating-box-header").innerHTML = header;
-        elementById("floating-box-text").innerHTML = text;
-        triggerAppear(elementById("floating-box"), true);
+        elmById("floating-box-header").innerHTML = header;
+        elmById("floating-box-text").innerHTML = text;
+        triggerAppear(elmById("floating-box"), true);
 
-        elementById("floating-box-ok").addEventListener("click", (e) => {
-            triggerDisappear(elementById("floating-box"), true);
+        elmById("floating-box-ok").addEventListener("click", (e) => {
+            triggerDisappear(elmById("floating-box"), true);
         })
 
-        const updButton = elementById("floating-box-upd") as HTMLButtonElement;
+        const updButton = elmById("floating-box-upd") as HTMLButtonElement;
         updButton.onclick = (e) => updCb();
         setElmVisibility(updButton, showUpdate);
     }
@@ -467,10 +467,10 @@ function _rendererFunc() {
     // Update info about self
     function updateSelfStatus(status: number) {
         // Update the icon in the user bar
-        (elementById("self-status") as HTMLImageElement).src = statusIconPath(status);
+        (elmById("self-status") as HTMLImageElement).src = statusIconPath(status);
 
         // Update the switch in the user settings
-        (elementById("self-status-" + statusStr(status)) as HTMLInputElement).checked = true;
+        (elmById("self-status-" + statusStr(status)) as HTMLInputElement).checked = true;
 
         // Update the explainer below the switch
         var explainer = [
@@ -479,33 +479,33 @@ function _rendererFunc() {
             "Everyone will think you're away, but you'll still have access to everything",
             "You will not receive any notifications"
         ][status];
-        elementById("self-status-explainer").innerHTML = explainer;
+        elmById("self-status-explainer").innerHTML = explainer;
     }
     function updateSelfStatusText(statusText: string) {
-        elementById("self-status-text").innerHTML = escapeHtml(statusText);
-        (elementById("self-status-text-change") as HTMLInputElement).value = statusText;
+        elmById("self-status-text").innerHTML = escapeHtml(statusText);
+        (elmById("self-status-text-change") as HTMLInputElement).value = statusText;
     }
     function updateSelfName(name: string) {
-        elementById("self-nickname").innerHTML = escapeHtml(name);
-        (elementById("self-name-change") as HTMLInputElement).value = name;
+        elmById("self-nickname").innerHTML = escapeHtml(name);
+        (elmById("self-name-change") as HTMLInputElement).value = name;
     }
     function formatTag(tag: number): string {
         return "#" + String(tag).padStart(5, "0")
     }
     function updateSelfTag(tag: number) {
-        elementById("self-tag").innerHTML = escapeHtml(formatTag(tag));
-        elementById("self-tag-settings").innerHTML = escapeHtml(formatTag(tag));
+        elmById("self-tag").innerHTML = escapeHtml(formatTag(tag));
+        elmById("self-tag-settings").innerHTML = escapeHtml(formatTag(tag));
     }
     function updateSelfEmail(email: string) {
-        (elementById("self-email-change") as HTMLInputElement).value = email;
+        (elmById("self-email-change") as HTMLInputElement).value = email;
     }
     function updateSelfMfaStatus(mfaEnabled: boolean) {
-        elementById("self-mfa-enable-status").innerHTML = mfaEnabled ? "ENABLED" : "DISABLED";
-        elementById("self-mfa-toggle-button").innerHTML = (mfaEnabled ? "DISABLE" : "ENABLE") + " 2FA";
+        elmById("self-mfa-enable-status").innerHTML = mfaEnabled ? "ENABLED" : "DISABLED";
+        elmById("self-mfa-toggle-button").innerHTML = (mfaEnabled ? "DISABLE" : "ENABLE") + " 2FA";
     }
     function updateSelfAva(path: string) {
-        (elementById("self-avatar") as HTMLInputElement).src = "file://" + path;
-        (elementById("self-avatar-huge") as HTMLInputElement).src = "file://" + path;
+        (elmById("self-avatar") as HTMLInputElement).src = "file://" + path;
+        (elmById("self-avatar-huge") as HTMLInputElement).src = "file://" + path;
     }
     function updateSelfInfo(name: string, tag: number, status: number, statusText: string, email: string, mfaEnabled: boolean) {
         updateSelfName(name);
@@ -783,9 +783,9 @@ function _rendererFunc() {
     // Updates the member list sidebar
     function updMemberList() {
         // Show or hide the friend hedaer
-        const friendHeader = elementById("member-list-friend-header");
-        const friendType   = elementById("member-list-friend-type");
-        const groupHeader  = elementById("member-list-group-header");
+        const friendHeader = elmById("member-list-friend-header");
+        const friendType   = elmById("member-list-friend-type");
+        const groupHeader  = elmById("member-list-group-header");
         
         if(viewingGroup === 0) {
             showElm(friendHeader);
@@ -798,7 +798,7 @@ function _rendererFunc() {
         }
 
         if(viewingGroup === 0) {
-            const memberList = elementById("member-list-bar");
+            const memberList = elmById("member-list-bar");
 
             // Remove all previous members
             while(memberList.firstChild)
@@ -806,7 +806,7 @@ function _rendererFunc() {
 
             // Determine what users should end up in the member list
             const self = remote.getGlobal("webprotState").self;
-            const friendType = elementById("member-list-friend-type");
+            const friendType = elmById("member-list-friend-type");
 
             friendType.innerHTML = escapeHtml(
                 ["ALL FRIENDS",
@@ -906,7 +906,7 @@ function _rendererFunc() {
 
             markRead(viewingChan);
             markRead(viewingChan, true);
-            elementById("message-unread-sep")?.remove();
+            elmById("message-unread-sep")?.remove();
 
             resetMsgInput();
             editingMessage = 0;
@@ -938,7 +938,7 @@ function _rendererFunc() {
                     (section.typeElm as HTMLInputElement).value = section.text;
         }
 
-        elementById("message-editing").innerHTML = escapeHtml("Editing message");
+        elmById("message-editing").innerHTML = escapeHtml("Editing message");
     }
 
     var typingClearTimer, currentlyTyping;
@@ -1053,7 +1053,7 @@ function _rendererFunc() {
         section.appendChild(typeElm);
 
         // Append the section
-        const container = elementById("message-input-container");
+        const container = elmById("message-input-container");
         container.insertBefore(section, container.lastChild);
 
         // Play an animation
@@ -1073,7 +1073,7 @@ function _rendererFunc() {
     // Removes an input message section
     function removeInputSection(id: number) {
         // Find the element
-        const elm = elementById("message-section-" + id);
+        const elm = elmById("message-section-" + id);
         // Remove it
         for(var i = 0; i < msgSections.length; i++) {
             if(msgSections[i].elm === elm) {
@@ -1091,7 +1091,7 @@ function _rendererFunc() {
 
     // Resets the message input field
     function resetMsgInput(fullReset: boolean =false) {
-        const container = elementById("message-input-container")
+        const container = elmById("message-input-container")
 
         // Remove all sections
         for(var i = container.children.length - 1; i >= 0; i--) {
@@ -1116,7 +1116,7 @@ function _rendererFunc() {
             setTimeout(() => elm.value = "", 1);
             setTimeout(() => adjTaHeight(elm), 1);
     
-            elementById("message-editing").innerHTML = "";
+            elmById("message-editing").innerHTML = "";
         }
     }
 
@@ -1163,7 +1163,7 @@ function _rendererFunc() {
 
     // Shows/hides a floating message
     function showFloatingMessage(state: entities.MessageState) {
-        const floatingMessage = elementById("floating-message")
+        const floatingMessage = elmById("floating-message")
         // Remove old junk
         while(floatingMessage.firstChild)
             floatingMessage.firstChild.remove();
@@ -1177,20 +1177,20 @@ function _rendererFunc() {
         triggerAppear(floatingMessage, true);
     }
     function hideFloatingMessage() {
-        const floatingMessage = elementById("floating-message");
+        const floatingMessage = elmById("floating-message");
         triggerDisappear(floatingMessage, true);
     }
 
     // Shows/hides a profile
     function showProfile(id: number) {
         const user = entityCache[id];
-        const profile  = elementById("profile");
-        const nickname = elementById("profile-nickname").classList;
-        const tag      = elementById("profile-tag").classList;
-        const avatar   = elementById("profile-avatar").classList;
-        const badges   = elementById("profile-badges");
-        const groups   = elementById("profile-groups");
-        const friends  = elementById("profile-friends");
+        const profile  = elmById("profile");
+        const nickname = elmById("profile-nickname").classList;
+        const tag      = elmById("profile-tag").classList;
+        const avatar   = elmById("profile-avatar").classList;
+        const badges   = elmById("profile-badges");
+        const groups   = elmById("profile-groups");
+        const friends  = elmById("profile-friends");
         
         // Remove the old classes
         for(const c of nickname.values())
@@ -1256,15 +1256,15 @@ function _rendererFunc() {
         triggerAppear(profile, true);
     }
     function hideProfile() {
-        const profile = elementById("profile");
+        const profile = elmById("profile");
         triggerDisappear(profile, true);
     }
 
     // Show/hides a floating image
     function showFloatingImage(id: number) {
         // Remove the old image
-        const floatingImageBg = elementById("floating-image-bg");
-        var floatingImage = elementById("floating-image");
+        const floatingImageBg = elmById("floating-image-bg");
+        var floatingImage = elmById("floating-image");
         if(floatingImage)
             floatingImage.remove();
 
@@ -1278,7 +1278,7 @@ function _rendererFunc() {
         })
     }
     function hideFloatingImage() {
-        const floatingImage = elementById("floating-image");
+        const floatingImage = elmById("floating-image");
         if(floatingImage)
             triggerDisappear(floatingImage, true);
     }
@@ -1286,8 +1286,8 @@ function _rendererFunc() {
     // Shows/hides the message history
     function showMessageHistory(id: number, x: number, y: number) {
         const msg     = entityCache[id] as entities.Message
-        const history = elementById("message-history");
-        const bg      = elementById("message-history-bg");
+        const history = elmById("message-history");
+        const bg      = elmById("message-history-bg");
 
         while(history.lastChild) history.lastChild.remove();
 
@@ -1317,11 +1317,11 @@ function _rendererFunc() {
 
     // Shows/hides the group create box
     function showGroupCreateBox() {
-        const groupCreateBox = elementById("group-create-box");
+        const groupCreateBox = elmById("group-create-box");
         triggerAppear(groupCreateBox, true);
     }
     function hideGroupCreateBox() {
-        const groupCreateBox = elementById("group-create-box");
+        const groupCreateBox = elmById("group-create-box");
         triggerDisappear(groupCreateBox, true);
     }
 
@@ -1693,7 +1693,7 @@ function _rendererFunc() {
 
     // Fetches and appends members to the bottom
     function appendMembersBottom(role: number, id_from: number, callback?: () => void, clear: boolean =false) {
-        const memberList = elementById("member-list-bar")
+        const memberList = elmById("member-list-bar")
         
         reqEntities([new packets.EntityGetRequest(entities.Role.typeNum, role,
                 new packets.EntityPagination(6 /* members */,
@@ -1730,8 +1730,8 @@ function _rendererFunc() {
     // Fetches and appends messages to the top
     function appendMsgsTop(id_from: number, callback?: () => void, clear: boolean =false) {
         fetchingMsgs = true;
-        const msgArea = elementById("message-area");
-        const header = elementById("message-area-header");
+        const msgArea = elmById("message-area");
+        const header = elmById("message-area-header");
         
         reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, viewingChan,
                 new packets.EntityPagination(4 /* messages */,
@@ -1814,14 +1814,14 @@ function _rendererFunc() {
         const chan = entityCache[viewingChan] as entities.Channel;
 
         // Hide the panel list if we're viewing messages
-        setElmVisibility(elementById("message-container-area"), viewingChan !== 0);
+        setElmVisibility(elmById("message-container-area"), viewingChan !== 0);
 
         if(viewingChan !== previousChannel && previousChannel !== 0)
             markRead(previousChannel);
         previousChannel = viewingChan;
 
         if(viewingChan === 0) {
-            const msgArea = elementById("message-area");
+            const msgArea = elmById("message-area");
             for(var i = msgArea.children.length - 1; i >= 0; i--) {
                 const child = msgArea.children[i];
                 if(child.id != "message-area-header")
@@ -1831,7 +1831,7 @@ function _rendererFunc() {
         }
 
         // Set "join voice" button visibility
-        setElmVisibility(elementById("message-area-voice"), chan.voice);
+        setElmVisibility(elmById("message-area-voice"), chan.voice);
 
         // Get channel messages
         if(viewingChan !== 0 && updMessages)
@@ -1840,8 +1840,8 @@ function _rendererFunc() {
         reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, viewingChan)], false, () => {
             const channel = entityCache[viewingChan];
             // Show the list of people that are typing
-            const typingElm  = elementById("channel-typing");
-            const typingAnim = elementById("typing-dots");
+            const typingElm  = elmById("channel-typing");
+            const typingAnim = elmById("typing-dots");
             const typing = channel.typing.filter(x => x !== remote.getGlobal("webprotState").self.id);
             reqEntities(typing.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {
                 var content = "";
@@ -1928,7 +1928,7 @@ function _rendererFunc() {
 
     // Updates the group list
     function updGroupList() {
-        const groupPanels = elementById("group-panel-area");
+        const groupPanels = elmById("group-panel-area");
 
         // Hide the panel list if we're viewing messages
         setElmVisibility(groupPanels, viewingChan === 0);
@@ -1966,14 +1966,14 @@ function _rendererFunc() {
     // Updates the channel list
     function updChannelList() {
         // Show or hide the channel list
-        const channelListSidebar = elementById("channel-list-sidebar");
+        const channelListSidebar = elmById("channel-list-sidebar");
         setElmVisibility(channelListSidebar, viewingGroup !== 0);
 
         if(viewingGroup === 0)
             return;
 
-        const channelList = elementById("channel-list");
-        const groupName = elementById("group-name");
+        const channelList = elmById("channel-list");
+        const groupName = elmById("group-name");
 
         // Show the server name
         groupName.innerHTML = escapeHtml(entityCache[viewingGroup].name);
@@ -2012,8 +2012,8 @@ function _rendererFunc() {
 
     // Appends a message to the message area
     function appendMessage(id: number) {
-        const msgArea = elementById("message-area");
-        const msgScrollArea = elementById("message-scroll-area");
+        const msgArea = elmById("message-area");
+        const msgScrollArea = elmById("message-scroll-area");
 
         // Check if scrolled all the way down
         const scrolled = msgScrollArea.scrollTop - (msgScrollArea.scrollHeight - msgScrollArea.offsetHeight) <= 100;
@@ -2078,7 +2078,7 @@ function _rendererFunc() {
     function updateVoiceMembers(id: number) {
         const chan = entityCache[id] as entities.Channel;
 
-        const container = elementById("voice-members");
+        const container = elmById("voice-members");
         while(container.lastChild) container.lastChild.remove();
 
         for(var i = 0; i < chan.voiceUsers.length; i++) {
@@ -2098,26 +2098,26 @@ function _rendererFunc() {
             const code = packet.status;
             switch(code) {
                 case packets.StatusCode.MFA_REQUIRED:
-                    hideElm(elementById("login-form"));
-                    showElm(elementById("mfa-form"));
+                    hideElm(elmById("login-form"));
+                    showElm(elmById("mfa-form"));
     
-                    elementById("mfa-login-button").addEventListener("click", (e) => {
+                    elmById("mfa-login-button").addEventListener("click", (e) => {
                         ipcSend({
                             action:   "webprot.login",
                             email:    "___@mfa@token@___",
-                            password: (elementById("login-mfa-code") as HTMLInputElement).value
+                            password: (elmById("login-mfa-code") as HTMLInputElement).value
                         });
                     });
                     break;
 
                 case packets.StatusCode.LOGIN_ERROR:
                     showBox("LOGIN ERROR", packet.message);
-                    (elementById("login-password") as HTMLInputElement).value = "";
+                    (elmById("login-password") as HTMLInputElement).value = "";
                     break;
 
                 case packets.StatusCode.SIGNUP_ERROR:
                     showBox("SIGNUP ERROR", packet.message);
-                    (elementById("signup-password") as HTMLInputElement).value = "";
+                    (elmById("signup-password") as HTMLInputElement).value = "";
                     break;
 
                 case packets.StatusCode.OUTDATED:
@@ -2148,18 +2148,18 @@ function _rendererFunc() {
             remote.getGlobal("webprotState").sendPings = true;
 
             // Show the main UI
-            hideElm(elementById("login-form"));
-            hideElm(elementById("mfa-form"));
-            hideElm(elementById("signup-form"));
-            showElm(elementById("main-layout-container"));
+            hideElm(elmById("login-form"));
+            hideElm(elmById("mfa-form"));
+            hideElm(elmById("signup-form"));
+            showElm(elmById("main-layout-container"));
 
             // Clear input fields
-            (elementById("login-email")     as HTMLInputElement).value = "";
-            (elementById("login-password")  as HTMLInputElement).value = "";
-            (elementById("login-mfa-code")  as HTMLInputElement).value = "";
-            (elementById("signup-username") as HTMLInputElement).value = "";
-            (elementById("signup-email")    as HTMLInputElement).value = "";
-            (elementById("signup-password") as HTMLInputElement).value = "";
+            (elmById("login-email")     as HTMLInputElement).value = "";
+            (elmById("login-password")  as HTMLInputElement).value = "";
+            (elmById("login-mfa-code")  as HTMLInputElement).value = "";
+            (elmById("signup-username") as HTMLInputElement).value = "";
+            (elmById("signup-email")    as HTMLInputElement).value = "";
+            (elmById("signup-password") as HTMLInputElement).value = "";
 
             // Reset all caches
             entityCache = {};
@@ -2255,7 +2255,7 @@ function _rendererFunc() {
                     remote.getGlobal("webprotState").self = entity;
                     updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
 
-                    setElmVisibility(elementById("email-unconfirmed-bar-container"), !entity.emailConfirmed);
+                    setElmVisibility(elmById("email-unconfirmed-bar-container"), !entity.emailConfirmed);
 
                     // Request own avatar
                     download(entity.avaFile, (blob) => {
@@ -2271,8 +2271,8 @@ function _rendererFunc() {
 
                     // Check new friend requests
                     const pin = entity.pendingIn;
-                    elementById("pending-in-count").innerHTML = escapeHtml(pin.length);
-                    setElmVisibility(elementById("pin-cnt-container"), pin.length > 0);
+                    elmById("pending-in-count").innerHTML = escapeHtml(pin.length);
+                    setElmVisibility(elmById("pin-cnt-container"), pin.length > 0);
                     if(packet.spontaneous && oldEntity.pendingIn.length !== entity.pendingIn.length
                         && shouldReceiveNotif()) {
                         const newFriends = entity.pendingIn.filter(x => !oldEntity.pendingIn.includes(x));
@@ -2293,7 +2293,7 @@ function _rendererFunc() {
 
                     // Update the owned bot list
                     if(entity.ownedBots !== undefined)
-                        elementById("owned-bot-list").innerHTML = entity.ownedBots.join(", ");
+                        elmById("owned-bot-list").innerHTML = entity.ownedBots.join(", ");
                 }
 
                 // Update info about other users
@@ -2323,10 +2323,10 @@ function _rendererFunc() {
                 break;
 
             case "webprot.connecting":
-                showElm(elementById("connecting-screen-bg"));
+                showElm(elmById("connecting-screen-bg"));
                 break;
             case "webprot.connected":
-                setTimeout(() => hideElm(elementById("connecting-screen-bg")), 1000); // kinda wait \(-_-)/
+                setTimeout(() => hideElm(elmById("connecting-screen-bg")), 1000); // kinda wait \(-_-)/
                 // Send the continuation token
                 const accessToken = configGet("accessToken");
                 if(accessToken) sendPacket(new packets.AccessTokenPacket(accessToken));
@@ -2384,7 +2384,7 @@ function _rendererFunc() {
                                + arg.secret
                                + "&issuer=Order";
                 // Generate the code
-                const placeholder = elementById("mfa-qr-placeholder");
+                const placeholder = elmById("mfa-qr-placeholder");
                 qrcode(qrString, (err, canvas) => {
                     if(err) throw err;
 
@@ -2393,9 +2393,9 @@ function _rendererFunc() {
                         placeholder.firstChild.remove();
 
                     placeholder.appendChild(canvas);
-                    elementById("mfa-code-manual").innerHTML = escapeHtml(arg.secret);
+                    elmById("mfa-code-manual").innerHTML = escapeHtml(arg.secret);
 
-                    triggerAppear(elementById("mfa-qr-banner"), true);
+                    triggerAppear(elmById("mfa-qr-banner"), true);
                 });
                 break;
 
@@ -2405,12 +2405,15 @@ function _rendererFunc() {
                 break;
 
             case "tasty.status":
-                elementById("voice-status").innerHTML = escapeHtml(`VOICE: ${arg.status.toUpperCase()}`);
+                if(arg.status === "connected")
+                    showElm(elmById("message-area-voice-disconnect"));
+                elmById("voice-status").innerHTML = escapeHtml(arg.status === "disconnected"
+                    ? "" : `VOICE: ${arg.status.toUpperCase()}`);
                 break;
 
             case "tasty.stats":
                 const stats: tasty.TastyEncoderStats = arg.stats;
-                elementById("voice-encoder-stats").title
+                elmById("voice-encoder-stats").title
                     = `Effective compression ratio: ${(stats.compressionRatio * 100).toFixed(0)}%\n`
                     + `Frame rate: ${stats.frameRate}\n`
                     + `Bit rate: ${stats.bitRate}\n`
@@ -2422,46 +2425,46 @@ function _rendererFunc() {
     ipcRenderer.on("message", ipcRecv)
 
     // Add listeners to window control buttons
-    elementById("minimize-button").onclick = (e) => {
+    elmById("minimize-button").onclick = (e) => {
         browserWindow.minimize();
     };
-    elementById("maximize-button").onclick = (e) => {
+    elmById("maximize-button").onclick = (e) => {
         if(browserWindow.isMaximized())
             browserWindow.unmaximize();
         else
             browserWindow.maximize();
     };
-    elementById("close-button").onclick = (e) => {
+    elmById("close-button").onclick = (e) => {
         browserWindow.hide();
     };
 
     // Add listeners to login controls
-    elementById("login-button").onclick = (e) => {
-        const email    = (elementById("login-email")    as HTMLInputElement).value;
-        const password = (elementById("login-password") as HTMLInputElement).value;
+    elmById("login-button").onclick = (e) => {
+        const email    = (elmById("login-email")    as HTMLInputElement).value;
+        const password = (elmById("login-password") as HTMLInputElement).value;
         // hack: all permissions except the bot one. I'm too lazy to list all of them here :)
         const permissions = []; for(var i = 0; i < packets.AccessTokenPermission.BOT; i++) permissions.push(i);
         sendPacket(new packets.LoginPacket(email, password, permissions));
     };
 
-    elementById("login-signup-button").onclick = (e) => {
-        showElm(elementById("signup-form"));
-        hideElm(elementById("login-form"));
+    elmById("login-signup-button").onclick = (e) => {
+        showElm(elmById("signup-form"));
+        hideElm(elmById("login-form"));
     };
 
     // Add listeners to signup controls
-    elementById("signup-back-button").onclick = (e) => {
-        showElm(elementById("login-form"));
-        hideElm(elementById("signup-form"));
+    elmById("signup-back-button").onclick = (e) => {
+        showElm(elmById("login-form"));
+        hideElm(elmById("signup-form"));
     };
 
-    elementById("signup-password").oninput = (e) => {
+    elmById("signup-password").oninput = (e) => {
         // Reference components
         var strongRegex = new RegExp("^(?=.{10,})(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\\W).*$", "g");
         var mediumRegex = new RegExp("^(?=.{8,})(((?=.*[A-Z])(?=.*[a-z]))|((?=.*[A-Z])(?=.*[0-9]))|((?=.*[a-z])(?=.*[0-9]))).*$", "g");
-        const password              = (elementById("signup-password")         as HTMLInputElement).value;
-        const passwordStrengthText  = (elementById("password-strength-text")  as HTMLInputElement);
-        const passwordStrengthMeter = (elementById("password-strength-meter") as HTMLProgressElement);
+        const password              = (elmById("signup-password")         as HTMLInputElement).value;
+        const passwordStrengthText  = (elmById("password-strength-text")  as HTMLInputElement);
+        const passwordStrengthMeter = (elmById("password-strength-meter") as HTMLProgressElement);
 
         // Display the strength to the user
         if(password.length === 0) {
@@ -2490,14 +2493,14 @@ function _rendererFunc() {
         }
     };
 
-    elementById("signup-button").onclick = (e) => {
+    elmById("signup-button").onclick = (e) => {
         // Check everything
-        const username = (elementById("signup-username") as HTMLInputElement).value;
-        const email    = (elementById("signup-email")    as HTMLInputElement).value;
-        const password = (elementById("signup-password") as HTMLInputElement).value;
-        const emailRequired = elementById("email-required");
-        const nameRequired  = elementById("username-required");
-        const passwordStrengthText = elementById("password-strength-text")
+        const username = (elmById("signup-username") as HTMLInputElement).value;
+        const email    = (elmById("signup-email")    as HTMLInputElement).value;
+        const password = (elmById("signup-password") as HTMLInputElement).value;
+        const emailRequired = elmById("email-required");
+        const nameRequired  = elmById("username-required");
+        const passwordStrengthText = elmById("password-strength-text")
         var proceed = true;
 
         if(!emailRegex.test(email)) {
@@ -2531,25 +2534,25 @@ function _rendererFunc() {
     }
 
     // Add listeners that open and close the user settings panel
-    elementById("self-avatar")        .onclick = showUserSettings;
-    elementById("self-nickname")      .onclick = showUserSettings;
-    elementById("user-settings-exit") .onclick = hideUserSettings;
-    elementById("user-settings-bg")   .onclick = hideUserSettings;
+    elmById("self-avatar")        .onclick = showUserSettings;
+    elmById("self-nickname")      .onclick = showUserSettings;
+    elmById("user-settings-exit") .onclick = hideUserSettings;
+    elmById("user-settings-bg")   .onclick = hideUserSettings;
 
-    elementById("floating-message-bg").onclick = hideFloatingMessage;
-    elementById("floating-image-bg")  .onclick = hideFloatingImage;
-    elementById("group-create-box-bg").onclick = hideGroupCreateBox;
+    elmById("floating-message-bg").onclick = hideFloatingMessage;
+    elmById("floating-image-bg")  .onclick = hideFloatingImage;
+    elmById("group-create-box-bg").onclick = hideGroupCreateBox;
 
-    elementById("channel-list-header").onclick = showGroupSettings;
-    elementById("group-settings-exit").onclick = hideGroupSettings;
-    elementById("group-settings-bg")  .onclick = hideGroupSettings;
+    elmById("channel-list-header").onclick = showGroupSettings;
+    elmById("group-settings-exit").onclick = hideGroupSettings;
+    elmById("group-settings-bg")  .onclick = hideGroupSettings;
 
-    elementById("user-settings")   .onclick = stopPropagation;
-    elementById("group-settings")  .onclick = stopPropagation;
-    elementById("group-create-box").onclick = stopPropagation;
-    elementById("profile")         .onclick = stopPropagation;
+    elmById("user-settings")   .onclick = stopPropagation;
+    elmById("group-settings")  .onclick = stopPropagation;
+    elmById("group-create-box").onclick = stopPropagation;
+    elmById("profile")         .onclick = stopPropagation;
 
-    elementById("profile-bg").onclick = hideProfile;
+    elmById("profile-bg").onclick = hideProfile;
 
     // Settings sections
     document.querySelectorAll('input[name="user-settings-sections"]').forEach((element) => {
@@ -2564,31 +2567,31 @@ function _rendererFunc() {
     });
 
     // Various text peoperties changing
-    const statusTextChange = elementById("self-status-text-change") as HTMLInputElement;
+    const statusTextChange = elmById("self-status-text-change") as HTMLInputElement;
     statusTextChange.onkeypress = (evt) => {
         if(evt.keyCode === 13) // Enter
             setSelfStatusText(statusTextChange.value);
     }
-    const usernameChange = elementById("self-name-change") as HTMLInputElement;
+    const usernameChange = elmById("self-name-change") as HTMLInputElement;
     usernameChange.onkeypress = (evt) => {
         if(evt.keyCode === 13)
             setSelfName(usernameChange.value);
     }
-    const emailChange = elementById("self-email-change") as HTMLInputElement;
+    const emailChange = elmById("self-email-change") as HTMLInputElement;
     emailChange.onkeypress = (evt) => {
         if(evt.keyCode === 13)
             setSelfEmail(emailChange.value);
     }
 
     // 2FA toggling
-    elementById("self-mfa-toggle-button").onclick = (evt) => {
+    elmById("self-mfa-toggle-button").onclick = (evt) => {
         // Disable it if enabled, enable if disabled
         setSelfMfaStatus(!remote.getGlobal("webprotState").self.mfaEnabled);
     };
 
     // 2FA floating box closing
-    elementById("mfa-qr-ok").onclick = (evt) => {
-        triggerDisappear(elementById("mfa-qr-banner"), true)
+    elmById("mfa-qr-ok").onclick = (evt) => {
+        triggerDisappear(elmById("mfa-qr-banner"), true)
     };
 
     // Floaty stuffs closing
@@ -2605,13 +2608,13 @@ function _rendererFunc() {
 
     // Add listeners to self status selectors
     // We can"t query multiple sections and just iterate them :(
-    elementById("self-status-offline").addEventListener("click", (e) => setSelfStatus(0));
-    elementById("self-status-online") .addEventListener("click", (e) => setSelfStatus(1));
-    elementById("self-status-sleep")  .addEventListener("click", (e) => setSelfStatus(2));
-    elementById("self-status-dnd")    .addEventListener("click", (e) => setSelfStatus(3));
+    elmById("self-status-offline").addEventListener("click", (e) => setSelfStatus(0));
+    elmById("self-status-online") .addEventListener("click", (e) => setSelfStatus(1));
+    elmById("self-status-sleep")  .addEventListener("click", (e) => setSelfStatus(2));
+    elmById("self-status-dnd")    .addEventListener("click", (e) => setSelfStatus(3));
 
     // User avatar/group icon selection
-    elementById("self-avatar-huge").onclick = () => {
+    elmById("self-avatar-huge").onclick = () => {
         var newAvaPath: string[]|string = dialog.showOpenDialogSync(browserWindow, {
             properties: ["openFile"],
             filters: [
@@ -2633,7 +2636,7 @@ function _rendererFunc() {
         });
     }
 
-    elementById("group-icon-huge").onclick = () => {
+    elmById("group-icon-huge").onclick = () => {
         var newIconPath: string[]|string = dialog.showOpenDialogSync(browserWindow, {
             properties: ["openFile"],
             filters: [
@@ -2653,62 +2656,67 @@ function _rendererFunc() {
     }
 
     // "About Order" buttons
-    elementById("view-on-github")  .onclick = (e) => shell.openExternal("https://github.com/ordermsg");
-    elementById("donate")          .onclick = (e) => shell.openExternal("https://ordermsg.tk/donate");
-    elementById("connecting-tweet").onclick = (e) => shell.openExternal("https://twitter.com/ordermsg");
+    elmById("view-on-github")  .onclick = (e) => shell.openExternal("https://github.com/ordermsg");
+    elmById("donate")          .onclick = (e) => shell.openExternal("https://ordermsg.tk/donate");
+    elmById("connecting-tweet").onclick = (e) => shell.openExternal("https://twitter.com/ordermsg");
 
     // Friend control buttons
-    elementById("friends-all").onclick = (e) => {
+    elmById("friends-all").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 0;
         updMemberList();
     };
-    elementById("friends-online").onclick = (e) => {
+    elmById("friends-online").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 1;
         updMemberList();
     };
-    elementById("friends-pending-in").onclick = (e) => {
+    elmById("friends-pending-in").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 2;
         updMemberList();
     };
-    elementById("friends-pending-out").onclick = (e) => {
+    elmById("friends-pending-out").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 3;
         updMemberList();
     };
-    elementById("friends-blocked").onclick = (e) => {
+    elmById("friends-blocked").onclick = (e) => {
         viewingGroup = 0;
         viewingContactGroup = 4;
         updMemberList();
     };
-    elementById("friend-add").onclick = (e) => {
-        toggleElm(elementById("user-search-bar"));
+    elmById("friend-add").onclick = (e) => {
+        toggleElm(elmById("user-search-bar"));
     };
-    elementById("friend-add-commit").onclick = (e) => {
+    elmById("friend-add-commit").onclick = (e) => {
         sendPacket(new packets.UserSearchPacket(
-            (elementById("user-search-input") as HTMLInputElement).value));
+            (elmById("user-search-input") as HTMLInputElement).value));
     };
 
-    elementById("message-area-leave").onclick = (e) => {
+    elmById("message-area-leave").onclick = (e) => {
         viewingGroup = 0;
         viewingChan = 0;
         updLayout();
     };
-    elementById("message-area-voice").onclick = (e) => {
+    elmById("message-area-voice").onclick = (e) => {
         voiceChan = viewingChan;
         ipcSend({ action: "tasty.connect", channel: voiceChan });
     };
+    elmById("message-area-voice-disconnect").onclick = (e) => {
+        voiceChan = 0;
+        hideElm(elmById("message-area-voice-disconnect"));
+        ipcSend({ action: "tasty.disconnect", channel: voiceChan });
+    };
 
     // Message section buttons
-    elementById("message-text-section-button").onclick = (e) => {
+    elmById("message-text-section-button").onclick = (e) => {
         const id = msgSections.length;
         createInputSection(types.MessageSectionType.TEXT, id, () => {
             removeInputSection(id);
         });
     };
-    elementById("message-file-section-button").addEventListener("click", (e) => {
+    elmById("message-file-section-button").addEventListener("click", (e) => {
         // Select the file
         var filePath: string[]|string = dialog.showOpenDialogSync(browserWindow, {
             properties: ["openFile"],
@@ -2768,13 +2776,13 @@ function _rendererFunc() {
             });
         }
     }
-    elementById("message-code-section-button").addEventListener("click", (e) => {
+    elmById("message-code-section-button").addEventListener("click", (e) => {
         const id = msgSections.length;
         createInputSection(types.MessageSectionType.CODE, id, () => {
             removeInputSection(id);
         });
     })
-    elementById("message-quote-section-button").addEventListener("click", (e) => {
+    elmById("message-quote-section-button").addEventListener("click", (e) => {
         const id = msgSections.length;
         createInputSection(types.MessageSectionType.QUOTE, id, () => {
             removeInputSection(id);
@@ -2782,12 +2790,12 @@ function _rendererFunc() {
     })
 
     // Message send button
-    elementById("message-send-button").onclick = (e) => {
+    elmById("message-send-button").onclick = (e) => {
         sendMessage();
     };
 
     // Load new messages when scrolled to the top
-    const msgScrollArea = elementById("message-scroll-area") as HTMLElement
+    const msgScrollArea = elmById("message-scroll-area") as HTMLElement
     const loadingFunc = (e) => {
         const messages = entityCache[viewingChan].messages
         if(msgScrollArea.scrollTop <= 500 && messages.length === 50) { // if the last batch gave less than 50 msgs, it must be the end
@@ -2802,21 +2810,21 @@ function _rendererFunc() {
     msgScrollArea.onscroll = loadingFunc;
 
     // Create/join a group
-    elementById("group-create-join-panel").onclick = showGroupCreateBox;
-    elementById("group-create-ok").onclick = (e) => {
+    elmById("group-create-join-panel").onclick = showGroupCreateBox;
+    elmById("group-create-ok").onclick = (e) => {
         const group = new entities.Group();
-        group.id = 0; group.name = (elementById("group-create-name") as HTMLInputElement).value;
+        group.id = 0; group.name = (elmById("group-create-name") as HTMLInputElement).value;
         putEntities([group]);
     }
-    elementById("group-join-ok").onclick = (e) => {
+    elmById("group-join-ok").onclick = (e) => {
         sendPacket(new packets.InviteResolvePacket(
-            (elementById("group-join-code") as HTMLInputElement).value,
+            (elmById("group-join-code") as HTMLInputElement).value,
             true
         ));
     }
 
     // Group settings
-    const groupNameChange = elementById("group-name-change") as HTMLInputElement;
+    const groupNameChange = elmById("group-name-change") as HTMLInputElement;
     groupNameChange.onkeypress = (evt) => {
         if(evt.keyCode === 13) {
             const group = new entities.Group();
@@ -2825,13 +2833,13 @@ function _rendererFunc() {
         }
     }
 
-    elementById("channel-add-button").onclick = (e) => {
+    elmById("channel-add-button").onclick = (e) => {
         const channel = new entities.Channel();
         channel.id = 0; channel.name = "Text channel"; channel.group = viewingGroup;
         putEntities([channel]);
     }
 
-    const chanNameChange = elementById("channel-name-change") as HTMLInputElement;
+    const chanNameChange = elmById("channel-name-change") as HTMLInputElement;
     chanNameChange.onkeypress = (e) => {
         if(e.keyCode === 13) {
             const channel = new entities.Channel();
@@ -2840,33 +2848,33 @@ function _rendererFunc() {
         }
     }
 
-    const chanVoiceChange = elementById("channel-voice-change") as HTMLInputElement;
+    const chanVoiceChange = elmById("channel-voice-change") as HTMLInputElement;
     chanVoiceChange.onclick = (e) => {
         const channel = new entities.Channel();
         channel.id = editingChan; channel.voice = chanVoiceChange.checked;
         putEntities([channel]);
     }
 
-    elementById("channel-remove-button").onclick = (e) => {
+    elmById("channel-remove-button").onclick = (e) => {
         const channel = new entities.Channel();
         channel.id = editingChan; channel.group = 0;
         putEntities([channel]);
     }
 
-    elementById("invite-create-button").onclick = (e) => {
+    elmById("invite-create-button").onclick = (e) => {
         const invites = entityCache[viewingGroup].invites;
         const group = new entities.Group();
         group.id = viewingGroup; group.invites = [...invites, ""];
         putEntities([group]);
     }
 
-    elementById("role-add-button").onclick = (e) => {
+    elmById("role-add-button").onclick = (e) => {
         const role = new entities.Role();
         role.id = 0; role.name = "New role"; role.color = "#ffffff"; role.group = viewingGroup;
         putEntities([role]);
     }
 
-    const roleNameChane = elementById("role-name-change") as HTMLInputElement;
+    const roleNameChane = elmById("role-name-change") as HTMLInputElement;
     roleNameChane.onkeypress = (e) => {
         if(e.keyCode === 13) {
             const role = new entities.Role();
@@ -2875,20 +2883,20 @@ function _rendererFunc() {
         }
     }
 
-    elementById("role-remove-button").onclick = (e) => {
+    elmById("role-remove-button").onclick = (e) => {
         const role = new entities.Role();
         role.id = editingRole; role.group = 0;
         putEntities([role]);
     };
 
-    const roleColorChange = elementById("role-color-change") as HTMLInputElement;
+    const roleColorChange = elmById("role-color-change") as HTMLInputElement;
     roleColorChange.onchange = (e) => {
         const role = new entities.Role();
         role.id = editingRole; role.color = roleColorChange.value;
         putEntities([role]);
     };
 
-    elementById("group-leave").onclick = (e) => {
+    elmById("group-leave").onclick = (e) => {
         stopPropagation(e);
         ipcSend({
             action:      "webprot.manage-contacts",
@@ -2898,9 +2906,9 @@ function _rendererFunc() {
         });
     };
 
-    elementById("group-delete-revert").onclick = (e) => { triggerDisappear(elementById("group-delete-box"), true); }
-    elementById("group-delete-confirm").onclick = (e) => {
-        if((elementById("group-delete-name-input") as HTMLInputElement).value === entityCache[viewingGroup].name) {
+    elmById("group-delete-revert").onclick = (e) => { triggerDisappear(elmById("group-delete-box"), true); }
+    elmById("group-delete-confirm").onclick = (e) => {
+        if((elmById("group-delete-name-input") as HTMLInputElement).value === entityCache[viewingGroup].name) {
             // change da world, my final message.. goodbye
             const group = new entities.Group();
             group.id = viewingGroup; group.owner = 0;
@@ -2909,34 +2917,34 @@ function _rendererFunc() {
             viewingChan = 0;
             editingChan = 0;
             updLayout();
-            triggerDisappear(elementById("group-delete-box"), true);
+            triggerDisappear(elmById("group-delete-box"), true);
         }
     };
 
-    elementById("create-bot").onclick = (e) => {
+    elmById("create-bot").onclick = (e) => {
         ipcSend({
             action: "webprot.create-bot",
-            name:   (elementById("create-bot-name") as HTMLInputElement).value
+            name:   (elmById("create-bot-name") as HTMLInputElement).value
         });
     };
 
-    elementById("invite-bot-button").onclick = (e) => {
+    elmById("invite-bot-button").onclick = (e) => {
         ipcSend({
             action: "webprot.invite-bot",
-            bot:    (elementById("invite-bot-id") as HTMLInputElement).value,
+            bot:    (elmById("invite-bot-id") as HTMLInputElement).value,
             group:  viewingGroup
         });
     };
 
-    elementById("update-popup-upd").onclick = (e) => {
+    elmById("update-popup-upd").onclick = (e) => {
         shell.openExternal("https://ordermsg.tk/download");
-        hideElm(elementById("update-popup"));
+        hideElm(elmById("update-popup"));
     };
-    elementById("update-popup-ign").onclick = (e) =>
-        hideElm(elementById("update-popup"));
+    elmById("update-popup-ign").onclick = (e) =>
+        hideElm(elmById("update-popup"));
 
     // Blur the window if it's unfocused
-    const mainLayoutCont = elementById("main-layout-container");
+    const mainLayoutCont = elmById("main-layout-container");
     browserWindow.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.add   ("unfocused") });
     browserWindow.addListener("focus", (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.remove("unfocused") });
 

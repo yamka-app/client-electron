@@ -132,6 +132,9 @@ export default class TastyClient {
         clearInterval(this.micFrameInterval);
         clearInterval(this.heartbeatInterval);
         this.micStream = null;
+
+        this.sendEnc(Buffer.from([1]));
+        this.sock.close();
     }
 
     private voiceEncFrames() {

@@ -451,6 +451,11 @@ ipcMain.on("asynchronous-message", (event, arg) => {
     } else if(arg.action === "tasty.mic-data") {
         if(webprotState.tasty === null) return;
         webprotState.tasty.micData(arg.data);
+    } else if(arg.action === "tasty.disconnect") {
+        if(webprotState.tasty === null) return;
+        webprotState.tasty.stop();
+        webprotState.tasty = null;
+        ipcSend({ type: "tasty.status", status: "disconnected" });
     }
 });
 
