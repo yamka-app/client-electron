@@ -314,7 +314,7 @@ button.icon-button img {
 
 progress {
     margin-top:    5px;
-    height:        15px;
+    height:        10px;
     border-radius: 8px;
     border:        var(--border-thicc);
     box-shadow:    var(--shadow);
@@ -325,10 +325,12 @@ progress::-webkit-progress-bar {
     border-radius: 8px;
 }
 progress::-webkit-progress-value {
-    transition:    width 0.1s ease,
-                   color 0.1s ease;
     height:        10px;
     border-radius: 5px;
+}
+progress:not(#mic-vol-val)::-webkit-progress-value {
+    transition: width 0.1s ease,
+                color 0.1s ease;
 }
 progress.password-strong::-webkit-progress-value {
     background:         var(--green);

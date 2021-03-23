@@ -59,11 +59,9 @@ function _settingsFunc() {
 
     // Theme-related settings
     const accentColorChange = document.getElementById("accent-color-change") as HTMLInputElement;
-    const fontSizeChange    = document.getElementById("font-size-change")    as HTMLInputElement;
     const themeSwitch       = document.getElementById("theme-switch")        as HTMLInputElement;
     const themeSelector     = document.getElementById("theme-change")        as HTMLInputElement;
     accentColorChange.onchange = (e) => setAccentColor(accentColorChange.value);
-    fontSizeChange.onchange    = (e) => setFontSize(Number(fontSizeChange.value));
     themeSwitch.onchange       = (e) => setTheme(themeSwitch.checked ? "light" : "dark");
 
     themeSelector.onclick = (e) => {
@@ -82,10 +80,7 @@ function _settingsFunc() {
     const docStyleComp = getComputedStyle(document.documentElement);
     function setFontSize(pt: number) {
         configSet("fontSize", pt);
-        fontSizeChange.value = pt.toString();
-
         docStyle.setProperty("--font-size", pt + "pt");
-        document.getElementById("font-size-indicator").innerHTML = escapeHtml(pt.toString());
     }
 
     // Sets the accent color

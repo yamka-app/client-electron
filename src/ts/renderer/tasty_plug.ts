@@ -16,8 +16,19 @@ async function _tasty_plug_func() {
         ipcRenderer.send("asynchronous-message", data);
     }
 
+    const micGainSlider = elementById("mic-gain")  as HTMLInputElement;
+    const micThrSlider  = elementById("mic-thres") as HTMLInputElement;
+
     var gain = configGet("micGain");
     var thr = configGet("micThres");
+
+    micGainSlider.value = gain;
+    micThrSlider.value = thr;
+
+    micGainSlider.onchange = (e) =>
+        { const val = micGainSlider.value; gain = val; configSet("micGain",  val); };
+    micThrSlider.onchange = (e) =>
+        { const val = micThrSlider.value; thr = val; configSet("micThres", val); };
 
     function processBuffer(input: Int16Array) {
         // apply gain and calculate loudness
@@ -28,7 +39,6 @@ async function _tasty_plug_func() {
             loudness += normabs * normabs;
         }
         loudness = Math.sqrt(loudness / input.length);
-        console.log(loudness);
 
         (elementById("mic-vol-val") as HTMLProgressElement).value = loudness;
 
