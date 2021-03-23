@@ -13,7 +13,9 @@ const defaultSettings: {name: string, value: any}[] = [
     { name: "notifications", value: true              },
     { name: "sendTyping",    value: true              },
     { name: "previewYt",     value: true              },
-    { name: "blurOnDefocus", value: false             }
+    { name: "blurOnDefocus", value: false             },
+    { name: "micGain",       value: 1                 },
+    { name: "micThres",      value: 0.008             }
 ];
 
 // Simple turn on/off settings that can be toggled with a switch
@@ -32,7 +34,7 @@ export function configGet(k: string): any {
         k:      k
     });
 }
-export function configSet(k: string, v: string|boolean|number): void {
+export function configSet(k: string, v: any): void {
     ipcRenderer_settings.sendSync("synchronous-message", {
         action: "config.set",
         k:      k,
