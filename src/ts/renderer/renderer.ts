@@ -2060,16 +2060,34 @@ function _rendererFunc() {
         return msgs.length !== 0;
     }
 
-    function createVoiceMember(id: number) {
+    function createVoiceMember(id: number, status: entities.ChannelVoiceStatus) {
         const elm = document.createElement("div");
         elm.innerHTML = `
-            <img class="user-avatar-${id}/>
+            <img class="user-avatar-${id}"/>
             <span class="user-nickname-${id}"></span>
-            <img src="icons/speaking.png" class="user-speaking-${id}/>
-            <img src="icons/muted.png" class="user-muted-${id}/>
-            <img src="icons/deafened.png" class="user-deafened-${id}/>
         `;
+        if(status & entities.ChannelVoiceStatus.SPEAKING)
+            elm.innerHTML += `<img src="icons/speaking.png"/>`;
+        if(status & entities.ChannelVoiceStatus.MUTED)
+            elm.innerHTML += `<img src="icons/muted.png"/>`;
+        if(status & entities.ChannelVoiceStatus.DEAFENED)
+            elm.innerHTML += `<img src="icons/deafened.png"/>`;
         return elm;
+    }
+
+    function updateVoiceMembers(id: number) {
+        const chan = entityCache[id] as entities.Channel;
+
+        const container = elementById("voice-members");
+        while(container.lastChild) container.lastChild.remove();
+
+        for(var i = 0; i < chan.voiceUsers.length; i++) {
+            const userId     = chan.voiceUsers[i];
+            const userStatus = chan.voiceStatus[i];
+            const elm = createVoiceMember(userId, userStatus);
+            container.appendChild(elm);
+            updateUser(userId); // sets nickname and avatar
+        }
     }
     
     // Packet handler
@@ -2227,6 +2245,10 @@ function _rendererFunc() {
 
                 if(packet.spontaneous && entity instanceof entities.Channel && entity.id === viewingChan)
                     updMessageArea(false);
+
+                if(packet.spontaneous && entity instanceof entities.Channel
+                        && [viewingChan, voiceChan].includes(entity.id))
+                    updateVoiceMembers(entity.id);
 
                 // Update info about self
                 if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {

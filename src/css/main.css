@@ -1164,7 +1164,7 @@ img.large-emoji {
     height: 20px;
 
     padding: 10px;
-    border-radius: 10px 0 0 10px;
+    border-radius: 0 0 0 10px;
     border-right:  2px solid var(--background);
 
     background: var(--bg-2);

@@ -117,7 +117,7 @@ export default class TastyClient {
         this.encoder.setBitrate(TASTY_BITRATE);
 
         this.micStream = new MemoryStream();
-        this.micFrameInterval = setInterval(() => this.voiceEncFrame(),
+        this.micFrameInterval = setInterval(() => this.voiceEncFrames(),
             TASTY_FRAME_LENGTH / TASTY_SAMPLE_RATE * 1000);
     }
 
@@ -130,7 +130,7 @@ export default class TastyClient {
         clearInterval(this.micFrameInterval);
     }
 
-    private voiceEncFrame() {
+    private voiceEncFrames() {
         const targetLen = 2 * TASTY_FRAME_LENGTH * TASTY_CHANNELS;
         do {
             const pcm = this.micStream.grab(targetLen);
