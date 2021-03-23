@@ -9,10 +9,10 @@ import DataTypes   from "./dataTypes";
 import Speaker     from "speaker";
 
 export const TASTY_PORT         = 1747;
-export const TASTY_BITRATE      = 24000;
+export const TASTY_BITRATE      = 32000;
 export const TASTY_SAMPLE_RATE  = 16000;
 export const TASTY_CHANNELS     = 1;
-export const TASTY_FRAME_LENGTH = 0.04;
+export const TASTY_FRAME_LENGTH = 160;
 
 export default class TastyClient {
     private sock:    dgram.Socket;
@@ -103,7 +103,8 @@ export default class TastyClient {
         this.encoder.setBitrate(TASTY_BITRATE);
 
         this.micStream = new MemoryStream();
-        this.micFrameInterval = setInterval(() => this.voiceEncFrame(), TASTY_FRAME_LENGTH * 1000);
+        this.micFrameInterval = setInterval(() => this.voiceEncFrame(),
+            TASTY_FRAME_LENGTH / TASTY_SAMPLE_RATE * 1000);
     }
 
     micData(data: Buffer) {
@@ -116,17 +117,19 @@ export default class TastyClient {
     }
 
     private voiceEncFrame() {
-        const targetLen = 2 * TASTY_SAMPLE_RATE * TASTY_FRAME_LENGTH * TASTY_CHANNELS;
-        const pcm = this.micStream.grab(targetLen);
-        if(pcm.length !== targetLen)
-            return;
-
-        const opus = this.encoder.encode(pcm);
-
-        this.sendEnc(Buffer.concat([
-            Buffer.from([0]), // voice data
-            opus
-        ]));
+        const targetLen = 2 * TASTY_FRAME_LENGTH * TASTY_CHANNELS;
+        do {
+            const pcm = this.micStream.grab(targetLen);
+            if(pcm.length !== targetLen)
+                break;
+    
+            const opus = this.encoder.encode(pcm);
+    
+            this.sendEnc(Buffer.concat([
+                Buffer.from([0]), // voice data
+                opus
+            ]));
+        } while(true);
     }
 
     private voiceData(payload: Buffer) {
@@ -140,9 +143,8 @@ export default class TastyClient {
             speaker = new Speaker({
                 sampleRate: TASTY_SAMPLE_RATE,
                 channels: TASTY_CHANNELS,
-                // @ts-ignore
-                samplesPerFrame: TASTY_SAMPLE_RATE * TASTY_FRAME_LENGTH,
                 bitDepth: 16,
+                // @ts-ignore
                 signed: true
             });
             this.speakers[user] = speaker;
