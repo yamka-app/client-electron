@@ -40,9 +40,7 @@ async function _tasty_plug_func() {
         }
         loudness = Math.sqrt(loudness / input.length);
 
-        (elementById("mic-vol-val") as HTMLProgressElement).value = loudness;
-
-        return { data: input, send: loudness >= thr };
+        return { data: input, loudness, send: loudness >= thr };
     }
 
     // @ts-ignore
@@ -50,10 +48,22 @@ async function _tasty_plug_func() {
     await window.WebVoiceProcessor.WebVoiceProcessor.init({ engines: [{
         postMessage: function(e) {
             if (e.command !== "process") return;
-            const result = processBuffer(e.inputFrame);
+            const buf: Int16Array = e.inputFrame;
+            // separate buffer into multiple separate ones
+            const cSize = buf.length / 4;
+            const cTime = cSize / 16000;
+            for(var i = 0; i < 4; i++) {
+                const chunk = buf.slice(i * cSize, (i + 1) * cSize);
+                const result = processBuffer(chunk);
 
-            if(result.send)
-                ipcSend({ action: "tasty.mic-data", data: new Uint8Array(result.data.buffer) });
+                // delay progress bar update
+                setTimeout(() =>{
+                    (elementById("mic-vol-val") as HTMLProgressElement).value = result.loudness;
+                }, cTime * 1000);
+
+                if(result.send)
+                    ipcSend({ action: "tasty.mic-data", data: new Uint8Array(result.data.buffer) });
+            }
         }
     }] });
 }

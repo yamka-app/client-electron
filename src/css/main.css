@@ -326,12 +326,13 @@ progress::-webkit-progress-bar {
     border-radius: 8px;
 }
 progress::-webkit-progress-value {
+    transition: width 0.1s ease,
+                color 0.1s ease;
     height:        10px;
     border-radius: 5px;
 }
-progress:not(#mic-vol-val)::-webkit-progress-value {
-    transition: width 0.1s ease,
-                color 0.1s ease;
+progress#mic-vol-val::-webkit-progress-value {
+    transition: width 0.05s ease;
 }
 progress.password-strong::-webkit-progress-value {
     background:         var(--green);
