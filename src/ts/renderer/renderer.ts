@@ -2388,6 +2388,12 @@ function _rendererFunc() {
 
             case "tasty.stats":
                 const stats: tasty.TastyEncoderStats = arg.stats;
+                elementById("voice-encoder-stats").title
+                    = `Effective compression ratio: ${(stats.compressionRatio * 100).toFixed(0)}%\n`
+                    + `Frame rate: ${stats.frameRate}\n`
+                    + `Bit rate: ${stats.bitRate}\n`
+                    + `Key length: ${stats.keySize}\n`
+                    + `Channels: ${stats.channels === 2 ? "stereo" : "mono"}`;
                 break;
         }
     }
