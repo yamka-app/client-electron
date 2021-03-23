@@ -7,12 +7,23 @@ import * as opus   from "@discordjs/opus";
 import stream      from "stream";
 import DataTypes   from "./dataTypes";
 import Speaker     from "speaker";
+import { stat } from "fs";
+import { safeMode } from "highlight.js";
 
 export const TASTY_PORT         = 1747;
 export const TASTY_BITRATE      = 32000;
 export const TASTY_SAMPLE_RATE  = 16000;
 export const TASTY_CHANNELS     = 1;
 export const TASTY_FRAME_LENGTH = 160;
+
+export class TastyEncoderStats {
+    frameRate:        number;
+    bitRate:          number;
+    sampleRate:       number;
+    channels:         number;
+    keySize:          number;
+    compressionRatio: number;
+}
 
 export default class TastyClient {
     private sock:    dgram.Socket;
@@ -25,6 +36,8 @@ export default class TastyClient {
     private micFrameInterval: NodeJS.Timeout;
     private speakers:         any = {};
 
+    private statCb: (stats: TastyEncoderStats) => void;
+
     constructor(keyCreated: (key: Buffer) => void) {
         const kb = crypto.randomBytes(128 / 8);
         this.iv  = crypto.randomBytes(128 / 8);
@@ -33,7 +46,8 @@ export default class TastyClient {
         keyCreated(Buffer.concat([kb, this.iv]));
     }
 
-    finish(addr: string, session: Buffer, finished: () => void) {
+    finish(addr: string, session: Buffer, finished: () => void, statCb: (stats: TastyEncoderStats) => void) {
+        this.statCb = statCb;
         this.session = session;
 
         // create socket
@@ -124,11 +138,21 @@ export default class TastyClient {
                 break;
     
             const opus = this.encoder.encode(pcm);
-    
             this.sendEnc(Buffer.concat([
                 Buffer.from([0]), // voice data
                 opus
             ]));
+
+            const ratio = pcm.length / opus.length;
+            const frameRate = TASTY_SAMPLE_RATE / TASTY_FRAME_LENGTH;
+            this.statCb({
+                compressionRatio: ratio,
+                frameRate:        frameRate,
+                sampleRate:       TASTY_SAMPLE_RATE,
+                keySize:          this.key.symmetricKeySize * 8,
+                bitRate:          TASTY_BITRATE,
+                channels:         TASTY_CHANNELS
+            });
         } while(true);
     }
 

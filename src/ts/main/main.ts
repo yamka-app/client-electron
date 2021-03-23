@@ -193,9 +193,10 @@ function webprotData(bytes: Buffer) {
             throw new Error("Spurious voice join approval");
 
         ipcSend({ type: "tasty.status", status: "establishing session" });
-        webprotState.tasty.finish(packet.addr, packet.crypto, () => {
-            ipcSend({ type: "tasty.status", status: "connected" });
-        });
+        webprotState.tasty.finish(packet.addr, packet.crypto,
+            ()      => ipcSend({ type: "tasty.status", status: "connected" }),
+            (stats) => ipcSend({ type: "tasty.stats", stats: stats })
+        );
         return;
     }
 

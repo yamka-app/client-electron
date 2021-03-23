@@ -22,6 +22,7 @@ import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
 import { configGet, configSet } from "./settings.js";
+import * as tasty    from "../protocol.s/tasty.s.js";
 
 interface MessageSection {
     type:     types.MessageSectionType;
@@ -2291,7 +2292,7 @@ function _rendererFunc() {
     function ipcRecv(evt: Event, arg: any) {
         if(["webprot.status", "webprot.trigger-reference",
             "webprot.packet-recv", "webprot.connected", "webprot.connecting", "webprot.disconnected",
-            "tasty.audio"]
+            "tasty.stats"]
                 .indexOf(arg.type) === -1)
             console.log("%c[M->R]", "color: #bb00bb; font-weight: bold;", arg);
         switch(arg.type) {
@@ -2385,8 +2386,8 @@ function _rendererFunc() {
                 elementById("voice-status").innerHTML = escapeHtml(`VOICE: ${arg.status.toUpperCase()}`);
                 break;
 
-            case "tasty.audio":
-                window["tasty_push"](arg.data, arg.from);
+            case "tasty.stats":
+                const stats: tasty.TastyEncoderStats = arg.stats;
                 break;
         }
     }
