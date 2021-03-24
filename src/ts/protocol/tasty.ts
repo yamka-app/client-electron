@@ -3,12 +3,12 @@
 import dgram from "dgram";
 import crypto, { KeyObject } from "crypto";
 
-import * as opus   from "@discordjs/opus";
-import stream      from "stream";
-import DataTypes   from "./dataTypes";
-import Speaker     from "speaker";
-import { stat } from "fs";
-import { safeMode } from "highlight.js";
+import OpusScript from "opusscript";
+import stream     from "stream";
+import DataTypes  from "./dataTypes";
+import Speaker    from "speaker";
+
+export const OPUS_SET_BITRATE_REQUEST = 4002;
 
 export const TASTY_PORT         = 1747;
 export const TASTY_BITRATE      = 32000;
@@ -32,7 +32,7 @@ export default class TastyClient {
     private session: Buffer;
 
     private micStream:         MemoryStream;        
-    private encoder:           opus.OpusEncoder;
+    private encoder:           OpusScript;
     private micFrameInterval:  NodeJS.Timeout;
     private heartbeatInterval: NodeJS.Timeout;
     private speakers:          any = {};
@@ -114,8 +114,8 @@ export default class TastyClient {
 
     private startVoice() {
         // create opus encoder
-        this.encoder = new opus.OpusEncoder(TASTY_SAMPLE_RATE, TASTY_CHANNELS);
-        this.encoder.setBitrate(TASTY_BITRATE);
+        this.encoder = new OpusScript(TASTY_SAMPLE_RATE, TASTY_CHANNELS, OpusScript.Application.VOIP);
+        this.encoder.encoderCTL(OPUS_SET_BITRATE_REQUEST, TASTY_BITRATE);
 
         this.micStream = new MemoryStream();
         this.micFrameInterval = setInterval(() => this.voiceEncFrames(),
@@ -144,7 +144,7 @@ export default class TastyClient {
             if(pcm.length !== targetLen)
                 break;
     
-            const opus = this.encoder.encode(pcm);
+            const opus = this.encoder.encode(pcm, TASTY_FRAME_LENGTH);
             this.sendEnc(Buffer.concat([
                 Buffer.from([0]), // voice data
                 opus

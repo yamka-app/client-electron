@@ -11,7 +11,8 @@
     "lint": "eslint -c .eslintrc --ext .ts ./src/ts",
     "dist": "npm run build && electron-builder -wl",
     "dist-hrt": "hrt-packager",
-    "start-no-comp": "electron ."
+    "start-no-comp": "electron .",
+    "postinstall": "electron-builder install-app-deps"
   },
   "keywords": [],
   "author": "portasynthinca3",
@@ -29,6 +30,9 @@
     "win": {
       "target": "nsis",
       "icon": "src/icons/icon.png"
+    },
+    "nsis": {
+      "oneClick": false
     }
   },
   "hrt": {
@@ -42,7 +46,6 @@
     ]
   },
   "dependencies": {
-    "@discordjs/opus": "^0.5.0",
     "@electron/remote": "^1.0.4",
     "@picovoice/web-voice-processor": "^2.0.0",
     "@types/escape-html": "^1.0.0",
@@ -57,6 +60,7 @@
     "escape-html": "^1.0.3",
     "highlight.js": "^10.5.0",
     "marked": "^2.0.0",
+    "opusscript": "0.0.8",
     "qrcode": "^1.4.4",
     "remark": "^13.0.0",
     "remark-gemoji-to-emoji": "^1.1.0",
