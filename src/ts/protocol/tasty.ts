@@ -141,7 +141,7 @@ export default class TastyClient {
         const targetLen = 2 * TASTY_FRAME_LENGTH * TASTY_CHANNELS;
         do {
             const pcm = this.micStream.grab(targetLen);
-            if(pcm.length !== targetLen)
+            if(pcm === null)
                 break;
     
             const opus = this.encoder.encode(pcm, TASTY_FRAME_LENGTH);
@@ -194,6 +194,7 @@ class MemoryStream extends stream.Writable {
     }
 
     grab(cnt: number) {
+        if(this.data.length < cnt) return null;
         const pcm = Buffer.from(this.data.slice(0, cnt));
         this.data = this.data.slice(cnt);
         return pcm;
