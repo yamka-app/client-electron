@@ -1,4 +1,4 @@
-const _clientVersion = "0.5.2";
+const _clientVersion = "0.5.3";
 
 const _modules = window["_modules"];
 
@@ -2381,8 +2381,13 @@ function _rendererFunc() {
 
             case "webprot.trigger-reference":
                 console.log("%c[REFERENCE]", "color: #bb0077; font-weight: bold;", arg);
-                const cb = packetCallbacks[arg.reference];
-                cb(...arg.args);
+                // single ref
+                if(arg.references === undefined) {
+                    const cb = packetCallbacks[arg.reference];
+                    cb(...arg.args);
+                } else {
+                    arg.references.forEach(x => packetCallbacks[x](...arg.args));
+                }
                 break;
 
             case "webprot.ul-progress":

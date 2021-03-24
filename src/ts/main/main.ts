@@ -205,7 +205,7 @@ function webprotData(bytes: Buffer) {
         if(packet.status == packets.StatusCode.STREAM_END) {
             const state = webprotState.downStates[packet.replyTo];
             (state.stream as fs.WriteStream).close();
-            ipcSend({ type: "webprot.trigger-reference", reason: "download-finished", reference: state.ref, args: [state.path] });
+            ipcSend({ type: "webprot.trigger-reference", reason: "download-finished", references: state.refs, args: [state.path] });
             return;
         } else if(packet.status == packets.StatusCode.START_UPLOADING) {
             const state = webprotState.upStates[packet.replyTo];
@@ -328,9 +328,21 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
 
     // Create a up-/download state
     if(packet instanceof packets.FileDownloadRequestPacket) {
+        // Don't download if we're already downloading, add a reference instead
+        const existing: [string, any] = Object.entries(webprotState.downStates)
+                                   // @ts-ignore
+            .find(x => x[1].id === packet.id);
+        if(existing !== undefined) {
+            var state = existing[1];
+            const seq = existing[0];
+            state.refs.push(ref);
+            webprotState.downStates[seq] = state;
+            return;
+        }
+
         const p = path.join(tmpDir, `file_${packet.id}`);
         const stream = fs.createWriteStream(p);
-        webprotState.downStates[packet.seq] = { id: packet.id, path: p, stream: stream, ref: ref };
+        webprotState.downStates[packet.seq] = { id: packet.id, path: p, stream: stream, refs: [ref] };
     }
     if(packet instanceof packets.EntitiesPacket) {
         for(const entity of packet.entities) {
@@ -442,6 +454,9 @@ ipcMain.on("asynchronous-message", (event, arg) => {
     } else if(arg.action === "webprot.send-packet") {
         webprotSendPacket(arg.packet, arg.type, arg.reference, arg.ref2);
     } else if(arg.action === "tasty.connect") {
+        // stop existing connection
+        if(webprotState.tasty instanceof TastyClient)
+            webprotState.tasty.stop();
         ipcSend({ type: "tasty.status", status: "generating session key" });
         // ask the server to join a voice channel
         webprotState.tasty = new TastyClient((key) => {
