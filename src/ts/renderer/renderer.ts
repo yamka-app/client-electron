@@ -1680,8 +1680,22 @@ function _rendererFunc() {
                 iframe.width = String(400);
                 iframe.height = String(225);
                 iframe.allow = "clipboard-write; encrypted-media; picture-in-picture; fullscreen";
-                iframe.src = "https://www.youtube.com/embed/" + videoId
-                content.appendChild(iframe)
+                iframe.src = "https://www.youtube.com/embed/" + videoId;
+                content.appendChild(iframe);
+            }
+            // Additionally, if the link is a Spotify %whatever%, add an iframe too
+            if(hostname === "open.spotify.com" && configGet("previewYt")) {
+                const tokens = href.split("/");
+                const thingId = tokens[tokens.length - 1];
+                const thingType = tokens[tokens.length - 2];
+                
+                // Add an iframe
+                const iframe = document.createElement("iframe");
+                iframe.width = String(300);
+                iframe.height = String(380);
+                iframe.allow = "encrypted-media";
+                iframe.src = `https://open.spotify.com/embed/${thingType}/${thingId}`;
+                content.appendChild(iframe);
             }
         }
 
