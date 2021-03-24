@@ -1,4 +1,4 @@
-const _clientVersion = "0.5.0";
+const _clientVersion = "0.5.1";
 
 const _modules = window["_modules"];
 
