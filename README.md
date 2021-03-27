@@ -1,4 +1,4 @@
-# The Official Order Electron Client :tada:
+# Yamka Electron Client :tada:
 
 ![](promo.png)
 
@@ -21,24 +21,24 @@ I will receive your report and do my best to mitigate the vulnerability. Feel fr
 ## Build
 Do `npm start` to run the app without producing any artifacts:
 ```sh
-git clone https://github.com/ordermsg/client-electron.git
+git clone https://github.com/yamka-app/client-electron.git
 cd client-electron
 npm instead
 ```
 
 Use this to produce a [`hrt`](https://github.com/portasynthinca3/hrt) artifact
 ```sh
-git clone https://github.com/ordermsg/client-electron.git
+git clone https://github.com/yamka-app/client-electron.git
 cd client-electron
 npm run dist-hrt
 ```
 
 Use this to produce `AppImage` and `exe` artifacts:
 ```sh
-git clone https://github.com/ordermsg/client-electron.git
+git clone https://github.com/yamka-app/client-electron.git
 cd client-electron
 npm run dist
 ```
 
 ## Or download binaries
-[...on the official Order website](https://ordermsg.tk/download)
+[...on our website](https://yamka.app/download)

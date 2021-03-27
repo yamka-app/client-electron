@@ -11,10 +11,10 @@ import * as packets  from "../protocol/packets";
 import * as entities from "../protocol/entities";
 import TastyClient   from "../protocol/tasty";
 
-const dataHomePath = path.join(app.getPath("appData"), "ordermsg");
-const configPath   = path.join(dataHomePath, "order_config.json");
+const dataHomePath = path.join(app.getPath("appData"), "yamka");
+const configPath   = path.join(dataHomePath, "yamka_config.json");
 
-class OrderConfig {
+class YamkaConfig {
     accentColor?:   string;
     fontSize?:      number;
     customTheme?:   boolean;
@@ -29,7 +29,7 @@ class OrderConfig {
         height: number;
     };
 }
-var config: OrderConfig;
+var config: YamkaConfig;
 
 var mainWindow    = null;
 var tray          = null;
@@ -47,7 +47,7 @@ function createWindow() {
     if(!windowCreated){
         // Create the window
         mainWindow = new BrowserWindow({
-            title:       "Order - beta",
+            title:       "Yamka - beta",
             icon:        path.join(__dirname, "../../../logo.png"),
             maximizable: true,
             frame:       false,
@@ -97,7 +97,7 @@ app.on("ready", () => {
 
     // Create the icon in the tray
     tray = new Tray(path.join(__dirname, "../../../logo.png"));
-    tray.setToolTip("Order");
+    tray.setToolTip("Yamka");
     tray.setContextMenu(Menu.buildFromTemplate([
         { label: "Open", type: "normal", click() { createWindow() } },
         { label: "Exit", type: "normal", click() {
@@ -121,7 +121,7 @@ app.on("window-all-closed", () => { windowCreated = false; });
 // =========================================== PROTOCOL SECTION
 
 const webprotSettings = {
-    host:                 "api.ordermsg.tk",
+    host:                 "api.yamka.app",
     port:                 1746,
     version:              5,
     supportsComp:         true,

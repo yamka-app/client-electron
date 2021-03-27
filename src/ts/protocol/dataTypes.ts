@@ -1,5 +1,5 @@
 // ============================================== DATA TYPES
-// Primitive data types for the Order protocol are defined here
+// Primitive data types for the Yamka protocol are defined here
 
 export default class DataTypes {
     static encBool(val: boolean): Buffer {

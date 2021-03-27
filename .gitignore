@@ -94,8 +94,7 @@ dist/
 # TS compiler output
 src/js
 
-# Order
-_order_config.json
+# Yamka
 *.zip
 
 # hrt packager

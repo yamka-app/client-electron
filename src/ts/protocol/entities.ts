@@ -3,7 +3,7 @@ import DataTypes, { MessageSection }   from "./dataTypes.js";
 import * as fields from "./simpleFields.js";
 
 // ============================================== ENTITIES
-// Entities represent objects in Order. There are multiple
+// Entities represent objects in Yamka. There are multiple
 //  entitiy types: users, groups, channels, etc.
 // Entities have fields, most notably, IDs.
 export class EntityDecodeResult {

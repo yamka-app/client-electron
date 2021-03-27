@@ -119,7 +119,7 @@ function _rendererFunc() {
                 console.error("Unable to get the latest version");
             }
         };
-        xhttp.open("GET", `https://ordermsg.tk/latest_version/${remote.process.platform}`, true);
+        xhttp.open("GET", `https://yamka.app/latest_version/${remote.process.platform}`, true);
         xhttp.send();
     }
     checkClientVersion();
@@ -1215,7 +1215,7 @@ function _rendererFunc() {
         for(const bid of user.badges) {
             const file = path.join(window["__dirname"], "icons", "badges", ["verified", "staff", "bot"][bid - 1] + ".png")
             const abbr = ["This user is who they claim to be",
-                          "This user is a member of the core Order team",
+                          "This user is a member of the core Yamka team",
                           "This user is a bot"][bid - 1]
             
             const abbrElm = document.createElement("abbr");
@@ -2136,7 +2136,7 @@ function _rendererFunc() {
 
                 case packets.StatusCode.OUTDATED:
                     showBox("OUTDATED CLIENT", packet.message, true, () => {
-                        shell.openExternal("https://ordermsg.tk/download")
+                        shell.openExternal("https://yamka.app/download")
                     });
                     break;
 
@@ -2401,7 +2401,7 @@ function _rendererFunc() {
                                + encodeURIComponent(remote.getGlobal("webprotState").self.email)
                                + "?secret="
                                + arg.secret
-                               + "&issuer=Order";
+                               + "&issuer=Yamka";
                 // Generate the code
                 const placeholder = elmById("mfa-qr-placeholder");
                 qrcode(qrString, (err, canvas) => {
@@ -2674,10 +2674,10 @@ function _rendererFunc() {
         });
     }
 
-    // "About Order" buttons
-    elmById("view-on-github")  .onclick = (e) => shell.openExternal("https://github.com/ordermsg");
-    elmById("donate")          .onclick = (e) => shell.openExternal("https://ordermsg.tk/donate");
-    elmById("connecting-tweet").onclick = (e) => shell.openExternal("https://twitter.com/ordermsg");
+    // "About Yamka" buttons
+    elmById("view-on-github")  .onclick = (e) => shell.openExternal("https://github.com/yamka-app");
+    elmById("donate")          .onclick = (e) => shell.openExternal("https://yamka.app/donate");
+    elmById("connecting-tweet").onclick = (e) => shell.openExternal("https://twitter.com/yamka-app");
 
     // Friend control buttons
     elmById("friends-all").onclick = (e) => {
@@ -2956,7 +2956,7 @@ function _rendererFunc() {
     };
 
     elmById("update-popup-upd").onclick = (e) => {
-        shell.openExternal("https://ordermsg.tk/download");
+        shell.openExternal("https://yamka.app/download");
         hideElm(elmById("update-popup"));
     };
     elmById("update-popup-ign").onclick = (e) =>
