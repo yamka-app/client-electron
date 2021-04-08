@@ -210,7 +210,6 @@ button {
 button:active {
     box-shadow: var(--shadow);
     background: var(--background);
-    padding:    3px 0 0 3px; /* to move content */
 }
 
 .accent-button {

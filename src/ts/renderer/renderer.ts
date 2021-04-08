@@ -23,7 +23,6 @@ import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
 import { configGet, configSet } from "./settings.js";
 import * as tasty    from "../protocol.s/tasty.s.js";
-import { UNDERSCORE_IDENT_RE } from "highlight.js";
 
 interface MessageSection {
     type:     types.MessageSectionType;
@@ -2318,6 +2317,23 @@ function _rendererFunc() {
                 if(entity instanceof entities.User)
                     updateUser(entity.id);
             }
+        } else if(packet instanceof packets.MFASecretPacket) {
+            // Construct the string to put into the QR code
+            const qrString = "otpauth://totp/"
+                + encodeURIComponent(remote.getGlobal("webprotState").self.email)
+                + "?secret="
+                + packet.secret
+                + "&issuer=Yamka";
+            // Generate the code
+            const placeholder = elmById("mfa-qr-placeholder");
+            while(placeholder.firstChild)
+                placeholder.firstChild.remove();
+            const canvas = placeholder.appendChild(document.createElement("canvas"));
+            qrcode.toCanvas(canvas, qrString, (err) => {
+                if(err) throw err;
+                elmById("mfa-code-manual").innerHTML = escapeHtml(packet.secret);
+                triggerAppear(elmById("mfa-qr-banner"), true);
+            });
         }
 
         // Call the callback
@@ -2359,6 +2375,7 @@ function _rendererFunc() {
                     "AccessTokenPacket":    new packets.AccessTokenPacket(),
                     "ClientIdentityPacket": new packets.ClientIdentityPacket(),
                     "EntitiesPacket":       new packets.EntitiesPacket(),
+                    "MFASecretPacket":      new packets.MFASecretPacket()
                 }[arg.pType];
                 const packet = Object.assign(proto, arg.packet);
                 if(packet instanceof packets.EntitiesPacket) {
@@ -2399,29 +2416,6 @@ function _rendererFunc() {
             case "webprot.ul-progress":
                 // Call the callback
                 (packetCallbacks[arg.operId] as (p: any, m: any) => any)(arg.progress, arg.max);
-                break;
-
-            case "webprot.mfa-secret":
-                // Construct the string to put into the QR code
-                var qrString = "otpauth://totp/"
-                               + encodeURIComponent(remote.getGlobal("webprotState").self.email)
-                               + "?secret="
-                               + arg.secret
-                               + "&issuer=Yamka";
-                // Generate the code
-                const placeholder = elmById("mfa-qr-placeholder");
-                qrcode(qrString, (err, canvas) => {
-                    if(err) throw err;
-
-                    // Make sure to remove all children :>
-                    while(placeholder.firstChild)
-                        placeholder.firstChild.remove();
-
-                    placeholder.appendChild(canvas);
-                    elmById("mfa-code-manual").innerHTML = escapeHtml(arg.secret);
-
-                    triggerAppear(elmById("mfa-qr-banner"), true);
-                });
                 break;
 
             case "webprot.bot-created":
