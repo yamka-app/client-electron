@@ -2270,6 +2270,7 @@ function _rendererFunc() {
                     updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
 
                     setElmVisibility(elmById("email-unconfirmed-bar-container"), !entity.emailConfirmed);
+                    setElmVisibility(elmById("email-conf-cont"),                 !entity.emailConfirmed);
 
                     // Request own avatar
                     download(entity.avaFile, (blob) => {
@@ -2600,6 +2601,13 @@ function _rendererFunc() {
     emailChange.onkeypress = (evt) => {
         if(evt.keyCode === 13)
             setSelfEmail(emailChange.value);
+    }
+    const emailConfirm = elmById("self-email-confirm") as HTMLInputElement;
+    emailConfirm.onkeypress = (evt) => {
+        if(evt.keyCode === 13) {
+            sendPacket(new packets.EmailConfirmationPacket(emailConfirm.value));
+            emailConfirm.value = "";
+        }
     }
 
     // 2FA toggling

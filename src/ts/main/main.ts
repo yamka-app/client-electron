@@ -123,7 +123,7 @@ app.on("window-all-closed", () => { windowCreated = false; });
 const webprotSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
-    version:              5,
+    version:              6,
     supportsComp:         true,
     compressionThreshold: 256,
     fileChunkSize:        1024*10
@@ -280,7 +280,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
             "FileDownloadRequestPacket": new packets.FileDownloadRequestPacket(),
             "UserSearchPacket":          new packets.UserSearchPacket(),
             "ContactsManagePacket":      new packets.ContactsManagePacket(),
-            "InviteResolvePacket":       new packets.InviteResolvePacket()
+            "InviteResolvePacket":       new packets.InviteResolvePacket(),
+            "EmailConfirmationPacket":   new packets.EmailConfirmationPacket()
         }[type];
 
         if(proto === undefined)

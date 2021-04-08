@@ -95,7 +95,12 @@ export enum StatusCode {
     INVALID_INVITE                = 17,
     INTERNAL_ERROR                = 18,
     UNKNOWN_PACKET                = 19,
-    FRIEND_REQUEST_SENT           = 20
+    FRIEND_REQUEST_SENT           = 20,
+    PACKET_PARSING_ERROR          = 21,
+    START_UPLOADING               = 22,
+    STREAM_END                    = 23,
+    ONE_UPLOAD_ONLY               = 24,
+    INVALID_CONFIRMATION_CODE     = 25
 }
 export class StatusPacket extends SimpleFieldPacket {
     typeNum = 4;
@@ -271,4 +276,11 @@ export class ClientIdentityPacket extends SimpleFieldPacket {
     userId: number;
 
     constructor(id?: number) { super(); this.userId = id; }
+}
+
+export class EmailConfirmationPacket extends SimpleFieldPacket {
+    typeNum = 21;
+    code: string;
+
+    constructor(code?: string) { super(); this.code = code; }
 }

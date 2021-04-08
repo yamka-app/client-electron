@@ -219,7 +219,7 @@ input[type="radio"].settings-radio:checked + label {
 }
 
 #self-name-change, #self-email-change, #self-status-text-change,
-#group-name-change {
+#group-name-change, #self-email-confirm {
     width: 50%;
 
     margin-bottom: 10px;

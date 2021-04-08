@@ -183,7 +183,9 @@ export enum StatusCode {
     FRIEND_REQUEST_SENT           = 20,
     PACKET_PARSING_ERROR          = 21,
     START_UPLOADING               = 22,
-    STREAM_END                    = 23
+    STREAM_END                    = 23,
+    ONE_UPLOAD_ONLY               = 24,
+    INVALID_CONFIRMATION_CODE     = 25
 }
 export class StatusPacket extends SimpleFieldPacket {
     typeNum = 4;
@@ -459,5 +461,15 @@ export class VoiceJoinPacket extends SimpleFieldPacket {
             new fields.BinField("crypto")
         ]);
         this.chanId = cid; this.addr = a; this.crypto = c;
+    }
+}
+
+export class EmailConfirmationPacket extends SimpleFieldPacket {
+    typeNum = 21;
+    code: string;
+
+    constructor(code?: string) {
+        super([new fields.StrField("code")]);
+        this.code = code;
     }
 }
