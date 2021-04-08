@@ -243,6 +243,8 @@ export class File extends Entity {
     preview?: string;
     length?:  number;
 
+    __scale?: boolean;
+
     constructor() {
         super([
             new fields.NumField("id", 8,     0),

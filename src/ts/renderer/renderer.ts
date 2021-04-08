@@ -23,6 +23,7 @@ import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
 import { configGet, configSet } from "./settings.js";
 import * as tasty    from "../protocol.s/tasty.s.js";
+import { UNDERSCORE_IDENT_RE } from "highlight.js";
 
 interface MessageSection {
     type:     types.MessageSectionType;
@@ -128,10 +129,12 @@ function _rendererFunc() {
     elmById("client-version").innerHTML = escapeHtml(_clientVersion);
 
     // Upload and download blobs
-    function upload(filePath: string, onEnd: (id: number) => any, onProgressMade?: (p: number, m: number) => any) {
+    function upload(filePath: string, onEnd: (id: number) => any,
+                onProgressMade?: (p: number, m: number) => any, scale: boolean = false) {
         const file = new entities.File();
         file.id = 0; file.length = fs.statSync(filePath).size;
         file.path = filePath; file.name = path.basename(filePath);
+        file.__scale = scale;
         sendPacket(new packets.EntitiesPacket([file]), (resp: packets.EntitiesPacket) => {
            // There's only a single entity in the packet
            onEnd(resp.entities[0].id);
@@ -2384,6 +2387,8 @@ function _rendererFunc() {
                 console.log("%c[REFERENCE]", "color: #bb0077; font-weight: bold;", arg);
                 // single ref
                 if(arg.references === undefined) {
+                    if(arg.reference === undefined)
+                        break;
                     const cb = packetCallbacks[arg.reference];
                     cb(...arg.args);
                 } else {
@@ -2660,7 +2665,7 @@ function _rendererFunc() {
             });
             // Update the blob ID
             sendSelfValue("avaFile", id);
-        });
+        }, undefined, true);
     }
 
     elmById("group-icon-huge").onclick = () => {

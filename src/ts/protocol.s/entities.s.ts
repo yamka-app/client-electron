@@ -119,6 +119,8 @@ export class File extends Entity {
     size?:    string;
     preview?: string;
     length?:  number;
+
+    __scale?: boolean;
 }
 
 export class MessageState extends Entity {

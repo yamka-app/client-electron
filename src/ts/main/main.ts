@@ -5,11 +5,13 @@ import tmp     from "tmp";
 import path    from "path";
 import tls     from "tls";
 import fs      from "fs";
+import resizer from "node-image-resizer";
 
 import DataTypes     from "../protocol/dataTypes";
 import * as packets  from "../protocol/packets";
 import * as entities from "../protocol/entities";
 import TastyClient   from "../protocol/tasty";
+import { encode } from "blurhash";
 
 const dataHomePath = path.join(app.getPath("appData"), "yamka");
 const configPath   = path.join(dataHomePath, "yamka_config.json");
@@ -327,6 +329,21 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
     if(ref !== undefined)
         webprotState.references[packet.seq] = ref;
 
+    const encodeAndSend = () => {
+        // Compress the data
+        const compressed = buf.length >= webprotSettings.compressionThreshold;
+        if(compressed) buf = zlib.gzipSync(buf);
+
+        // Add a compression header
+        buf = Buffer.concat([
+            DataTypes.encBool(compressed),
+            DataTypes.encNum(buf.length, 3),
+            buf
+        ]);
+
+        webprotSendBytes(buf);
+    };
+
     // Create a up-/download state
     if(packet instanceof packets.FileDownloadRequestPacket) {
         // Don't download if we're already downloading, add a reference instead
@@ -345,29 +362,39 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
         const stream = fs.createWriteStream(p);
         webprotState.downStates[packet.seq] = { id: packet.id, path: p, stream: stream, refs: [ref] };
     }
+    
     if(packet instanceof packets.EntitiesPacket) {
         for(const entity of packet.entities) {
             if(!(entity instanceof entities.File))
                 continue;
 
-            const p = entity.path;
-            const stream = fs.createReadStream(p); // the renderer actually sends the path here
-            webprotState.upStates[packet.seq] = { path: p, stream: stream, ref: ref, ref2: ref2 };
+            const seq = packet.seq;
+            const proceed = (p) => {
+                const stream = fs.createReadStream(p); // the renderer actually sends the path here
+                webprotState.upStates[seq] = { path: p, stream: stream, ref: ref, ref2: ref2 };
+                encodeAndSend();
+            };
+
+            // if the renderer asked us to scale the image down, do exactly that
+            if(entity.__scale) {
+                resizer(entity.path, {
+                    versions: [{
+                        path:    tmpDir + '/',
+                        quality: 100,
+                        width:   128,
+                        height:  128
+                    }]
+                }).then((paths: string[]) =>
+                    setTimeout(proceed, 100, paths[0])); // jank level 100 here
+            } else {
+                proceed(entity.path);
+            }
+
+            return;
         }
     }
 
-    // Compress the data
-    const compressed = buf.length >= webprotSettings.compressionThreshold;
-    if(compressed) buf = zlib.gzipSync(buf);
-
-    // Add a compression header
-    buf = Buffer.concat([
-        DataTypes.encBool(compressed),
-        DataTypes.encNum(buf.length, 3),
-        buf
-    ]);
-
-    webprotSendBytes(buf);
+    encodeAndSend();
 }
 
 function ipcSend(data) {
