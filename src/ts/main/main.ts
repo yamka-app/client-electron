@@ -112,7 +112,7 @@ app.on("ready", () => {
 
     // Ping the server occasionally
     setInterval(() => {
-        if(!webprotState.sendPings) return;
+        if(!webprotState.connected) return;
 
         webprotSendPacket(new packets.PingPacket(123));
     }, 20000);
@@ -134,7 +134,6 @@ const webprotSettings = {
 const webprotState: {
     connected:  boolean,
     connecting: boolean,
-    sendPings:  boolean,
     socket:     any,
     seqId:      number,
     queue:      Buffer[],
@@ -149,7 +148,6 @@ const webprotState: {
 } = {
     connected:  false,
     connecting: false,
-    sendPings:  false,
     socket:     null,
     seqId:      1,
     queue:      [],
@@ -283,7 +281,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
             "UserSearchPacket":          new packets.UserSearchPacket(),
             "ContactsManagePacket":      new packets.ContactsManagePacket(),
             "InviteResolvePacket":       new packets.InviteResolvePacket(),
-            "EmailConfirmationPacket":   new packets.EmailConfirmationPacket()
+            "EmailConfirmationPacket":   new packets.EmailConfirmationPacket(),
+            "MFASecretPacket":           new packets.MFASecretPacket()
         }[type];
 
         if(proto === undefined)
@@ -362,7 +361,7 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
         const stream = fs.createWriteStream(p);
         webprotState.downStates[packet.seq] = { id: packet.id, path: p, stream: stream, refs: [ref] };
     }
-    
+
     if(packet instanceof packets.EntitiesPacket) {
         for(const entity of packet.entities) {
             if(!(entity instanceof entities.File))
@@ -408,7 +407,6 @@ function webprotConnect(force: boolean =false) {
         return;
 
     webprotState.connecting = true;
-    webprotState.sendPings = false;
     webprotState.seqId = 1;
     webprotState.selfId = 0;
     webprotState.self = {};
@@ -459,7 +457,6 @@ function webprotConnect(force: boolean =false) {
     webprotState.socket.on("end", () => {
         webprotState.connected  = false;
         webprotState.connecting = false;
-        webprotState.sendPings  = false;
 
         console.log("Disconnected");
         ipcSend({ type: "webprot.status", message: "Disconnected" })
@@ -468,7 +465,6 @@ function webprotConnect(force: boolean =false) {
     webprotState.socket.on("error", (error) => {
         webprotState.connected  = false;
         webprotState.connecting = false;
-        webprotState.sendPings  = false;
 
         console.log(error);
     });

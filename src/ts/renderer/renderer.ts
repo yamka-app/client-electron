@@ -2118,11 +2118,8 @@ function _rendererFunc() {
                     showElm(elmById("mfa-form"));
     
                     elmById("mfa-login-button").addEventListener("click", (e) => {
-                        ipcSend({
-                            action:   "webprot.login",
-                            email:    "___@mfa@token@___",
-                            password: (elmById("login-mfa-code") as HTMLInputElement).value
-                        });
+                        sendPacket(new packets.MFASecretPacket(
+                            (elmById("login-mfa-code") as HTMLInputElement).value));
                     });
                     break;
 
