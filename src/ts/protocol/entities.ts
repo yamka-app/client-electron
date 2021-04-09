@@ -97,7 +97,7 @@ export class User extends Entity {
             new fields.NumField    ("status", 1,      4),
             new fields.StrField    ("statusText",     5),
             new fields.NumField    ("avaFile", 8,     7),
-            new fields.NumField    ("mfaEnabled", 1,  8),
+            new fields.BoolField   ("mfaEnabled",     8),
             new fields.NumListField("friends", 8,     9),
             new fields.NumListField("blocked", 8,     10),
             new fields.NumListField("pendingIn", 8,   11),
