@@ -25,11 +25,11 @@
     
     --danger-foreground: #efefef;
     --apply-foreground:  #efefef;
+    --foreground:        #242424;
     --foreground-1:      #3e4c50;
     --foreground-2:      #283235;
-    --foreground:        #555555;
 
-    --shadow: 0 0 12px #1111112d;
+    --shadow: 0 0 16px #1111112a;
 
     --darken-icon: 80%;
 }
