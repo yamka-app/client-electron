@@ -23,6 +23,7 @@ import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
 import { configGet, configSet } from "./settings.js";
 import * as tasty    from "../protocol.s/tasty.s.js";
+import { constants } from "fs";
 
 interface MessageSection {
     type:     types.MessageSectionType;
@@ -1393,7 +1394,7 @@ function _rendererFunc() {
 
     // Calls updateUser() for every user related to the message
     function updateRelatedUsers(state: entities.MessageState, deep:number =5) {
-        if(deep <= 0)
+        if(deep <= 0 || state === undefined)
             return;
 
         const msg = entityCache[state.msg_id] as entities.Message;
@@ -1401,7 +1402,7 @@ function _rendererFunc() {
         for(const section of state.sections)
             if(section.type === types.MessageSectionType.QUOTE && section.blob !== 0)
                 updateRelatedUsers((entityCache[section.blob] as entities.Message)
-                    .latest, deep - 1);
+                    ?.latest, deep - 1);
 
         updateUser(msg.sender);
     }
@@ -1482,7 +1483,9 @@ function _rendererFunc() {
                         for(const emoji of emojis)
                             emoji.classList.add("large-emoji");
                     }
-                    break
+
+                    break;
+
                 case types.MessageSectionType.CODE:
                     // A code box with highlighting and a copy button
                     sectionElement = document.createElement("pre");
@@ -1504,6 +1507,7 @@ function _rendererFunc() {
                     copyButton.appendChild(copyImg);
 
                     break;
+
                 case types.MessageSectionType.FILE:
                     const fileSectionElement = document.createElement("div"); // a temporary replacement
                     content.appendChild(fileSectionElement);
@@ -1608,25 +1612,29 @@ function _rendererFunc() {
                         }
                     })
                     break;
+
                 case types.MessageSectionType.QUOTE:
                     // Just plain text
                     sectionElement = document.createElement("div");
                     sectionElement.classList.add("message-quote-section");
 
                     const txt = document.createElement("div");
-                    txt.innerHTML = markupText(section.text);
+                    if(section.blob === 0)
+                        txt.innerHTML = markupText(section.text);
                     twemoji.parse(txt, { folder: "svg", ext: ".svg" });
                     sectionElement.appendChild(txt);
 
                     // If "blob" ID (actually message ID in this case) != 0 then show the message when clicking on it
-                    // and also add the "*nickname* said on *time*:" thingy
+                    // also add the "*nickname* said on *time*:" thingy
+                    // and set the text
                     if(section.blob !== 0) {
                         sectionElement.addEventListener("click", (e) => {
                             e.stopImmediatePropagation();
                             showFloatingMessage((entityCache[section.blob] as entities.Message).latest);
                         })
                         reqEntities([new packets.EntityGetRequest(entities.Message.typeNum, section.blob)], false, () => {
-                            const replyMsg = entityCache[section.blob];
+                            const replyMsg = entityCache[section.blob] as entities.Message;
+                            txt.innerHTML = markupText(messageStateSummary(replyMsg.latest));
                             reqEntities([new packets.EntityGetRequest(entities.User.typeNum, replyMsg.sender)], false, () => {
                                 const replyAvaContainer = document.createElement("div");
                                 replyAvaContainer.classList.add("reply-avatar-container", "flex-row");
@@ -1648,7 +1656,35 @@ function _rendererFunc() {
                             });
                         });
                     }
-                    break
+                    break;
+
+                case types.MessageSectionType.INVITE:
+                    const code = section.text;
+                    const box = document.createElement("div");
+                    box.classList.add("group-invite");
+                    sectionElement = box;
+
+                    sendPacket(new packets.InviteResolvePacket(code, false), (reply: packets.EntitiesPacket) => {
+                        const group = reply.entities[0] as entities.Group;
+                        const joined = remote.getGlobal("webprotState").self.groups.includes(group.id);
+                        
+                        download(group.icon, (iconPath) => {
+                            box.innerHTML = `
+                                <img src="${iconPath}"/>
+                                <span>${group.name}</span>
+                            `;
+                            const join = document.createElement("button");
+                            if(!joined) {
+                                join.classList.add("apply-button");
+                                join.innerText = "Join";
+                                join.onclick = (e) => sendPacket(new packets.InviteResolvePacket(code, true));
+                            } else {
+                                join.innerText = "Already joined";
+                            }
+                            box.appendChild(join);
+                        });
+                    });
+                    break;
             }
             if(sectionElement != null)
                 content.appendChild(sectionElement);
