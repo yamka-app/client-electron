@@ -300,15 +300,13 @@ button.icon-button img {
     background: transparent;
     border:     none;
     outline:    none;
+    box-shadow: none;
 
     padding: 0 3px 0 3px;
     margin:  0;
     height: fit-content;
 
     cursor: pointer;
-}
-.title-bar-button:hover {
-    background: transparent;
 }
 
 progress {
