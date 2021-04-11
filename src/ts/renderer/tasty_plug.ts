@@ -5,7 +5,6 @@
 //   THE NODE.JS AUDIO FRAMEWORK LANDSCAPE BAD
 
 import { configGet, configSet } from "./settings.js";
-import { logInterp } from "./util.js";
 
 async function _tasty_plug_func() {
     const _modules = window["_modules"];

@@ -6,7 +6,8 @@
     "module": "esnext",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["./ts/protocol.s/**/*", "./ts/renderer/**/*"]
+  "include": ["./ts/protocol.s/**/*", "./ts/renderer/**/*"],
+  "exclude": ["node_modules"]
 }

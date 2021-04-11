@@ -8,5 +8,6 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["./ts/main/**/*", "./ts/protocol/**/*"]
+  "include": ["./ts/main/**/*", "./ts/protocol/**/*"],
+  "exclude": ["node_modules"]
 }
