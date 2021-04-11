@@ -5,7 +5,6 @@ const remote          = _modules.remote;
 
 import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
-import * as types    from "../protocol.s/dataTypes.s.js";
 
 export function reset() {
     window.entityCache = {};

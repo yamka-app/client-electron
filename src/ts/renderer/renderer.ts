@@ -18,7 +18,6 @@ import * as util       from "./util.js";
 import * as domUtil    from "./dom_util/dom_util.js";
 import * as domMsgUtil from "./dom_util/msg_util.js";
 import * as layout     from "./dom_util/layout.js";
-import * as context    from "./context.js";
 import { configGet, configSet } from "./settings.js";
 
 import { reset, ipcSend, sendPacket, self } from "./yGlobal.js";

@@ -2,15 +2,7 @@
 // for the specific elements of the app's layout
 
 const _modules = window["_modules"];
-const path           = _modules.path;
-const twemoji        = _modules.twemoji;
-const highlightBlock = _modules.highlightBlock;
-const blurhash       = _modules.blurhash;
 const remote         = _modules.remote;
-const fs             = _modules.fs;
-
-const { BrowserWindow, dialog } = remote;
-const { shell, clipboard }      = _modules.electron;
 
 import * as util       from "../util.js";
 import * as domUtil    from "./dom_util.js";

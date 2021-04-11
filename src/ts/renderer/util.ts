@@ -5,15 +5,14 @@ import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
 
-import { ipcSend, sendPacket } from "./yGlobal.js";
-import { configGet } from "./settings.js";
+import { sendPacket } from "./yGlobal.js";
+import { configGet }  from "./settings.js";
 
 const _modules = window["_modules"];
 
 const path            = _modules.path;
 const remote          = _modules.remote;
 const remark          = _modules.remark;
-const gemojiToEmoji   = _modules.gemojiToEmoji;
 const _escapeHtml     = _modules.escapeHtml;
 const marked          = _modules.marked;
 const compareVersions = _modules.compareVersions;
