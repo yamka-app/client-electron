@@ -17,7 +17,7 @@
     z-index: 500;
 
     background:      var(--background-trans);
-    border-radius:   5px;
+    border-radius:   10px;
     box-shadow:      var(--shadow);
     backdrop-filter: blur(5px);
 
@@ -40,9 +40,9 @@
     padding-bottom: 20px;
     padding-right:  20px;
 
-    background: var(--background);
-    border-radius:    5px 0 0 5px;
-    box-shadow: var(--shadow);
+    background:    var(--background);
+    border-radius: 10px 0 0 10px;
+    box-shadow:    var(--shadow);
 
     display:        flex;
     flex-direction: column;
@@ -318,7 +318,7 @@ input[type="radio"].settings-radio:checked + label {
     margin:  auto;
     padding: 20px;
 
-    border-radius:    5px;
+    border-radius: 10px;
     background: var(--background);
     /*backdrop-filter:  blur(5px);*/
     box-shadow: var(--shadow);
@@ -381,8 +381,8 @@ input[type="radio"].settings-radio:checked + label {
     margin:  0;
     padding: 20px;
 
-    background: var(--background);
-    border-radius:    5px 5px 0 0;
+    background:    var(--background);
+    border-radius: 10px 10px 0 0;
 
     align-items: center;
 }
@@ -436,7 +436,7 @@ input[type="radio"].settings-radio:checked + label {
     padding: 20px;
 
     border:        none;
-    border-radius: 5px;
+    border-radius: 10px;
 
     font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
@@ -469,10 +469,10 @@ input[type="radio"].settings-radio:checked + label {
     flex-direction: column;
 
     width:         300px;
-    padding:       15px 0 15px 0;
+    padding:       10px 0 10px 0;
     background:    var(--background);
     box-shadow:    var(--shadow);
-    border-radius: 15px;
+    border-radius: 10px;
 
     pointer-events: all;
 }
@@ -480,7 +480,7 @@ input[type="radio"].settings-radio:checked + label {
     display:        flex;
     flex-direction: column;
 
-    padding:    7px 15px 7px 15px;
+    padding:    5px 10px 5px 10px;
     cursor:     pointer;
     background: var(--background);
     transition: background 0.2s ease;

@@ -18,10 +18,10 @@
     --green-trans:  #2ac02a90;
     --rainbow-grad: linear-gradient(90deg, #fa1b1b, #fab31b);
     
-    --background:      #e9f0f1;
-    --background-trans:#e9f0f1af;
-    --bg-2:            #e4ecec;
-    --bg-3:            #d3d9da;
+    --background:      #dfe6e7;
+    --background-trans:#dfe6e7af;
+    --bg-2:            #e6f0f0;
+    --bg-3:            #eff7f8;
     
     --danger-foreground: #efefef;
     --apply-foreground:  #efefef;

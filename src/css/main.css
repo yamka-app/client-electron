@@ -567,7 +567,7 @@ img.verified-badge:not(.true) {
     padding: 0;
 
     background:    transparent;
-    border-radius: 5px;
+    border-radius: 10px;
     transition:    background-color 0.1s ease;
 
     cursor: pointer;
@@ -743,7 +743,7 @@ input[type="color"] {
     padding: 20px;
 
     background: var(--background);
-    border-radius: 5px;
+    border-radius: 10px;
     box-shadow: var(--shadow);
 
     display: flex;
