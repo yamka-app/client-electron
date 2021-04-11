@@ -12,6 +12,12 @@
     pointer-events: all;
 }
 
+.context-menu > img {
+    /* this element is only used to trigger an "onload" */
+    width:   0;
+    height:  0;
+}
+
 .context-menu > div {
     display:        flex;
     flex-direction: row;
@@ -22,10 +28,7 @@
     transition: background 0.2s ease;
 }
 .context-menu > div:hover {
-    background: var(--accent);
-}
-.context-menu > div:hover span {
-    color: var(--accent-foreground);
+    background: var(--bg-3);
 }
 
 .context-menu > div.ctx-sep {
