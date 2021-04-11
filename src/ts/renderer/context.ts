@@ -1,5 +1,3 @@
-import { UNDERSCORE_IDENT_RE } from "highlight.js";
-
 export class Entry {
     title: string;
 
@@ -95,15 +93,15 @@ export function create(x: number, y: number, entries: Entry[]) {
     const ww = window.innerWidth;
     const wh = window.innerHeight;
 
-    const xright  = x + bw > ww;
-    const ybottom = y + bh > wh;
-    x = xright  ? (ww - x - bw) : x;
-    y = ybottom ? (wh - y - bh) : y;
+    const xright  = (x + bw) > ww;
+    const ybottom = (y + bh) > wh;
 
-    if (xright) menuElm.style.right  = `${x}`;
-           else menuElm.style.left   = `${x}`;
-    if(ybottom) menuElm.style.bottom = `${y}`;
-           else menuElm.style.top    = `${y}`;
+    if (xright) menuElm.style.right  = `${ww - x - bw}px`;
+           else menuElm.style.left   = `${x}px`;
+    if(ybottom) menuElm.style.bottom = `${wh - y - bh}px`;
+           else menuElm.style.top    = `${y}px`;
+
+    console.log(menuElm.style.right, menuElm.style.left, menuElm.style.bottom, menuElm.style.top);
 
     const menu = new ContextMenu();
     menu.element = menuElm;

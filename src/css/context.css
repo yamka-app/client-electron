@@ -1,0 +1,36 @@
+.context-menu {
+    position:       absolute;
+    display:        flex;
+    flex-direction: column;
+
+    min-width:     150px;
+    padding:       10px 0 10px 0;
+    background:    var(--background);
+    box-shadow:    var(--shadow);
+    border-radius: 10px;
+
+    pointer-events: all;
+}
+
+.context-menu > div {
+    display:        flex;
+    flex-direction: row;
+
+    padding:    5px 10px 5px 10px;
+    cursor:     pointer;
+    background: var(--background);
+    transition: background 0.2s ease;
+}
+.context-menu > div:hover {
+    background: var(--accent);
+}
+.context-menu > div:hover span {
+    color: var(--accent-foreground);
+}
+
+.context-menu > div.ctx-sep {
+    height:     1px;
+    padding:    0px;
+    margin:     5px 10px 5px 10px;
+    background: var(--foreground-1);
+}
