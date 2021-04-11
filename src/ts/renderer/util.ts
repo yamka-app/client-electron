@@ -18,7 +18,7 @@ const marked          = _modules.marked;
 const compareVersions = _modules.compareVersions;
 const fs              = _modules.fs;
 
-export const clientVersion = "0.5.3";
+export const clientVersion = "0.6.0";
 
 export const escapeHtml: (t: any) => string = _escapeHtml;
 
