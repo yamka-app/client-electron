@@ -456,7 +456,7 @@ input[type="radio"].settings-radio:checked + label {
 #floating-box-text,
 #mfa-code-manual {
     user-select: text;
-    color:       var(--apply-foreground);
+    color:       var(--foreground);
 }
 
 
