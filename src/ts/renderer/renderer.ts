@@ -23,7 +23,7 @@ import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
 import { configGet, configSet } from "./settings.js";
 import * as tasty    from "../protocol.s/tasty.s.js";
-import { constants } from "fs";
+import * as context  from "./context.js";
 
 interface MessageSection {
     type:     types.MessageSectionType;
@@ -725,6 +725,14 @@ function _rendererFunc() {
         const tag = document.createElement("span");
         tag.classList.add("user-tag", "user-tag-" + id);
         nicknameContainer.appendChild(tag);
+
+        const openDm = () => {
+            const channel = entityCache[id].dmChannel;
+            reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, channel)], false, () => {
+                viewingChan = channel;
+                updLayout();
+            });
+        };
     
         // Special users (friends, pending, blocked)
         if(special !== undefined) {
@@ -765,20 +773,20 @@ function _rendererFunc() {
             friendAcceptImg.src = path.join(window["__dirname"], "icons/approve.png");
             friendAcceptBtn.appendChild(friendAcceptImg);
         }
-        if(special === "friend") {
-            // Friends (open DMs when clicked)
-            elm.onclick = (e) => {
-                // Get the channel
-                const channel = entityCache[id].dmChannel;
-                reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, channel)], false, () => {
-                    viewingChan = channel;
-                    updLayout();
-                });
-            }
-        } else {
-            // All other people
-            elm.onclick = (e) => showProfile(id);
-        }
+
+        elm.onclick = (e) => (special === "friend") ? openDm() : showProfile(id);
+
+        var contextMenu: context.Entry[] = [
+            new context.ButtonEntry("Profile", showProfile, [id])
+        ];
+
+        if(special === "friend")
+            contextMenu.push(new context.ButtonEntry("Open DM", openDm));
+
+        contextMenu.push(new context.Separator());
+        contextMenu.push(new context.ButtonEntry("Copy ID", clipboard.writeText, [`${id}`]));
+    
+        context.addRightClickMenu(elm, contextMenu);
     
         return elm;
     }
