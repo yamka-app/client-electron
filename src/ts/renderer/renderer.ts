@@ -737,9 +737,8 @@ function _rendererFunc() {
         // Special users (friends, pending, blocked)
         if(special !== undefined) {
             const friendRemoveBtn = document.createElement("button");
-            friendRemoveBtn.classList.add("hover-show-button");
-            friendRemoveBtn.classList.add("icon-button");
-            friendRemoveBtn.classList.add("friend-remove-button");
+            friendRemoveBtn.classList.add("icon-button", "cg-button",
+                    "friend-remove-button", "hover-show-button");
             friendRemoveBtn.addEventListener("click", (e) => {
                 sendPacket(new packets.ContactsManagePacket({
                         "friend":      packets.ContactType.FRIEND,
@@ -776,12 +775,21 @@ function _rendererFunc() {
 
         elm.onclick = (e) => (special === "friend") ? openDm() : showProfile(id);
 
+        const isFriend = remote.getGlobal("webprotState").self.friends.includes(id);
         var contextMenu: context.Entry[] = [
             new context.ButtonEntry("Profile", showProfile, [id])
         ];
 
-        if(special === "friend")
-            contextMenu.push(new context.ButtonEntry("Open DM", openDm));
+        if(isFriend) contextMenu.push(new context.ButtonEntry("Open DM", openDm));
+
+        if(isFriend)
+            contextMenu.push(new context.ButtonEntry(`Remove friend`,
+                sendPacket, [new packets.ContactsManagePacket(
+                    packets.ContactType.FRIEND, packets.ContactAction.REMOVE,
+                    id)]));
+        else
+            contextMenu.push(new context.ButtonEntry(`Add friend`,
+                sendPacket, [new packets.UserSearchPacket(`${user.name}#${user.tag}`)]));
 
         contextMenu.push(new context.Separator());
         contextMenu.push(new context.ButtonEntry("Copy ID", clipboard.writeText, [`${id}`]));
