@@ -1991,6 +1991,13 @@ function _rendererFunc() {
             updLayout();
         }
 
+        context.addRightClickMenu(panel, [
+            new context.ButtonEntry(`Leave ${group.name}`, sendPacket, [new packets.ContactsManagePacket(
+                    packets.ContactType.GROUP, packets.ContactAction.REMOVE, id)]),
+            new context.Separator(),
+            new context.ButtonEntry("Copy ID", clipboard.writeText, [`${id}`])
+        ]);
+
         return panel;
     }
 
