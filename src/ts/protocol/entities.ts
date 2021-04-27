@@ -85,7 +85,6 @@ export class User extends Entity {
     badges?:         UserBadge[];
     botOwner?:       number;
     ownedBots?:      number[];
-    wall?:           number;
     emailConfirmed?: boolean;
 
     constructor() {
@@ -109,16 +108,11 @@ export class User extends Entity {
             new fields.NumListField("badges", 1,      17),
             new fields.NumField    ("botOwner", 8,    18),
             new fields.NumListField("ownedBots", 8,   19),
-            new fields.NumField    ("wall", 8,        20),
             new fields.BoolField   ("emailConfirmed", 21)
         ]);
     }
 }
 
-export enum ChannelType {
-    NORMAL = 0,
-    WALL   = 1
-}
 export enum ChannelVoiceStatus {
     SPEAKING = 1,
     MUTED    = 2,
@@ -134,7 +128,6 @@ export class Channel extends Entity {
     group?:       number;
     messages?:    number[];
     typing?:      number[];
-    type?:        ChannelType;
     unread?:      number;
     firstUnread?: number;
     voice?:       boolean;
@@ -149,7 +142,6 @@ export class Channel extends Entity {
             new fields.NumField    ("group", 8,       3),
             new fields.NumListField("messages", 8,    4),
             new fields.NumListField("typing", 8,      5),
-            new fields.NumField    ("type", 1,        6),
             new fields.NumField    ("unread", 4,      7),
             new fields.NumField    ("firstUnread", 8, 8),
             new fields.BoolField   ("voice",          9),

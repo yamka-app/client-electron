@@ -44,14 +44,9 @@ export class User extends Entity {
     badges?:         UserBadge[];
     botOwner?:       number;
     ownedBots?:      number[];
-    wall?:           number;
     emailConfirmed?: boolean;
 }
 
-export enum ChannelType {
-    NORMAL = 0,
-    WALL   = 1
-}
 export enum ChannelVoiceStatus {
     SPEAKING = 1,
     MUTED    = 2,
@@ -66,7 +61,6 @@ export class Channel extends Entity {
     group?:       number;
     messages?:    number[];
     typing?:      number[];
-    type?:        ChannelType;
     unread?:      number;
     firstUnread?: number;
     voice?:       boolean;

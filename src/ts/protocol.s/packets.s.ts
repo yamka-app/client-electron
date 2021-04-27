@@ -41,10 +41,6 @@ export enum AccessTokenPermission {
     MANAGE_ROLES           = 21,
     DELETE_OTHERS_MESSAGES = 22,
 
-    READ_OWN_WALL     = 23,
-    READ_OTHERS_WALLS = 24,
-    POST_ON_OWN_WALL  = 25,
-
     BOT = 26
 }
 export class LoginPacket extends SimpleFieldPacket {
