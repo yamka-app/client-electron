@@ -278,7 +278,7 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
             "EntityGetPacket":           new packets.EntityGetPacket(),
             "EntitiesPacket":            new packets.EntitiesPacket(),
             "FileDownloadRequestPacket": new packets.FileDownloadRequestPacket(),
-            "UserSearchPacket":          new packets.UserSearchPacket(),
+            "SearchPacket":              new packets.SearchPacket(),
             "ContactsManagePacket":      new packets.ContactsManagePacket(),
             "InviteResolvePacket":       new packets.InviteResolvePacket(),
             "EmailConfirmationPacket":   new packets.EmailConfirmationPacket(),

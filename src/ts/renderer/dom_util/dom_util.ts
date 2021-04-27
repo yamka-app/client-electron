@@ -442,7 +442,8 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
                 id)]));
     else
         contextMenu.push(new context.ButtonEntry(`Add friend`,
-            yGlobal.sendPacket, [new packets.UserSearchPacket(`${user.name}#${user.tag}`)]));
+            yGlobal.sendPacket, [new packets.SearchPacket(
+                packets.SearchTarget.USER,`${user.name}#${user.tag}`)]));
 
     contextMenu.push(new context.Separator());
     contextMenu.push(new context.ButtonEntry("Copy ID", clipboard.writeText, [`${id}`]));

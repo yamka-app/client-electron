@@ -193,6 +193,16 @@ export class MFASecretPacket extends SimpleFieldPacket {
     constructor(secret?: string) { super(); this.secret = secret; }
 }
 
+export class SearchResultPacket extends SimpleFieldPacket {
+    typeNum = 11;
+    list: number[];
+
+    constructor(list?: number[]) {
+        super();
+        this.list = list;
+    }
+}
+
 export class AccessTokenPacket extends SimpleFieldPacket {
     typeNum = 12;
     token: string;
@@ -225,11 +235,21 @@ export class ContactsManagePacket extends SimpleFieldPacket {
     }
 }
 
-export class UserSearchPacket extends SimpleFieldPacket {
+export enum SearchTarget {
+    USER         = 0,
+    GROUP        = 1,
+    GROUP_MEMBER = 2
+}
+export class SearchPacket extends SimpleFieldPacket {
     typeNum = 14;
+    type: SearchTarget;
     name: string;
 
-    constructor(name?: string) { super(); this.name = name; }
+    constructor(type?: SearchTarget, name?: string) {
+        super();
+        this.type = type;
+        this.name = name;
+    }
 }
 
 export class InviteResolvePacket extends SimpleFieldPacket {

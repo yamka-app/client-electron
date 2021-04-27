@@ -665,7 +665,8 @@ function _rendererFunc() {
                     "AccessTokenPacket":    new packets.AccessTokenPacket(),
                     "ClientIdentityPacket": new packets.ClientIdentityPacket(),
                     "EntitiesPacket":       new packets.EntitiesPacket(),
-                    "MFASecretPacket":      new packets.MFASecretPacket()
+                    "MFASecretPacket":      new packets.MFASecretPacket(),
+                    "SearchResultPacket":   new packets.SearchResultPacket()
                 }[arg.pType];
                 const packet = Object.assign(proto, arg.packet);
                 if(packet instanceof packets.EntitiesPacket) {
@@ -1001,7 +1002,7 @@ function _rendererFunc() {
         util.toggleElm(util.elmById("user-search-bar"));
     };
     util.elmById("friend-add-commit").onclick = (e) => {
-        sendPacket(new packets.UserSearchPacket(
+        sendPacket(new packets.SearchPacket(packets.SearchTarget.USER,
             (util.elmById("user-search-input") as HTMLInputElement).value));
     };
 
