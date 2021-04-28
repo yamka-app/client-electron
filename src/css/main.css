@@ -829,6 +829,8 @@ textarea.code-input {
 #mention-list {
     display:        flex;
     flex-direction: column;
+    overflow:       hidden;
+    transition:     max-height 0.1s ease;
 }
 #mention-list:not(:empty) {
     margin: 0 0 8px 6px;
@@ -843,6 +845,7 @@ textarea.code-input {
     display:        flex;
     flex-direction: row;
     align-items:    center;
+    cursor:         pointer;
 }
 #mention-list > div > img {
     width:         24px;
@@ -853,6 +856,21 @@ textarea.code-input {
 #mention-list > div > span {
     font-size: var(--font-size);
     color:     var(--foreground);
+}
+
+.mention {
+    padding:       3px;
+    border-radius: 6px;
+    background:    var(--accent-trans-2);
+    color:         var(--accent);
+
+    opacity:    0.85;
+    transition: opacity 0.1s ease;
+
+    cursor: pointer;
+}
+.mention:hover {
+    opacity: 1;
 }
 
 .loading-spinner {

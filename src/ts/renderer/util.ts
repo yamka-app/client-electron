@@ -319,8 +319,49 @@ export function extractMention(txt: string, caret: number, stop: string[]) {
 
     txt = txt.substring(0, caret);
     const tokens = txt.split(" ");
-    const beforeCaret = tokens[tokens.length - 1];
+    const last = tokens[tokens.length - 1];
 
-    if(stop.some(s => beforeCaret.startsWith(s)))
-        return beforeCaret;
+    if(stop.some(s => last.startsWith(s) && !last.startsWith("\\")))
+        return last;
+}
+export function mentionToken(txt: string, caret: number, stop: string[]) {
+    if(txt.length === 0)               return undefined;
+    if(stop.some(x => x.length !== 1)) return undefined;
+
+    txt = txt.substring(0, caret);
+    const tokens = txt.split(" ");
+    return tokens.length - 1;
+}
+
+export function processMentions(txt: string) {
+
+}
+
+export function formatMentions(elm: Element) {
+    if(elm instanceof HTMLSpanElement || elm instanceof HTMLAnchorElement) {
+        var text = elm.innerHTML;
+        const matches = Array.from(text.matchAll(/@[0-9]+/g))
+            // reverse the order
+            .sort((a, b) => b.index - a.index)
+            // parse IDs
+            .map(x => { x["id"] = parseInt(x[0].substr(1)); return x; });
+        
+        reqEntities(matches.map(x => new packets.EntityGetRequest(entities.User.typeNum, x["id"])), false, () => {
+            for(const match of matches) {
+                const mText = match[0];
+                const idx = match.index;
+                const before = text.substring(0, idx);
+                const after = text.substring(idx + mText.length);
+                const username = (entityCache[match["id"]] as entities.User).name;
+                text = `${before}<span class="mention">@${username}</span>${after}`;
+            }
+
+            elm.innerHTML = text;
+        });
+
+        return;
+    }
+
+    for(const child of [...elm.children])
+        formatMentions(child);
 }

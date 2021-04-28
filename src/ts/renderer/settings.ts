@@ -101,6 +101,7 @@ function _settingsFunc() {
         docStyle.setProperty("--accent-alt",        accentAlt);
         docStyle.setProperty("--accent-alt-trans",  accentAlt + "90");
         docStyle.setProperty("--accent-trans",      color + "90");
+        docStyle.setProperty("--accent-trans-2",    color + "40");
         docStyle.setProperty("--accent-dim",        tinycolor(color).darken(10).toString());
         docStyle.setProperty("--accent-dim-2",      tinycolor(color).darken(20).toString());
         docStyle.setProperty("--accent-foreground", tinycolor(color).isLight() ? black : white);

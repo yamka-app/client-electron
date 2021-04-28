@@ -97,6 +97,7 @@ function createTextSection(section: types.MessageSection) {
     const text = util.markupText(section.text);
     elm.innerHTML = text;
     twemoji.parse(elm, { folder: "svg", ext: ".svg" });
+    util.formatMentions(elm);
     // If the text cosists of emojis only, increase their size
     if(util.allEmojiRegex.test(text)) {
         const emojis = elm.getElementsByTagName("img");
@@ -466,6 +467,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
 
                 if(viewingGroup === 0) return;
                 const mention = util.extractMention(typeElm.value, typeElm.selectronStart, ["@"]);
+                const tok     = util.mentionToken(typeElm.value, typeElm.selectronStart, ["@"])
                 if(mention === undefined) { setMentionList([]); mentionLock = false; return; }
                 const tag = mention.charAt(0);
                 const name = mention.substr(1);
@@ -480,7 +482,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
                             if(!mentionLock) return;
                             if(!(r instanceof packets.SearchResultPacket)) return;
                             const users = r.list;
-                            setMentionList(users);
+                            setMentionList(users, typeElm, tok);
                         });
                         break;
                 }
@@ -583,6 +585,8 @@ export function resetMsgInput(fullReset: boolean =false) {
             child.remove();
     }
 
+    setMentionList([]);
+
     window.msgSections = [];
 
     if(!fullReset) {
@@ -652,8 +656,17 @@ export function sendMessage() {
     }, 50);
 }
 
-export function setMentionList(userIds: number[]) {
+export function setMentionList(userIds: number[], field?: HTMLInputElement, tokenIdx?: number) {
     const list = util.elmById("mention-list");
+
+    if(userIds === []) {
+        list.style.maxHeight = "0px";
+        setTimeout(() => { 
+            while(list.firstChild) list.firstChild.remove();
+        }, 100);
+        return;
+    }
+
     util.reqEntities(userIds.map(id => new packets.EntityGetRequest(
       entities.User.typeNum, id)), false, (e: entities.Entity[]) => {
         // kill all children :>
@@ -669,6 +682,22 @@ export function setMentionList(userIds: number[]) {
             util.download(user.avaFile, (avaPath: string) => ava.src = `file://${avaPath}`);
 
             list.appendChild(elm);
+
+            if(field === undefined) continue;
+            elm.onclick = (e) => {
+                util.stopPropagation(e);
+
+                const tokens = field.value.split(" ");
+                const before = tokens.filter((v, i, a) => i < tokenIdx).join(" ") + " ";
+                const after  = tokens.filter((v, i, a) => i > tokenIdx).join(" ") + " ";
+                const result = `${before}@${user.id}${after}`;
+                field.value = result;
+                field.selectionEnd = field.selectionStart = `${before}@${user.id} `.length;
+                field.focus();
+                setMentionList([]);
+            };
         }
+
+        list.style.maxHeight = `${list.scrollHeight}px`;
     });
 }
