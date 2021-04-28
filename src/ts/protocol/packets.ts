@@ -386,13 +386,17 @@ export enum SearchTarget {
 export class SearchPacket extends SimpleFieldPacket {
     typeNum = 14;
     type: SearchTarget;
+    ref:  number;
     name: string;
 
-    constructor(type?: SearchTarget, name?: string) {
+    constructor(type?: SearchTarget, ref?: number, name?: string) {
         super([
             new fields.NumField("type", 1),
+            new fields.NumField("ref", 8),
             new fields.StrField("name")
         ]);
+        this.type = type;
+        this.ref  = ref;
         this.name = name;
     }
 }

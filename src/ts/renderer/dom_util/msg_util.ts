@@ -457,7 +457,30 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             typeElm.classList.add("message-input", "fill-width");
             typeElm.placeholder = "Text section";
             typeElm.rows = 1;
-            typeElm.oninput = () => { util.adjTaHeight(typeElm); util.updTyping(typeElm.value) };
+            typeElm.oninput = () => {
+                util.adjTaHeight(typeElm);
+                util.updTyping(typeElm.value);
+
+                if(viewingGroup === 0) return;
+                const mention = util.extractMention(typeElm.value, typeElm.selectronStart, ["@"]);
+                if(mention === undefined) return;
+                const tag = mention.charAt(0);
+                const name = mention.substr(1);
+                if(name.length < 1) return;
+                switch(tag) {
+                    case "@":
+                        yGlobal.sendPacket(new packets.SearchPacket(
+                            packets.SearchTarget.GROUP_MEMBER,
+                            viewingGroup,
+                            name),
+                        (r: packets.Packet) => {
+                            if(!(r instanceof packets.SearchResultPacket)) return;
+                            const users = r.list;
+                            console.log(users);
+                        });
+                        break;
+                }
+            };
             break;
         case types.MessageSectionType.FILE:
             typeElm = document.createElement("div");

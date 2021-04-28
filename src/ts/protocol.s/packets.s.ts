@@ -243,11 +243,13 @@ export enum SearchTarget {
 export class SearchPacket extends SimpleFieldPacket {
     typeNum = 14;
     type: SearchTarget;
+    ref:  number;
     name: string;
 
-    constructor(type?: SearchTarget, name?: string) {
+    constructor(type?: SearchTarget, ref?: number, name?: string) {
         super();
         this.type = type;
+        this.ref  = ref;
         this.name = name;
     }
 }

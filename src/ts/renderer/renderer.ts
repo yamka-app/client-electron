@@ -1002,7 +1002,7 @@ function _rendererFunc() {
         util.toggleElm(util.elmById("user-search-bar"));
     };
     util.elmById("friend-add-commit").onclick = (e) => {
-        sendPacket(new packets.SearchPacket(packets.SearchTarget.USER,
+        sendPacket(new packets.SearchPacket(packets.SearchTarget.USER, 0,
             (util.elmById("user-search-input") as HTMLInputElement).value));
     };
 

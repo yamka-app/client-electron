@@ -312,3 +312,15 @@ export function updTyping(txt: string) {
     else
         clearTyping();
 }
+
+export function extractMention(txt: string, caret: number, stop: string[]) {
+    if(txt.length === 0)               return undefined;
+    if(stop.some(x => x.length !== 1)) return undefined;
+
+    txt = txt.substring(0, caret);
+    const tokens = txt.split(" ");
+    const beforeCaret = tokens[tokens.length - 1];
+
+    if(stop.some(s => beforeCaret.startsWith(s)))
+        return beforeCaret;
+}
