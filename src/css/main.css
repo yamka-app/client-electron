@@ -764,7 +764,7 @@ input[type="color"] {
 
 
 #message-input-container {
-    height: fit-content;
+    height:  fit-content;
     width:   100%;
     margin:  0 0 20px 12px;
     padding: 10px;
@@ -824,6 +824,35 @@ textarea.code-input {
 }
 #typing-dot-3 {
     animation-delay: 1.33s !important;
+}
+
+#mention-list {
+    display:        flex;
+    flex-direction: column;
+}
+#mention-list:not(:empty) {
+    margin: 0 0 8px 6px;
+}
+#mention-list:not(:empty)::before {
+    font-size: calc(var(--font-size) - 1pt);
+    color:     var(--foreground-2);
+    content:   "USERS";
+}
+#mention-list > div {
+    margin:         8px 0 0 0;
+    display:        flex;
+    flex-direction: row;
+    align-items:    center;
+}
+#mention-list > div > img {
+    width:         24px;
+    height:        24px;
+    border-radius: 12px;
+    margin-right:  5px;
+}
+#mention-list > div > span {
+    font-size: var(--font-size);
+    color:     var(--foreground);
 }
 
 .loading-spinner {

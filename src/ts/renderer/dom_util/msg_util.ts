@@ -108,25 +108,27 @@ function createTextSection(section: types.MessageSection) {
 }
 
 function createCodeSection(section: types.MessageSection) {
+    const wrapper = document.createElement("pre");
+
     const elm = document.createElement("pre");
     elm.classList.add("message-code-section");
     elm.innerHTML = util.prepareMsgText(section.text);
     highlightBlock(elm);
+    wrapper.appendChild(elm);
 
     const copyButton = document.createElement("button");
     copyButton.classList.add("icon-button");
-    elm.parentElement.insertBefore(copyButton, elm.nextSibling);
-
     copyButton.onclick = (e) => {
-        e.stopPropagation();
+        util.stopPropagation(e);
         clipboard.writeText(section.text);
-    }
+    };
+    wrapper.appendChild(copyButton);
 
     const copyImg = document.createElement("img");
     copyImg.src = path.join(window["__dirname"], "icons/copy.png");
     copyButton.appendChild(copyImg);
 
-    return elm;
+    return wrapper;
 }
 
 function createFileSection(section: types.MessageSection) {
@@ -457,16 +459,17 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             typeElm.classList.add("message-input", "fill-width");
             typeElm.placeholder = "Text section";
             typeElm.rows = 1;
+            var mentionLock = true;
             typeElm.oninput = () => {
                 util.adjTaHeight(typeElm);
                 util.updTyping(typeElm.value);
 
                 if(viewingGroup === 0) return;
                 const mention = util.extractMention(typeElm.value, typeElm.selectronStart, ["@"]);
-                if(mention === undefined) return;
+                if(mention === undefined) { setMentionList([]); mentionLock = false; return; }
                 const tag = mention.charAt(0);
                 const name = mention.substr(1);
-                if(name.length < 1) return;
+                mentionLock = true;
                 switch(tag) {
                     case "@":
                         yGlobal.sendPacket(new packets.SearchPacket(
@@ -474,9 +477,10 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
                             viewingGroup,
                             name),
                         (r: packets.Packet) => {
+                            if(!mentionLock) return;
                             if(!(r instanceof packets.SearchResultPacket)) return;
                             const users = r.list;
-                            console.log(users);
+                            setMentionList(users);
                         });
                         break;
                 }
@@ -575,7 +579,7 @@ export function resetMsgInput(fullReset: boolean =false) {
     // Remove all sections
     for(var i = container.children.length - 1; i >= 0; i--) {
         const child = container.children[i];
-        if(child.id != "message-section-add-btns")
+        if(child.id !== "message-section-add-btns" && child.id !== "mention-list")
             child.remove();
     }
 
@@ -646,4 +650,25 @@ export function sendMessage() {
         resetMsgInput();
         window.editingMessage = 0;
     }, 50);
+}
+
+export function setMentionList(userIds: number[]) {
+    const list = util.elmById("mention-list");
+    util.reqEntities(userIds.map(id => new packets.EntityGetRequest(
+      entities.User.typeNum, id)), false, (e: entities.Entity[]) => {
+        // kill all children :>
+        while(list.firstChild) list.firstChild.remove();
+
+        for(const user of e) {
+            if(!(user instanceof entities.User)) continue;
+            const elm  = document.createElement("div");
+
+            const ava  = document.createElement("img");  elm.appendChild(ava);
+            const name = document.createElement("span"); elm.appendChild(name);
+            name.innerHTML = util.escapeHtml(user.name);
+            util.download(user.avaFile, (avaPath: string) => ava.src = `file://${avaPath}`);
+
+            list.appendChild(elm);
+        }
+    });
 }
