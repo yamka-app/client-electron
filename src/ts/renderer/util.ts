@@ -353,10 +353,17 @@ export function formatMentions(elm: Element) {
                 const before = text.substring(0, idx);
                 const after = text.substring(idx + mText.length);
                 const username = (entityCache[match["id"]] as entities.User).name;
-                text = `${before}<span class="mention">@${username}</span>${after}`;
+                text = `${before}<span id="${match["id"]}" class="mention">@${username}</span>${after}`;
             }
 
             elm.innerHTML = text;
+            const mentions = elm.querySelectorAll("span.mention") as NodeListOf<HTMLSpanElement>;
+            for(const mention of mentions) {
+                mention.onclick = (e) => {
+                    stopPropagation(e);
+                    domUtil.showProfile(parseInt(mention.id));
+                };
+            }
         });
 
         return;
