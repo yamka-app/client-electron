@@ -1046,10 +1046,11 @@ span.fg-1 {
     display: flex;
     flex-direction: column;
 }
-.message-quote-section span,
-.message-text-section span {
+.message-quote-section > span,
+.message-text-section > span {
     white-space: pre-wrap;
     align-items: center;
+    margin: 3px 0;
 }
 .message-quote-section span > *:not(img.emoji),
 .message-text-section span > *:not(img.emoji) {

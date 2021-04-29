@@ -19,6 +19,7 @@ import * as types    from "../../protocol.s/dataTypes.s.js";
 import * as yGlobal  from "../yGlobal.js";
 import { configGet } from "../settings.js";
 import * as domUtil  from "./dom_util.js";
+import * as layout   from "./layout.js";
 
 // Creates a message box seen in the message area
 export function createMessage(state: entities.MessageState, short: boolean =false): HTMLElement {
@@ -302,7 +303,11 @@ function createInviteSection(section: types.MessageSection) {
             if(!joined) {
                 join.classList.add("apply-button");
                 join.innerText = "Join";
-                join.onclick = (e) => yGlobal.sendPacket(new packets.InviteResolvePacket(code, true));
+                join.onclick = (e) => yGlobal.sendPacket(new packets.InviteResolvePacket(code, true), (r) => {
+                    viewingGroup = group.id;
+                    viewingChan = group.channels[0];
+                    layout.updLayout();
+                });
             } else {
                 join.innerText = "Already joined";
             }

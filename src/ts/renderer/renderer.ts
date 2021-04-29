@@ -349,6 +349,7 @@ function _rendererFunc() {
         const chan = window.entityCache[window.viewingChan] as entities.Channel;
         chan.unread = 0;
         chan.firstUnread = msg.id;
+        chan.mentions = [];
 
         // Scroll down again if it was like that before
         if(scrolled) {
