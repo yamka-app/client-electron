@@ -8,8 +8,8 @@ import * as entities from "../protocol.s/entities.s.js";
 
 export function reset() {
     window.entityCache = {};
-    window.filePaths = {};
     window.userDm = {};
+    if(window.filePaths === undefined) window.filePaths = {};
 
     window.viewingGroup = 0;
     window.viewingChan = 0;
