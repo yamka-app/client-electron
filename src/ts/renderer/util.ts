@@ -340,7 +340,7 @@ export function processMentions(txt: string) {
 export function formatMentions(elm: Element) {
     if(elm instanceof HTMLSpanElement || elm instanceof HTMLAnchorElement) {
         var text = elm.innerHTML;
-        const matches = Array.from(text.matchAll(/@[0-9]+/g))
+        const matches = Array.from(text.matchAll(/(?<!\\)@[0-9]+/g))
             // reverse the order
             .sort((a, b) => b.index - a.index)
             // parse IDs
