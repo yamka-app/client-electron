@@ -133,6 +133,7 @@ export class Channel extends Entity {
     voice?:       boolean;
     voiceUsers?:  number[];
     voiceStatus?: ChannelVoiceStatus[];
+    mentions?:    number[];
 
     constructor() {
         super([
@@ -147,6 +148,7 @@ export class Channel extends Entity {
             new fields.BoolField   ("voice",          9),
             new fields.NumListField("voiceUsers", 8,  10),
             new fields.NumListField("voiceStatus", 1, 11),
+            new fields.NumListField("mentions", 8,    12),
         ]);
     }
 }

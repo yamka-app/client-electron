@@ -125,10 +125,10 @@ app.on("window-all-closed", () => { windowCreated = false; });
 const webprotSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
-    version:              6,
+    version:              7,
     supportsComp:         true,
     compressionThreshold: 256,
-    fileChunkSize:        1024*10
+    fileChunkSize:        1024*5
 };
 
 const webprotState: {
@@ -162,8 +162,6 @@ const webprotState: {
 };
 
 function webprotData(bytes: Buffer) {
-    console.log("Received:", bytes);
-
     // Read the compression header and decompress the data
     const compressed = DataTypes.decBool(bytes.slice(0, 1));
     const totalLen   = DataTypes.decNum (bytes.slice(1, 4));
@@ -264,7 +262,6 @@ function webprotSendBytes(bytes: Buffer) {
         return;
     }
 
-    console.log("Sending: ", bytes);
     webprotState.socket.write(bytes);
 }
 

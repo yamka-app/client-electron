@@ -66,6 +66,7 @@ export class Channel extends Entity {
     voice?:       boolean;
     voiceUsers?:  number[];
     voiceStatus?: ChannelVoiceStatus[];
+    mentions?:    number[];
 }
 
 export class Group extends Entity {
