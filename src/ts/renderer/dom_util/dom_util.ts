@@ -485,19 +485,25 @@ export function createGroupPanel(id: number) {
 
     // Fetch the channels to determine how many messages are unread
     util.reqEntities(group.channels.map(x => new packets.EntityGetRequest(entities.Channel.typeNum, x)), false, (e) => {
-        var unreadMsgs = 0, unreadChans: {t: string, u: number, i: number}[] = [];
+        var unreadMsgs = 0, unreadChans: {t: string, u: number, i: number, m:number}[] = [];
+        var mentionCnt = 0;
         for(const c of e) {
             const chan = c as entities.Channel;
             unreadMsgs += chan.unread;
+            mentionCnt += chan.mentions.length;
             if(chan.unread > 0)
                 unreadChans.push({
                     t: chan.name,
                     u: chan.unread,
-                    i: chan.id
+                    i: chan.id,
+                    m: chan.mentions.length
                 });
         }
 
+        const mentions = (mentionCnt === 0) ? "" : `<span class="group-bubble">${mentionCnt}</span>`;
+
         unread.innerHTML = `<img src="icons/message.png" class="cg-img"/> ${util.escapeHtml(unreadMsgs)} NEW` + 
+                           mentions +
                            `<img src="icons/channel.png" class="cg-img"/> ${unreadChans.length}</span>`
 
         // Create the bottom panel
@@ -513,7 +519,8 @@ export function createGroupPanel(id: number) {
             const desc = unreadChans[i];
             const chan = document.createElement("div"); bottom.appendChild(chan);
             chan.classList.add("gp-channel");
-            chan.innerHTML = `<img src="icons/channel.png"/>${util.escapeHtml(desc.t)} • ${util.escapeHtml(desc.u)}`;
+            const bubble = (mentionCnt === 0) ? "" : `<span class="channel-bubble">${desc.m}</span>`;
+            chan.innerHTML = `<img src="icons/channel.png" class="cg-img"/>${util.escapeHtml(desc.t)} • ${util.escapeHtml(desc.u)}${bubble}`;
             chan.onclick = (e) => {
                 window.viewingGroup = id;
                 window.viewingChan = desc.i;

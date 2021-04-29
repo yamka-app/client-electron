@@ -659,14 +659,6 @@ export function sendMessage() {
 export function setMentionList(userIds: number[], field?: HTMLInputElement, tokenIdx?: number) {
     const list = util.elmById("mention-list");
 
-    if(userIds === []) {
-        list.style.maxHeight = "0px";
-        setTimeout(() => { 
-            while(list.firstChild) list.firstChild.remove();
-        }, 100);
-        return;
-    }
-
     util.reqEntities(userIds.map(id => new packets.EntityGetRequest(
       entities.User.typeNum, id)), false, (e: entities.Entity[]) => {
         // kill all children :>

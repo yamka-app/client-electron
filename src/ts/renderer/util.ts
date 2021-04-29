@@ -318,7 +318,7 @@ export function extractMention(txt: string, caret: number, stop: string[]) {
     if(stop.some(x => x.length !== 1)) return undefined;
 
     txt = txt.substring(0, caret);
-    const tokens = txt.split(" ");
+    const tokens = txt.split(/ |\n/g);
     const last = tokens[tokens.length - 1];
 
     if(stop.some(s => last.startsWith(s) && !last.startsWith("\\")))
@@ -329,7 +329,7 @@ export function mentionToken(txt: string, caret: number, stop: string[]) {
     if(stop.some(x => x.length !== 1)) return undefined;
 
     txt = txt.substring(0, caret);
-    const tokens = txt.split(" ");
+    const tokens = txt.split(/ |\n/g);
     return tokens.length - 1;
 }
 

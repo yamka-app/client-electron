@@ -124,3 +124,30 @@
     height:  12px;
     padding: 2px;
 }
+
+.group-bubble {
+    display:         flex;
+    justify-content: center;
+    align-items:     center;
+
+    border-radius: 100px;
+    padding:       0 6px;
+    margin-left:   6px;
+
+    background: var(--danger);
+    color:      var(--danger-foreground);
+}
+
+.channel-bubble {
+    display:         flex;
+    justify-content: center;
+    align-items:     center;
+
+    border-radius: 100px;
+    padding:       0 6px;
+    margin-left:   4px;
+
+    background: var(--danger);
+    color:      var(--danger-foreground);
+    font-size:  calc(var(--font-size) - 1pt);
+}
