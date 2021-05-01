@@ -45,7 +45,8 @@ export class Entity {
             new Message(),
             new Role(),
             new File(),
-            new MessageState()
+            new MessageState(),
+            new Poll()
         ][type];
         var posAfter = entity.decodeFields(buf, undefined, pos + 1) as number;
         return { entity: entity, posAfter: posAfter };

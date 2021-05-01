@@ -236,8 +236,8 @@ export function reqEntities(ents: packets.EntityGetRequest[], force: boolean =fa
 }
 
 // Puts entities
-export function putEntities(ents: entities.Entity[]) {
-    sendPacket(new packets.EntitiesPacket(ents));
+export function putEntities(ents: entities.Entity[], cb?: (r: packets.Packet) => any) {
+    sendPacket(new packets.EntitiesPacket(ents), cb);
 }
 
 // Parses URL hostname

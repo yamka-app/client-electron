@@ -661,6 +661,8 @@ export function resetMsgInput(fullReset: boolean =false) {
 // Sends the message
 export function sendMessage() {
     var sects = window.msgSections;
+    const polls:   entities.Poll[] = [];
+    const pollIdx: number[] = [];
 
     for(var i = 0; i < sects.length; i++) {
         const type = sects[i].type;
@@ -677,33 +679,57 @@ export function sendMessage() {
             types.MessageSectionType.INVITE].includes(type))
                 sects[i].text = (sects[i].typeElm as HTMLTextAreaElement).value;
 
+        if(type === types.MessageSectionType.POLL) {
+            const poll = new entities.Poll();
+            poll.id = 0;
+            poll.options = sects[i].options.map(x => x.input.value);
+            polls.push(poll);
+            pollIdx.push(i);
+        }
+
         if(sects[i].blob === undefined) sects[i].blob = 0;
         if(sects[i].text === undefined) sects[i].text = "";
     }
 
     for(var i = 0; i < sects.length; i++) {
-        sects[i].elm = undefined;
-        sects[i].typeElm = undefined;
+        delete sects[i].elm;
+        delete sects[i].typeElm;
     }
 
     // Reset the typing status and send the message
     setTimeout(() => {
-        const state = new entities.MessageState();
-        const msg = new entities.Message();
-        state.id = 0;
-        state.sections = sects;
-        msg.id = window.editingMessage;
-        msg.latest = state;
-        msg.channel = window.viewingChan;
-        util.putEntities([msg]);
-        util.clearTyping();
+        const next = () => {
+            const state = new entities.MessageState();
+            const msg = new entities.Message();
+            state.id = 0;
+            state.sections = sects;
+            msg.id = window.editingMessage;
+            msg.latest = state;
+            msg.channel = window.viewingChan;
+            util.putEntities([msg]);
+            util.clearTyping();
 
-        util.markRead(window.viewingChan);
-        util.markRead(window.viewingChan, true);
-        util.elmById("message-unread-sep")?.remove();
+            util.markRead(window.viewingChan);
+            util.markRead(window.viewingChan, true);
+            util.elmById("message-unread-sep")?.remove();
 
-        resetMsgInput();
-        window.editingMessage = 0;
+            resetMsgInput();
+            window.editingMessage = 0;
+        };
+
+        if(polls.length === 0) { next(); return; }
+
+        // Upload polls
+        util.putEntities(polls, (response) => {
+            const pollIds = (response as packets.EntitiesPacket).entities.map(x => x.id);
+            pollIds.forEach((v, i) => { 
+                const section = sects[pollIdx[i]];
+                section.blob = v;
+                delete section.options;
+                delete section.options;
+            });
+            next();
+        });
     }, 50);
 }
 
