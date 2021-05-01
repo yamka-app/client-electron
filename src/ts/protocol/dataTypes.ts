@@ -117,6 +117,7 @@ export enum MessageSectionType {
     INVITE = 4,
     USER   = 5,
     BOT_UI = 6,
+    POLL   = 7
 }
 export class MessageSection {
     type: MessageSectionType;

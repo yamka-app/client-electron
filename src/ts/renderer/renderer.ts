@@ -1090,18 +1090,24 @@ function _rendererFunc() {
             });
         }
     }
-    util.elmById("message-code-section-button").addEventListener("click", (e) => {
+    util.elmById("message-code-section-button").onclick = (e) => {
         const id = window.msgSections.length;
         domMsgUtil.createInputSection(types.MessageSectionType.CODE, id, () => {
             domMsgUtil.removeInputSection(id);
         });
-    })
-    util.elmById("message-quote-section-button").addEventListener("click", (e) => {
+    };
+    util.elmById("message-quote-section-button").onclick = (e) => {
         const id = window.msgSections.length;
         domMsgUtil.createInputSection(types.MessageSectionType.QUOTE, id, () => {
             domMsgUtil.removeInputSection(id);
         });
-    })
+    };
+    util.elmById("message-poll-section-button").onclick = (e) => {
+        const id = window.msgSections.length;
+        domMsgUtil.createInputSection(types.MessageSectionType.POLL, id, () => {
+            domMsgUtil.removeInputSection(id);
+        });
+    };
 
     // Message send button
     util.elmById("message-send-button").onclick = (e) => {

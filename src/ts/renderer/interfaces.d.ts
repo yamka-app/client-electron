@@ -1,12 +1,18 @@
 import { MessageSectionType } from "../protocol.s/dataTypes.s.js";
 
 declare global {
+    interface EditorPollOption {
+        id?:    number;
+        input?: HTMLInputElement
+    }
+
     interface EditorMessageSection {
-        type:    MessageSectionType;
-        blob?:   number;
-        typeElm: HTMLElement;
-        text?:   string;
-        elm:     HTMLElement;
+        type:     MessageSectionType;
+        blob?:    number;
+        typeElm:  HTMLElement;
+        text?:    string;
+        elm:      HTMLElement;
+        options?: EditorPollOption[];
     }
 
     var entityCache: any;

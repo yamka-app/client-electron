@@ -837,7 +837,7 @@ textarea.code-input {
 }
 #mention-list:not(:empty)::before {
     font-size: calc(var(--font-size) - 1pt);
-    color:     var(--foreground-2);
+    color:     var(--foreground-1);
     content:   "USERS";
 }
 #mention-list > div {

@@ -458,6 +458,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
     removeBtn.appendChild(removeImg);
 
     var typeElm;
+    const editorSection: EditorMessageSection = { type: type, typeElm: null, elm: null };
 
     switch(type) {
         case types.MessageSectionType.TEXT:
@@ -539,6 +540,48 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             typeElm.value = filename;
             typeElm.disabled = true;
             break;
+
+        case types.MessageSectionType.POLL:
+            typeElm = document.createElement("div");
+            typeElm.classList.add("input-poll", "fill-width");
+            
+            editorSection.options = [];
+            const optionContainer = document.createElement("div");
+            const addOption = () => {
+                const optObj: EditorPollOption = {};
+                optObj.id = editorSection.options.reduce((acc, cur) => Math.max(acc, cur.id), 0) + 1;
+                editorSection.options.push(optObj);
+
+                const opt = document.createElement("div");
+                optionContainer.appendChild(opt);
+
+                const rem = document.createElement("button");
+                opt.appendChild(rem);
+                rem.classList.add("icon-button", "cg-button");
+                rem.innerHTML = `<img src="icons/remove_section.png"/>`;
+                rem.onclick = (e) => {
+                    util.stopPropagation(e);
+                    opt.remove();
+                    editorSection.options = editorSection.options.filter((v, i) => v.id !== id);
+                }
+
+                const inp = document.createElement("input");
+                opt.appendChild(inp);
+                optObj.input = inp;
+            };
+
+            const addOptionButton = document.createElement("button");
+            addOptionButton.classList.add("icon-button", "cg-button");
+            addOptionButton.onclick = (e) => {
+                util.stopPropagation(e);
+                addOption();
+            };
+            addOptionButton.innerHTML = `<img src="icons/add_poll_option.png"/>`;
+
+            typeElm.appendChild(optionContainer);
+            typeElm.appendChild(addOptionButton);
+            addOption();
+            break;
     }
     section.appendChild(typeElm);
 
@@ -557,7 +600,10 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
         }
     }
 
-    window.msgSections.push({ type: type, typeElm: typeElm, elm: section });
+    editorSection.typeElm = typeElm;
+    editorSection.elm = section;
+
+    window.msgSections.push(editorSection);
 }
 
 // Removes an input message section
