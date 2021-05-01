@@ -266,3 +266,24 @@ export class MessageState extends Entity {
         ]);
     }
 }
+
+export class Poll extends Entity {
+    __type_name = "Poll";
+    typeNum = 8;
+
+    id:          number;
+    options:     string[];
+    optionVotes: number[];
+    selfVote:    number;
+    totalVoted:  number;
+
+    constructor() {
+        super([
+            new fields.NumField    ("id", 8,          0),
+            new fields.StrListField("options",        1),
+            new fields.NumListField("optionVotes", 3, 2),
+            new fields.NumField    ("selfVote", 1,    3),
+            new fields.NumField    ("totalVoted", 3,  4)
+        ]);
+    }
+}

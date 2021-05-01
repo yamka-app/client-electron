@@ -108,13 +108,13 @@ export class File extends Entity {
     __type_name = "File";
     static typeNum = 6;
 
-    path?: string; // only used in main-to-renderer communication
-
     name?:    string;
     size?:    string;
     preview?: string;
     length?:  number;
 
+    // only used in main-to-renderer communication
+    path?:    string;
     __scale?: boolean;
 }
 
@@ -125,4 +125,15 @@ export class MessageState extends Entity {
     id:       number;
     msg_id:   number;
     sections: MessageSection[];
+}
+
+export class Poll extends Entity {
+    __type_name = "Poll";
+    typeNum = 8;
+
+    id:          number;
+    options:     string[];
+    optionVotes: number[];
+    selfVote:    number;
+    totalVoted:  number;
 }

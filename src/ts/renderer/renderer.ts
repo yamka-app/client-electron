@@ -679,7 +679,8 @@ function _rendererFunc() {
                             "Message":      new entities.Message(),
                             "Role":         new entities.Role(),
                             "File":         new entities.File(),
-                            "MessageState": new entities.MessageState()
+                            "MessageState": new entities.MessageState(),
+                            "Poll":         new entities.Poll()
                         }[e["__type_name"]];
                         const ent = Object.assign(e_proto, e);
                         // Handle nested entities

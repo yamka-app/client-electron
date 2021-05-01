@@ -298,7 +298,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
                     "Group":        new entities.Group(),
                     "Message":      new entities.Message(),
                     "File":         new entities.File(),
-                    "MessageState": new entities.MessageState()
+                    "MessageState": new entities.MessageState(),
+                    "Poll":         new entities.Poll()
                 }[e["__type_name"]];
                 const ent = Object.assign(e_proto, e);
                 // Handle nested entities
