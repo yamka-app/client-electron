@@ -116,6 +116,9 @@ export enum AccessTokenPermission {
     MANAGE_ROLES           = 21,
     DELETE_OTHERS_MESSAGES = 22,
 
+    CREATE_POLLS  = 23,
+    VOTE_IN_POLLS = 24,
+
     BOT = 26
 }
 export class LoginPacket extends SimpleFieldPacket {
@@ -181,7 +184,8 @@ export enum StatusCode {
     START_UPLOADING               = 22,
     STREAM_END                    = 23,
     ONE_UPLOAD_ONLY               = 24,
-    INVALID_CONFIRMATION_CODE     = 25
+    INVALID_CONFIRMATION_CODE     = 25,
+    POLL_ERROR                    = 26
 }
 export class StatusPacket extends SimpleFieldPacket {
     typeNum = 4;

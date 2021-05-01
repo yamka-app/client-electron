@@ -755,7 +755,7 @@ function _rendererFunc() {
         const email    = (util.elmById("login-email")    as HTMLInputElement).value;
         const password = (util.elmById("login-password") as HTMLInputElement).value;
         // hack: all permissions except the bot one. I'm too lazy to list all of them here :)
-        const permissions = []; for(var i = 0; i <= 22; i++) permissions.push(i);
+        const permissions = []; for(var i = 0; i <= 24; i++) permissions.push(i);
         sendPacket(new packets.LoginPacket(email, password, permissions));
     };
 
