@@ -482,7 +482,19 @@ function editMessage(id: number) {
             types.MessageSectionType.QUOTE,
             types.MessageSectionType.INVITE].includes(type))
                 (section.typeElm as HTMLInputElement).value = section.text;
+
+        if(type === types.MessageSectionType.POLL) {
+            util.reqEntities([new packets.EntityGetRequest(entities.Poll.typeNum, section.blob)], false, (e) => {
+                const poll = e[0] as entities.Poll;
+                poll.options.forEach((opt) => section.addOption(opt));
+            });
+        }
     }
+
+    // Display a warning if there are polls
+    if(msg.latest.sections.some(x => x.type === types.MessageSectionType.POLL))
+        domUtil.showBox("WARNING", "You are about to edit a message that contains at least one poll."
+            + " Polls can not be redacted after the fact");
 
     util.elmById("message-editing").innerHTML = util.escapeHtml("Editing message");
 }
@@ -592,7 +604,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             
             editorSection.options = [];
             const optionContainer = document.createElement("div");
-            const addOption = () => {
+            const addOption = (text?: string) => {
                 const optObj: EditorPollOption = {};
                 optObj.id = editorSection.options.reduce((acc, cur) => Math.max(acc, cur.id), 0) + 1;
                 editorSection.options.push(optObj);
@@ -611,9 +623,11 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
                 }
 
                 const inp = document.createElement("input");
+                inp.value = text ?? "";
                 opt.appendChild(inp);
                 optObj.input = inp;
             };
+            editorSection.addOption = addOption;
 
             const addOptionButton = document.createElement("button");
             addOptionButton.classList.add("icon-button", "cg-button");
@@ -625,7 +639,6 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
 
             typeElm.appendChild(optionContainer);
             typeElm.appendChild(addOptionButton);
-            addOption();
             break;
     }
     section.appendChild(typeElm);
@@ -724,7 +737,7 @@ export function sendMessage() {
             types.MessageSectionType.INVITE].includes(type))
                 sects[i].text = (sects[i].typeElm as HTMLTextAreaElement).value;
 
-        if(type === types.MessageSectionType.POLL) {
+        if(type === types.MessageSectionType.POLL && sects[i].blob === undefined) {
             const poll = new entities.Poll();
             poll.id = 0;
             poll.options = sects[i].options.map(x => x.input.value);
@@ -739,6 +752,8 @@ export function sendMessage() {
     for(var i = 0; i < sects.length; i++) {
         delete sects[i].elm;
         delete sects[i].typeElm;
+        delete sects[i].addOption;
+        delete sects[i].options;
     }
 
     // Reset the typing status and send the message

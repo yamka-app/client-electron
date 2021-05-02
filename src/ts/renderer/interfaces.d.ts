@@ -7,12 +7,13 @@ declare global {
     }
 
     interface EditorMessageSection {
-        type:     MessageSectionType;
-        blob?:    number;
-        typeElm:  HTMLElement;
-        text?:    string;
-        elm:      HTMLElement;
-        options?: EditorPollOption[];
+        type:       MessageSectionType;
+        blob?:      number;
+        typeElm:    HTMLElement;
+        text?:      string;
+        elm:        HTMLElement;
+        options?:   EditorPollOption[];
+        addOption?: (t?: string) => void;
     }
 
     var entityCache: any;
