@@ -456,6 +456,9 @@ function _rendererFunc() {
                 case packets.StatusCode.FRIEND_REQUEST_SENT:
                     domUtil.showBox("FRIEND REQUEST SENT", packet.message);
                     break;
+                case packets.StatusCode.POLL_ERROR:
+                    domUtil.showBox("POLL ERROR", packet.message);
+                    break;
             }
         } else if(packet instanceof packets.ClientIdentityPacket) { // Logged in successfully
             // Save our ID
