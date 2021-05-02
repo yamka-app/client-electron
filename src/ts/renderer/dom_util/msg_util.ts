@@ -337,7 +337,8 @@ function createPoll(id: number) {
     util.reqEntities([new packets.EntityGetRequest(entities.Poll.typeNum, id)], false, (e) => {
         const poll = e[0] as entities.Poll;
         poll.options.forEach((v, i) => {
-            const percent = Math.floor(100 * poll.optionVotes[i] / poll.totalVoted);
+            var percent = Math.floor(100 * poll.optionVotes[i] / poll.totalVoted);
+            if(isNaN(percent)) percent = 0;
             const optionElm = document.createElement("div");
             elm.appendChild(optionElm);
 
