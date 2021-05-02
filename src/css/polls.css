@@ -75,7 +75,20 @@
     background: var(--bg-3);
 }
 
-.message-poll-section > div > span,
+.message-poll-section > div > div.progress {
+    position: absolute;
+    top:      0;
+    bottom:   0;
+    left:     0;
+
+    border-radius: 5px;
+    background:    var(--accent-grad-trans);
+}
+.message-poll-section > div > div:not(.progress) {
+    z-index: 2;
+}
+
+.message-poll-section > div span,
 .message-poll-section > span {
     font-size: var(--font-size);
     color:     var(--foreground-1);

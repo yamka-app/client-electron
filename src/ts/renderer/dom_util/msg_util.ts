@@ -340,7 +340,8 @@ function createPoll(id: number) {
             const percent = Math.floor(100 * poll.optionVotes[i] / poll.totalVoted);
             const optionElm = document.createElement("div");
             elm.appendChild(optionElm);
-            optionElm.innerHTML = `${util.escapeHtml(v)} <span>· ${poll.optionVotes[i]} (${percent}%)</span>`;
+
+            optionElm.innerHTML = `<div>${util.escapeHtml(v)} <span>· ${poll.optionVotes[i]} (${percent}%)</span></div>`;
             optionElm.onclick = (evt) => {
                 util.stopPropagation(evt);
                 const vote = new entities.Poll();
@@ -348,6 +349,11 @@ function createPoll(id: number) {
                 vote.selfVote = i;
                 util.putEntities([vote]);
             };
+
+            const progress = document.createElement("div");
+            progress.classList.add("progress");
+            progress.style.width = `${percent}%`;
+            optionElm.appendChild(progress);
         });
 
         const total = document.createElement("span");
