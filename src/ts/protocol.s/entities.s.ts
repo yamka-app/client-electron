@@ -129,7 +129,7 @@ export class MessageState extends Entity {
 
 export class Poll extends Entity {
     __type_name = "Poll";
-    typeNum = 8;
+    static typeNum = 8;
 
     id:          number;
     options:     string[];

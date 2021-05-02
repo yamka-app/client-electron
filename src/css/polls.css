@@ -33,3 +33,53 @@
     margin-left: 5px;
     font-family: Roboto;
 }
+
+
+
+.message-poll-section {
+    width: 350px;
+    padding:       10px;
+    background:    var(--background);
+    border-radius: 10px;
+    box-shadow:    var(--shadow);
+
+    display:         flex;
+    flex-direction:  column;
+    justify-content: center;
+    align-items:     flex-start;
+}
+
+.message-poll-section::before {
+    font-size:     calc(var(--font-size) - 1pt);
+    color:         var(--foreground-1);
+    content:       "POLL";
+    margin-bottom: 5px;
+}
+
+.message-poll-section > div {
+    padding:  5px;
+    margin:   3px 0;
+    height:   fit-content;
+    width:    -webkit-fill-available;
+    position: relative;
+
+    font-size:     var(--font-size);
+    border-radius: 5px;
+    background:    var(--bg-2);
+
+    transition: background 0.1s ease;
+
+    cursor: pointer;
+}
+.message-poll-section > div:hover {
+    background: var(--bg-3);
+}
+
+.message-poll-section > div > span,
+.message-poll-section > span {
+    font-size: var(--font-size);
+    color:     var(--foreground-1);
+}
+.message-poll-section > span {
+    margin-top: 5px;
+}

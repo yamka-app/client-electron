@@ -68,10 +68,10 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
 
     for(const section of state.sections) {
         const creationFunctions: ((s: types.MessageSection) => HTMLElement|undefined)[] = [
-            createTextSection, createFileSection,
-            createCodeSection, createQuoteSection,
+            createTextSection,   createFileSection,
+            createCodeSection,   createQuoteSection,
             createInviteSection, createUserSection,
-            createBotUiSection
+            createBotUiSection,  createPollSection
         ];
 
         const sectionElement = creationFunctions[section.type](section);
@@ -324,6 +324,44 @@ function createUserSection(section: types.MessageSection) {
 
 function createBotUiSection(section: types.MessageSection) {
     return undefined; // stub
+}
+
+function createPollSection(section: types.MessageSection) {
+    return createPoll(section.blob);
+}
+
+function createPoll(id: number) {
+    const elm = document.createElement("div");
+    elm.classList.add("message-poll-section", `poll-${id}`);
+
+    util.reqEntities([new packets.EntityGetRequest(entities.Poll.typeNum, id)], false, (e) => {
+        const poll = e[0] as entities.Poll;
+        poll.options.forEach((v, i) => {
+            const percent = Math.floor(100 * poll.optionVotes[i] / poll.totalVoted);
+            const optionElm = document.createElement("div");
+            elm.appendChild(optionElm);
+            optionElm.innerHTML = `${util.escapeHtml(v)} <span>· ${poll.optionVotes[i]} (${percent}%)</span>`;
+            optionElm.onclick = (evt) => {
+                util.stopPropagation(evt);
+                const vote = new entities.Poll();
+                vote.id = id;
+                vote.selfVote = i;
+                util.putEntities([vote]);
+            };
+        });
+
+        const total = document.createElement("span");
+        total.innerHTML = `${util.escapeHtml(poll.totalVoted)} total votes`;
+        elm.appendChild(total);
+    });
+
+    return elm;
+}
+
+export function updatePolls(id: number) {
+    const polls = document.getElementsByClassName(`poll-${id}`);
+    for(const poll of polls)
+        poll.parentNode.replaceChild(createPoll(id), poll);
 }
 
 function parseLinks(elm: HTMLElement, whereToInsert: HTMLElement) {

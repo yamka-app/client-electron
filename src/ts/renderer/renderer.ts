@@ -607,6 +607,10 @@ function _rendererFunc() {
                 // Update info about other users
                 if(entity instanceof entities.User)
                     domUtil.updateUser(entity.id);
+
+                // Update polls
+                if(entity instanceof entities.Poll && packet.spontaneous)
+                    domMsgUtil.updatePolls(entity.id);
             }
         } else if(packet instanceof packets.MFASecretPacket) {
             // Construct the string to put into the QR code
