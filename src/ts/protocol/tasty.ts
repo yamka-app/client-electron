@@ -76,12 +76,12 @@ export default class TastyClient {
 
     private encrypt(data: Buffer) {
         // we create a new cipher each time because some packets may be lost because of UDP
-        const cipher = crypto.createCipheriv("aes-128-cfb", this.key, this.iv);
+        const cipher = crypto.createCipheriv("aes-128-ctr", this.key, this.iv);
         return cipher.update(data);
     }
 
     private decrypt(data: Buffer) {
-        const decipher = crypto.createDecipheriv("aes-128-cfb", this.key, this.iv);
+        const decipher = crypto.createDecipheriv("aes-128-ctr", this.key, this.iv);
         return decipher.update(data);
     }
 

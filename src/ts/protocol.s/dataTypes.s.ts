@@ -22,3 +22,16 @@ export class MessageSection {
         this.text = s;
     }
 }
+
+export enum PermissionStatus {
+    UNSET = 0,
+    YES   = 1,
+    NO    = 2
+}
+export class Permissions {
+    static len = 8;
+
+    binary: Buffer;
+
+    constructor(b: Buffer) { this.binary = b; }
+}

@@ -682,16 +682,18 @@ img.verified-badge:not(.true) {
     align-items:     center;
     justify-content: center;
 }
-.radio-switch-section {
+.radio-switch > span {
     margin: 5px;
 }
-input[type="radio"].hidden-radio {
+.radio-switch input[type="radio"] {
     display: none;
 }
-input[type="radio"].hidden-radio:checked + label {
+.radio-switch input[type="radio"]:checked + label {
     color: var(--foreground);
     transition: color 0.25s;
 }
+
+
 input[type="color"],
 input[type="range"] {
     padding:       0;
@@ -699,8 +701,10 @@ input[type="range"] {
     border-radius: 10px;
 }
 input[type="color"] {
-    padding: 0;
-    width:   35px;
+    padding:    0;
+    width:      50px;
+    box-shadow: none;
+    background: transparent;
 }
 .status-sel:hover {
     color: var(--foreground-2);

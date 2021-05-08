@@ -551,8 +551,6 @@ export function createGroupPanel(id: number) {
 
     return panel;
 }
-
-
     
 // Creates an "unread separator"
 export function createUnreadSep() {
@@ -566,4 +564,12 @@ export function createUnreadSep() {
     bubble.appendChild(bubbleCnt);
 
     return sep;
+}
+
+// Creates a permission switch
+export function createPermissionSwitch(onChanged: (status: types.PermissionStatus) => any) {
+    const name = Math.random().toString(32).substr(2, 8);
+    const elm = document.createElement("span");
+    elm.id = `perm-switch-${name}`;
+    elm.classList.add("radio-switch");
 }

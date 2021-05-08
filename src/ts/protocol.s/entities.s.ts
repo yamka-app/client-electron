@@ -1,4 +1,4 @@
-import { MessageSection } from "./dataTypes.s.js";
+import { MessageSection, Permissions } from "./dataTypes.s.js";
 
 // This is a stipped down (.s) version that just contains definitions the renderer process uses.
 // The main one uses regular files
@@ -31,6 +31,7 @@ export class User extends Entity {
     tag?:            number;
     status?:         UserStatus;
     statusText?:     string;
+    perms?:          Permissions;
     avaFile?:        number;
     mfaEnabled?:     boolean;
     friends?:        number[];
@@ -100,7 +101,7 @@ export class Role extends Entity {
     color?:    string;
     group?:    number;
     priority?: number;
-    perms?:    Buffer;
+    perms?:    Permissions;
     members?:  number[];
 }
 

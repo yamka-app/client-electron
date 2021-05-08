@@ -73,6 +73,7 @@ export class User extends Entity {
     tag?:            number;
     status?:         UserStatus;
     statusText?:     string;
+    perms?:          Permissions;
     avaFile?:        number;
     mfaEnabled?:     boolean;
     friends?:        number[];

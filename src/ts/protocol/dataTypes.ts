@@ -102,7 +102,7 @@ export default class DataTypes {
 }
 
 export class Permissions {
-    static len = 6;
+    static len = 8;
 
     binary: Buffer;
 
