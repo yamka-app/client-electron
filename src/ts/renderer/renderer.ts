@@ -449,7 +449,7 @@ function _rendererFunc() {
                     notif.show(packet.message, "icons/ban.png", "red");
                     break;
                 case packets.StatusCode.INVALID_INVITE:
-                    domUtil.showBox("INVALID INVITE", packet.message);
+                    notif.show(packet.message, "icons/ban.png", "red");
                     break;
                 case packets.StatusCode.INTERNAL_ERROR:
                     domUtil.showBox("INTERNAL ERROR", packet.message);
@@ -561,6 +561,26 @@ function _rendererFunc() {
                         && [window.viewingChan, window.voiceChan].includes(entity.id))
                     updateVoiceMembers(entity.id);
 
+                if(packet.spontaneous && entity instanceof entities.Message
+                        && entity.channel !== window.viewingChan
+                        && shouldReceiveNotif()) {
+                    const reqArr = [new packets.EntityGetRequest(entities.User.typeNum, entity.sender)];
+                    if(entity.channel !== 0)
+                        reqArr.push(new packets.EntityGetRequest(entities.Channel.typeNum, entity.channel));
+                    util.reqEntities(reqArr, false, () => {
+                        const msg = entity as entities.Message;
+                        const chan = entityCache[msg.channel] as entities.Channel;
+                        const user = entityCache[msg.sender] as entities.User;
+                        const text = chan === undefined ?
+                              `${user.name}: ${util.messageSummary(msg)}`
+                            : `${user.name} in ${chan.name}: ${util.messageSummary(msg)}`;
+                        util.download(user.avaFile, (ava) => {
+                            new Notification(text, {icon: ava});
+                            notif.show(text, ava, "background");
+                        });
+                    });
+                }
+
                 // Update info about self
                 if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
                     remote.getGlobal("webprotState").self = entity;
@@ -593,11 +613,10 @@ function _rendererFunc() {
                             for(const fid of newFriends) {
                                 const f = window.entityCache[fid];
                                 // Download avatars of each one
+                                const text = f.name + " wants to add you as a friend";
                                 util.download(f.avaFile, (ava) => {
-                                    const notification = new Notification(
-                                        f.name + " wants to add you as a friend", {
-                                        icon: ava
-                                    });
+                                    new Notification(text, {icon: ava});
+                                    notif.show(text, ava, "green");
                                 });
                             }
                         });
