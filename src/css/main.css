@@ -208,16 +208,14 @@ button {
 
     cursor: pointer;
 }
-button:active {
+button:not(.apply-button):not(.danger-button):not(.icon-button):active {
     box-shadow: var(--shadow);
     background: var(--background);
 }
 
 .accent-button {
-    border-bottom: var(--border);
-    background:    var(--accent-grad);
-    color:         var(--accent-foreground);
-    box-shadow:    var(--shadow);
+    background: var(--accent-grad);
+    color:      var(--accent-foreground);
 }
 .accent-button:active {
     box-shadow: var(--shadow);
@@ -225,29 +223,33 @@ button:active {
 }
 
 .danger-button {
-    border-bottom:    3px solid var(--danger-dim-2);
-    background: var(--danger);
-    color:            var(--danger-foreground);
-    box-shadow: var(--shadow);
+    background: var(--red);
+    color:      var(--danger-foreground);
+    position:   relative;
 }
-.danger-button:hover {
-    background: var(--danger-dim-1);
-}
-.danger-button:active {
-    background: var(--danger-dim-2);
-}
-
 .apply-button {
-    border-bottom:    3px solid var(--apply-dim-2);
-    background: var(--apply);
-    color:            var(--apply-foreground);
-    box-shadow: var(--shadow);
+    background: var(--green);
+    color:      var(--apply-foreground);
+    position:   relative;
 }
-.apply-button:hover {
-    background: var(--apply-dim-1);
+.danger-button::before, .apply-button::before {
+    content:  "";
+    position: absolute;
+    top:      0;
+    left:     0;
+    width:    100%;
+    height:   100%;
+
+    border-radius: 5px;
+    background:    #000000;
+    opacity:       0;
+    transition:    opacity 0.1s;
 }
-.apply-button:active {
-    background: var(--apply-dim-2);
+.danger-button:hover::before, .apply-button:hover::before {
+    opacity: 0.1;
+}
+.danger-button:active::before, .apply-button:active::before {
+    opacity: 0.2;
 }
 
 .rules-accept-button {
@@ -330,7 +332,7 @@ progress::-webkit-progress-value {
     border-radius: 5px;
 }
 progress#mic-vol-val::-webkit-progress-value {
-    transition: width 0.025s ease;
+    transition: width 0.05s ease;
 }
 progress.password-strong::-webkit-progress-value {
     background:         var(--green);

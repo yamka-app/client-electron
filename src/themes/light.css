@@ -2,14 +2,6 @@
     --theme-name:   Light;
     --theme-author: Yamka;
 
-    --danger:       #e41e1e;
-    --danger-dim-1: #b61818;
-    --danger-dim-2: #8a1010;
-
-    --apply:       #2ac02a;
-    --apply-dim-1: #1d861d;
-    --apply-dim-2: #146414;
-
     --red:          linear-gradient(90deg, #f31c00, #eb5600);
     --red-trans:    #f31c0090;
     --yellow:       linear-gradient(90deg, #e2df0e, #d9e718);
