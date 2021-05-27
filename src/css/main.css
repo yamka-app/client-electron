@@ -330,7 +330,7 @@ progress::-webkit-progress-value {
     border-radius: 5px;
 }
 progress#mic-vol-val::-webkit-progress-value {
-    transition: width 0.05s ease;
+    transition: width 0.025s ease;
 }
 progress.password-strong::-webkit-progress-value {
     background:         var(--green);

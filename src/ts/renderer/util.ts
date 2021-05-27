@@ -90,12 +90,14 @@ export function triggerAppear(element: HTMLElement, affectParent: boolean =false
     element.classList.remove("disappearing");
     element.classList.add   ("appearing");
 }
-export function triggerDisappear(element: HTMLElement, affectParent: boolean =false) {
+export function triggerDisappear(element: HTMLElement, affectParent: boolean =false, destroy: boolean =false) {
     if(affectParent) // 200 ms is the animation duration
         setTimeout(() => hideElm(element.parentElement), 200);
 
     element.classList.remove("appearing");
     element.classList.add   ("disappearing");
+
+    setTimeout(() => element.remove(), 200);
 }
 
 // "document.getElementById" shorthand

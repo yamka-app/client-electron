@@ -10,9 +10,12 @@
     --apply-dim-1: #1d861d;
     --apply-dim-2: #146414;
 
-    --red:    #e41e1e;
-    --yellow: #c7c72c;
-    --green:  #2ac02a;
+    --red:          linear-gradient(90deg, #f31c00, #eb5600);
+    --red-trans:    #f31c0090;
+    --yellow:       linear-gradient(90deg, #e2df0e, #d9e718);
+    --yellow-trans: #e2df0e90;
+    --green:        linear-gradient(90deg, #2ac02a, #2ac087);
+    --green-trans:  #2ac02a90;
     --rainbow-grad: linear-gradient(90deg, #fa1b1b, #fab31b);
     
     --background:       #131519;

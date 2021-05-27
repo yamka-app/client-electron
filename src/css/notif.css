@@ -1,0 +1,39 @@
+#notification-list {
+    position: absolute;
+    top:      0;
+    bottom:   0;
+    left:     0;
+    padding:  10px;
+    z-index:  1000;
+
+    width:          25vw;
+    pointer-events: none;
+
+    display:         flex;
+    flex-direction:  column-reverse;
+    align-items:     center;
+    justify-content: start;
+}
+
+#notification-list > div {
+    border-radius: 10px;
+    margin:        5px 0 0 0;
+    padding:       10px;
+    width:         -webkit-fill-available;
+    box-shadow:    var(--shadow);
+
+    display:         flex;
+    flex-direction:  row;
+    align-items:     flex-start;
+}
+
+#notification-list > div > span {
+    font-size: var(--font-size);
+}
+
+#notification-list > div > img {
+    width:         16px;
+    height:        16px;
+    border-radius: 3px;
+    padding-right: 5px;
+}

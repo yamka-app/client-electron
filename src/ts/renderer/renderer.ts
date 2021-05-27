@@ -18,6 +18,7 @@ import * as util       from "./util.js";
 import * as domUtil    from "./dom_util/dom_util.js";
 import * as domMsgUtil from "./dom_util/msg_util.js";
 import * as layout     from "./dom_util/layout.js";
+import * as notif      from "./dom_util/notif.js";
 import { configGet, configSet } from "./settings.js";
 
 import { reset, ipcSend, sendPacket, self } from "./yGlobal.js";
@@ -445,7 +446,7 @@ function _rendererFunc() {
                     domUtil.showBox("RATE LIMITING", packet.message);
                     break;
                 case packets.StatusCode.INVALID_USERNAME:
-                    domUtil.showBox("INVALID USERNAME", packet.message);
+                    notif.show(packet.message, "icons/ban.png", "red");
                     break;
                 case packets.StatusCode.INVALID_INVITE:
                     domUtil.showBox("INVALID INVITE", packet.message);
@@ -454,10 +455,10 @@ function _rendererFunc() {
                     domUtil.showBox("INTERNAL ERROR", packet.message);
                     break;
                 case packets.StatusCode.FRIEND_REQUEST_SENT:
-                    domUtil.showBox("FRIEND REQUEST SENT", packet.message);
+                    notif.show(packet.message, "icons/approve.png", "green");
                     break;
                 case packets.StatusCode.POLL_ERROR:
-                    domUtil.showBox("POLL ERROR", packet.message);
+                    notif.show(packet.message, "icons/ban.png", "red");
                     break;
             }
         } else if(packet instanceof packets.ClientIdentityPacket) { // Logged in successfully

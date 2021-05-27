@@ -2,9 +2,8 @@
 // for the specific elements of the app's layout
 
 const _modules = window["_modules"];
-const path           = _modules.path;
-const remote         = _modules.remote;
-const fs             = _modules.fs;
+const path   = _modules.path;
+const remote = _modules.remote;
 
 const { clipboard }      = _modules.electron;
 
@@ -16,7 +15,6 @@ import * as layout   from "./layout.js";
 import * as msgUtil  from "./msg_util.js";
 import * as yGlobal  from "../yGlobal.js";
 import * as context  from "../context.js";
-import { configGet } from "../settings.js";
 
 // Show a floating message box
 export function showBox(header: string, text: string, showUpdate: boolean =false, updCb?:Function) {
