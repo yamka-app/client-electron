@@ -4,11 +4,13 @@
     justify-content: flex-start;
     align-items:     flex-start;
     align-content:   flex-start;
+    
+    padding: 10px;
 }
 
 .group-panel,
 .group-action-panel {
-    margin:  20px;
+    margin:  10px;
 
     background:    var(--background);
     border-radius: 10px;

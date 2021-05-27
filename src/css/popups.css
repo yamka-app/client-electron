@@ -509,3 +509,10 @@ input[type="radio"].settings-radio:checked + label {
     overflow:      hidden;
     text-overflow: ellipsis;
 }
+
+
+
+#mic-gain, #mic-thres {
+    margin-left:  0;
+    margin-right: 0;
+}

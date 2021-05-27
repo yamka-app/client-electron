@@ -2,11 +2,11 @@
     --theme-name:   Light;
     --theme-author: Yamka;
 
-    --red:          linear-gradient(90deg, #f31c00, #eb5600);
+    --red:          linear-gradient(90deg, #f31c00, #eb3700);
     --red-trans:    #f31c0090;
-    --yellow:       linear-gradient(90deg, #e2df0e, #d9e718);
+    --yellow:       linear-gradient(90deg, #e2df0e, #bae718);
     --yellow-trans: #e2df0e90;
-    --green:        linear-gradient(90deg, #2ac02a, #2ac087);
+    --green:        linear-gradient(90deg, #2ac02a, #2ac075);
     --green-trans:  #2ac02a90;
     --rainbow-grad: linear-gradient(90deg, #fa1b1b, #fab31b);
     
