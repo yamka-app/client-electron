@@ -26,13 +26,6 @@ cd client-electron
 npm instead
 ```
 
-Use this to produce a [`hrt`](https://github.com/portasynthinca3/hrt) artifact
-```sh
-git clone https://github.com/yamka-app/client-electron.git
-cd client-electron
-npm run dist-hrt
-```
-
 Use this to produce `AppImage` and `exe` artifacts:
 ```sh
 git clone https://github.com/yamka-app/client-electron.git
