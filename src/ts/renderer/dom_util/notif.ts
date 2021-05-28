@@ -1,10 +1,15 @@
 import { elmById, escapeHtml, triggerAppear, triggerDisappear } from "../util.js";
 const tinycolor = window["_modules"].tinycolor
 
+function foreground(color: string) {
+    if(["background", "bg-2", "bg-3"].includes(color))
+        return "foreground";
+    return `${color}-foreground`;
+}
+
 export function show(text: string, img?: string, color?: string, click?: () => any) {
     if(color == undefined) color = "background";
-    const colorVal = getComputedStyle(document.documentElement).getPropertyValue("--" + color);
-    const textColor = tinycolor(colorVal).isLight() ? "#000000" : "#ffffff";
+    const textColor = `var(--${foreground(color)}`;
 
     const notif = document.createElement("div");
     text = `<span style="color: ${textColor}">${escapeHtml(text)}</span>`;

@@ -97,7 +97,8 @@ export function triggerDisappear(element: HTMLElement, affectParent: boolean =fa
     element.classList.remove("appearing");
     element.classList.add   ("disappearing");
 
-    setTimeout(() => element.remove(), 200);
+    if(destroy)
+        setTimeout(() => element.remove(), 200);
 }
 
 // "document.getElementById" shorthand

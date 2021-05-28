@@ -443,22 +443,14 @@ function _rendererFunc() {
                     break;
 
                 case packets.StatusCode.RATE_LIMITING:
-                    domUtil.showBox("RATE LIMITING", packet.message);
-                    break;
                 case packets.StatusCode.INVALID_USERNAME:
-                    notif.show(packet.message, "icons/ban.png", "red");
-                    break;
                 case packets.StatusCode.INVALID_INVITE:
-                    notif.show(packet.message, "icons/ban.png", "red");
-                    break;
                 case packets.StatusCode.INTERNAL_ERROR:
-                    domUtil.showBox("INTERNAL ERROR", packet.message);
+                case packets.StatusCode.POLL_ERROR:
+                    notif.show(packet.message, "icons/ban.png", "red");
                     break;
                 case packets.StatusCode.FRIEND_REQUEST_SENT:
                     notif.show(packet.message, "icons/approve.png", "green");
-                    break;
-                case packets.StatusCode.POLL_ERROR:
-                    notif.show(packet.message, "icons/ban.png", "red");
                     break;
             }
         } else if(packet instanceof packets.ClientIdentityPacket) { // Logged in successfully

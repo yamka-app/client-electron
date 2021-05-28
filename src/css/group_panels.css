@@ -137,7 +137,7 @@
     margin-left:   6px;
 
     background: var(--danger);
-    color:      var(--danger-foreground);
+    color:      var(--red-foreground);
 }
 
 .channel-bubble {
@@ -150,6 +150,6 @@
     margin-left:   4px;
 
     background: var(--danger);
-    color:      var(--danger-foreground);
+    color:      var(--red-foreground);
     font-size:  calc(var(--font-size) - 1pt);
 }

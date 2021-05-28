@@ -20,6 +20,7 @@ import * as yGlobal  from "../yGlobal.js";
 import { configGet } from "../settings.js";
 import * as domUtil  from "./dom_util.js";
 import * as layout   from "./layout.js";
+import * as notif    from "./notif.js"
 
 // Creates a message box seen in the message area
 export function createMessage(state: entities.MessageState, short: boolean =false): HTMLElement {
@@ -493,8 +494,8 @@ function editMessage(id: number) {
 
     // Display a warning if there are polls
     if(msg.latest.sections.some(x => x.type === types.MessageSectionType.POLL))
-        domUtil.showBox("WARNING", "You are about to edit a message that contains at least one poll."
-            + " Polls can not be redacted after the fact");
+        notif.show("You are about to edit a message that contains at least one poll. "
+            + " Polls can not be redacted after the fact", "icons/add_poll.png", "yellow");
 
     util.elmById("message-editing").innerHTML = util.escapeHtml("Editing message");
 }

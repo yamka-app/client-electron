@@ -15,8 +15,9 @@
     --bg-2:            #e6f0f0;
     --bg-3:            #eff7f8;
     
-    --danger-foreground: #efefef;
-    --apply-foreground:  #efefef;
+    --red-foreground:    #efefef;
+    --yellow-foregound:  #242424;
+    --green-foreground:  #efefef;
     --foreground:        #242424;
     --foreground-1:      #3e4c50;
     --foreground-2:      #283235;

@@ -1,6 +1,7 @@
 :root {
     --theme-name:   Dark;
     --theme-author: Yamka;
+    
     --red:          linear-gradient(90deg, #f31c00, #eb3700);
     --red-trans:    #f31c0090;
     --yellow:       linear-gradient(90deg, #e2df0e, #bae718);
@@ -14,8 +15,9 @@
     --bg-2:             #1c1f25;
     --bg-3:             #20242b;
 
-    --danger-foreground: #efefef;
-    --apply-foreground:  #efefef;
+    --red-foreground:    #efefef;
+    --yellow-foregound:  #242424;
+    --green-foreground:  #efefef;
     --foreground:        #dbdbdb;
     --foreground-1:      #a7a7a7;
     --foreground-2:      #979797;

@@ -130,7 +130,7 @@ h6 {
 #email-unconfirmed-bar span {
     font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
-    color:       var(--danger-foreground);
+    color:       var(--red-foreground);
 }
 
 #title-text, #title-status {
@@ -224,12 +224,12 @@ button:not(.apply-button):not(.danger-button):not(.icon-button):active {
 
 .danger-button {
     background: var(--red);
-    color:      var(--danger-foreground);
+    color:      var(--red-foreground);
     position:   relative;
 }
 .apply-button {
     background: var(--green);
-    color:      var(--apply-foreground);
+    color:      var(--green-foreground);
     position:   relative;
 }
 .danger-button::before, .apply-button::before {
@@ -474,7 +474,7 @@ label {
 }
 .bubble > span {
     font-size: 8pt;
-    color:     var(--danger-foreground);
+    color:     var(--red-foreground);
 }
 #message-unread-sep > .bubble > span {
     color:     var(--accent-foreground);
