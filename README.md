@@ -23,7 +23,7 @@ Do `npm start` to run the app without producing any artifacts:
 ```sh
 git clone https://github.com/yamka-app/client-electron.git
 cd client-electron
-npm instead
+npm start
 ```
 
 Use this to produce `AppImage` and `exe` artifacts:
