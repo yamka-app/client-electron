@@ -40,6 +40,13 @@ function _rendererFunc() {
         silent: true,
         smartLists: true
     });
+
+    // Intercept link clicks
+    document.querySelectorAll("a").forEach(link => link.addEventListener("click", (e) => {
+        e.preventDefault();
+        util.stopPropagation(e);
+        shell.openExternal(link.getAttribute("href"));
+    }));
     
     // Load sounds
     //sounds.notification = new Audio(path.join(window["__dirname"], "sounds/notification.wav"));
@@ -53,8 +60,6 @@ function _rendererFunc() {
     setInterval(util.checkClientVersion, 600000); // 10 minutes
 
     util.elmById("client-version").innerHTML = escapeHtml(util.clientVersion);
-
-    // Upload and download blobs
 
     // Determines whether we sould receive notifications
     function shouldReceiveNotif() {
@@ -437,9 +442,8 @@ function _rendererFunc() {
                     break;
 
                 case packets.StatusCode.OUTDATED:
-                    domUtil.showBox("OUTDATED CLIENT", packet.message, true, () => {
-                        shell.openExternal("https://yamka.app/download")
-                    });
+                    domUtil.showBox("OUTDATED CLIENT", packet.message, true, () =>
+                        shell.openExternal("https://yamka.app/download"));
                     break;
 
                 case packets.StatusCode.RATE_LIMITING:

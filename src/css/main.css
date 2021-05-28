@@ -120,7 +120,7 @@ h6 {
 }
 #email-unconfirmed-bar {
     height:           24px;
-    background:       var(--danger-dim-2);
+    background:       var(--red);
     display:          flex;
     flex-direction:   row;
     justify-content:  center;
@@ -673,7 +673,7 @@ img.verified-badge:not(.true) {
 
     padding: 5px;
 
-    background:    var(--bg-2);
+    background:    var(--bg-3);
     border:        none;
     border-radius: 5px;
     box-shadow:    var(--shadow);
