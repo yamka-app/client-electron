@@ -88,6 +88,7 @@ export class User extends Entity {
     badges?:         UserBadge[];
     botOwner?:       number;
     ownedBots?:      number[];
+    agents?:         number[];
     emailConfirmed?: boolean;
 
     constructor() {
@@ -111,6 +112,7 @@ export class User extends Entity {
             new fields.NumListField("badges", 1,      17),
             new fields.NumField    ("botOwner", 8,    18),
             new fields.NumListField("ownedBots", 8,   19),
+            new fields.NumListField("agents", 8,      20),
             new fields.BoolField   ("emailConfirmed", 21)
         ]);
     }
@@ -296,27 +298,33 @@ export class Poll extends Entity {
 // the owner of multiple agents if multiple user accounts are
 // used on it
 export enum AgentDevice {
-    DESKTOP = 0,
-    PHONE   = 1,
-    TABLET  = 2,
-    MCU     = 3,
-    OTHER   = 4
+    LINUX   = 0,
+    WINDOWS = 1,
+    MACOS   = 2,
+    DESKTOP = 3,
+    ANDROID = 4,
+    IOS     = 5,
+    MOBILE  = 6,
+    MCU     = 7,
+    APP     = 8
 }
 export class Agent extends Entity {
     __type_name = "Agent";
     typeNum = 9;
 
-    id:    number;
-    owner: number;
-    type:  AgentDevice;
-    name:  string;
+    id:     number;
+    owner:  number;
+    type:   AgentDevice;
+    name:   string;
+    online: boolean;
 
     constructor() {
         super([
-            new fields.NumField("id", 8,    0),
-            new fields.NumField("owner", 8, 1),
-            new fields.NumField("type", 1,  2),
-            new fields.StrField("name",     3)
+            new fields.NumField ("id", 8,    0),
+            new fields.NumField ("owner", 8, 1),
+            new fields.NumField ("type", 1,  2),
+            new fields.StrField ("name",     3),
+            new fields.BoolField("obline",   4)
         ]);
     }
 }

@@ -50,10 +50,10 @@ export function updateSelfStatus(status: number) {
 
     // Update the explainer below the switch
     const explainer = [
-        "Everyone will think you're offline, but you'll still have access to everything",
-        "You will appear online",
-        "Everyone will think you're away, but you'll still have access to everything",
-        "You will not receive any notifications"
+        "You will appear offline to others",
+        "You will appear online to others",
+        "You will appear as being away to others",
+        "You will not receive desktop notifications"
     ][status];
     util.elmById("self-status-explainer").innerHTML = explainer;
 }
@@ -570,4 +570,40 @@ export function createPermissionSwitch(onChanged: (status: types.PermissionStatu
     const elm = document.createElement("span");
     elm.id = `perm-switch-${name}`;
     elm.classList.add("radio-switch");
+}
+
+export function updAgentList() {
+    const agentList = util.elmById("agent-list");
+    while(agentList.firstChild) agentList.firstChild.remove();
+
+    const agentIds: number[] = remote.getGlobal("webprotState").self.agents
+    util.reqEntities(agentIds.map(x => new packets.EntityGetRequest(entities.Agent.typeNum, x)), false, (agents) => {
+        for(const agent of (agents as entities.Agent[])) {
+            const div = document.createElement("div");
+            const icon = agent.type > 7 ? "unknown" :
+                ["linux", "windows", "macos", "desktop", "android", "ios", "mobile", "mcu", "app"][agent.type];
+            // Display:
+            // 1) icon
+            // 2) name
+            // 3) a left arrow if that's the current agent
+            // 4) a green circle if that agent is online
+            // 5) a button to unlink the agent if that's NOT the current one
+            const thisAgent = remote.getGlobal("webprotState").agentId == agent.id;
+            div.innerHTML = `<img src="icons/agents/${icon}.png"/>
+                <span>${util.escapeHtml(agent.name)}</span>
+                ${thisAgent ? "<abbr title=\"This agent\"><img class=\"cg-img\" src=\"icons/agents/this.png\"></abbr>" : ""}
+                ${agent.online ? "<img src=\"icons/online.png\">" : ""}
+                ${thisAgent ? "" : "<button class=\"icon-button cg-button\"><img src=\"icons/disconnect.png\"/></img></button>"}`;
+            // The unlinking button should do something
+            const unlink = div.querySelector("button");
+            if(unlink !== null) unlink.onclick = (e) => {
+                util.stopPropagation(e);
+                const user = new entities.User();
+                user.id = remote.getGlobal("webprotState").selfId;
+                user.agents = agentIds.filter(x => x !== agent.id);
+                util.putEntities([user]);
+            };
+            agentList.appendChild(div);
+        }
+    });
 }

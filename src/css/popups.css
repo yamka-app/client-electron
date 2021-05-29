@@ -195,6 +195,22 @@ input[type="radio"].settings-radio:checked + label {
     color: var(--foreground-1);
 }
 
+#agent-list > div {
+    display:        flex;
+    flex-direction: row;
+    align-items:    center;
+    padding:        10px;
+    margin:         10px 0;
+
+    border-radius: 10px;
+    box-shadow:    var(--shadow);
+    background:    var(--bg-3);
+}
+#agent-list > div > span ~ img,
+#agent-list > div > span ~ abbr > img {
+    margin-left: 8px;
+}
+
 #self-status-switch {
     margin-top: 5px;
 }

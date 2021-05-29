@@ -45,6 +45,7 @@ export class User extends Entity {
     badges?:         UserBadge[];
     botOwner?:       number;
     ownedBots?:      number[];
+    agents?:         number[];
     emailConfirmed?: boolean;
 }
 
@@ -140,18 +141,23 @@ export class Poll extends Entity {
 }
 
 export enum AgentDevice {
-    DESKTOP = 0,
-    PHONE   = 1,
-    TABLET  = 2,
-    MCU     = 3,
-    OTHER   = 4
+    LINUX   = 0,
+    WINDOWS = 1,
+    MACOS   = 2,
+    DESKTOP = 3,
+    ANDROID = 4,
+    IOS     = 5,
+    MOBILE  = 6,
+    MCU     = 7,
+    APP     = 8
 }
 export class Agent extends Entity {
     __type_name = "Agent";
     static typeNum = 9;
 
-    id:    number;
-    owner: number;
-    type:  AgentDevice;
-    name:  string;
+    id:     number;
+    owner:  number;
+    type:   AgentDevice;
+    name:   string;
+    online: boolean;
 }

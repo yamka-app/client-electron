@@ -23,6 +23,7 @@ import * as notif      from "./dom_util/notif.js";
 import { configGet, configSet } from "./settings.js";
 
 import { reset, ipcSend, sendPacket, self } from "./yGlobal.js";
+import { deflate } from "zlib";
 
 function _rendererFunc() {
     reset();
@@ -455,7 +456,8 @@ function _rendererFunc() {
             }
         } else if(packet instanceof packets.ClientIdentityPacket) { // Logged in successfully
             // Save our ID
-            remote.getGlobal("webprotState").selfId = packet.userId;
+            remote.getGlobal("webprotState").selfId  = packet.userId;
+            remote.getGlobal("webprotState").agentId = packet.agentId;
             remote.getGlobal("webprotState").sendPings = true;
 
             // Show the main UI
@@ -487,7 +489,7 @@ function _rendererFunc() {
                 new packets.EntityGetRequest(entities.User.typeNum,  packet.userId),
                 new packets.EntityGetRequest(entities.Agent.typeNum, packet.agentId),
             ], true, () => {
-                const self = window.entityCache [packet.userId]  as entities.User;
+                const self  = window.entityCache[packet.userId]  as entities.User;
                 const agent = window.entityCache[packet.agentId] as entities.Agent;
                 console.log("Got client user and agent:", self, agent);
                 remote.getGlobal("webprotState").self = self;
@@ -626,6 +628,9 @@ function _rendererFunc() {
                     // Update the owned bot list
                     if(entity.ownedBots !== undefined)
                         util.elmById("owned-bot-list").innerHTML = entity.ownedBots.join(", ");
+
+                    // Update the device list
+                    domUtil.updAgentList();
                 }
 
                 // Update info about other users
@@ -669,7 +674,12 @@ function _rendererFunc() {
         if(id === undefined) {
             const agent = new entities.Agent();
             agent.name = `Desktop client on ${os.hostname()}`;
-            agent.type = entities.AgentDevice.DESKTOP;
+            switch(os.platform()) {
+                case "linux":  agent.type = entities.AgentDevice.LINUX;   break;
+                case "win32":  agent.type = entities.AgentDevice.WINDOWS; break;
+                case "darwin": agent.type = entities.AgentDevice.MACOS;   break;
+                default:       agent.type = entities.AgentDevice.DESKTOP; break;
+            }
             return agent;
         } else {
             const agent = new entities.Agent();

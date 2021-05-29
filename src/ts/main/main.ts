@@ -138,6 +138,7 @@ const webprotState: {
     seqId:      number,
     queue:      Buffer[],
     selfId:     number,
+    agentId:    number,
     self:       entities.User | {},
     pingSent:   number,
     pingTime:   number,
@@ -153,6 +154,7 @@ const webprotState: {
     seqId:      1,
     queue:      [],
     selfId:     0,
+    agentId:    0,
     self:       {},
     pingSent:   0,
     pingTime:   0,
@@ -422,6 +424,7 @@ function webprotConnect(force: boolean =false) {
     webprotState.connecting = true;
     webprotState.seqId = 1;
     webprotState.selfId = 0;
+    webprotState.agentId = 0;
     webprotState.self = {};
     webprotState.pingSent = 0;
     webprotState.tasty = null;
