@@ -1,6 +1,7 @@
 import DataTypes        from "./dataTypes.js";
 import * as fields      from "./simpleFields.js";
-import { Entity, File } from "./entities.js";
+import * as entities    from "./entities.js";
+import * as crypto      from "crypto";
 
 // ============================================== PACKETS
 // Packets are individual units of data sent to/from the server in
@@ -123,15 +124,18 @@ export enum AccessTokenPermission {
 }
 export class LoginPacket extends SimpleFieldPacket {
     typeNum = 1;
+
     login:       string;
     password:    string;
     permissions: AccessTokenPermission[];
+    agent:       entities.Agent;
 
     constructor(l?: string, p?: string, perms?: AccessTokenPermission[]) {
         super([
-            new fields.StrField("login"),
-            new fields.StrField("password"),
-            new fields.NumListField("permissions", 1)
+            new fields.StrField    ("login"),
+            new fields.StrField    ("password"),
+            new fields.NumListField("permissions", 1),
+            new fields.EntityField ("agent")
         ]);
         this.login       = l;
         this.password    = p;
@@ -141,6 +145,7 @@ export class LoginPacket extends SimpleFieldPacket {
 
 export class PingPacket extends SimpleFieldPacket {
     typeNum = 2;
+
     echo: number;
 
     constructor(echo?: number) {
@@ -151,6 +156,7 @@ export class PingPacket extends SimpleFieldPacket {
 
 export class PongPacket extends SimpleFieldPacket {
     typeNum = 3;
+    
     echo: number;
 
     constructor(echo?: number) {
@@ -201,15 +207,18 @@ export class StatusPacket extends SimpleFieldPacket {
 
 export class SignupPacket extends SimpleFieldPacket {
     typeNum = 5;
+
     email:    string;
     name:     string;
     password: string;
+    agent:    entities.Agent;
 
     constructor(e?: string, l?: string, p?: string) {
         super([
-            new fields.StrField("email"),
-            new fields.StrField("name"),
-            new fields.StrField("password")
+            new fields.StrField   ("email"),
+            new fields.StrField   ("name"),
+            new fields.StrField   ("password"),
+            new fields.EntityField("agent")
         ]);
         this.name     = l;
         this.password = p;
@@ -285,9 +294,9 @@ export class EntityGetPacket extends Packet {
 export class EntitiesPacket extends Packet {
     typeNum = 7;
 
-    entities?: Entity[];
+    entities?: entities.Entity[];
 
-    constructor(e?: Entity[]) { super(); this.entities = e; }
+    constructor(e?: entities.Entity[]) { super(); this.entities = e; }
 
     encodePayload = () => Buffer.concat([
         DataTypes.encNum(this.entities.length, 2),
@@ -299,7 +308,7 @@ export class EntitiesPacket extends Packet {
         const cnt = DataTypes.decNum(b.slice(0, 2));
         var pos = 2;
         for(var i = 0; i < cnt; i++) {
-            const result = Entity.decode(b, pos);
+            const result = entities.Entity.decode(b, pos);
             pos = result.posAfter;
             this.entities.push(result.entity);
         }
@@ -309,6 +318,7 @@ export class EntitiesPacket extends Packet {
 
 export class FileDownloadRequestPacket extends SimpleFieldPacket {
     typeNum = 8;
+    
     id: number;
 
     constructor(id?: number) { super([new fields.NumField("id", 8)]); this.id = id; }
@@ -316,6 +326,7 @@ export class FileDownloadRequestPacket extends SimpleFieldPacket {
 
 export class FileDataChunkPacket extends SimpleFieldPacket {
     typeNum = 9;
+
     position: number;
     data:     Buffer;
 
@@ -331,6 +342,7 @@ export class FileDataChunkPacket extends SimpleFieldPacket {
 
 export class MFASecretPacket extends SimpleFieldPacket {
     typeNum = 10;
+
     secret: string;
 
     constructor(secret?: string) { super([new fields.StrField("secret")]); this.secret = secret; }
@@ -338,6 +350,7 @@ export class MFASecretPacket extends SimpleFieldPacket {
 
 export class SearchResultPacket extends SimpleFieldPacket {
     typeNum = 11;
+
     list: number[];
 
     constructor(list?: number[]) {
@@ -348,6 +361,7 @@ export class SearchResultPacket extends SimpleFieldPacket {
 
 export class AccessTokenPacket extends SimpleFieldPacket {
     typeNum = 12;
+
     token: string;
 
     constructor(token?: string) { super([new fields.StrField("token")]); this.token = token; }
@@ -366,6 +380,7 @@ export enum ContactAction {
 }
 export class ContactsManagePacket extends SimpleFieldPacket {
     typeNum = 13;
+
     type:   ContactType;
     action: ContactAction;
     id:     number;
@@ -389,6 +404,7 @@ export enum SearchTarget {
 }
 export class SearchPacket extends SimpleFieldPacket {
     typeNum = 14;
+
     type: SearchTarget;
     ref:  number;
     name: string;
@@ -407,6 +423,7 @@ export class SearchPacket extends SimpleFieldPacket {
 
 export class InviteResolvePacket extends SimpleFieldPacket {
     typeNum = 15;
+
     code: string;
     add:  boolean;
 
@@ -421,9 +438,9 @@ export class InviteResolvePacket extends SimpleFieldPacket {
 
 export class BotCreatePacket extends SimpleFieldPacket {
     typeNum = 16;
+
     id:        number = 0; // C->S: ignored
                            // S->C: ID
-
     nameToken: string;     // C->S: name
                            // S->C: token
 
@@ -438,6 +455,7 @@ export class BotCreatePacket extends SimpleFieldPacket {
 
 export class BotInvitePacket extends SimpleFieldPacket {
     typeNum = 17;
+
     bot:   number;
     group: number;
 
@@ -452,6 +470,7 @@ export class BotInvitePacket extends SimpleFieldPacket {
 
 export class IdentificationPacket extends SimpleFieldPacket {
     typeNum = 18;
+
     protocol:            number;
     supportsCompression: boolean;
 
@@ -466,16 +485,22 @@ export class IdentificationPacket extends SimpleFieldPacket {
 
 export class ClientIdentityPacket extends SimpleFieldPacket {
     typeNum = 19;
-    userId: number;
+
+    userId:  number;
+    agentId: number;
 
     constructor(id?: number) {
-        super([new fields.NumField("userId", 8)]);
+        super([
+            new fields.NumField("userId",  8),
+            new fields.NumField("agentId", 8),
+        ]);
         this.userId = id;
     }
 }
 
 export class VoiceJoinPacket extends SimpleFieldPacket {
     typeNum = 20;
+
     chanId: number;
     addr:   string;
     crypto: Buffer;
@@ -492,10 +517,42 @@ export class VoiceJoinPacket extends SimpleFieldPacket {
 
 export class EmailConfirmationPacket extends SimpleFieldPacket {
     typeNum = 21;
+
     code: string;
 
     constructor(code?: string) {
         super([new fields.StrField("code")]);
         this.code = code;
+    }
+}
+
+export enum KeyType {
+    IDENTITY = 0,
+    PREKEY   = 1,
+    OTPREKEY = 2
+}
+export enum KeyListOperation {
+    ADD    = 0,
+    REMOVE = 1,
+    SET    = 2
+}
+export class KeyPacket extends SimpleFieldPacket {
+    typeNum = 22;
+
+    type:      KeyType;
+    operation: KeyListOperation;
+    keys:      crypto.KeyObject[];
+    keys_ser:  string[];
+
+    constructor(type: KeyType, keys: crypto.KeyObject[], op: KeyListOperation) {
+        super([
+            new fields.NumField    ("type", 1),
+            new fields.NumField    ("operation", 1),
+            new fields.StrListField("keys_ser")
+        ]);
+        this.type      = type;
+        this.operation = op;
+        this.keys      = keys;
+        this.keys_ser  = keys?.map(x => x.export({ type: "spki", format: "pem" }) as string);
     }
 }

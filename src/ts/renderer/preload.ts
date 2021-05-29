@@ -15,6 +15,7 @@ _modules["highlightBlock"]  = require("highlight.js").highlightBlock;
 _modules["blurhash"]        = require("blurhash");
 _modules["compareVersions"] = require("compare-versions");
 _modules["tinycolor"]       = require("tinycolor2");
+_modules["os"]              = require("os");
 
 window["_modules"] = _modules;
 window["__dirname"] = _modules["path"].join(__dirname, "../../../");

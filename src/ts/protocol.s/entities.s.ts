@@ -138,3 +138,20 @@ export class Poll extends Entity {
     selfVote:    number;
     totalVoted:  number;
 }
+
+export enum AgentDevice {
+    DESKTOP = 0,
+    PHONE   = 1,
+    TABLET  = 2,
+    MCU     = 3,
+    OTHER   = 4
+}
+export class Agent extends Entity {
+    __type_name = "Agent";
+    static typeNum = 9;
+
+    id:    number;
+    owner: number;
+    type:  AgentDevice;
+    name:  string;
+}

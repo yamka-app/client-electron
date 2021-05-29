@@ -4,11 +4,12 @@ const remote                            = _modules.remote;
 const { BrowserWindow, dialog }         = remote;
 const { ipcRenderer, shell, clipboard } = _modules.electron;
 
-const escapeHtml     = _modules.escapeHtml;
-const marked         = _modules.marked;
-const path           = _modules.path;
-const fs             = _modules.fs;
-const qrcode         = _modules.qrcode;
+const escapeHtml = _modules.escapeHtml;
+const marked     = _modules.marked;
+const path       = _modules.path;
+const fs         = _modules.fs;
+const qrcode     = _modules.qrcode;
+const os         = _modules.os;
 
 import * as packets    from "../protocol.s/packets.s.js";
 import * as entities   from "../protocol.s/entities.s.js";
@@ -52,12 +53,14 @@ function _rendererFunc() {
     //sounds.notification = new Audio(path.join(window["__dirname"], "sounds/notification.wav"));
 
     // Try to connect every 2 seconds
-    setInterval(() => ipcSend({
+    const __connect = () => ipcSend({
         action: "webprot.connect"
-    }), 2000);
+    });
+    setInterval(__connect, 2000);
+    __connect();
 
-    util.checkClientVersion();
     setInterval(util.checkClientVersion, 600000); // 10 minutes
+    util.checkClientVersion();
 
     util.elmById("client-version").innerHTML = escapeHtml(util.clientVersion);
 
@@ -431,21 +434,14 @@ function _rendererFunc() {
                     });
                     break;
 
-                case packets.StatusCode.LOGIN_ERROR:
-                    domUtil.showBox("LOGIN ERROR", packet.message);
-                    (util.elmById("login-password") as HTMLInputElement).value = "";
-                    break;
-
-                case packets.StatusCode.SIGNUP_ERROR:
-                    domUtil.showBox("SIGNUP ERROR", packet.message);
-                    (util.elmById("signup-password") as HTMLInputElement).value = "";
-                    break;
-
                 case packets.StatusCode.OUTDATED:
                     domUtil.showBox("OUTDATED CLIENT", packet.message, true, () =>
                         shell.openExternal("https://yamka.app/download"));
                     break;
 
+                case packets.StatusCode.LOGIN_ERROR:
+                case packets.StatusCode.SIGNUP_ERROR:
+                    (util.elmById("signup-password") as HTMLInputElement).value = "";
                 case packets.StatusCode.RATE_LIMITING:
                 case packets.StatusCode.INVALID_USERNAME:
                 case packets.StatusCode.INVALID_INVITE:
@@ -481,10 +477,19 @@ function _rendererFunc() {
             window.nextCbId = 0;
             domMsgUtil.resetMsgInput();
 
+            // Save the agent ID
+            const agents = configGet("agents");
+            agents[packet.userId] = packet.agentId;
+            configSet("agents", agents);
+
             // Request the user
-            util.reqEntities([new packets.EntityGetRequest(entities.User.typeNum, packet.userId)], true, () => {
-                const self = window.entityCache[packet.userId];
-                console.log("Got client user:", self);
+            util.reqEntities([
+                new packets.EntityGetRequest(entities.User.typeNum,  packet.userId),
+                new packets.EntityGetRequest(entities.Agent.typeNum, packet.agentId),
+            ], true, () => {
+                const self = window.entityCache [packet.userId]  as entities.User;
+                const agent = window.entityCache[packet.agentId] as entities.Agent;
+                console.log("Got client user and agent:", self, agent);
                 remote.getGlobal("webprotState").self = self;
 
                 layout.updMessageArea();
@@ -658,6 +663,21 @@ function _rendererFunc() {
         }
     }
 
+    function userAgent() {
+        const agents = configGet("agents");
+        const id = agents[remote.getGlobal("webprotState").id];
+        if(id === undefined) {
+            const agent = new entities.Agent();
+            agent.name = `Desktop client on ${os.hostname()}`;
+            agent.type = entities.AgentDevice.DESKTOP;
+            return agent;
+        } else {
+            const agent = new entities.Agent();
+            agent.id = id;
+            return agent;
+        }
+    }
+
     // Main process handler
     function ipcRecv(evt: Event, arg: any) {
         if(["webprot.status", "webprot.trigger-reference",
@@ -703,7 +723,8 @@ function _rendererFunc() {
                             "Role":         new entities.Role(),
                             "File":         new entities.File(),
                             "MessageState": new entities.MessageState(),
-                            "Poll":         new entities.Poll()
+                            "Poll":         new entities.Poll(),
+                            "Agent":        new entities.Agent()
                         }[e["__type_name"]];
                         const ent = Object.assign(e_proto, e);
                         // Handle nested entities
@@ -779,7 +800,7 @@ function _rendererFunc() {
         const password = (util.elmById("login-password") as HTMLInputElement).value;
         // hack: all permissions except the bot one. I'm too lazy to list all of them here :)
         const permissions = []; for(var i = 0; i <= 24; i++) permissions.push(i);
-        sendPacket(new packets.LoginPacket(email, password, permissions));
+        sendPacket(new packets.LoginPacket(email, password, permissions, userAgent()));
     };
 
     util.elmById("login-signup-button").onclick = (e) => {
@@ -860,7 +881,7 @@ function _rendererFunc() {
             util.hideElm(nameRequired);
         }
 
-        if(proceed) sendPacket(new packets.SignupPacket(email, username, password));
+        if(proceed) sendPacket(new packets.SignupPacket(email, username, password, userAgent()));
     };
 
     // Add listeners that open and close the user settings panel

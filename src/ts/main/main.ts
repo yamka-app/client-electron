@@ -11,7 +11,7 @@ import DataTypes     from "../protocol/dataTypes";
 import * as packets  from "../protocol/packets";
 import * as entities from "../protocol/entities";
 import TastyClient   from "../protocol/tasty";
-import { encode } from "blurhash";
+import SaltyClient   from "../protocol/salty";
 
 const dataHomePath = path.join(app.getPath("appData"), "yamka");
 const configPath   = path.join(dataHomePath, "yamka_config.json");
@@ -125,7 +125,7 @@ app.on("window-all-closed", () => { windowCreated = false; });
 const webprotSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
-    version:              8,
+    version:              9,
     supportsComp:         true,
     compressionThreshold: 256,
     fileChunkSize:        1024*5
@@ -142,6 +142,7 @@ const webprotState: {
     pingSent:   number,
     pingTime:   number,
     tasty:      TastyClient | null,
+    salty:      SaltyClient | null,
     downStates: any,
     upStates:   any,
     references: any
@@ -156,6 +157,7 @@ const webprotState: {
     pingSent:   0,
     pingTime:   0,
     tasty:      null,
+    salty:      null,
     downStates: {},
     upStates:   {},
     references: {}
@@ -197,6 +199,10 @@ function webprotData(bytes: Buffer) {
         );
         return;
     }
+
+    // Client identity (start Salty engine)
+    if(packet instanceof packets.ClientIdentityPacket)
+        webprotState.salty = new SaltyClient(packet.userId);
 
     // File uploading
     if(packet instanceof packets.StatusPacket) {
@@ -299,7 +305,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
                     "Message":      new entities.Message(),
                     "File":         new entities.File(),
                     "MessageState": new entities.MessageState(),
-                    "Poll":         new entities.Poll()
+                    "Poll":         new entities.Poll(),
+                    "Agent":        new entities.Agent()
                 }[e["__type_name"]];
                 const ent = Object.assign(e_proto, e);
                 // Handle nested entities
@@ -315,6 +322,8 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
                 if(e[i].c !== undefined) e[i].c = Object.assign(new packets.EntityContext(),    e[i].c);
             }
         }
+        if(packet instanceof packets.LoginPacket || packet instanceof packets.SignupPacket)
+            packet.agent = Object.assign(new entities.Agent(), packet.agent);
     }
     // Measure ping to the server
     if(packet instanceof packets.PingPacket)
@@ -375,11 +384,17 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
             // if the renderer asked us to scale the image down, do exactly that
             if(entity.__scale) {
                 resizer(entity.path, {
+                    all: undefined,
                     versions: [{
-                        path:    tmpDir + '/',
-                        quality: 100,
-                        width:   128,
-                        height:  128
+                        path:       tmpDir + '/',
+                        quality:    100,
+                        width:      128,
+                        height:     128,
+                        prefix:     undefined,
+                        suffix:     undefined,
+                        contrast:   undefined,
+                        brightness: undefined,
+                        normalize:  undefined
                     }]
                 }).then((paths: string[]) =>
                     setTimeout(proceed, 100, paths[0])); // jank level 100 here
@@ -410,6 +425,8 @@ function webprotConnect(force: boolean =false) {
     webprotState.self = {};
     webprotState.pingSent = 0;
     webprotState.tasty = null;
+    webprotState.salty?.end();
+    webprotState.salty = null;
     packets.Packet.nextSeq = 1;
 
     // Disconnect if connected

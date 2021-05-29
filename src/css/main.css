@@ -208,7 +208,7 @@ button {
 
     cursor: pointer;
 }
-button:not(.apply-button):not(.danger-button):not(.icon-button):active {
+button:not(.accent-button):not(.apply-button):not(.danger-button):not(.icon-button):active {
     box-shadow: var(--shadow);
     background: var(--background);
 }
@@ -216,12 +216,8 @@ button:not(.apply-button):not(.danger-button):not(.icon-button):active {
 .accent-button {
     background: var(--accent-grad);
     color:      var(--accent-foreground);
+    position:   relative;
 }
-.accent-button:active {
-    box-shadow: var(--shadow);
-    background: var(--accent-grad);
-}
-
 .danger-button {
     background: var(--red);
     color:      var(--red-foreground);
@@ -232,7 +228,7 @@ button:not(.apply-button):not(.danger-button):not(.icon-button):active {
     color:      var(--green-foreground);
     position:   relative;
 }
-.danger-button::before, .apply-button::before {
+.accent-button::before, .danger-button::before, .apply-button::before {
     content:  "";
     position: absolute;
     top:      0;
@@ -245,10 +241,10 @@ button:not(.apply-button):not(.danger-button):not(.icon-button):active {
     opacity:       0;
     transition:    opacity 0.1s;
 }
-.danger-button:hover::before, .apply-button:hover::before {
+.accent-button:hover::before, .danger-button:hover::before, .apply-button:hover::before {
     opacity: 0.1;
 }
-.danger-button:active::before, .apply-button:active::before {
+.accent-button:active::before, .danger-button:active::before, .apply-button:active::before {
     opacity: 0.2;
 }
 

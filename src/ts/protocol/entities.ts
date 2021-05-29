@@ -46,7 +46,8 @@ export class Entity {
             new Role(),
             new File(),
             new MessageState(),
-            new Poll()
+            new Poll(),
+            new Agent()
         ][type];
         var posAfter = entity.decodeFields(buf, undefined, pos + 1) as number;
         return { entity: entity, posAfter: posAfter };
@@ -286,6 +287,36 @@ export class Poll extends Entity {
             new fields.NumListField("optionVotes", 3, 2),
             new fields.NumField    ("selfVote", 1,    3),
             new fields.NumField    ("totalVoted", 3,  4)
+        ]);
+    }
+}
+
+// A "device" of sorts
+// Except for the fact that one physical device may be
+// the owner of multiple agents if multiple user accounts are
+// used on it
+export enum AgentDevice {
+    DESKTOP = 0,
+    PHONE   = 1,
+    TABLET  = 2,
+    MCU     = 3,
+    OTHER   = 4
+}
+export class Agent extends Entity {
+    __type_name = "Agent";
+    typeNum = 9;
+
+    id:    number;
+    owner: number;
+    type:  AgentDevice;
+    name:  string;
+
+    constructor() {
+        super([
+            new fields.NumField("id", 8,    0),
+            new fields.NumField("owner", 8, 1),
+            new fields.NumField("type", 1,  2),
+            new fields.StrField("name",     3)
         ]);
     }
 }

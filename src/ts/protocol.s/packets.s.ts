@@ -1,4 +1,4 @@
-import { Entity, File } from "./entities.s.js";
+import { Entity, Agent } from "./entities.s.js";
 import * as fields from "./simpleFields.s.js";
 
 // This is a stipped down (.s) version that just contains definitions the renderer process uses.
@@ -48,20 +48,24 @@ export enum AccessTokenPermission {
 }
 export class LoginPacket extends SimpleFieldPacket {
     typeNum = 1;
+
     login:       string;
     password:    string;
     permissions: AccessTokenPermission[];
+    agent:       Agent;
 
-    constructor(l?: string, p?: string, perms?: AccessTokenPermission[]) {
+    constructor(l?: string, p?: string, perms?: AccessTokenPermission[], a?: Agent) {
         super();
         this.login       = l;
         this.password    = p;
         this.permissions = perms;
+        this.agent       = a;
     }
 }
 
 export class PingPacket extends SimpleFieldPacket {
     typeNum = 2;
+
     echo: number;
 
     constructor(echo?: number) { super(); this.echo = echo; }
@@ -69,6 +73,7 @@ export class PingPacket extends SimpleFieldPacket {
 
 export class PongPacket extends SimpleFieldPacket {
     typeNum = 3;
+
     echo: number;
 
     constructor(echo?: number) { super(); this.echo = echo; }
@@ -104,28 +109,26 @@ export enum StatusCode {
 }
 export class StatusPacket extends SimpleFieldPacket {
     typeNum = 4;
+
     code:    number;
     message: string;
     status:  StatusCode;
-
-    constructor(status?: StatusCode, message?: string) {
-        super();
-        this.status  = status;
-        this.message = message;
-    }
 }
 
 export class SignupPacket extends SimpleFieldPacket {
     static typeNum = 5;
+
     email:    string;
     name:     string;
     password: string;
+    agent:    Agent;
 
-    constructor(e?: string, l?: string, p?: string) {
+    constructor(e?: string, l?: string, p?: string, a?: Agent) {
         super();
         this.name     = l;
         this.password = p;
         this.email    = e;
+        this.agent    = a;
     }
 }
 
@@ -178,6 +181,7 @@ export class EntityGetPacket extends Packet {
 
 export class EntitiesPacket extends Packet {
     static typeNum = 7;
+
     entities?: Entity[];
 
     constructor(e?: Entity[]) { super(); this.entities = e; }
@@ -185,6 +189,7 @@ export class EntitiesPacket extends Packet {
 
 export class FileDownloadRequestPacket extends SimpleFieldPacket {
     typeNum = 8;
+
     id: number;
 
     constructor(id?: number) { super(); this.id = id; }
@@ -192,6 +197,7 @@ export class FileDownloadRequestPacket extends SimpleFieldPacket {
 
 export class MFASecretPacket extends SimpleFieldPacket {
     typeNum = 10;
+
     secret: string;
 
     constructor(secret?: string) { super(); this.secret = secret; }
@@ -199,16 +205,13 @@ export class MFASecretPacket extends SimpleFieldPacket {
 
 export class SearchResultPacket extends SimpleFieldPacket {
     typeNum = 11;
-    list: number[];
 
-    constructor(list?: number[]) {
-        super();
-        this.list = list;
-    }
+    list: number[];
 }
 
 export class AccessTokenPacket extends SimpleFieldPacket {
     typeNum = 12;
+
     token: string;
 
     constructor(token?: string) { super(); this.token = token; }
@@ -227,6 +230,7 @@ export enum ContactAction {
 }
 export class ContactsManagePacket extends SimpleFieldPacket {
     typeNum = 13;
+
     type:   ContactType;
     action: ContactAction;
     id:     number;
@@ -246,6 +250,7 @@ export enum SearchTarget {
 }
 export class SearchPacket extends SimpleFieldPacket {
     typeNum = 14;
+
     type: SearchTarget;
     ref:  number;
     name: string;
@@ -260,6 +265,7 @@ export class SearchPacket extends SimpleFieldPacket {
 
 export class InviteResolvePacket extends SimpleFieldPacket {
     typeNum = 15;
+
     code: string;
     add:  boolean;
 
@@ -268,9 +274,9 @@ export class InviteResolvePacket extends SimpleFieldPacket {
 
 export class BotCreatePacket extends SimpleFieldPacket {
     typeNum = 16;
+
     id:        number = 0; // C->S: ignored
                            // S->C: ID
-
     nameToken: string;     // C->S: name
                            // S->C: token
 
@@ -279,6 +285,7 @@ export class BotCreatePacket extends SimpleFieldPacket {
 
 export class BotInvitePacket extends SimpleFieldPacket {
     typeNum = 17;
+
     bot:   number;
     group: number;
 
@@ -287,6 +294,7 @@ export class BotInvitePacket extends SimpleFieldPacket {
 
 export class IdentificationPacket extends SimpleFieldPacket {
     typeNum = 18;
+
     protocol:            number;
     supportsCompression: boolean;
 
@@ -295,13 +303,14 @@ export class IdentificationPacket extends SimpleFieldPacket {
 
 export class ClientIdentityPacket extends SimpleFieldPacket {
     typeNum = 19;
-    userId: number;
 
-    constructor(id?: number) { super(); this.userId = id; }
+    userId:  number;
+    agentId: number;
 }
 
 export class EmailConfirmationPacket extends SimpleFieldPacket {
     typeNum = 21;
+
     code: string;
 
     constructor(code?: string) { super(); this.code = code; }

@@ -15,7 +15,8 @@ const defaultSettings: {name: string, value: any}[] = [
     { name: "previewYt",     value: true              },
     { name: "blurOnDefocus", value: false             },
     { name: "micGain",       value: 1                 },
-    { name: "micThres",      value: 0.008             }
+    { name: "micThres",      value: 0.008             },
+    { name: "agents",        value: []                }
 ];
 
 // Simple turn on/off settings that can be toggled with a switch
