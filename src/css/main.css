@@ -1067,12 +1067,11 @@ span.fg-1 {
 }
 
 .message-quote-section {
-    padding: 5px;
+    padding: 10px;
 
-    background: var(--background) !important;
-
-    border-radius: 5px;
-    box-shadow: var(--shadow);
+    background:    var(--background) !important;
+    border-radius: 10px;
+    box-shadow:    var(--shadow);
 }
 div.message-quote-section {
     cursor: pointer;
