@@ -486,8 +486,8 @@ function _rendererFunc() {
 
             // Request the user
             util.reqEntities([
-                new packets.EntityGetRequest(entities.User.typeNum,  packet.userId),
                 new packets.EntityGetRequest(entities.Agent.typeNum, packet.agentId),
+                new packets.EntityGetRequest(entities.User.typeNum,  packet.userId)
             ], true, () => {
                 const self  = window.entityCache[packet.userId]  as entities.User;
                 const agent = window.entityCache[packet.agentId] as entities.Agent;

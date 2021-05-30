@@ -591,8 +591,8 @@ export function updAgentList() {
             const thisAgent = remote.getGlobal("webprotState").agentId == agent.id;
             div.innerHTML = `<img src="icons/agents/${icon}.png"/>
                 <span>${util.escapeHtml(agent.name)}</span>
-                ${thisAgent ? "<abbr title=\"This agent\"><img class=\"cg-img\" src=\"icons/agents/this.png\"></abbr>" : ""}
                 ${agent.online ? "<img src=\"icons/online.png\">" : ""}
+                ${thisAgent ? "<abbr title=\"This agent\"><img class=\"cg-img\" src=\"icons/agents/this.png\"></abbr>" : ""}
                 ${thisAgent ? "" : "<button class=\"icon-button cg-button\"><img src=\"icons/disconnect.png\"/></img></button>"}`;
             // The unlinking button should do something
             const unlink = div.querySelector("button");

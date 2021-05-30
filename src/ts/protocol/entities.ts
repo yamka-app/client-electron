@@ -324,7 +324,7 @@ export class Agent extends Entity {
             new fields.NumField ("owner", 8, 1),
             new fields.NumField ("type", 1,  2),
             new fields.StrField ("name",     3),
-            new fields.BoolField("obline",   4)
+            new fields.BoolField("online",   4)
         ]);
     }
 }
