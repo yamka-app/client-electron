@@ -241,6 +241,10 @@ input[type="radio"].settings-radio:checked + label {
     margin-bottom: 10px;
 }
 
+#self-tag-settings {
+    margin-left: 10px;
+}
+
 #group-settings-role-list,
 #group-settings-channel-list {
     width: 200px;
