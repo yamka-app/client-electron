@@ -592,7 +592,7 @@ export function updAgentList() {
             div.innerHTML = `<img src="icons/agents/${icon}.png"/>
                 <span>${util.escapeHtml(agent.name)}</span>
                 ${agent.online ? "<img src=\"icons/online.png\">" : ""}
-                ${thisAgent ? "<abbr title=\"This agent\"><img class=\"cg-img\" src=\"icons/agents/this.png\"></abbr>" : ""}
+                ${thisAgent ? "<abbr title=\"This instance\"><img class=\"cg-img\" src=\"icons/agents/this.png\"></abbr>" : ""}
                 ${thisAgent ? "" : "<button class=\"icon-button cg-button\"><img src=\"icons/disconnect.png\"/></img></button>"}`;
             // The unlinking button should do something
             const unlink = div.querySelector("button");
