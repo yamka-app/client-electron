@@ -89,7 +89,7 @@ function _rendererFunc() {
             util.showElm(util.elmById("user-select"));
 
             // Reconnect
-            selectedUser = 0;
+            window.selectedUser = 0;
             ipcSend({ action: "webprot.force-connect" });
             return;
         }
@@ -723,10 +723,10 @@ function _rendererFunc() {
                 util.hideElm(util.elmById("connecting-screen-bg"));
                 // Show the account selector
                 accountSelector.show((id) => {
-                    selectedUser = id;
+                    window.selectedUser = id;
                     accountSelector.hide();
                     // Send the access token
-                    const accessToken = configGet("tokens")[selectedUser];
+                    const accessToken = configGet("tokens")[window.selectedUser];
                     sendPacket(new packets.AccessTokenPacket(accessToken));
                 }, (id) => {
                     // Yank the token
