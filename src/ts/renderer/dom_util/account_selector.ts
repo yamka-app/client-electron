@@ -11,17 +11,22 @@ function avaStorage() {
     return path.join(appDataPath(), "avatar_");
 }
 
-function panel(img: string, title: string, click: () => void) {
+function panel(img: string, title: string, click: () => void, logout?: () => void) {
     const div = document.createElement("div");
+    const user = !img.startsWith("icons");
     
-    div.innerHTML = `<img class="${img.startsWith("icons") ? "cg-img" : ""}" src="${img}"/>
-        <span>${title}</span>`;
-    div.onclick = (ev) => { stopPropagation(ev); click() };
+    div.innerHTML = `<img class="${user ? "" : "cg-img"}" src="${img}"/>
+        <span>${title}</span>
+        ${user ? "<button class=\"icon-button cg-button\"><img src=\"icons/disconnect.png\"/></button>" : ""}`;
+    div.onclick = (ev) => { stopPropagation(ev); click(); };
+    if(user)
+        div.querySelector("button").onclick =
+            (ev) => { stopPropagation(ev); div.remove(); logout(); };
 
     return div;
 }
 
-export function show(login: (id: number) => void) {
+export function show(login: (id: number) => void, logout: (id: number) => void) {
     window.selectedUser = 0;
 
     const sel = elmById("user-select");
@@ -31,7 +36,9 @@ export function show(login: (id: number) => void) {
     // Go thorugh all cached users
     const users = configGet("users");
     for(const user of users)
-        sel.appendChild(panel(user.ava, user.name, () => login(user.id)));
+        sel.appendChild(panel(user.ava, user.name,
+            () => login(user.id),
+            () => logout(user.id)));
 
     // Add "log in" and "sign up" buttons
     sel.appendChild(panel("icons/account_add.png", "LOG IN", () => {
@@ -53,7 +60,7 @@ export function hide() {
 export function cacheUser(user: User) {
     var users: {id: number, ava: string, name: string}[] = configGet("users");
     if(!users.every(x => x.id !== user.id)) return;
-    
+
     download(user.avaFile, (ava) => {
         // Copy the avatar to a persistent location
         const persistentAva = `${avaStorage()}${user.id}.png`;

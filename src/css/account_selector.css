@@ -12,6 +12,7 @@
 }
 
 #user-select > div {
+    position:       relative;
     display:        flex;
     flex-direction: row;
     align-items:    center;
@@ -31,4 +32,13 @@
     border-radius: 18px;
 
     margin-right: 10px;
+}
+#user-select > div > button {
+    position: absolute;
+    top:      15px;
+    right:    10px;
+}
+#user-select > div > button > img {
+    width:  18px;
+    height: 18px;
 }

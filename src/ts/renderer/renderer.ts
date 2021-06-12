@@ -719,6 +719,7 @@ function _rendererFunc() {
                 util.showElm(util.elmById("connecting-screen-bg"));
                 break;
             case "webprot.connected":
+                util.setElmVisibility(util.elmById("email-unconfirmed-bar-container"), false);
                 util.hideElm(util.elmById("connecting-screen-bg"));
                 // Show the account selector
                 accountSelector.show((id) => {
@@ -727,6 +728,12 @@ function _rendererFunc() {
                     // Send the access token
                     const accessToken = configGet("tokens")[selectedUser];
                     sendPacket(new packets.AccessTokenPacket(accessToken));
+                }, (id) => {
+                    // Yank the token
+                    var tokens = configGet("tokens");
+                    delete tokens[`${id}`];
+                    configSet("tokens", tokens);
+                    accountSelector.deleteUser(id);
                 });
                 break;
             case "webprot.disconnected":
