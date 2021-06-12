@@ -1,5 +1,4 @@
 import { Entity, Agent } from "./entities.s.js";
-import * as fields from "./simpleFields.s.js";
 
 // This is a stipped down (.s) version that just contains definitions the renderer process uses.
 // The main one uses regular files

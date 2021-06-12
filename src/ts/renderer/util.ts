@@ -72,8 +72,12 @@ export function adjTaHeight(elm: HTMLTextAreaElement) {
     elm.rows = Math.min(elm.value.split(/\r\n|\r|\n/).length, 10);
 }
 
-export function showElm(element: HTMLElement) { element.style.display = ""; }
-export function hideElm(element: HTMLElement) { element.style.display = "none"; }
+export function showElm(element: HTMLElement|string) {
+    (element instanceof HTMLElement ? element : elmById(element)).style.display = "";
+}
+export function hideElm(element: HTMLElement|string) {
+    (element instanceof HTMLElement ? element : elmById(element)).style.display = "none";
+}
 export function setElmVisibility(elm: HTMLElement, vis: boolean) { if(vis) showElm(elm); else hideElm(elm); }
 export function toggleElm(element: HTMLElement) {
     if(element.style.display == "none")
@@ -146,7 +150,7 @@ export function timeDiff(id1: number, id2: number): number {
 
 // Convert a status number to text or a path to status icon
 export function statusStr(status: number): string {
-    return ["offline", "online", "sleep", "dnd"][status];
+    return ["offline", "online", "idle", "dnd", "focus"][status];
 }
 export function statusIconPath(status: number): string {
     return path.join(window["__dirname"], "icons/" + statusStr(status) + ".png");

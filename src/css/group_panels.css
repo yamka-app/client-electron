@@ -26,9 +26,7 @@
 }
 .group-action-panel {
     flex-direction: row;
-}
-.group-panel {
-    background: var(--background);
+    background: var(--bg-2);
 }
 
 .group-action-panel {
@@ -60,7 +58,7 @@
 }
 
 .group-panel>:nth-child(1) {
-    background: var(--background);
+    background: var(--bg-2);
     border-radius: 10px 10px 0 0;
     padding: 10px;
     width:   -webkit-fill-available;

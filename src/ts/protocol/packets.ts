@@ -242,7 +242,7 @@ export class EntityPagination {
             DataTypes.encNum(this.dir,   1),
             DataTypes.encNum(this.from,  8),
             DataTypes.encNum(this.cnt,   1)
-        ])
+        ]);
     }
 }
 export class EntityContext {
@@ -253,27 +253,36 @@ export class EntityContext {
         return Buffer.concat([
             DataTypes.encNum(this.type, 1),
             DataTypes.encNum(this.id,   8),
-        ])
+        ]);
     }
+}
+export enum EntityKeyType {
+    IDENTITY    = 0,
+    PREKEY      = 1,
+    OTPREKEY    = 2,
+    X3DH_BUNDLE = 4
 }
 export class EntityGetRequest {
     type: number;
     id:   number;
     p?:   EntityPagination;
     c?:   EntityContext;
+    k?:   EntityKeyType;
 
     encode = () => {
         var pc_bits = 0;
         if(this.p !== undefined) pc_bits |= 1;
         if(this.c !== undefined) pc_bits |= 2;
+        if(this.k !== undefined) pc_bits |= 4;
 
         return Buffer.concat([
             DataTypes.encNum(this.type, 1),
             DataTypes.encNum(this.id,   8),
             DataTypes.encNum(pc_bits,   1),
             (this.p !== undefined) ? this.p.encode() : Buffer.alloc(0),
-            (this.c !== undefined) ? this.c.encode() : Buffer.alloc(0)
-        ])
+            (this.c !== undefined) ? this.c.encode() : Buffer.alloc(0),
+            (this.c !== undefined) ? DataTypes.encNum(this.k, 1) : Buffer.alloc(0)
+        ]);
     }
 }
 export class EntityGetPacket extends Packet {
@@ -523,36 +532,5 @@ export class EmailConfirmationPacket extends SimpleFieldPacket {
     constructor(code?: string) {
         super([new fields.StrField("code")]);
         this.code = code;
-    }
-}
-
-export enum KeyType {
-    IDENTITY = 0,
-    PREKEY   = 1,
-    OTPREKEY = 2
-}
-export enum KeyListOperation {
-    ADD    = 0,
-    REMOVE = 1,
-    SET    = 2
-}
-export class KeyPacket extends SimpleFieldPacket {
-    typeNum = 22;
-
-    type:      KeyType;
-    operation: KeyListOperation;
-    keys:      crypto.KeyObject[];
-    keys_ser:  string[];
-
-    constructor(type: KeyType, keys: crypto.KeyObject[], op: KeyListOperation) {
-        super([
-            new fields.NumField    ("type", 1),
-            new fields.NumField    ("operation", 1),
-            new fields.StrListField("keys_ser")
-        ]);
-        this.type      = type;
-        this.operation = op;
-        this.keys      = keys;
-        this.keys_ser  = keys?.map(x => x.export({ type: "spki", format: "pem" }) as string);
     }
 }

@@ -5,7 +5,7 @@ const tinycolor  = _modules.tinycolor;
 const escapeHtml = _modules.escapeHtml;
 
 // Default settings
-const defaultSettings: {name: string, value: any}[] = [
+const defaultSettings = [
     { name: "accentColor",   value: "#fa3c1b"         },
     { name: "fontSize",      value: 9                 },
     { name: "customTheme",   value: false             },
@@ -16,7 +16,9 @@ const defaultSettings: {name: string, value: any}[] = [
     { name: "blurOnDefocus", value: false             },
     { name: "micGain",       value: 1                 },
     { name: "micThres",      value: 0.008             },
-    { name: "agents",        value: []                }
+    { name: "agents",        value: {}                },
+    { name: "tokens",        value: {}                },
+    { name: "users",         value: []                }
 ];
 
 // Simple turn on/off settings that can be toggled with a switch
@@ -29,17 +31,22 @@ const toggleSettings: {name: string, element: string}[] = [
 
 // Set ot get a setting
 const ipcRenderer_settings = electron.ipcRenderer;
-export function configGet(k: string): any {
+export function configGet(k: string) {
     return ipcRenderer_settings.sendSync("synchronous-message", {
         action: "config.get",
         k:      k
     });
 }
-export function configSet(k: string, v: any): void {
+export function configSet(k: string, v: any) {
     ipcRenderer_settings.sendSync("synchronous-message", {
         action: "config.set",
         k:      k,
         v:      v
+    });
+}
+export function appDataPath() {
+    return ipcRenderer_settings.sendSync("synchronous-message", {
+        action: "config.appDataPath"
     });
 }
 

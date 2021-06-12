@@ -16,6 +16,7 @@ export enum UserStatus {
     ONLINE  = 1,
     IDLE    = 2,
     DND     = 3,
+    FOCUS   = 4,
 }
 export enum UserBadge {
     VERIFIED = 1,

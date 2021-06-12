@@ -11,19 +11,19 @@ const fs         = _modules.fs;
 const qrcode     = _modules.qrcode;
 const os         = _modules.os;
 
-import * as packets    from "../protocol.s/packets.s.js";
-import * as entities   from "../protocol.s/entities.s.js";
-import * as types      from "../protocol.s/dataTypes.s.js";
-import * as tasty      from "../protocol.s/tasty.s.js";
-import * as util       from "./util.js";
-import * as domUtil    from "./dom_util/dom_util.js";
-import * as domMsgUtil from "./dom_util/msg_util.js";
-import * as layout     from "./dom_util/layout.js";
-import * as notif      from "./dom_util/notif.js";
+import * as packets             from "../protocol.s/packets.s.js";
+import * as entities            from "../protocol.s/entities.s.js";
+import * as types               from "../protocol.s/dataTypes.s.js";
+import * as tasty               from "../protocol.s/tasty.s.js";
+import * as util                from "./util.js";
+import * as domUtil             from "./dom_util/dom_util.js";
+import * as domMsgUtil          from "./dom_util/msg_util.js";
+import * as layout              from "./dom_util/layout.js";
+import * as notif               from "./dom_util/notif.js";
+import * as accountSelector     from "./dom_util/account_selector.js";
 import { configGet, configSet } from "./settings.js";
 
 import { reset, ipcSend, sendPacket, self } from "./yGlobal.js";
-import { deflate } from "zlib";
 
 function _rendererFunc() {
     reset();
@@ -86,10 +86,10 @@ function _rendererFunc() {
         // "Log out" is not really a tab
         if(name === "user-settings-section-logout") {
             util.hideElm(util.elmById("main-layout-container"));
-            util.showElm(util.elmById("login-form"));
+            util.showElm(util.elmById("user-select"));
 
-            // Clear the access token
-            configSet("accessToken", "");
+            // Reconnect
+            selectedUser = 0;
             ipcSend({ action: "webprot.force-connect" });
             return;
         }
@@ -461,6 +461,7 @@ function _rendererFunc() {
             remote.getGlobal("webprotState").sendPings = true;
 
             // Show the main UI
+            util.hideElm(util.elmById("user-select"));
             util.hideElm(util.elmById("login-form"));
             util.hideElm(util.elmById("mfa-form"));
             util.hideElm(util.elmById("signup-form"));
@@ -483,6 +484,15 @@ function _rendererFunc() {
             const agents = configGet("agents");
             agents[packet.userId] = packet.agentId;
             configSet("agents", agents);
+            window.selectedUser = packet.userId;
+
+            // Save the token
+            var tokens = configGet("tokens");
+            if(tokens["temp"] !== undefined) {
+                tokens[window.selectedUser] = tokens["temp"];
+                tokens["temp"] = undefined;
+                configSet("tokens", tokens);
+            }
 
             // Request the user
             util.reqEntities([
@@ -495,10 +505,15 @@ function _rendererFunc() {
                 remote.getGlobal("webprotState").self = self;
 
                 layout.updMessageArea();
+                accountSelector.cacheUser(self);
             })
         } else if(packet instanceof packets.AccessTokenPacket) {
-            configSet("accessToken", packet.token);
-            sendPacket(new packets.AccessTokenPacket(packet.token)); // Try to login immediately
+            // Save the token
+            var tokens = configGet("tokens");
+            tokens["temp"] = packet.token;
+            configSet("tokens", tokens);
+            // Try to log in immediately
+            sendPacket(new packets.AccessTokenPacket(packet.token));
         } else if(packet instanceof packets.EntitiesPacket) {
             for(var entity of packet.entities) {
                 // Shove the entity into the cache
@@ -704,10 +719,15 @@ function _rendererFunc() {
                 util.showElm(util.elmById("connecting-screen-bg"));
                 break;
             case "webprot.connected":
-                setTimeout(() => util.hideElm(util.elmById("connecting-screen-bg")), 1000); // kinda wait \(-_-)/
-                // Send the continuation token
-                const accessToken = configGet("accessToken");
-                if(accessToken) sendPacket(new packets.AccessTokenPacket(accessToken));
+                util.hideElm(util.elmById("connecting-screen-bg"));
+                // Show the account selector
+                accountSelector.show((id) => {
+                    selectedUser = id;
+                    accountSelector.hide();
+                    // Send the access token
+                    const accessToken = configGet("tokens")[selectedUser];
+                    sendPacket(new packets.AccessTokenPacket(accessToken));
+                });
                 break;
             case "webprot.disconnected":
                 break;
@@ -813,15 +833,15 @@ function _rendererFunc() {
         sendPacket(new packets.LoginPacket(email, password, permissions, userAgent()));
     };
 
-    util.elmById("login-signup-button").onclick = (e) => {
-        util.showElm(util.elmById("signup-form"));
+    util.elmById("login-back-button").onclick = (e) => {
         util.hideElm(util.elmById("login-form"));
+        util.showElm(util.elmById("user-select"));
     };
 
     // Add listeners to signup controls
     util.elmById("signup-back-button").onclick = (e) => {
-        util.showElm(util.elmById("login-form"));
         util.hideElm(util.elmById("signup-form"));
+        util.showElm(util.elmById("user-select"));
     };
 
     util.elmById("signup-password").oninput = (e) => {
@@ -978,8 +998,9 @@ function _rendererFunc() {
     // We can"t query multiple sections and just iterate them :(
     util.elmById("self-status-offline").addEventListener("click", (e) => setSelfStatus(0));
     util.elmById("self-status-online") .addEventListener("click", (e) => setSelfStatus(1));
-    util.elmById("self-status-sleep")  .addEventListener("click", (e) => setSelfStatus(2));
+    util.elmById("self-status-idle")   .addEventListener("click", (e) => setSelfStatus(2));
     util.elmById("self-status-dnd")    .addEventListener("click", (e) => setSelfStatus(3));
+    util.elmById("self-status-focus")  .addEventListener("click", (e) => setSelfStatus(4));
 
     // User avatar/group icon selection
     util.elmById("self-avatar-huge").onclick = () => {

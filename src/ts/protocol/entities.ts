@@ -1,4 +1,3 @@
-import { COPYFILE_FICLONE_FORCE } from "constants";
 import DataTypes, { MessageSection }   from "./dataTypes.js";
 import * as fields from "./simpleFields.js";
 
@@ -59,6 +58,7 @@ export enum UserStatus {
     ONLINE  = 1,
     IDLE    = 2,
     DND     = 3,
+    FOCUS   = 4,
 }
 export enum UserBadge {
     VERIFIED = 1,
@@ -326,5 +326,30 @@ export class Agent extends Entity {
             new fields.StrField ("name",     3),
             new fields.BoolField("online",   4)
         ]);
+    }
+}
+
+export enum PkeyType {
+    IDENTITY = 0,
+    PREKEY   = 1,
+    OTPREKEY = 2,
+}
+export class PKey extends Entity {
+    __type_name = "PKey";
+    typeNum = 10;
+
+    id:   number;
+    key:  Buffer;
+    sign: Buffer;
+    type: PkeyType;
+    user: number;
+
+    constructor(key: Buffer, sign?: Buffer) {
+        super([
+            new fields.NumField("id", 8, 0)
+        ]);
+
+        this.key  = key;
+        this.sign = sign;
     }
 }

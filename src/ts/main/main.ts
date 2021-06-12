@@ -7,11 +7,12 @@ import tls     from "tls";
 import fs      from "fs";
 import resizer from "node-image-resizer";
 
-import DataTypes     from "../protocol/dataTypes";
-import * as packets  from "../protocol/packets";
-import * as entities from "../protocol/entities";
-import TastyClient   from "../protocol/tasty";
-import SaltyClient   from "../protocol/salty";
+import DataTypes                       from "../protocol/dataTypes";
+import * as packets                    from "../protocol/packets";
+import * as entities                   from "../protocol/entities";
+import TastyClient                     from "../protocol/tasty";
+import SaltyClient, { SaltyCallbacks } from "../protocol/salty";
+import { data } from "remark";
 
 const dataHomePath = path.join(app.getPath("appData"), "yamka");
 const configPath   = path.join(dataHomePath, "yamka_config.json");
@@ -146,7 +147,8 @@ const webprotState: {
     salty:      SaltyClient | null,
     downStates: any,
     upStates:   any,
-    references: any
+    references: any,
+    mainCbs:    any
 } = {
     connected:  false,
     connecting: false,
@@ -162,8 +164,16 @@ const webprotState: {
     salty:      null,
     downStates: {},
     upStates:   {},
-    references: {}
+    references: {},
+    mainCbs:    {}
 };
+
+function regCb(fn: (p: packets.Packet) => any) {
+    const id = Number.parseInt(Object.keys(webprotState.mainCbs).reduce(
+        (p, c, i, a) => `${Math.max(Number.parseInt(p), Number.parseInt(c))}`, "0")) + 1;
+    webprotState.mainCbs[id] = fn;
+    return id;
+}
 
 function webprotData(bytes: Buffer) {
     // Read the compression header and decompress the data
@@ -203,8 +213,14 @@ function webprotData(bytes: Buffer) {
     }
 
     // Client identity (start Salty engine)
-    if(packet instanceof packets.ClientIdentityPacket)
-        webprotState.salty = new SaltyClient(packet.userId);
+    if(packet instanceof packets.ClientIdentityPacket) {
+        const cb = new SaltyCallbacks();
+        cb.entityPut = (e) => webprotSendPacket(new packets.EntitiesPacket(e));
+        cb.entityGet = (e, cb) =>
+            webprotSendPacket(new packets.EntityGetPacket(e), undefined, regCb((p) =>
+                cb((p as packets.EntitiesPacket).entities)));
+        webprotState.salty = new SaltyClient(packet.userId, packet.agentId, cb);
+    }
 
     // File uploading
     if(packet instanceof packets.StatusPacket) {
@@ -260,7 +276,14 @@ function webprotData(bytes: Buffer) {
             return e;
         });
     }
-    ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name, reference: ref });
+
+    // See if this response was triggered by a packet sent by the main process
+    // Don't tell the renderer about it in this case
+    const mainCb = webprotState.mainCbs[ref];
+    if(mainCb === undefined)
+        ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name, reference: ref });
+    else
+        mainCb(packet);
 }
 
 function webprotSendBytes(bytes: Buffer) {
@@ -430,6 +453,7 @@ function webprotConnect(force: boolean =false) {
     webprotState.tasty = null;
     webprotState.salty?.end();
     webprotState.salty = null;
+    webprotState.mainCbs = {};
     packets.Packet.nextSeq = 1;
 
     // Disconnect if connected
@@ -523,6 +547,8 @@ ipcMain.on("synchronous-message", (event, arg) => {
         event.returnValue = undefined;
     } else if(arg.action === "config.get") {
         event.returnValue = config[arg.k];
+    } else if(arg.action === "config.appDataPath") {
+        event.returnValue = dataHomePath;
     } else {
         event.returnValue = undefined;
     }

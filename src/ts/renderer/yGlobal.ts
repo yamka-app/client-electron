@@ -11,6 +11,8 @@ export function reset() {
     window.userDm = {};
     if(window.filePaths === undefined) window.filePaths = {};
 
+    window.selectedUser = 0;
+
     window.viewingGroup = 0;
     window.viewingChan = 0;
     window.voiceChan = 0;

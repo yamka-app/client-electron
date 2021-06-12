@@ -50,10 +50,11 @@ export function updateSelfStatus(status: number) {
 
     // Update the explainer below the switch
     const explainer = [
-        "You will appear offline to others",
-        "You will appear online to others",
-        "You will appear as being away to others",
-        "You will not receive desktop notifications"
+        "You will appear offline",
+        "You will appear online",
+        "You will appear idle",
+        "You will not receive desktop notifications",
+        "You will only receive important notifications"
     ][status];
     util.elmById("self-status-explainer").innerHTML = explainer;
 }

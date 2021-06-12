@@ -3,10 +3,13 @@
 // ...so please go read their docs, they pretty much apply here:
 // https://www.signal.org/docs/
 
-import * as fs     from "fs";
-import * as path   from "path";
-import { app }     from "electron";
-import * as crypto from "crypto";
+import * as fs              from "fs";
+import * as path            from "path";
+import { app }              from "electron";
+import * as crypto          from "crypto";
+import { EntityGetRequest } from "./packets";
+import { Entity, PKey }     from "./entities";
+import EventEmitter         from "events";
 
 export const PREKEY_EXPIRATION = 12 * 3600 * 1000; // 12 hours
 export const OTPREKEY_STOCK = 16;
@@ -52,7 +55,7 @@ export class KeyBundle {
     }
 }
 
-class KeyStore {
+class KeyStore extends EventEmitter {
     device:    number;
     identity:  KeyBundle;
     prekeys:   KeyBundle[];
@@ -69,9 +72,10 @@ class KeyStore {
         // (keep the old one for 2*PREKEY_EXPIRATION ms to allow for delayed handshakes)
         for(const key of this.prekeys) {
             if(this.tdiff(key.date) >= PREKEY_EXPIRATION) {
-                this.prekeys.push(KeyBundle.generate());
+                const idx = this.prekeys.push(KeyBundle.generate()) - 1;
                 key.stale = true;
                 console.log("[salty] master prekey generated");
+                this.emit("new_otp", this.prekeys[idx]);
             }
         }
         this.prekeys = this.prekeys.filter(x => this.tdiff(x.date) < 2 * PREKEY_EXPIRATION);
@@ -79,11 +83,15 @@ class KeyStore {
         // stock up on one-time prekeys
         if(this.otprekeys === [] || this.otprekeys === undefined)
             this.otprekeys = [];
+        const old_keys = [...this.otprekeys];
         const new_otp = OTPREKEY_STOCK - this.otprekeys.length;
         for(var i = 0; i < new_otp; i++)
             this.otprekeys.push(KeyBundle.generate());
-        if(new_otp > 0)
+        if(new_otp > 0) {
             console.log(`[salty] ${new_otp} one-time prekeys generated`);
+            const new_keys = this.otprekeys.filter(x => !old_keys.includes(x)).map(x => x.pub);
+            this.emit("new_otp", new_keys);
+        }
     }
 
     static generate() {
@@ -114,9 +122,16 @@ class KeyStore {
     }
 }
 
-export class KeyMgr {
+export class SaltyCallbacks {
+    public entityGet: (req: EntityGetRequest[], cb: (e: Entity[]) => any) => void;
+    public entityPut: (ent: Entity[]) => void;
+}
+export default class SaltyClient {
     private keys: KeyStore;
     private storePath: string;
+    private uid: number;
+    private aid: number;
+    private cb: SaltyCallbacks;
 
     public load() {
         try {
@@ -124,6 +139,9 @@ export class KeyMgr {
         } catch(ex) {
             this.keys = KeyStore.generate();
             this.dump();
+            
+            // this.keys.on("new_otp", (keys: crypto.KeyObject[]) =>
+            //     this.cb.entityPut(keys.map(x => new PKey())));
         }
     }
 
@@ -131,20 +149,15 @@ export class KeyMgr {
         fs.writeFileSync(this.storePath, this.keys.jsonify());
     }
 
-    constructor(uid: number) {
+    public end() {
+        this.dump();
+    }
+
+    constructor(uid: number, aid: number, cb: SaltyCallbacks) {
+        this.uid = uid;
+        this.aid = aid;
+        this.cb  = cb;
         this.storePath = path.join(app.getPath("appData"), "yamka", `key_store_${uid}.json`);
         this.load();
-    }
-}
-
-export default class SaltyClient {
-    private keys: KeyMgr;
-
-    constructor(uid: number) {
-        this.keys = new KeyMgr(uid);
-    }
-
-    public end() {
-        this.keys.dump();
     }
 }

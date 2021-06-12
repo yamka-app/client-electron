@@ -5,8 +5,7 @@
   "description": "Yet Another (secure) Messenger with powerful features",
   "main": "src/js/commonjs/main/main.js",
   "scripts": {
-    "build": "tsc --build ./src/tsconfig.commonjs.json & tsc --build ./src/tsconfig.esnext.json & wait",
-    "watch": "tsc -w --build ./src/tsconfig.json",
+    "build": "rm -r ./src/js && tsc --build ./src/tsconfig.commonjs.json & tsc --build ./src/tsconfig.esnext.json & wait",
     "start": "npm run build && electron .",
     "lint": "eslint -c .eslintrc --ext .ts ./src/ts",
     "dist": "npm run build && electron-builder -wl",
