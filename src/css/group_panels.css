@@ -134,7 +134,7 @@
     padding:       0 6px;
     margin-left:   6px;
 
-    background: var(--danger);
+    background: var(--red);
     color:      var(--red-foreground);
 }
 
@@ -147,7 +147,7 @@
     padding:       0 6px;
     margin-left:   4px;
 
-    background: var(--danger);
+    background: var(--red);
     color:      var(--red-foreground);
     font-size:  calc(var(--font-size) - 1pt);
 }

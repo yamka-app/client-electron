@@ -3,6 +3,7 @@
     --theme-author: Yamka;
 
     --red:          linear-gradient(90deg, #f31c00, #eb3700);
+    --red-color:    #f31c00;
     --red-trans:    #f31c0090;
     --yellow:       linear-gradient(90deg, #e2df0e, #bae718);
     --yellow-trans: #e2df0e90;

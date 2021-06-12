@@ -515,7 +515,7 @@ input[type="radio"].settings-radio:checked + label {
     align-items:    center;
 }
 .message-state > span:nth-child(1) > span {
-    color: var(--danger);
+    color: var(--red);
     font-size: calc(var(--font-size) - 1pt);
 }
 .message-state > span:nth-child(1) > span:not(.current) {

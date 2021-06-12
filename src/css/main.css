@@ -454,7 +454,7 @@ label {
     border-radius: 100px;
     padding:       0 6px 0 6px;
 
-    background: var(--danger);
+    background: var(--red);
 }
 .bubble.hidden {
     display: none;
