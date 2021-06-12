@@ -184,10 +184,8 @@
               <input id= "user-settings-section-about-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-about-sel" class="settings-section-sel">ABOUT</label>
 
-              <!-- disabled temporarily
               <input id= "user-settings-section-developers-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-developers-sel" class="settings-section-sel">DEVELOPERS</label>
-              -->
 
               <input id= "user-settings-section-logout-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-logout-sel" class="settings-section-sel" style="color: var(--red-color);">LOG OUT</label>
@@ -400,6 +398,14 @@
               <div class="settings-subsection">
                 <span class="settings-subsection-title">DEVELOPERS</span>
                 <div class="self-profile-setting-input-container">
+                  <div class="setting-switch">
+                    <label class="switch" style="margin-left: 0; margin-top: 2px;">
+                      <input id="en-sslkeylog" type="checkbox"/>
+                      <span class="slider round"></span>
+                    </label>
+                    <span>ENABLE SSL KEY LOGGING (use at your own risk for network debugging; requires restart)</span>
+                  </div>
+                  <!--
                   <div class="self-profile-setting-input-container">
                     <input id="create-bot-name" placeholder="Bot name"/>
                     <button id="create-bot" class="apply-button">CREATE A BOT</button>
@@ -407,6 +413,7 @@
                   <div class="self-profile-setting-input-container">
                     <span>YOUR BOTS: </span><span id="owned-bot-list"></span>
                   </div>
+                  -->
                 </div>
               </div>
             </div>

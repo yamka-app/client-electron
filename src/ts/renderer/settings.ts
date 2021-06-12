@@ -18,7 +18,8 @@ const defaultSettings = [
     { name: "micThres",      value: 0.008             },
     { name: "agents",        value: {}                },
     { name: "tokens",        value: {}                },
-    { name: "users",         value: []                }
+    { name: "users",         value: []                },
+    { name: "sslkeylog",     value: false             }
 ];
 
 // Simple turn on/off settings that can be toggled with a switch
@@ -26,7 +27,8 @@ const toggleSettings: {name: string, element: string}[] = [
     { name: "notifications", element: "enable-notifications" },
     { name: "sendTyping",    element: "send-typing"          },
     { name: "previewYt",     element: "preview-yt"           },
-    { name: "blurOnDefocus", element: "blur-unfocused"       }
+    { name: "blurOnDefocus", element: "blur-unfocused"       },
+    { name: "sslkeylog",     element: "en-sslkeylog"         }
 ];
 
 // Set ot get a setting

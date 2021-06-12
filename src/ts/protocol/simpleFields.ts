@@ -102,6 +102,14 @@ export class BinField extends SimpleField {
     lengthingFunc = (buf: Buffer) => buf.length;
 }
 
+export class PrefixedBinField extends SimpleField {
+    constructor(p: string, bid?: number) { super(p, bid); }
+
+    encodingFunc  = (val: Buffer) => Buffer.concat([DataTypes.encNum(val.length, 2), val]);
+    decodingFunc  = (buf: Buffer) => buf;
+    lengthingFunc = (buf: Buffer) => DataTypes.decNum(buf.slice(0, 2));
+}
+
 export class MsgSectionsField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 

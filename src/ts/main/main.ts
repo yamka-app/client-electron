@@ -1,18 +1,18 @@
 import { app, BrowserWindow, Tray, Menu, ipcMain } from "electron";
 import { initialize as remoteInit } from "@electron/remote/main";
-import zlib    from "zlib";
-import tmp     from "tmp";
-import path    from "path";
-import tls     from "tls";
-import fs      from "fs";
-import resizer from "node-image-resizer";
+import zlib      from "zlib";
+import tmp       from "tmp";
+import path      from "path";
+import tls       from "tls";
+import fs        from "fs";
+import resizer   from "node-image-resizer";
+import sslkeylog from "sslkeylog";
 
 import DataTypes                       from "../protocol/dataTypes";
 import * as packets                    from "../protocol/packets";
 import * as entities                   from "../protocol/entities";
 import TastyClient                     from "../protocol/tasty";
 import SaltyClient, { SaltyCallbacks } from "../protocol/salty";
-import { data } from "remark";
 
 const dataHomePath = path.join(app.getPath("appData"), "yamka");
 const configPath   = path.join(dataHomePath, "yamka_config.json");
@@ -26,6 +26,7 @@ class YamkaConfig {
     sendTyping?:    boolean;
     previewYt?:     boolean;
     blurOnDefocus?: boolean;
+    sslkeylog?:     boolean;
 
     bounds?: {
         width:  number;
@@ -94,6 +95,9 @@ app.on("ready", () => {
     global["webprotState"] = webprotState;
     global["tmpDir"] = tmpDir;
     loadConfig();
+
+    if(config.sslkeylog)
+        sslkeylog.hookAll();
     
     // Create the window
     createWindow();
@@ -215,10 +219,15 @@ function webprotData(bytes: Buffer) {
     // Client identity (start Salty engine)
     if(packet instanceof packets.ClientIdentityPacket) {
         const cb = new SaltyCallbacks();
-        cb.entityPut = (e) => webprotSendPacket(new packets.EntitiesPacket(e));
-        cb.entityGet = (e, cb) =>
+        cb.entityPut = (e) => {
+            console.log("[salty] put", e);
+            webprotSendPacket(new packets.EntitiesPacket(e));
+        }
+        cb.entityGet = (e, cb) => {
+            console.log("[salty] get", e);
             webprotSendPacket(new packets.EntityGetPacket(e), undefined, regCb((p) =>
                 cb((p as packets.EntitiesPacket).entities)));
+        }
         webprotState.salty = new SaltyClient(packet.userId, packet.agentId, cb);
     }
 

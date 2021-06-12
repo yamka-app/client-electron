@@ -3,30 +3,30 @@
 // ...so please go read their docs, they pretty much apply here:
 // https://www.signal.org/docs/
 
-import * as fs              from "fs";
-import * as path            from "path";
-import { app }              from "electron";
-import * as crypto          from "crypto";
-import { EntityGetRequest } from "./packets";
-import { Entity, PKey }     from "./entities";
-import EventEmitter         from "events";
+import * as fs                    from "fs";
+import * as path                  from "path";
+import { app }                    from "electron";
+import * as crypto                from "crypto";
+import { EntityGetRequest }       from "./packets";
+import { Entity, PKey, PkeyType } from "./entities";
+import EventEmitter               from "events";
 
 export const PREKEY_EXPIRATION = 12 * 3600 * 1000; // 12 hours
 export const OTPREKEY_STOCK = 16;
 
-export class KeyBundle {
+export class KeyPair {
     pub:   crypto.KeyObject;
     priv:  crypto.KeyObject;
     date:  Date;
     stale: boolean = false;
 
     static generate() {
-        const keys = crypto.generateKeyPairSync("x25519");
-        const bundle = new KeyBundle();
-        bundle.priv = keys.privateKey;
-        bundle.pub  = keys.publicKey;
-        bundle.date = new Date();
-        return bundle;
+        const keys = crypto.generateKeyPairSync("ed25519");
+        const pair = new KeyPair();
+        pair.priv = keys.privateKey;
+        pair.pub  = keys.publicKey;
+        pair.date = new Date();
+        return pair;
     }
 
     public fingerprint() {
@@ -46,7 +46,7 @@ export class KeyBundle {
 
     static dejsonify(json: string) {
         const obj = JSON.parse(json);
-        const bundle = new KeyBundle();
+        const bundle = new KeyPair();
         bundle.priv  = crypto.createPrivateKey(obj.priv);
         bundle.pub   = crypto.createPublicKey (obj.priv);
         bundle.date  = obj.date;
@@ -57,9 +57,9 @@ export class KeyBundle {
 
 class KeyStore extends EventEmitter {
     device:    number;
-    identity:  KeyBundle;
-    prekeys:   KeyBundle[];
-    otprekeys: KeyBundle[];
+    identity:  KeyPair;
+    prekeys:   KeyPair[];
+    otprekeys: KeyPair[];
 
     private tdiff(from: Date, to?: Date) {
         return ((to ?? new Date()).getTime() - from.getTime()) / 1000;
@@ -67,15 +67,15 @@ class KeyStore extends EventEmitter {
 
     public updPrekeys() {
         if(this.prekeys === [] || this.prekeys === undefined)
-            this.prekeys = [KeyBundle.generate()];
+            this.prekeys = [KeyPair.generate()];
         // re-generate the main prekey every PREKEY_EXPIRATION ms
         // (keep the old one for 2*PREKEY_EXPIRATION ms to allow for delayed handshakes)
         for(const key of this.prekeys) {
             if(this.tdiff(key.date) >= PREKEY_EXPIRATION) {
-                const idx = this.prekeys.push(KeyBundle.generate()) - 1;
+                const idx = this.prekeys.push(KeyPair.generate()) - 1;
                 key.stale = true;
                 console.log("[salty] master prekey generated");
-                this.emit("new_otp", this.prekeys[idx]);
+                this.emit("new_mp", this.prekeys[idx]);
             }
         }
         this.prekeys = this.prekeys.filter(x => this.tdiff(x.date) < 2 * PREKEY_EXPIRATION);
@@ -86,7 +86,7 @@ class KeyStore extends EventEmitter {
         const old_keys = [...this.otprekeys];
         const new_otp = OTPREKEY_STOCK - this.otprekeys.length;
         for(var i = 0; i < new_otp; i++)
-            this.otprekeys.push(KeyBundle.generate());
+            this.otprekeys.push(KeyPair.generate());
         if(new_otp > 0) {
             console.log(`[salty] ${new_otp} one-time prekeys generated`);
             const new_keys = this.otprekeys.filter(x => !old_keys.includes(x)).map(x => x.pub);
@@ -96,7 +96,7 @@ class KeyStore extends EventEmitter {
 
     static generate() {
         const store = new KeyStore();
-        store.identity = KeyBundle.generate();
+        store.identity = KeyPair.generate();
         console.log(`[salty] identity key generated (fingerprint ${store.identity.fingerprint()})`);
         store.updPrekeys();
         return store;
@@ -115,9 +115,9 @@ class KeyStore extends EventEmitter {
         const obj   = JSON.parse(data);
         const store = new KeyStore();
         store.device    = obj.device;
-        store.identity  = KeyBundle.dejsonify(obj.identity);
-        store.prekeys   = obj.prekeys  .map(x => KeyBundle.dejsonify(x));
-        store.otprekeys = obj.otprekeys.map(x => KeyBundle.dejsonify(x));
+        store.identity  = KeyPair.dejsonify(obj.identity);
+        store.prekeys   = obj.prekeys  .map(x => KeyPair.dejsonify(x));
+        store.otprekeys = obj.otprekeys.map(x => KeyPair.dejsonify(x));
         return store;
     }
 }
@@ -134,15 +134,30 @@ export default class SaltyClient {
     private cb: SaltyCallbacks;
 
     public load() {
+        // TODO (temporary): abort if there is an identity key
+        //                   associated with this account
+        //                   that doesn't match the one in current key store
+        // TODO (long-term): sync with the key-holding agent in that case
         try {
             this.keys = KeyStore.dejsonify(fs.readFileSync(this.storePath, "utf8"));
         } catch(ex) {
             this.keys = KeyStore.generate();
             this.dump();
-            
-            // this.keys.on("new_otp", (keys: crypto.KeyObject[]) =>
-            //     this.cb.entityPut(keys.map(x => new PKey())));
+            // Sign and upload keys
+            this.cb.entityPut([
+                PKey.fromKeyObj(PkeyType.IDENTITY, this.keys.identity.pub),
+                PKey.fromKeyObj(PkeyType.PREKEY, this.keys.prekeys[0].pub, this.keys.identity.priv),
+                ...this.keys.otprekeys.map(x => PKey.fromKeyObj(PkeyType.OTPREKEY,
+                    x.pub, this.keys.identity.priv))
+            ]);
         }
+        // Sign and upload new one-time and master prekeys as they're generated
+        this.keys.on("new_mp", (key: crypto.KeyObject) =>
+            this.cb.entityPut([PKey.fromKeyObj(PkeyType.PREKEY,
+            key, this.keys.identity.priv)]));
+        this.keys.on("new_otp", (keys: crypto.KeyObject[]) =>
+            this.cb.entityPut(keys.map(x => PKey.fromKeyObj(PkeyType.OTPREKEY,
+            x, this.keys.identity.priv))));
     }
 
     public dump() {

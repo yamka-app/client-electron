@@ -1,4 +1,5 @@
-import DataTypes, { MessageSection }   from "./dataTypes.js";
+import crypto, { KeyObject } from "crypto";
+import DataTypes, { MessageSection } from "./dataTypes.js";
 import * as fields from "./simpleFields.js";
 
 // ============================================== ENTITIES
@@ -344,12 +345,34 @@ export class PKey extends Entity {
     type: PkeyType;
     user: number;
 
-    constructor(key: Buffer, sign?: Buffer) {
+    constructor(key: Buffer, type: PkeyType, sign?: Buffer) {
         super([
-            new fields.NumField("id", 8, 0)
+            new fields.NumField        ("id", 8,   0),
+            new fields.PrefixedBinField("key",     1),
+            new fields.PrefixedBinField("sign",    2),
+            new fields.NumField        ("type", 1, 3),
+            new fields.NumField        ("user", 8, 4),
         ]);
 
         this.key  = key;
         this.sign = sign;
+        this.type = type;
+        this.user = 0;
+        this.id = 0;
+    }
+
+    static fromKeyObj(type: PkeyType, ko: KeyObject, signWith?: KeyObject) {
+        const data = ko.export({ type: "spki", format: "der" });
+        // null infers the algorithm from the key size
+        const sign = (signWith === undefined) ? undefined : crypto.sign(null, data, signWith);
+        return new PKey(data, type, sign);
+    }
+
+    toKeyObj(verifyWith?: KeyObject) {
+        const key = crypto.createPublicKey({ key: this.key, format: "der", type: "spki" });
+        if(verifyWith !== undefined)
+            if(!crypto.verify(null, this.key, verifyWith, this.sign))
+                throw new Error("Key signature verification failed");
+        return key;
     }
 }

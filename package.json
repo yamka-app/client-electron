@@ -62,6 +62,7 @@
     "electron": "^12.0.1",
     "electron-builder": "^22.9.1",
     "rollup": "^2.36.2",
+    "sslkeylog": "^0.2.2",
     "ts-loader": "^8.0.14",
     "typescript": "^4.1.3"
   }
