@@ -1,4 +1,4 @@
-import DataTypes, { MessageSection, Permissions } from "./dataTypes.js";
+import types, { MessageSection, Permissions } from "./dataTypes.js";
 import { Entity, Message } from "./entities.js";
 
 // ============================================== SIMPLE FIELDS
@@ -23,7 +23,7 @@ export class SimpleField {
 
     encode = (val: any)    => Buffer.concat([
         this.hasBinaryId() ?
-            DataTypes.encNum(this.binaryId, 1) :
+            types.encNum(this.binaryId, 1) :
             Buffer.alloc(0),
         this.encodingFunc(val)]);
 
@@ -39,33 +39,33 @@ export class NumField extends SimpleField {
 
     constructor(p: string, b: number, bid?: number) { super(p, bid); this.bytes = b; }
 
-    encodingFunc  = (val: number) => DataTypes.encNum(val, this.bytes);
-    decodingFunc  = (buf: Buffer) => DataTypes.decNum(buf.slice(0, this.bytes));
+    encodingFunc  = (val: number) => types.encNum(val, this.bytes);
+    decodingFunc  = (buf: Buffer) => types.decNum(buf.slice(0, this.bytes));
     lengthingFunc = (buf: Buffer) => this.bytes;
 }
 
 export class BoolField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 
-    encodingFunc  = (val: boolean) => DataTypes.encNum(val ? 1 : 0, 1);
-    decodingFunc  = (buf: Buffer)  => DataTypes.decNum(buf.slice(0, 1)) > 0;
+    encodingFunc  = (val: boolean) => types.encNum(val ? 1 : 0, 1);
+    decodingFunc  = (buf: Buffer)  => types.decNum(buf.slice(0, 1)) > 0;
     lengthingFunc = (buf: Buffer)  => 1;
 }
 
 export class ColorField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 
-    encodingFunc  = (val: string) => DataTypes.encNum(parseInt(val.slice(1)), 4);
-    decodingFunc  = (buf: Buffer) => "#" + ("0000000" + DataTypes.decNum(buf).toString(16)).slice(-8);
+    encodingFunc  = (val: string) => types.encNum(parseInt(val.slice(1)), 4);
+    decodingFunc  = (buf: Buffer) => "#" + ("0000000" + types.decNum(buf).toString(16)).slice(-8);
     lengthingFunc = (buf: Buffer) => 4;
 }
 
 export class StrField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 
-    encodingFunc  = (val: string) => DataTypes.encStr(val);
-    decodingFunc  = (buf: Buffer) => DataTypes.decStr(buf);
-    lengthingFunc = (buf: Buffer) => DataTypes.decNum(buf.slice(0, 2)) + 2;
+    encodingFunc  = (val: string) => types.encStr(val);
+    decodingFunc  = (buf: Buffer) => types.decStr(buf);
+    lengthingFunc = (buf: Buffer) => types.decNum(buf.slice(0, 2)) + 2;
 }
 
 export class NumListField extends SimpleField {
@@ -73,17 +73,17 @@ export class NumListField extends SimpleField {
 
     constructor(p: string, b: number, bid?: number) { super(p, bid); this.bytes = b; }
 
-    encodingFunc  = (val: number[]) => DataTypes.encNumList(val, this.bytes);
-    decodingFunc  = (buf: Buffer)   => DataTypes.decNumList(buf, this.bytes);
-    lengthingFunc = (buf: Buffer)   => 2 + (DataTypes.decNum(buf.slice(0, 2)) * this.bytes);
+    encodingFunc  = (val: number[]) => types.encNumList(val, this.bytes);
+    decodingFunc  = (buf: Buffer)   => types.decNumList(buf, this.bytes);
+    lengthingFunc = (buf: Buffer)   => 2 + (types.decNum(buf.slice(0, 2)) * this.bytes);
 }
 
 export class StrListField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 
-    encodingFunc  = (val: string[]) => DataTypes.encStrList(val);
-    decodingFunc  = (buf: Buffer)   => DataTypes.decStrList(buf);
-    lengthingFunc = (buf: Buffer)   => DataTypes.strListLen(buf);
+    encodingFunc  = (val: string[]) => types.encStrList(val);
+    decodingFunc  = (buf: Buffer)   => types.decStrList(buf);
+    lengthingFunc = (buf: Buffer)   => types.strListLen(buf);
 }
 
 export class PermsField extends SimpleField {
@@ -105,45 +105,17 @@ export class BinField extends SimpleField {
 export class PrefixedBinField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 
-    encodingFunc  = (val: Buffer) => Buffer.concat([DataTypes.encNum(val.length, 2), val]);
+    encodingFunc  = (val: Buffer) => Buffer.concat([types.encNum(val.length, 2), val]);
     decodingFunc  = (buf: Buffer) => buf;
-    lengthingFunc = (buf: Buffer) => DataTypes.decNum(buf.slice(0, 2));
+    lengthingFunc = (buf: Buffer) => types.decNum(buf.slice(0, 2));
 }
 
 export class MsgSectionsField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 
-    encodingFunc  = (val: MessageSection[]) => Buffer.concat([
-        DataTypes.encNum(val.length, 1),
-        ...val.map(x => Buffer.concat([
-            DataTypes.encNum(x.type, 1),
-            DataTypes.encNum(x.blob, 8),
-            DataTypes.encStr(x.text)
-        ]))
-    ]);
-
-    decodingFunc = (buf: Buffer) => {
-        const cnt = DataTypes.decNum(buf.slice(0, 1));
-        var s = []; var pos = 1;
-        for(var i = 0; i < cnt; i++) {
-            const slice = buf.slice(pos);
-            s.push(new MessageSection(
-                DataTypes.decNum(slice.slice(0, 1)),
-                DataTypes.decNum(slice.slice(1, 9)),
-                DataTypes.decStr(slice.slice(9))
-            ));
-            pos += 11 + DataTypes.decNum(slice.slice(9, 11));
-        }
-        return s;
-    };
-
-    lengthingFunc = (buf: Buffer) => {
-        const cnt = DataTypes.decNum(buf.slice(0, 1));
-        var pos = 1;
-        for(var i = 0; i < cnt; i++)
-            pos += 11 + DataTypes.decNum(buf.slice(pos + 9, pos + 11))
-        return pos;
-    };
+    encodingFunc  = (val: MessageSection[]) => types.encMsgSections(val);
+    decodingFunc  = (buf: Buffer)           => types.decMsgSections(buf);
+    lengthingFunc = (buf: Buffer)           => types.lenMsgSections(buf);
 }
 
 export class EntityField extends SimpleField {
@@ -173,7 +145,7 @@ export function simpleFieldEncoder(t: any, fields: SimpleField[], inclCnt: boole
 
         return Buffer.concat([
             inclCnt ?
-                DataTypes.encNum(remaining.length, 1) :
+                types.encNum(remaining.length, 1) :
                 Buffer.alloc(0),
             ...remaining.map(f => f.encode(t[f.prop]))
         ])
@@ -188,11 +160,11 @@ export function simpleFieldDecoder(t: any, fields: SimpleField[], inclCnt: boole
         // "limit" defines how many fields we're allowed to decode max
         return (buf: Buffer, limit?: number, pos: number = 0) => {
             var decoded = 0;
-            if(inclCnt) { limit = DataTypes.decNum(buf.slice(pos, pos + 1)); pos++; }
+            if(inclCnt) { limit = types.decNum(buf.slice(pos, pos + 1)); pos++; }
             if(limit === undefined) limit = -1;
 
             while(pos < buf.length && (decoded < limit && limit !== -1)) {
-                const id = DataTypes.decNum(buf.slice(pos, pos + 1));
+                const id = types.decNum(buf.slice(pos, pos + 1));
                 const field = fields.find(x => x.binaryId == id);
                 const slice = buf.slice(pos + 1);
 
