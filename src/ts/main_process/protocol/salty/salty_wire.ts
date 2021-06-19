@@ -114,6 +114,10 @@ export class Level2Msg {
     op:  Level2Command;
     pub: crypto.KeyObject; // Public key to step the DH ratchet
 
+    constructor(pub?: crypto.KeyObject) {
+        this.pub = pub;
+    }
+
     public encode() {
         const includePub = this.pub !== undefined;
         const pubData = this.pub.export(pubkeyFormat);
@@ -154,7 +158,7 @@ export class Level2Msg {
 export class Level2HelloMsg extends Level2Msg {
     op = Level2Command.HELLO;
 
-    constructor() { super(); }
+    constructor(pub?: crypto.KeyObject) { super(pub); }
     protected encodePayload() { return Buffer.from([]); }
     protected static decodePayload(data: Buffer) { return new Level2HelloMsg(); }
 }
@@ -163,10 +167,10 @@ export class Level2ConvMsg extends Level2Msg {
     op = Level2Command.CONVERSATION;
     sections: MessageSection[];
 
-    constructor(s?: MessageSection[]) { super(); }
+    constructor(pub?: crypto.KeyObject, s?: MessageSection[]) { super(pub); }
     protected encodePayload() { return types.encMsgSections(this.sections); }
     protected static decodePayload(data: Buffer) {
-        return new Level2ConvMsg(types.decMsgSections(data));
+        return new Level2ConvMsg(undefined, types.decMsgSections(data));
     }
 }
 
@@ -174,9 +178,9 @@ export class Level2TastyMsg extends Level2Msg {
     op = Level2Command.TASTY_KEY;
     key: crypto.KeyObject;
 
-    constructor(k?: crypto.KeyObject) { super(); this.key = k; }
+    constructor(pub?: crypto.KeyObject, k?: crypto.KeyObject) { super(pub); this.key = k; }
     protected encodePayload() { return this.key.export(); }
     protected static decodePayload(data: Buffer) {
-        return new Level2TastyMsg(crypto.createSecretKey(data));
+        return new Level2TastyMsg(undefined, crypto.createSecretKey(data));
     }
 }
