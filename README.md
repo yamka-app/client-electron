@@ -1,5 +1,14 @@
 # Yamka Electron Client :tada:
 
+![Top language](https://img.shields.io/github/languages/top/yamka-app/client-electron)
+![Goto counter](https://img.shields.io/github/search/yamka-app/client-electron/goto)
+![License](https://img.shields.io/github/license/yamka-app/client-electron)
+![Platforms](https://img.shields.io/badge/platform-win64%20%7C%20linux64-blueviolet)
+![Last commit](https://img.shields.io/github/last-commit/yamka-app/client-electron)
+![Status](https://img.shields.io/uptimerobot/status/m788461709-79464d516b1ef3af81a20454)
+![Uptime (7 days)](https://img.shields.io/uptimerobot/ratio/7/m788461709-79464d516b1ef3af81a20454)
+![Maintainer](https://img.shields.io/badge/maintainer-portasynthinca3-ff69b4)
+
 ![](promo.png)
 
 :construction: **!!!WARNING!!!** We're transitioning to new major breaking API changes both on the client and the back end. **This project is _not_ going to work completely at the moment** :construction:\
