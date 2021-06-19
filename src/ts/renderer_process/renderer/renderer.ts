@@ -608,15 +608,13 @@ function _rendererFunc() {
                     util.setElmVisibility(util.elmById("email-conf-cont"),                 !entity.emailConfirmed);
 
                     // Request own avatar
-                    util.download(entity.avaFile, (blob) => {
-                        domUtil.updateSelfAva(blob);
-                    });
+                    util.download(entity.avaFile, (blob) => domUtil.updateSelfAva(blob));
 
                     // Update DM, friend and group list
-                    layout.updGroupList();
                     if(window.viewingGroup === 0) {
-                        layout.updMemberList();
                         layout.updChannelList();
+                        layout.updMemberList();
+                        layout.updGroupList();
                     }
 
                     // Check new friend requests

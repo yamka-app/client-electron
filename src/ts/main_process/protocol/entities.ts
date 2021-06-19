@@ -1,16 +1,30 @@
 import crypto, { KeyObject } from "crypto";
 import DataTypes, { MessageSection } from "./dataTypes.js";
+import { pubkeyFormat } from "./salty/salty.js";
 import * as fields from "./simpleFields.js";
 
 // ============================================== ENTITIES
 // Entities represent objects in Yamka. There are multiple
 //  entitiy types: users, groups, channels, etc.
 // Entities have fields, most notably, IDs.
+export enum EntityType {
+    USER      = 1,
+    CHANNEL   = 2,
+    GROUP     = 3,
+    MESSAGE   = 4,
+    ROLE      = 5,
+    FILE      = 6,
+    MSG_STATE = 7,
+    POLL      = 8,
+    AGENT     = 9,
+    PKEY      = 10
+}
 export class EntityDecodeResult {
     entity:   Entity;
     posAfter: number;
 }
 export class Entity {
+    typeNum: EntityType;
     simpleFieldList?: fields.SimpleField[];
 
     encodeFields?: ()                                        => Buffer;
@@ -30,7 +44,7 @@ export class Entity {
             throw new Error("Can't encode a generic entity");
 
         return Buffer.concat([
-            DataTypes.encNum(this.typeNum, 1),
+            DataTypes.encNum(this.typeNum as number, 1),
             this.encodeFields()
         ]);
     }
@@ -68,7 +82,7 @@ export enum UserBadge {
 }
 export class User extends Entity {
     __type_name = "User";
-    typeNum = 1;
+    typeNum = EntityType.USER;
 
     email?:          string;
     name?:           string;
@@ -91,6 +105,10 @@ export class User extends Entity {
     ownedBots?:      number[];
     agents?:         number[];
     emailConfirmed?: boolean;
+    identityKey?:    PKey;
+    prekey?:         PKey;
+    otprekey?:       PKey;
+    idsignKey?:      PKey;
 
     constructor() {
         super([
@@ -114,7 +132,11 @@ export class User extends Entity {
             new fields.NumField    ("botOwner", 8,    18),
             new fields.NumListField("ownedBots", 8,   19),
             new fields.NumListField("agents", 8,      20),
-            new fields.BoolField   ("emailConfirmed", 21)
+            new fields.BoolField   ("emailConfirmed", 21),
+            new fields.EntityField ("identityKey",    22),
+            new fields.EntityField ("prekey",         23),
+            new fields.EntityField ("otprekey",       24),
+            new fields.EntityField ("idsignKey",      25)
         ]);
     }
 }
@@ -126,7 +148,7 @@ export enum ChannelVoiceStatus {
 }
 export class Channel extends Entity {
     __type_name = "Channel";
-    typeNum = 2;
+    typeNum = EntityType.CHANNEL;
 
     id?:          number;
     name?:        string;
@@ -161,7 +183,7 @@ export class Channel extends Entity {
 
 export class Group extends Entity {
     __type_name = "Group";
-    typeNum = 3;
+    typeNum = EntityType.GROUP;
 
     id?:           number;
     name?:         string;
@@ -188,7 +210,7 @@ export class Group extends Entity {
 
 export class Message extends Entity {
     __type_name = "Message";
-    typeNum = 4;
+    typeNum = EntityType.MESSAGE;
 
     id:       number;
     states:   number[];
@@ -209,7 +231,7 @@ export class Message extends Entity {
 
 export class Role extends Entity {
     __type_name = "Role";
-    typeNum = 5;
+    typeNum = EntityType.ROLE;
 
     id?:       number;
     name?:     string;
@@ -234,7 +256,7 @@ export class Role extends Entity {
 
 export class File extends Entity {
     __type_name = "File";
-    typeNum = 6;
+    typeNum = EntityType.FILE;
 
     path?: string; // only used in main-to-renderer communication
 
@@ -258,24 +280,26 @@ export class File extends Entity {
 
 export class MessageState extends Entity {
     __type_name = "MessageState";
-    typeNum = 7;
+    typeNum = EntityType.MSG_STATE;
 
-    id:       number;
-    msg_id:   number;
-    sections: MessageSection[];
+    id:        number;
+    msg_id:    number;
+    sections:  MessageSection[];
+    encrypted: Buffer;
 
     constructor() {
         super([
             new fields.NumField        ("id", 8,     0),
             new fields.NumField        ("msg_id", 8, 1),
-            new fields.MsgSectionsField("sections",  2)
+            new fields.MsgSectionsField("sections",  2),
+            new fields.PrefixedBinField("encrypted", 3)
         ]);
     }
 }
 
 export class Poll extends Entity {
     __type_name = "Poll";
-    typeNum = 8;
+    typeNum = EntityType.POLL;
 
     id:          number;
     options:     string[];
@@ -311,7 +335,7 @@ export enum AgentDevice {
 }
 export class Agent extends Entity {
     __type_name = "Agent";
-    typeNum = 9;
+    typeNum = EntityType.AGENT;
 
     id:     number;
     owner:  number;
@@ -334,10 +358,11 @@ export enum PkeyType {
     IDENTITY = 0,
     PREKEY   = 1,
     OTPREKEY = 2,
+    IDSIGN   = 3
 }
 export class PKey extends Entity {
     __type_name = "PKey";
-    typeNum = 10;
+    typeNum = EntityType.PKEY;
 
     id:   number;
     key:  Buffer;
@@ -345,7 +370,7 @@ export class PKey extends Entity {
     type: PkeyType;
     user: number;
 
-    constructor(key: Buffer, type: PkeyType, sign?: Buffer) {
+    constructor(key: Buffer, type: PkeyType, owner: number, sign?: Buffer) {
         super([
             new fields.NumField        ("id", 8,   0),
             new fields.PrefixedBinField("key",     1),
@@ -357,15 +382,15 @@ export class PKey extends Entity {
         this.key  = key;
         this.sign = sign;
         this.type = type;
-        this.user = 0;
+        this.user = owner;
         this.id = 0;
     }
 
-    static fromKeyObj(type: PkeyType, ko: KeyObject, signWith?: KeyObject) {
-        const data = ko.export({ type: "spki", format: "der" });
+    static fromKeyObj(owner: number, type: PkeyType, ko: KeyObject, signWith?: KeyObject) {
+        const data = ko.export(pubkeyFormat);
         // null infers the algorithm from the key size
         const sign = (signWith === undefined) ? undefined : crypto.sign(null, data, signWith);
-        return new PKey(data, type, sign);
+        return new PKey(data, type, owner, sign);
     }
 
     toKeyObj(verifyWith?: KeyObject) {

@@ -257,10 +257,10 @@ export class EntityContext {
     }
 }
 export enum EntityKeyType {
-    IDENTITY    = 0,
-    PREKEY      = 1,
-    OTPREKEY    = 2,
-    X3DH_BUNDLE = 4
+    IDENTITY = 0,
+    PREKEY   = 1,
+    OTPREKEY = 2,
+    IDSIGN   = 3
 }
 export class EntityGetRequest {
     type: number;
@@ -283,6 +283,12 @@ export class EntityGetRequest {
             (this.c !== undefined) ? this.c.encode() : Buffer.alloc(0),
             (this.c !== undefined) ? DataTypes.encNum(this.k, 1) : Buffer.alloc(0)
         ]);
+    }
+
+    constructor(type?: number, id?: number, k?: EntityKeyType) {
+        this.type = type;
+        this.id   = id;
+        this.k    = k;
     }
 }
 export class EntityGetPacket extends Packet {

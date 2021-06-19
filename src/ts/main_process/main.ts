@@ -8,11 +8,11 @@ import fs        from "fs";
 import resizer   from "node-image-resizer";
 import sslkeylog from "sslkeylog";
 
-import DataTypes                       from "../protocol/dataTypes";
-import * as packets                    from "../protocol/packets";
-import * as entities                   from "../protocol/entities";
-import TastyClient                     from "../protocol/tasty";
-import SaltyClient, { SaltyCallbacks } from "../protocol/salty";
+import DataTypes                       from "./protocol/dataTypes";
+import * as packets                    from "./protocol/packets";
+import * as entities                   from "./protocol/entities";
+import TastyClient                     from "./protocol/tasty";
+import SaltyClient, { SaltyCallbacks } from "./protocol/salty/salty";
 
 const dataHomePath = path.join(app.getPath("appData"), "yamka");
 const configPath   = path.join(dataHomePath, "yamka_config.json");
@@ -52,7 +52,7 @@ function createWindow() {
         // Create the window
         mainWindow = new BrowserWindow({
             title:       "Yamka - beta",
-            icon:        path.join(__dirname, "../../../logo.png"),
+            icon:        path.join(__dirname, "../../logo.png"),
             maximizable: true,
             frame:       false,
             transparent: false,
@@ -61,7 +61,7 @@ function createWindow() {
             webPreferences: {
                 contextIsolation: false,
                 enableRemoteModule: true,
-                preload: path.join(__dirname, "../../esnext/renderer/preload.js")
+                preload: path.join(__dirname, "../esnext/renderer/preload.js")
             },
             width:  (config && config.bounds) ? config.bounds.width  : 1280,
             height: (config && config.bounds) ? config.bounds.height : 720
@@ -96,14 +96,14 @@ app.on("ready", () => {
     global["tmpDir"] = tmpDir;
     loadConfig();
 
-    if(config.sslkeylog)
+    if(config.sslkeylog && process.env["SSLKEYLOGFILE"] !== undefined)
         sslkeylog.hookAll();
     
     // Create the window
     createWindow();
 
     // Create the icon in the tray
-    tray = new Tray(path.join(__dirname, "../../../logo.png"));
+    tray = new Tray(path.join(__dirname, "../../logo.png"));
     tray.setToolTip("Yamka");
     tray.setContextMenu(Menu.buildFromTemplate([
         { label: "Open", type: "normal", click() { createWindow() } },
@@ -219,15 +219,9 @@ function webprotData(bytes: Buffer) {
     // Client identity (start Salty engine)
     if(packet instanceof packets.ClientIdentityPacket) {
         const cb = new SaltyCallbacks();
-        cb.entityPut = (e) => {
-            console.log("[salty] put", e);
-            webprotSendPacket(new packets.EntitiesPacket(e));
-        }
-        cb.entityGet = (e, cb) => {
-            console.log("[salty] get", e);
-            webprotSendPacket(new packets.EntityGetPacket(e), undefined, regCb((p) =>
-                cb((p as packets.EntitiesPacket).entities)));
-        }
+        cb.entityPut = (e) => webprotSendPacket(new packets.EntitiesPacket(e));
+        cb.entityGet = (e, cb) => webprotSendPacket(new packets.EntityGetPacket(e), undefined,
+            regCb((p) => cb((p as packets.EntitiesPacket).entities)));
         webprotState.salty = new SaltyClient(packet.userId, packet.agentId, cb);
     }
 
