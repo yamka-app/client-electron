@@ -162,6 +162,7 @@ export class Channel extends Entity {
     voiceUsers?:  number[];
     voiceStatus?: ChannelVoiceStatus[];
     mentions?:    number[];
+    lcid:         number;
 
     constructor() {
         super([
@@ -177,6 +178,7 @@ export class Channel extends Entity {
             new fields.NumListField("voiceUsers", 8,  10),
             new fields.NumListField("voiceStatus", 1, 11),
             new fields.NumListField("mentions", 8,    12),
+            new fields.NumField    ("lcid", 4,        13),
         ]);
     }
 }
