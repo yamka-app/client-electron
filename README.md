@@ -1,7 +1,7 @@
 # Yamka Electron Client :tada:
 
 ![Top language](https://img.shields.io/github/languages/top/yamka-app/client-electron)
-![Counter](https://img.shields.io/github/search/yamka-app/client-electron/goto)
+![Counter](https://img.shields.io/github/search/yamka-app/client-electron/goto%20)
 ![License](https://img.shields.io/github/license/yamka-app/client-electron)
 ![Platforms](https://img.shields.io/badge/platform-win64%20%7C%20linux64-blueviolet)
 ![Last commit](https://img.shields.io/github/last-commit/yamka-app/client-electron)
