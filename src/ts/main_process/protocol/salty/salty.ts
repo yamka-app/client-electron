@@ -14,7 +14,8 @@
 //     digest the signature identity key and not the main one
 //     because proving that it's genuine authenticates every other
 //     key as they're signed by that one.
-//     Why not use the XEdDSA/VXEdDSA algorithm Signal came up
+//     Why not use the XEdDSA/VXEdDSA algorithm Signal have come up
+//     with? I haven't happened to come across a JS implementation.
 // II. nothing!! (I put the first 'I' just because I thought
 //     there will be some more changes)
 
@@ -28,16 +29,37 @@ import hkdf          from "futoin-hkdf";
 import EventEmitter  from "events";
 
 import { EntityGetRequest, EntityKeyType } from "../packets";
-import { Level1InitMsg } from "./salty_wire";
+import {
+    Level1Msg,
+    Level1InitMsg,
+    Level2Msg,
+    Level2HelloMsg,
+    Level2HelloAckMsg,
+    Level1NormalMsg,
+    Level2TextMsg
+} from "./salty_wire";
 import {
     PKey, User, PkeyType,
     Entity, Message, MessageState,
     EntityType
 } from "../entities";
+import { MessageSection, MessageSectionType } from "../dataTypes";
 
 const PREKEY_EXPIRATION = 12 * 3600 * 1000; // 12 hours
 const OTPREKEY_STOCK = 32;
 export const pubkeyFormat: crypto.KeyExportOptions<"der"> = { type: "spki", format: "der" };
+
+function fingerprint(key: crypto.KeyObject) {
+    if(key.type === "public")
+        return crypto.createHash("sha256")
+            .update(key.export(pubkeyFormat))
+            .digest("base64");
+    else if(key.type === "secret")
+        return crypto.createHash("sha256")
+            .update(key.export())
+            .digest("base64");
+    else throw new Error();
+}
 
 export class KeyPair {
     @ser.member pub:   crypto.KeyObject;
@@ -58,9 +80,7 @@ export class KeyPair {
 
     @ser.member
     public fingerprint() {
-        return crypto.createHash("sha256")
-            .update(this.pub.export(pubkeyFormat))
-            .digest("base64");
+        return fingerprint(this.pub);
     }
 
     @ser.member
@@ -86,7 +106,7 @@ export class KeyPair {
 
 // Conversation State
 export class CState {
-    @ser.member initByUs: boolean;
+    @ser.member alice:    boolean;
     @ser.member identity: crypto.KeyObject;
     @ser.member idSign:   crypto.KeyObject;
     @ser.member eph:      KeyPair;
@@ -227,7 +247,7 @@ export default class SaltyClient {
             { salt: salt, info: "YamkaX3DHKDF", hash: "sha512" }));
     }
 
-    public handshakeInit(uid: number, cid: number) {
+    public handshakeInit(uid: number, cid: number, done: () => void) {
         // Fetch the user's X3DH key bundle
         const state = new CState();
         this.cb.entityGet([
@@ -269,7 +289,8 @@ export default class SaltyClient {
                 state.identity.export(pubkeyFormat),
                 this.keys.identity.pub.export(pubkeyFormat)
             ]);
-            state.ratchet = new DHRatchet(state.sk, ad);
+            const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
+            state.ratchet = new DHRatchet(keyBase, state.sk, ad);
             state.ratchet.step(prek);
             this.conv[`${cid}`] = state;
             this.dumpConv(cid);
@@ -278,22 +299,63 @@ export default class SaltyClient {
             const msg = new Message();
             msg.channel = cid;
             msg.latest = new MessageState();
-            msg.latest.encrypted = new Level1InitMsg(state.eph.pub, otprek, Buffer.from([])).encode();
+            msg.latest.encrypted = new Level1InitMsg(state.eph.pub, otprek,
+                    new Level2HelloMsg(state.ratchet.keyPair.pub, 123).encode(state.ratchet)).encode();
             this.cb.entityPut([msg]);
+
+            done();
         });
     }
 
-    public handshakeAck(uid: number, cid: number) {
+    private handshakeAck(cid: number, uid: number) {
         // TODO
     }
 
-    private loadConv(id: number) {
-        const cPath = path.join(app.getPath("appData"), "yamka", `conv_${this.uid}_${id}.json`);
-        this.conv[`${id}`] = ser.dejsonify(CState, fs.readFileSync(cPath, "utf8"));
+    private e2eedbg(info: any) {
+        return new MessageSection(MessageSectionType.E2EEDBG, 0, JSON.stringify(info));
+    }
+    public processMsg(cid: number, uid: number, mid: number, data: Buffer) {
+        try {
+            this.loadConv(cid);
+        } catch(ex) { }
+        // Decode L1
+        const l1 = Level1Msg.decode(data);
+        if(l1 instanceof Level1InitMsg) {
+            const l2 = Level2Msg.decode(l1.l2d, this.conv[`${cid}`].ratchet);
+            if(!(l2 instanceof Level2HelloMsg))
+                throw new Error("L1 init should enclose L2 hello");
+            const info = {
+                type:           "Alice Hello",
+                ephemeralKeyFp: fingerprint(l1.eph),
+                otPrekeyFp:     fingerprint(l1.otp),
+                x3dhSecret:     fingerprint(this.conv[`${cid}`].sk),
+                check:          l2.check
+            };
+            // We're Bob, continue the handshake!
+            this.handshakeAck(cid, uid);
+            this.conv[`${cid}`].ratchet.step(l2.pub);
+            return [this.e2eedbg(info)];
+        } else if(l1 instanceof Level1NormalMsg) {
+            const l2 = Level2Msg.decode(l1.data, this.conv[`${cid}`].ratchet);
+            if(l2 instanceof Level2HelloAckMsg) {
+                const info = {
+                    type:  "Bob Hello",
+                    check: l2.check
+                };
+                return [this.e2eedbg(info)];
+            } else if(l2 instanceof Level2TextMsg) {
+                return l2.sections;
+            }
+        }
     }
 
-    private dumpConv(id: number) {
-        const cPath = path.join(app.getPath("appData"), "yamka", `conv_${this.uid}_${id}.json`);
-        fs.writeFileSync(cPath, ser.jsonify(this.conv[`${id}`]), "utf8");
+    private convPath(id: number) {
+        return path.join(app.getPath("appData"), "yamka", `conv_${this.uid}_${id}.json`);
+    }
+    public loadConv(id: number) {
+        this.conv[`${id}`] = ser.dejsonify(CState, fs.readFileSync(this.convPath(id), "utf8"));
+    }
+    public dumpConv(id: number) {
+        fs.writeFileSync(this.convPath(id), ser.jsonify(this.conv[`${id}`]), "utf8");
     }
 }

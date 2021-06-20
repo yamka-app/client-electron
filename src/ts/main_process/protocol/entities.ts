@@ -388,7 +388,7 @@ export class PKey extends Entity {
 
     static fromKeyObj(owner: number, type: PkeyType, ko: KeyObject, signWith?: KeyObject) {
         const data = ko.export(pubkeyFormat);
-        // null infers the algorithm from the key size
+        // null infers the algorithm from the key type
         const sign = (signWith === undefined) ? undefined : crypto.sign(null, data, signWith);
         return new PKey(data, type, owner, sign);
     }

@@ -2,14 +2,15 @@
 // The main one uses regular files
 
 export enum MessageSectionType {
-    TEXT   = 0,
-    FILE   = 1,
-    CODE   = 2,
-    QUOTE  = 3,
-    INVITE = 4,
-    USER   = 5,
-    BOT_UI = 6,
-    POLL   = 7
+    TEXT    = 0,
+    FILE    = 1,
+    CODE    = 2,
+    QUOTE   = 3,
+    INVITE  = 4,
+    USER    = 5,
+    BOT_UI  = 6,
+    POLL    = 7,
+    E2EEDBG = 255
 }
 export class MessageSection {
     type: MessageSectionType;

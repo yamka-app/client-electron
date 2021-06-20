@@ -6,6 +6,8 @@ import * as crypto from "crypto";
 import hkdf        from "futoin-hkdf";
 import { KeyPair } from "./salty";
 import types       from "../dataTypes";
+import * as fs     from "fs";
+import * as path   from "path";
 
 export class KDFRatchet {
     @ser.member chainKey: crypto.KeyObject;
@@ -35,7 +37,7 @@ export class KDFRatchet {
     }
 
     @ser.member
-    public encrypt(plaintext: Buffer) {
+    public encrypt(plaintext: Buffer): [crypto.KeyObject, Buffer] {
         const key = this.step();
         const nonce = Buffer.from(Array(12).fill(0));
         const cipher = crypto.createCipheriv("aes-256-ccm", key, nonce, { authTagLength: 16 });
@@ -43,41 +45,47 @@ export class KDFRatchet {
 
         const ciphertext = cipher.update(plaintext);
         const auth = cipher.getAuthTag();
-        return Buffer.concat([
+        return [key, Buffer.concat([
             types.encNum(ciphertext.length, 2),
             ciphertext,
             auth
-        ]);
+        ])];
     }
 
     @ser.member
-    public decrypt(data: Buffer) {
+    public decrypt(data: Buffer, givenKey?: crypto.KeyObject): [crypto.KeyObject, Buffer] {
         const ctLen = types.decNum(data.slice(0, 2));
         const ciphertext = data.slice(2, 2 + ctLen);
         const auth = data.slice(2 + ctLen);
 
-        const key = this.step();
+        const key = givenKey ?? this.step();
         const nonce = Buffer.from(Array(12).fill(0));
         const decipher = crypto.createDecipheriv("aes-256-ccm", key, nonce, { authTagLength: 16 });
         decipher.setAuthTag(auth);
         decipher.setAAD(this.ad, { plaintextLength: ciphertext.length });
         const plaintext = decipher.update(ciphertext);
         decipher.final();
-        return plaintext;
+        return [key, plaintext];
     }
 }
 
 export class DHRatchet {
-    @ser.member keyPair: KeyPair;
-    @ser.member pubKey:  crypto.KeyObject;
-    @ser.member rootKey: crypto.KeyObject;
-    @ser.member send:    KDFRatchet;
-    @ser.member recv:    KDFRatchet;
-    @ser.member iter:    number;
-    @ser.member lastR:   boolean;
+    @ser.member keyPair:  KeyPair;
+    @ser.member pubKey:   crypto.KeyObject;
+    @ser.member rootKey:  crypto.KeyObject;
+    @ser.member send:     KDFRatchet;
+    @ser.member recv:     KDFRatchet;
+    @ser.member iter:     number;
+    @ser.member lastR:    boolean;
+    @ser.member basePath: string; // for storing per-message keys
+    @ser.member seq:      number;
 
-    constructor(rk: crypto.KeyObject, ad: Buffer) {
+    constructor(basePath: string, rk: crypto.KeyObject, ad: Buffer, kp?: KeyPair) {
+        this.basePath = basePath;
+        if(!fs.existsSync(basePath))
+            fs.mkdirSync(basePath);
         this.rootKey = rk;
+        this.keyPair = kp;
         this.send = new KDFRatchet(ad);
         this.recv = new KDFRatchet(ad);
     }
@@ -87,7 +95,7 @@ export class DHRatchet {
         const salt = Buffer.from(Array(64).fill(0));
         const hkdfOut = hkdf(dh, 64, { salt: salt, info: "RootRatchet", hash: "sha512" });
         this.rootKey = crypto.createSecretKey(hkdfOut.slice(0, 32));
-        return         crypto.createSecretKey(hkdfOut.slice(0, 64));
+        return crypto.createSecretKey(hkdfOut.slice(32, 64));
     }
 
     @ser.member
@@ -124,15 +132,54 @@ export class DHRatchet {
         }
     }
 
+    private readKeyRange(seq: number) {
+        const rangeFile = path.join(this.basePath, `${Math.floor(seq / 100)}00`);
+        try {
+            return fs.readFileSync(rangeFile, "utf8").split("\n");
+        } catch(ex) {
+            return [];
+        }
+    }
+
+    private loadKey(seq: number) {
+        const keys = this.readKeyRange(seq);
+        return crypto.createSecretKey(Buffer.from(keys[seq % 100], "utf8"));
+    }
+
+    private writeKeyRange(seq: number, keys: string[]) {
+        const rangeFile = path.join(this.basePath, `${Math.floor(seq / 100)}00`);
+        fs.writeFileSync(rangeFile, keys.join("\n"));
+    }
+
+    private saveKey(seq: number, key: crypto.KeyObject) {
+        const keys = this.readKeyRange(seq);
+        keys[seq % 100] = key.export().toString("base64");
+        this.writeKeyRange(seq, keys);
+    }
+
     @ser.member
     public encrypt(plaintext: Buffer) {
         this.lastR = false;
-        return this.send.encrypt(plaintext);
+        const [key, ciphertext] = this.send.encrypt(plaintext);
+        return Buffer.concat([
+            types.encNum(this.seq++, 4),
+            ciphertext
+        ]);
     }
     
     @ser.member
     public decrypt(ciphertext: Buffer) {
         this.lastR = true;
-        return this.recv.decrypt(ciphertext);
+        const seq = types.decNum(ciphertext.slice(0, 4));
+        if(seq === this.seq + 1) {
+            this.seq++;
+            const [key, plaintext] = this.recv.decrypt(ciphertext);
+            this.saveKey(this.seq, key);
+            return plaintext;
+        } else if(seq < this.seq + 1) {
+            const key = this.loadKey(seq);
+            const [_, plaintext] = this.recv.decrypt(ciphertext, key);
+            return plaintext;
+        }
     }
 }

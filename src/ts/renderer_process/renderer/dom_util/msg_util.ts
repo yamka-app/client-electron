@@ -23,7 +23,9 @@ import * as layout   from "./layout.js";
 import * as notif    from "./notif.js"
 
 // Creates a message box seen in the message area
-export function createMessage(state: entities.MessageState, short: boolean =false): HTMLElement {
+export function createMessage(state: entities.MessageState, short: boolean =false): HTMLElement|null {
+    if(!util.clientDebug && state.sections.every(x => x.type === types.MessageSectionType.E2EEDBG))
+        return null;
     // Get the message entity by the id
     const msg = window.entityCache[state.msg_id] as entities.Message;
 
@@ -75,7 +77,9 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
             createBotUiSection,  createPollSection
         ];
 
-        const sectionElement = creationFunctions[section.type](section);
+        const sectionElement = section.type === types.MessageSectionType.E2EEDBG
+                ? createE2eeDbgSection(section)
+                : creationFunctions[section.type](section);
         if(sectionElement !== undefined)
             content.appendChild(sectionElement);
     }
@@ -329,6 +333,18 @@ function createBotUiSection(section: types.MessageSection) {
 
 function createPollSection(section: types.MessageSection) {
     return createPoll(section.blob);
+}
+
+function createE2eeDbgSection(section: types.MessageSection) {
+    const info = JSON.parse(section.text);
+    const div = document.createElement("div");
+    div.classList.add("message-e2ee-section");
+    div.innerHTML = `<span>END-TO-END-ENCRYPTION DEBUG MESSAGE.
+        This one is for debugging only and shouldn't show up in release builds!</span>
+    `;
+    for(const [k, v] of Object.entries(info))
+        div.innerHTML += `<span>${k}: <code>${v}</code></span>`;
+    return div;
 }
 
 function createPoll(id: number) {

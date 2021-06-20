@@ -461,11 +461,11 @@ function _rendererFunc() {
             remote.getGlobal("webprotState").sendPings = true;
 
             // Show the main UI
-            util.hideElm(util.elmById("user-select"));
-            util.hideElm(util.elmById("login-form"));
-            util.hideElm(util.elmById("mfa-form"));
-            util.hideElm(util.elmById("signup-form"));
-            util.showElm(util.elmById("main-layout-container"));
+            util.hideElm("user-select");
+            util.hideElm("login-form");
+            util.hideElm("mfa-form");
+            util.hideElm("signup-form");
+            util.showElm("main-layout-container");
 
             // Clear input fields
             (util.elmById("login-email")     as HTMLInputElement).value = "";
@@ -717,8 +717,9 @@ function _rendererFunc() {
                 util.showElm(util.elmById("connecting-screen-bg"));
                 break;
             case "webprot.connected":
-                util.setElmVisibility(util.elmById("email-unconfirmed-bar-container"), false);
-                util.hideElm(util.elmById("connecting-screen-bg"));
+                util.hideElm("email-unconfirmed-bar-container");
+                util.hideElm("main-layout-container");
+                util.hideElm("connecting-screen-bg");
                 // Show the account selector
                 accountSelector.show((id) => {
                     window.selectedUser = id;

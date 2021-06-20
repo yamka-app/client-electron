@@ -9,6 +9,7 @@
 import types, { MessageSection } from "../dataTypes";
 import * as crypto               from "crypto";
 import { pubkeyFormat }          from "./salty"
+import { DHRatchet } from "./ratchet";
 
 // Level 1 protocol
 
@@ -18,7 +19,7 @@ enum Level1Command {
     IDENTITY_CHG = 2, // only the server should generate this
 }
 
-class Level1Msg {
+export class Level1Msg {
     op: Level1Command;
 
     public encode() {
@@ -105,9 +106,10 @@ export class Level1IdentityChgMsg extends Level1Msg {
 // Level 2 protocol
 
 export enum Level2Command {
-    HELLO        = 0,
-    CONVERSATION = 1,
-    TASTY_KEY    = 2
+    HELLO     = 0,
+    TEXT      = 1,
+    TASTY_KEY = 2,
+    HELLO_ACK = 3
 }
 
 export class Level2Msg {
@@ -118,24 +120,25 @@ export class Level2Msg {
         this.pub = pub;
     }
 
-    public encode() {
+    public encode(ratchet: DHRatchet) {
         const includePub = this.pub !== undefined;
         const pubData = this.pub.export(pubkeyFormat);
         return Buffer.concat([
             Buffer.from([this.op | (includePub ? 0x80 : 0)]),
             includePub ? types.encNum(pubData.length, 2) : Buffer.from([]),
             includePub ? pubData : Buffer.from([]),
-            this.encodePayload()
+            ratchet.encrypt(this.encodePayload())
         ]);
     }
 
-    public static decode(data: Buffer) {
+    public static decode(data: Buffer, ratchet: DHRatchet) {
         const hdr = types.decNum(data.slice(0, 1));
         const containsPub = (hdr >> 7) === 1;
-        const msgConstr: typeof Level2Msg = [
+        const msgCtr: typeof Level2Msg = [
             Level2HelloMsg,
-            Level2ConvMsg,
+            Level2TextMsg,
             Level2TastyMsg,
+            Level2HelloAckMsg
         ][hdr & 0x7f];
 
         var offs = 0;
@@ -145,8 +148,11 @@ export class Level2Msg {
             const pubData = data.slice(3, 3 + pubLen);
             pub = crypto.createPublicKey({ key: pubData, format: "der", type: "spki" });
             offs = 3 + pubLen;
+            ratchet.step(pub);
         }
-        const msg = msgConstr.decodePayload(data.slice(offs));
+        const ciphertext = data.slice(offs);
+        const plaintext = ratchet.decrypt(ciphertext);
+        const msg = msgCtr.decodePayload(plaintext);
         msg.pub = pub;
         return msg;
     }
@@ -157,20 +163,34 @@ export class Level2Msg {
 
 export class Level2HelloMsg extends Level2Msg {
     op = Level2Command.HELLO;
+    check: number;
 
-    constructor(pub?: crypto.KeyObject) { super(pub); }
-    protected encodePayload() { return Buffer.from([]); }
-    protected static decodePayload(data: Buffer) { return new Level2HelloMsg(); }
+    constructor(pub?: crypto.KeyObject, check?: number) { super(pub); this.check = check; }
+    protected encodePayload() { return Buffer.from([this.check]); }
+    protected static decodePayload(data: Buffer) {
+        return new Level2HelloMsg(undefined, data[0]);
+    }
 }
 
-export class Level2ConvMsg extends Level2Msg {
-    op = Level2Command.CONVERSATION;
+export class Level2HelloAckMsg extends Level2Msg {
+    op = Level2Command.HELLO_ACK;
+    check: number;
+
+    constructor(pub?: crypto.KeyObject, check?: number) { super(pub); this.check = check; }
+    protected encodePayload() {return Buffer.from([this.check]); }
+    protected static decodePayload(data: Buffer) {
+        return new Level2HelloAckMsg(undefined, data[0]);
+    }
+}
+
+export class Level2TextMsg extends Level2Msg {
+    op = Level2Command.TEXT;
     sections: MessageSection[];
 
     constructor(pub?: crypto.KeyObject, s?: MessageSection[]) { super(pub); }
     protected encodePayload() { return types.encMsgSections(this.sections); }
     protected static decodePayload(data: Buffer) {
-        return new Level2ConvMsg(undefined, types.decMsgSections(data));
+        return new Level2TextMsg(undefined, types.decMsgSections(data));
     }
 }
 

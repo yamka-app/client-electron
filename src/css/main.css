@@ -1121,6 +1121,25 @@ canvas.message-img-section.deblur {
     opacity: 0;
 }
 
+.message-e2ee-section {
+    padding:       10px;
+    background:    var(--green-trans);
+    border-radius: 10px;
+    box-shadow:    var(--shadow);
+}
+.message-e2ee-section > span {
+    color:     var(--foreground);
+    font-size: var(--font-size);
+}
+.message-e2ee-section > span:nth-child(1) {
+    font-weight: bold;
+}
+.message-e2ee-section > span > code {
+    background:    var(--background);
+    padding:       4px;
+    border-radius: 4px;
+}
+
 .message-time {
     margin-left: 5px;
 
