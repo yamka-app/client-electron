@@ -30,8 +30,8 @@ export class KDFRatchet {
         // Generate the keys using different inputs as suggested by the spec
         const ckHmac = crypto.createHmac("sha256", this.chainKey);
         const mkHmac = crypto.createHmac("sha256", this.chainKey);
-        ckHmac.update(Buffer.from[1]);
-        mkHmac.update(Buffer.from[2]);
+        ckHmac.update(Buffer.from([1]));
+        mkHmac.update(Buffer.from([2]));
         this.chainKey = crypto.createSecretKey(ckHmac.digest());
         return          crypto.createSecretKey(mkHmac.digest());
     }
@@ -39,11 +39,13 @@ export class KDFRatchet {
     @ser.member
     public encrypt(plaintext: Buffer): [crypto.KeyObject, Buffer] {
         const key = this.step();
+        console.log("enc_key", key.export());
         const nonce = Buffer.from(Array(12).fill(0));
-        const cipher = crypto.createCipheriv("aes-256-ccm", key, nonce, { authTagLength: 16 });
+        const cipher = crypto.createCipheriv("aes-256-gcm", key, nonce, { authTagLength: 16 });
         cipher.setAAD(this.ad, { plaintextLength: plaintext.length });
 
         const ciphertext = cipher.update(plaintext);
+        cipher.final();
         const auth = cipher.getAuthTag();
         return [key, Buffer.concat([
             types.encNum(ciphertext.length, 2),
@@ -54,16 +56,18 @@ export class KDFRatchet {
 
     @ser.member
     public decrypt(data: Buffer, givenKey?: crypto.KeyObject): [crypto.KeyObject, Buffer] {
+        console.log("dec", data, givenKey.export());
         const ctLen = types.decNum(data.slice(0, 2));
         const ciphertext = data.slice(2, 2 + ctLen);
         const auth = data.slice(2 + ctLen);
 
         const key = givenKey ?? this.step();
         const nonce = Buffer.from(Array(12).fill(0));
-        const decipher = crypto.createDecipheriv("aes-256-ccm", key, nonce, { authTagLength: 16 });
+        const decipher = crypto.createDecipheriv("aes-256-gcm", key, nonce, { authTagLength: 16 });
         decipher.setAuthTag(auth);
         decipher.setAAD(this.ad, { plaintextLength: ciphertext.length });
         const plaintext = decipher.update(ciphertext);
+        console.log(plaintext);
         decipher.final();
         return [key, plaintext];
     }
@@ -78,11 +82,11 @@ export class DHRatchet {
     @ser.member iter:     number;
     @ser.member lastR:    boolean;
     @ser.member basePath: string; // for storing per-message keys
-    @ser.member seq:      number;
+    @ser.member seq:      number = 0;
 
     constructor(basePath: string, rk: crypto.KeyObject, ad: Buffer, kp?: KeyPair) {
         this.basePath = basePath;
-        if(!fs.existsSync(basePath))
+        if(basePath !== undefined &&  !fs.existsSync(basePath))
             fs.mkdirSync(basePath);
         this.rootKey = rk;
         this.keyPair = kp;
@@ -143,7 +147,7 @@ export class DHRatchet {
 
     private loadKey(seq: number) {
         const keys = this.readKeyRange(seq);
-        return crypto.createSecretKey(Buffer.from(keys[seq % 100], "utf8"));
+        return crypto.createSecretKey(Buffer.from(keys[seq % 100], "base64"));
     }
 
     private writeKeyRange(seq: number, keys: string[]) {
@@ -161,6 +165,7 @@ export class DHRatchet {
     public encrypt(plaintext: Buffer) {
         this.lastR = false;
         const [key, ciphertext] = this.send.encrypt(plaintext);
+        this.saveKey(this.seq, key);
         return Buffer.concat([
             types.encNum(this.seq++, 4),
             ciphertext
@@ -171,10 +176,10 @@ export class DHRatchet {
     public decrypt(ciphertext: Buffer) {
         this.lastR = true;
         const seq = types.decNum(ciphertext.slice(0, 4));
+        ciphertext = ciphertext.slice(4);
         if(seq === this.seq + 1) {
-            this.seq++;
             const [key, plaintext] = this.recv.decrypt(ciphertext);
-            this.saveKey(this.seq, key);
+            this.saveKey(this.seq++, key);
             return plaintext;
         } else if(seq < this.seq + 1) {
             const key = this.loadKey(seq);

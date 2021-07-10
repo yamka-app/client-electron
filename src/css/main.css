@@ -1122,14 +1122,19 @@ canvas.message-img-section.deblur {
 }
 
 .message-e2ee-section {
+    display:        flex;
+    flex-direction: column;
+    
     padding:       10px;
     background:    var(--green-trans);
     border-radius: 10px;
     box-shadow:    var(--shadow);
+    margin-top: 5px;
 }
 .message-e2ee-section > span {
-    color:     var(--foreground);
-    font-size: var(--font-size);
+    color:      var(--foreground);
+    font-size:  var(--font-size);
+    margin-top: 5px;
 }
 .message-e2ee-section > span:nth-child(1) {
     font-weight: bold;

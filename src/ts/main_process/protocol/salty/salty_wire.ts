@@ -67,7 +67,7 @@ export class Level1InitMsg extends Level1Msg {
 
     protected encodePayload() {
         const ephData = this.eph.export(pubkeyFormat);
-        const otpData = this.eph.export(pubkeyFormat);
+        const otpData = this.otp.export(pubkeyFormat);
         return Buffer.concat([
             types.encNum(ephData.length, 2),
             ephData,
@@ -141,16 +141,17 @@ export class Level2Msg {
             Level2HelloAckMsg
         ][hdr & 0x7f];
 
-        var offs = 0;
+        var offs = 1;
         var pub = undefined;
         if(containsPub) {
             const pubLen = types.decNum(data.slice(1, 3));
             const pubData = data.slice(3, 3 + pubLen);
             pub = crypto.createPublicKey({ key: pubData, format: "der", type: "spki" });
-            offs = 3 + pubLen;
+            offs += 2 + pubLen;
             ratchet.step(pub);
         }
         const ciphertext = data.slice(offs);
+        console.log(ciphertext);
         const plaintext = ratchet.decrypt(ciphertext);
         const msg = msgCtr.decodePayload(plaintext);
         msg.pub = pub;

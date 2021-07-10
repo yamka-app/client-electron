@@ -315,6 +315,7 @@ export default class SaltyClient {
         return new MessageSection(MessageSectionType.E2EEDBG, 0, JSON.stringify(info));
     }
     public processMsg(cid: number, uid: number, mid: number, data: Buffer) {
+        if(!(`${cid}` in this.conv)) this.loadConv(cid);
         try {
             this.loadConv(cid);
         } catch(ex) { }

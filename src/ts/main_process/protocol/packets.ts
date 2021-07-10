@@ -281,7 +281,7 @@ export class EntityGetRequest {
             DataTypes.encNum(pc_bits,   1),
             (this.p !== undefined) ? this.p.encode() : Buffer.alloc(0),
             (this.c !== undefined) ? this.c.encode() : Buffer.alloc(0),
-            (this.c !== undefined) ? DataTypes.encNum(this.k, 1) : Buffer.alloc(0)
+            (this.k !== undefined) ? DataTypes.encNum(this.k, 1) : Buffer.alloc(0)
         ]);
     }
 

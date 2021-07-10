@@ -339,8 +339,10 @@ function createE2eeDbgSection(section: types.MessageSection) {
     const info = JSON.parse(section.text);
     const div = document.createElement("div");
     div.classList.add("message-e2ee-section");
-    div.innerHTML = `<span>END-TO-END-ENCRYPTION DEBUG MESSAGE.
-        This one is for debugging only and shouldn't show up in release builds!</span>
+    div.innerHTML = `<span>END-TO-END-ENCRYPTION CONTROL MESSAGE.
+        This shows up for debugging only and should be hidden from the user's eye in release builds!
+        Please do not share its contents with anyone you don't 100% trust as some values
+        may be used to decrypt your whole conversation</span>
     `;
     for(const [k, v] of Object.entries(info))
         div.innerHTML += `<span>${k}: <code>${v}</code></span>`;

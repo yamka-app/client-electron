@@ -26,8 +26,12 @@ function mush(obj: any) {
         return { type: "keyarr", data: obj.map(x => mush(x)) };
     if(obj instanceof Array)
         return { type: "unkarr", data: obj.map(x => mush(x)) };
-    if(obj instanceof String || typeof obj === "boolean" || obj instanceof Date)
+    if(typeof obj === "string" || typeof obj === "boolean" || obj instanceof Date || typeof obj === "number")
         return obj;
+    if(obj === null || obj === undefined)
+        return obj;
+    if(obj instanceof Buffer)
+        return [...obj];
 
     try {
         if (!Reflect.hasMetadata("meta:fields", obj))
@@ -43,7 +47,7 @@ function mush(obj: any) {
         otherObj[key] = mushed;
         // Export keys
         // (ikr, TS """reflection""" is just a huge hack anyway)
-        if(ftype?.name === "KeyObject") {
+        if(ftype?.name === "KeyObject" && obj[key] !== undefined) {
             const type = obj[key].type;
             const encoding = {
                 secret:  symmFormat,
@@ -68,12 +72,21 @@ export function jsonify(obj: any) {
 // TS is weird, ay?
 // I love it!!!!
 function unmush<T>(c: { new(...a: any[]): T }, data: any): T {
+    if(c === undefined || data === undefined) return undefined;
+
     if(c?.name === "Array") {
         if(data.type === "unkarr")
             return data.data;
         else if(data.type === "keyarr")
             return data.data.map(x => unmush(KeyPair, x));
     }
+
+    if(c?.name === "Buffer") {
+        // @ts-ignore
+        // ^ it's okay since we know it's a buffer
+        return Buffer.from(data);
+    }
+
     if(c?.name === "KeyObject") {
         const type = data.type;
         const encoding = {
@@ -86,11 +99,15 @@ function unmush<T>(c: { new(...a: any[]): T }, data: any): T {
             public:  createPublicKey,
             private: createPrivateKey
         }[type];
-        return importFunc(data.data, encoding);
+        return importFunc(type === "secret"
+                ? Buffer.from(data.data.data)
+                : data.data, encoding);
     }
+
     if(["Boolean", "Date", "String"].includes(c?.name)) {
-        return data.data;
+        return data;
     }
+
     const otherObj: any = {};
     const inst = new c();
     if (Reflect.hasMetadata("meta:fields", inst)) {
@@ -99,7 +116,6 @@ function unmush<T>(c: { new(...a: any[]): T }, data: any): T {
             otherObj[key] = unmush(ftype as any, data[key]);
         }
     }
-
     return Object.assign(inst, data, otherObj);
 }
 

@@ -61,7 +61,8 @@ export class Entity {
             new File(),
             new MessageState(),
             new Poll(),
-            new Agent()
+            new Agent(),
+            new PKey()
         ][type];
         var posAfter = entity.decodeFields(buf, undefined, pos + 1) as number;
         return { entity: entity, posAfter: posAfter };
@@ -84,6 +85,7 @@ export class User extends Entity {
     __type_name = "User";
     typeNum = EntityType.USER;
 
+    id?:             number;
     email?:          string;
     name?:           string;
     tag?:            number;
@@ -372,7 +374,7 @@ export class PKey extends Entity {
     type: PkeyType;
     user: number;
 
-    constructor(key: Buffer, type: PkeyType, owner: number, sign?: Buffer) {
+    constructor(key?: Buffer, type?: PkeyType, owner?: number, sign?: Buffer) {
         super([
             new fields.NumField        ("id", 8,   0),
             new fields.PrefixedBinField("key",     1),

@@ -131,9 +131,9 @@ const webprotSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
     version:              9,
-    supportsComp:         true,
+    supportsComp:         false,
     compressionThreshold: 256,
-    fileChunkSize:        1024*5
+    fileChunkSize:        1024 * 5
 };
 
 const webprotState: {
@@ -152,7 +152,8 @@ const webprotState: {
     downStates: any,
     upStates:   any,
     references: any,
-    mainCbs:    any
+    mainCbs:    any,
+    dmChanRev:  any
 } = {
     connected:  false,
     connecting: false,
@@ -169,7 +170,8 @@ const webprotState: {
     downStates: {},
     upStates:   {},
     references: {},
-    mainCbs:    {}
+    mainCbs:    {},
+    dmChanRev:  {}
 };
 
 function regCb(fn: (p: packets.Packet) => any) {
@@ -253,40 +255,71 @@ function webprotData(bytes: Buffer) {
     const ref = webprotState.references[packet.replyTo];
     packet.spontaneous = packet.replyTo === 0;
 
-    // Clear all unnecessary fields before sending the packet to the renderer
-    delete packet.encode;
-    delete packet.decodePayload;
-    delete packet.encodePayload;
-    delete packet.replyTo;
-    delete packet.seq;
-    delete packet.typeNum;
-    delete packet["simpleFieldList"];
-    // Also clear all nested junk
-    // While we're at it, add types to nested entities
+    const finish = () => {
+        // Clear all unnecessary fields before sending the packet to the renderer
+        delete packet.encode;
+        delete packet.decodePayload;
+        delete packet.encodePayload;
+        delete packet.replyTo;
+        delete packet.seq;
+        delete packet.typeNum;
+        delete packet["simpleFieldList"];
+        // Also clear all nested junk
+        // While we're at it, add types to nested entities
+        if(packet instanceof packets.EntitiesPacket) {
+            packet.entities = packet.entities.map(e => {
+                if(e instanceof entities.Message && e.latest !== undefined) {
+                    delete e.latest.simpleFieldList;
+                    delete e.latest.encode;
+                    delete e.latest.encodeFields;
+                    delete e.latest.decodeFields;
+                }
+                delete e.simpleFieldList;
+                delete e.encode;
+                delete e.encodeFields;
+                delete e.decodeFields;
+                delete e["typeNum"];
+                return e;
+            });
+        }
+
+        // See if this response was triggered by a packet sent by the main process
+        // Don't tell the renderer about it in this case
+        const mainCb = webprotState.mainCbs[ref];
+        if(mainCb === undefined)
+            ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name, reference: ref });
+        else
+            mainCb(packet);
+    };
+
+    // Intercept incloming channel entities
     if(packet instanceof packets.EntitiesPacket) {
-        packet.entities = packet.entities.map(e => {
-            if(e instanceof entities.Message && e.latest !== undefined) {
-                delete e.latest.simpleFieldList;
-                delete e.latest.encode;
-                delete e.latest.encodeFields;
-                delete e.latest.decodeFields;
+        for(const ent of packet.entities) {
+            // Mainain a DM-to-user mapping
+            if(ent instanceof entities.User && ent.dmChannel !== undefined)
+                webprotState.dmChanRev[ent.dmChannel] = ent.id;
+
+            // Initiate Salty sessions
+            if(ent instanceof entities.Channel) {
+                const other = webprotState.dmChanRev[ent.id];
+                const alice = webprotState.selfId < other;
+                if(ent.group === 0 && ent.lcid === 0 && alice) {
+                    webprotState.salty.handshakeInit(other, ent.id, finish);
+                    return;
+                }
             }
-            delete e.simpleFieldList;
-            delete e.encode;
-            delete e.encodeFields;
-            delete e.decodeFields;
-            delete e["typeNum"];
-            return e;
-        });
+
+            // Decrypt messages
+            if(ent instanceof entities.Message) {
+                if(ent.latest.encrypted === undefined) continue;
+                if(webprotState.dmChanRev[ent.channel] === undefined) continue;
+                ent.latest.sections = webprotState.salty.processMsg(ent.channel,
+                        webprotState.dmChanRev[ent.channel], ent.id, ent.latest.encrypted);
+            }
+        }
     }
 
-    // See if this response was triggered by a packet sent by the main process
-    // Don't tell the renderer about it in this case
-    const mainCb = webprotState.mainCbs[ref];
-    if(mainCb === undefined)
-        ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name, reference: ref });
-    else
-        mainCb(packet);
+    finish();
 }
 
 function webprotSendBytes(bytes: Buffer) {
@@ -457,6 +490,7 @@ function webprotConnect(force: boolean =false) {
     webprotState.salty?.end();
     webprotState.salty = null;
     webprotState.mainCbs = {};
+    webprotState.dmChanRev = {};
     packets.Packet.nextSeq = 1;
 
     // Disconnect if connected
