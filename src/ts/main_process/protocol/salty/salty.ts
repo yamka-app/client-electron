@@ -298,8 +298,6 @@ export default class SaltyClient {
                 state.identity.export(pubkeyFormat),
                 this.keys.identity.pub.export(pubkeyFormat)
             ]);
-            console.log("sk", state.sk.export());
-            console.log("ad", ad);
             const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
             state.ratchet = new DHRatchet(keyBase, state.sk, ad);
             state.ratchet.step(prek);
@@ -364,8 +362,6 @@ export default class SaltyClient {
                     this.keys.identity.pub.export(pubkeyFormat),
                     state.identity.export(pubkeyFormat)
                 ]);
-                console.log("sk", state.sk.export());
-                console.log("ad", ad);
                 const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
                 state.ratchet = new DHRatchet(keyBase, state.sk, ad, this.keys.prekeys[0]);
                 state.ratchet.step(Level2Msg.extractPubkey(l1.l2d));
@@ -389,7 +385,6 @@ export default class SaltyClient {
         return new MessageSection(MessageSectionType.E2EEDBG, 0, JSON.stringify(info));
     }
     public async processMsg(cid: number, uid: number, mid: number, data: Buffer): Promise<MessageSection[]> {
-        console.log(`handling ${mid} in ${cid} with ${uid}`);
         try {
             if(!(`${cid}` in this.conv))
                 this.loadConv(cid);
@@ -438,7 +433,6 @@ export default class SaltyClient {
     }
     public loadConv(id: number) {
         this.conv[`${id}`] = ser.dejsonify(CState, fs.readFileSync(this.convPath(id), "utf8"));
-        console.log("conv loaded");
     }
     public dumpConv(id: number) {
         fs.writeFileSync(this.convPath(id), ser.jsonify(this.conv[`${id}`]), "utf8");

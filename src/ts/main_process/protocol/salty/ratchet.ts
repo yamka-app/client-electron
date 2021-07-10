@@ -22,24 +22,18 @@ export class KDFRatchet {
     public reset(newKey: crypto.KeyObject) {
         this.iter = 0;
         this.chainKey = newKey;
-        console.log("ck", newKey.export());
     }
 
     @ser.member
     public step() {
         this.iter++;
         // Generate the keys using different inputs as suggested by the spec
-        console.log("step src ck", this.chainKey.export());
         const ckHmac = crypto.createHmac("sha256", this.chainKey);
         const mkHmac = crypto.createHmac("sha256", this.chainKey);
         ckHmac.update(Buffer.from([1]));
         mkHmac.update(Buffer.from([2]));
-        const ck = ckHmac.digest();
-        const mk = mkHmac.digest();
-        console.log("step ck", ck);
-        console.log("step mk", mk);
-        this.chainKey = crypto.createSecretKey(ck);
-        return          crypto.createSecretKey(mk);
+        this.chainKey = crypto.createSecretKey(ckHmac.digest());
+        return          crypto.createSecretKey(mkHmac.digest());
     }
 
     @ser.member
@@ -71,7 +65,7 @@ export class KDFRatchet {
         decipher.setAuthTag(auth);
         decipher.setAAD(this.ad, { plaintextLength: ciphertext.length });
         const plaintext = decipher.update(ciphertext);
-        // decipher.final();
+        decipher.final();
         return [key, plaintext];
     }
 }
@@ -117,7 +111,6 @@ export class DHRatchet {
                 privateKey: this.keyPair.priv,
                 publicKey:  this.pubKey
             });
-            console.log("f dh", dh);
             this.send.reset(this.rootStep(dh));
             
             return this.keyPair.pub;
@@ -127,7 +120,6 @@ export class DHRatchet {
                 privateKey: this.keyPair.priv,
                 publicKey:  this.pubKey
             });
-            console.log("f dh1", dh1);
             this.send.reset(this.rootStep(dh1));
 
             this.keyPair = KeyPair.generate();
@@ -135,7 +127,6 @@ export class DHRatchet {
                 privateKey: this.keyPair.priv,
                 publicKey:  this.pubKey
             });
-            console.log("f dh2", dh2);
             this.recv.reset(this.rootStep(dh2));
 
             return this.keyPair.pub;
