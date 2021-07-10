@@ -31,10 +31,10 @@ import EventEmitter  from "events";
 import { EntityGetRequest, EntityKeyType } from "../packets";
 import {
     Level1Msg,
-    Level1InitMsg,
+    Level1AliceHelloMsg,
     Level2Msg,
-    Level2HelloMsg,
-    Level2HelloAckMsg,
+    Level2AliceHelloMsg,
+    Level2BobHelloMsg,
     Level1NormalMsg,
     Level2TextMsg
 } from "./salty_wire";
@@ -101,6 +101,15 @@ export class KeyPair {
         pair.date  = obj.date;
         pair.stale = obj.stale;
         return pair; 
+    }
+
+    @ser.member
+    static publicOnly(pub: crypto.KeyObject) {
+        const pair = new KeyPair();
+        pair.pub   = pub;
+        pair.date  = new Date();
+        pair.stale = false;
+        return pair;
     }
 }
 
@@ -299,53 +308,120 @@ export default class SaltyClient {
             const msg = new Message();
             msg.channel = cid;
             msg.latest = new MessageState();
-            msg.latest.encrypted = new Level1InitMsg(state.eph.pub, otprek,
-                    new Level2HelloMsg(state.ratchet.keyPair.pub, 123).encode(state.ratchet)).encode();
+            msg.latest.encrypted = new Level1AliceHelloMsg(state.eph.pub, otprek,
+                    new Level2AliceHelloMsg(state.ratchet.keyPair.pub, 123).encode(state.ratchet)).encode();
             this.cb.entityPut([msg]);
 
             done();
         });
     }
 
-    private handshakeAck(cid: number, uid: number) {
-        // TODO
+    private findOtp(pub: crypto.KeyObject) {
+        if(pub === undefined)
+            return undefined;
+        const pair = this.keys.otprekeys.find(x => x.fingerprint() === fingerprint(pub));
+        if(pair === undefined)
+            throw new Error("Received one-time prekey is not in the local list");
+        return pair.priv;
     }
 
-    private e2eedbg(info: any) {
+    private handshakeAck(cid: number, uid: number, l1: Level1AliceHelloMsg) {
+        return new Promise<Level2Msg>((success) => {
+            this.cb.entityGet([
+                new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDSIGN),
+                new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDENTITY)
+            ], ([idsp, idkp]) => {
+                const state = new CState();
+                // Save the keys (verify them with the signature identity key)
+                state.idSign   = (idsp as User).idsignKey  .toKeyObj();
+                state.identity = (idkp as User).identityKey.toKeyObj(state.idSign);
+                state.eph = KeyPair.publicOnly(l1.eph);
+                // Perform 3-4 Diffie-Hellmans
+                const dh1 = crypto.diffieHellman({ // IK_A - SPK_B
+                    publicKey:  state.identity,
+                    privateKey: this.keys.prekeys[0].priv
+                });
+                const dh2 = crypto.diffieHellman({ // EK_A - IK_B
+                    publicKey:  state.eph.pub,
+                    privateKey: this.keys.identity.priv
+                });
+                const dh3 = crypto.diffieHellman({ // EK_A - SPK_B
+                    publicKey:  state.eph.pub,
+                    privateKey: this.keys.prekeys[0].priv
+                });
+                var dh4 = Buffer.from([]);
+                if(l1.otp !== undefined)
+                    dh4 = crypto.diffieHellman({ // EK_A - OPK_B
+                        publicKey:  state.eph.pub,
+                        privateKey: this.findOtp(l1.otp)
+                    });
+    
+                // Calculate the shared secret key and store all keys
+                state.sk = SaltyClient.x3dhKdf(Buffer.concat([dh1, dh2, dh3, dh4]));
+                const ad = Buffer.concat([
+                    this.keys.identity.pub.export(pubkeyFormat),
+                    state.identity.export(pubkeyFormat)
+                ]);
+                const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
+                state.ratchet = new DHRatchet(keyBase, state.sk, ad);
+                state.ratchet.keyPair = this.keys.prekeys[0];
+                state.ratchet.step(Level2Msg.extractPubkey(l1.l2d));
+                this.conv[`${cid}`] = state;
+                this.dumpConv(cid);
+    
+                // Reply to the initial message
+                const msg = new Message();
+                msg.channel = cid;
+                msg.latest = new MessageState();
+                msg.latest.encrypted = new Level1NormalMsg(new Level2BobHelloMsg(
+                    state.ratchet.keyPair.pub, 231).encode(state.ratchet)).encode();
+                this.cb.entityPut([msg]);
+
+                success(Level2Msg.decode(l1.l2d, state.ratchet));
+            });
+        });
+    }
+
+    private e2eeDbgSection(info: any) {
         return new MessageSection(MessageSectionType.E2EEDBG, 0, JSON.stringify(info));
     }
-    public processMsg(cid: number, uid: number, mid: number, data: Buffer) {
-        if(!(`${cid}` in this.conv)) this.loadConv(cid);
+    public async processMsg(cid: number, uid: number, mid: number, data: Buffer): Promise<MessageSection[]> {
         try {
-            this.loadConv(cid);
+            if(!(`${cid}` in this.conv))
+                this.loadConv(cid);
         } catch(ex) { }
         // Decode L1
         const l1 = Level1Msg.decode(data);
-        if(l1 instanceof Level1InitMsg) {
-            const l2 = Level2Msg.decode(l1.l2d, this.conv[`${cid}`].ratchet);
-            if(!(l2 instanceof Level2HelloMsg))
-                throw new Error("L1 init should enclose L2 hello");
-            const info = {
-                type:           "Alice Hello",
-                ephemeralKeyFp: fingerprint(l1.eph),
-                otPrekeyFp:     fingerprint(l1.otp),
-                x3dhSecret:     fingerprint(this.conv[`${cid}`].sk),
-                check:          l2.check
-            };
-            // We're Bob, continue the handshake!
-            this.handshakeAck(cid, uid);
-            this.conv[`${cid}`].ratchet.step(l2.pub);
-            return [this.e2eedbg(info)];
+        if(l1 instanceof Level1AliceHelloMsg) {
+            const bob = uid < this.uid;
+            var l2 = (bob && !(`${cid}` in this.conv))
+                    ? await this.handshakeAck(cid, uid, l1)
+                    : Level2Msg.decode(l1.l2d, this.conv[`${cid}`].ratchet);
+
+            if(!(l2 instanceof Level2AliceHelloMsg))
+                throw new Error("L1 Alice Hello should enclose L2 Alice Hello");
+            return [this.e2eeDbgSection({
+                type:       "Alice Hello",
+                ephKeyFp:   fingerprint(l1.eph),
+                otPrekeyFp: fingerprint(l1.otp),
+                x3dhSecret: fingerprint(this.conv[`${cid}`].sk),
+                check:      l2.check
+            })];
         } else if(l1 instanceof Level1NormalMsg) {
-            const l2 = Level2Msg.decode(l1.data, this.conv[`${cid}`].ratchet);
-            if(l2 instanceof Level2HelloAckMsg) {
-                const info = {
-                    type:  "Bob Hello",
-                    check: l2.check
-                };
-                return [this.e2eedbg(info)];
-            } else if(l2 instanceof Level2TextMsg) {
-                return l2.sections;
+            try {
+                const l2 = Level2Msg.decode(l1.data, this.conv[`${cid}`].ratchet);
+                if(l2 instanceof Level2BobHelloMsg) {
+                    return [this.e2eeDbgSection({
+                        type:  "Bob Hello",
+                        check: l2.check
+                    })];
+                } else if(l2 instanceof Level2TextMsg) {
+                    return l2.sections;
+                }
+            } catch(ex) { 
+                // We might be trying to access a ratchet that hasn't been created yet
+                // in case we're Bob and still processing the Alice Hello message
+                return null;
             }
         }
     }

@@ -33,7 +33,7 @@ export class Level1Msg {
         const op = types.decNum(data.slice(0, 1));
         const msg: typeof Level1Msg = [
             Level1NormalMsg,
-            Level1InitMsg,
+            Level1AliceHelloMsg,
             Level1IdentityChgMsg,
         ][op];
         return msg.decodePayload(data.slice(1));
@@ -52,7 +52,7 @@ export class Level1NormalMsg extends Level1Msg {
     protected static decodePayload(data: Buffer) { return new Level1NormalMsg(data); }
 }
 
-export class Level1InitMsg extends Level1Msg {
+export class Level1AliceHelloMsg extends Level1Msg {
     op = Level1Command.INITAL_MSG;
     eph: crypto.KeyObject;
     otp: crypto.KeyObject;
@@ -83,7 +83,7 @@ export class Level1InitMsg extends Level1Msg {
         const otpDataLen = types.decNum(data.slice(2 + ephDataLen, 4 + ephDataLen));
         const otpData = data.slice(4 + ephDataLen, 4 + ephDataLen + otpDataLen);
         const l2d = data.slice(4 + ephDataLen + otpDataLen);
-        return new Level1InitMsg(
+        return new Level1AliceHelloMsg(
                 crypto.createPublicKey({ key: ephData, type: "spki", format: "der" }),
                 crypto.createPublicKey({ key: otpData, type: "spki", format: "der" }),
                 l2d);
@@ -131,15 +131,27 @@ export class Level2Msg {
         ]);
     }
 
+    public static extractPubkey(data: Buffer) {
+        const hdr = types.decNum(data.slice(0, 1));
+        const containsPub = (hdr & 0x80) > 0;
+        if(containsPub) {
+            const pubLen = types.decNum(data.slice(1, 3));
+            const pubData = data.slice(3, 3 + pubLen);
+            return crypto.createPublicKey({ key: pubData, format: "der", type: "spki" });
+        }
+        return undefined;
+    }
+
     public static decode(data: Buffer, ratchet: DHRatchet) {
         const hdr = types.decNum(data.slice(0, 1));
-        const containsPub = (hdr >> 7) === 1;
+        const containsPub = (hdr & 0x80) > 0;
         const msgCtr: typeof Level2Msg = [
-            Level2HelloMsg,
+            Level2AliceHelloMsg,
             Level2TextMsg,
-            Level2TastyMsg,
-            Level2HelloAckMsg
+            Level2TastyKeyMsg,
+            Level2BobHelloMsg
         ][hdr & 0x7f];
+        console.log(hdr, containsPub);
 
         var offs = 1;
         var pub = undefined;
@@ -148,6 +160,7 @@ export class Level2Msg {
             const pubData = data.slice(3, 3 + pubLen);
             pub = crypto.createPublicKey({ key: pubData, format: "der", type: "spki" });
             offs += 2 + pubLen;
+            console.log(pub);
             ratchet.step(pub);
         }
         const ciphertext = data.slice(offs);
@@ -162,25 +175,25 @@ export class Level2Msg {
     protected static decodePayload(data: Buffer) { return new Level2Msg(); }
 }
 
-export class Level2HelloMsg extends Level2Msg {
+export class Level2AliceHelloMsg extends Level2Msg {
     op = Level2Command.HELLO;
     check: number;
 
     constructor(pub?: crypto.KeyObject, check?: number) { super(pub); this.check = check; }
     protected encodePayload() { return Buffer.from([this.check]); }
     protected static decodePayload(data: Buffer) {
-        return new Level2HelloMsg(undefined, data[0]);
+        return new Level2AliceHelloMsg(undefined, data[0]);
     }
 }
 
-export class Level2HelloAckMsg extends Level2Msg {
+export class Level2BobHelloMsg extends Level2Msg {
     op = Level2Command.HELLO_ACK;
     check: number;
 
     constructor(pub?: crypto.KeyObject, check?: number) { super(pub); this.check = check; }
-    protected encodePayload() {return Buffer.from([this.check]); }
+    protected encodePayload() { return Buffer.from([this.check]); }
     protected static decodePayload(data: Buffer) {
-        return new Level2HelloAckMsg(undefined, data[0]);
+        return new Level2BobHelloMsg(undefined, data[0]);
     }
 }
 
@@ -195,13 +208,13 @@ export class Level2TextMsg extends Level2Msg {
     }
 }
 
-export class Level2TastyMsg extends Level2Msg {
+export class Level2TastyKeyMsg extends Level2Msg {
     op = Level2Command.TASTY_KEY;
     key: crypto.KeyObject;
 
     constructor(pub?: crypto.KeyObject, k?: crypto.KeyObject) { super(pub); this.key = k; }
     protected encodePayload() { return this.key.export(); }
     protected static decodePayload(data: Buffer) {
-        return new Level2TastyMsg(undefined, crypto.createSecretKey(data));
+        return new Level2TastyKeyMsg(undefined, crypto.createSecretKey(data));
     }
 }

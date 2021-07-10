@@ -39,7 +39,6 @@ export class KDFRatchet {
     @ser.member
     public encrypt(plaintext: Buffer): [crypto.KeyObject, Buffer] {
         const key = this.step();
-        console.log("enc_key", key.export());
         const nonce = Buffer.from(Array(12).fill(0));
         const cipher = crypto.createCipheriv("aes-256-gcm", key, nonce, { authTagLength: 16 });
         cipher.setAAD(this.ad, { plaintextLength: plaintext.length });
@@ -56,7 +55,6 @@ export class KDFRatchet {
 
     @ser.member
     public decrypt(data: Buffer, givenKey?: crypto.KeyObject): [crypto.KeyObject, Buffer] {
-        console.log("dec", data, givenKey.export());
         const ctLen = types.decNum(data.slice(0, 2));
         const ciphertext = data.slice(2, 2 + ctLen);
         const auth = data.slice(2 + ctLen);
@@ -67,7 +65,6 @@ export class KDFRatchet {
         decipher.setAuthTag(auth);
         decipher.setAAD(this.ad, { plaintextLength: ciphertext.length });
         const plaintext = decipher.update(ciphertext);
-        console.log(plaintext);
         decipher.final();
         return [key, plaintext];
     }
@@ -141,12 +138,13 @@ export class DHRatchet {
         try {
             return fs.readFileSync(rangeFile, "utf8").split("\n");
         } catch(ex) {
-            return [];
+            return undefined;
         }
     }
 
     private loadKey(seq: number) {
         const keys = this.readKeyRange(seq);
+        if(keys === undefined) return undefined;
         return crypto.createSecretKey(Buffer.from(keys[seq % 100], "base64"));
     }
 
@@ -156,7 +154,7 @@ export class DHRatchet {
     }
 
     private saveKey(seq: number, key: crypto.KeyObject) {
-        const keys = this.readKeyRange(seq);
+        const keys = this.readKeyRange(seq) ?? [];
         keys[seq % 100] = key.export().toString("base64");
         this.writeKeyRange(seq, keys);
     }
@@ -177,14 +175,11 @@ export class DHRatchet {
         this.lastR = true;
         const seq = types.decNum(ciphertext.slice(0, 4));
         ciphertext = ciphertext.slice(4);
-        if(seq === this.seq + 1) {
-            const [key, plaintext] = this.recv.decrypt(ciphertext);
+
+        const existingKey = this.loadKey(seq); // may be undefined
+        const [key, plaintext] = this.recv.decrypt(ciphertext, existingKey);
+        if(seq === this.seq + 1)
             this.saveKey(this.seq++, key);
-            return plaintext;
-        } else if(seq < this.seq + 1) {
-            const key = this.loadKey(seq);
-            const [_, plaintext] = this.recv.decrypt(ciphertext, key);
-            return plaintext;
-        }
+        return plaintext;
     }
 }

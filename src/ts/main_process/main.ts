@@ -294,32 +294,35 @@ function webprotData(bytes: Buffer) {
 
     // Intercept incloming channel entities
     if(packet instanceof packets.EntitiesPacket) {
-        for(const ent of packet.entities) {
-            // Mainain a DM-to-user mapping
-            if(ent instanceof entities.User && ent.dmChannel !== undefined)
-                webprotState.dmChanRev[ent.dmChannel] = ent.id;
-
-            // Initiate Salty sessions
-            if(ent instanceof entities.Channel) {
-                const other = webprotState.dmChanRev[ent.id];
-                const alice = webprotState.selfId < other;
-                if(ent.group === 0 && ent.lcid === 0 && alice) {
-                    webprotState.salty.handshakeInit(other, ent.id, finish);
-                    return;
+        const processor = async () => {
+            for(const ent of packet.entities) {
+                // Mainain a DM-to-user mapping
+                if(ent instanceof entities.User && ent.dmChannel !== undefined)
+                    webprotState.dmChanRev[ent.dmChannel] = ent.id;
+    
+                // Initiate Salty sessions
+                if(ent instanceof entities.Channel) {
+                    const other = webprotState.dmChanRev[ent.id];
+                    const alice = webprotState.selfId < other;
+                    if(ent.group === 0 && ent.lcid === 0 && alice) {
+                        webprotState.salty.handshakeInit(other, ent.id, finish);
+                        return;
+                    }
                 }
-            }
-
-            // Decrypt messages
-            if(ent instanceof entities.Message) {
-                if(ent.latest.encrypted === undefined) continue;
-                if(webprotState.dmChanRev[ent.channel] === undefined) continue;
-                ent.latest.sections = webprotState.salty.processMsg(ent.channel,
-                        webprotState.dmChanRev[ent.channel], ent.id, ent.latest.encrypted);
-            }
-        }
+    
+                // Decrypt messages
+                if(ent instanceof entities.Message) {
+                    if(ent.latest.encrypted === undefined) continue;
+                    if(webprotState.dmChanRev[ent.channel] === undefined) continue;
+                    ent.latest.sections = await webprotState.salty.processMsg(ent.channel,
+                            webprotState.dmChanRev[ent.channel], ent.id, ent.latest.encrypted);
+                }
+            }  
+        };
+        processor().then(() => finish());
+    } else {
+        finish();
     }
-
-    finish();
 }
 
 function webprotSendBytes(bytes: Buffer) {

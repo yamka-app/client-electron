@@ -342,7 +342,11 @@ function createE2eeDbgSection(section: types.MessageSection) {
     div.innerHTML = `<span>END-TO-END-ENCRYPTION CONTROL MESSAGE.
         This shows up for debugging only and should be hidden from the user's eye in release builds!
         Please do not share its contents with anyone you don't 100% trust as some values
-        may be used to decrypt your whole conversation</span>
+        may be used to decrypt your whole conversation. As a bonus point,
+        you have an option of making sure these values match up out-of-band (e.g.
+        in real life or using another app). If they don't match up, it's possible that
+        someone (including the server) has performed a man-in-the-middle attack
+        and your conversation is not secure.</span>
     `;
     for(const [k, v] of Object.entries(info))
         div.innerHTML += `<span>${k}: <code>${v}</code></span>`;
