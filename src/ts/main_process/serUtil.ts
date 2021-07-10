@@ -104,9 +104,10 @@ function unmush<T>(c: { new(...a: any[]): T }, data: any): T {
                 : data.data, encoding);
     }
 
-    if(["Boolean", "Date", "String"].includes(c?.name)) {
+    if(["Boolean", "Date", "String"].includes(c?.name))
         return data;
-    }
+    if(c?.name === "Number")
+        return data;
 
     const otherObj: any = {};
     const inst = new c();

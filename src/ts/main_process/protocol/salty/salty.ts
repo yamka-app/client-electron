@@ -298,6 +298,8 @@ export default class SaltyClient {
                 state.identity.export(pubkeyFormat),
                 this.keys.identity.pub.export(pubkeyFormat)
             ]);
+            console.log("sk", state.sk.export());
+            console.log("ad", ad);
             const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
             state.ratchet = new DHRatchet(keyBase, state.sk, ad);
             state.ratchet.step(prek);
@@ -362,9 +364,10 @@ export default class SaltyClient {
                     this.keys.identity.pub.export(pubkeyFormat),
                     state.identity.export(pubkeyFormat)
                 ]);
+                console.log("sk", state.sk.export());
+                console.log("ad", ad);
                 const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
-                state.ratchet = new DHRatchet(keyBase, state.sk, ad);
-                state.ratchet.keyPair = this.keys.prekeys[0];
+                state.ratchet = new DHRatchet(keyBase, state.sk, ad, this.keys.prekeys[0]);
                 state.ratchet.step(Level2Msg.extractPubkey(l1.l2d));
                 this.conv[`${cid}`] = state;
                 this.dumpConv(cid);
@@ -386,9 +389,11 @@ export default class SaltyClient {
         return new MessageSection(MessageSectionType.E2EEDBG, 0, JSON.stringify(info));
     }
     public async processMsg(cid: number, uid: number, mid: number, data: Buffer): Promise<MessageSection[]> {
+        console.log(`handling ${mid} in ${cid} with ${uid}`);
         try {
             if(!(`${cid}` in this.conv))
                 this.loadConv(cid);
+            console.log(this.conv[`${cid}`].ratchet.keyPair.fingerprint());
         } catch(ex) { }
         // Decode L1
         const l1 = Level1Msg.decode(data);
@@ -400,20 +405,22 @@ export default class SaltyClient {
 
             if(!(l2 instanceof Level2AliceHelloMsg))
                 throw new Error("L1 Alice Hello should enclose L2 Alice Hello");
+            if(l2.check !== 123)
+                console.error(`[salty] L2 Alice Hello check is ${l2.check}, expected 123`);
             return [this.e2eeDbgSection({
-                type:       "Alice Hello",
-                ephKeyFp:   fingerprint(l1.eph),
-                otPrekeyFp: fingerprint(l1.otp),
-                x3dhSecret: fingerprint(this.conv[`${cid}`].sk),
-                check:      l2.check
+                "Type": "Alice Hello",
+                "Ephemeral key fingerprint":   fingerprint(l1.eph),
+                "One-time prekey fingerprint": fingerprint(l1.otp),
+                "X3DH secret (do not share)":  fingerprint(this.conv[`${cid}`].sk),
+                "Check (must be 123 if all keys are OK)": l2.check
             })];
         } else if(l1 instanceof Level1NormalMsg) {
             try {
                 const l2 = Level2Msg.decode(l1.data, this.conv[`${cid}`].ratchet);
                 if(l2 instanceof Level2BobHelloMsg) {
                     return [this.e2eeDbgSection({
-                        type:  "Bob Hello",
-                        check: l2.check
+                        "Type": "Bob Hello",
+                        "Check (must be 231)": l2.check
                     })];
                 } else if(l2 instanceof Level2TextMsg) {
                     return l2.sections;
@@ -431,6 +438,7 @@ export default class SaltyClient {
     }
     public loadConv(id: number) {
         this.conv[`${id}`] = ser.dejsonify(CState, fs.readFileSync(this.convPath(id), "utf8"));
+        console.log("conv loaded");
     }
     public dumpConv(id: number) {
         fs.writeFileSync(this.convPath(id), ser.jsonify(this.conv[`${id}`]), "utf8");

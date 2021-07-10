@@ -151,20 +151,22 @@ export class Level2Msg {
             Level2TastyKeyMsg,
             Level2BobHelloMsg
         ][hdr & 0x7f];
-        console.log(hdr, containsPub);
 
         var offs = 1;
         var pub = undefined;
         if(containsPub) {
             const pubLen = types.decNum(data.slice(1, 3));
-            const pubData = data.slice(3, 3 + pubLen);
-            pub = crypto.createPublicKey({ key: pubData, format: "der", type: "spki" });
             offs += 2 + pubLen;
-            console.log(pub);
-            ratchet.step(pub);
+            // Step the ratchet only if it's a new message
+            const seq = types.decNum(data.slice(offs, offs + 4));
+            if(ratchet.seq < seq) {
+                console.log(ratchet.seq, seq);
+                const pubData = data.slice(3, 3 + pubLen);
+                pub = crypto.createPublicKey({ key: pubData, format: "der", type: "spki" });
+                ratchet.step(pub);
+            }
         }
         const ciphertext = data.slice(offs);
-        console.log(ciphertext);
         const plaintext = ratchet.decrypt(ciphertext);
         const msg = msgCtr.decodePayload(plaintext);
         msg.pub = pub;
