@@ -165,7 +165,7 @@ export class DHRatchet {
     public encrypt(plaintext: Buffer) {
         this.lastR = false;
         const [key, ciphertext] = this.send.encrypt(plaintext);
-        this.saveKey(this.seq, key);
+        this.saveKey(++this.seq, key);
         return Buffer.concat([
             types.encNum(this.seq, 4),
             ciphertext
