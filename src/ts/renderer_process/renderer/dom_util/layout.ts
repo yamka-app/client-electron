@@ -309,6 +309,11 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
     })
 }
 
+// Generates random line art based on the conversation
+// fingerprint. A snake starts off in the center pointed
+// right. Grabs color, direction nudge and line length
+// from input data.
+// Go listen to Nurture by Porter Robinson.
 function hashRandomart(data: Uint8Array) {
     const sz = 144;
     var x = sz / 2, y = sz / 2;

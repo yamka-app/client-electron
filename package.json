@@ -61,7 +61,7 @@
     "@types/node-microphone": "^0.1.0",
     "@types/tinycolor2": "^1.4.2",
     "@types/tmp": "^0.2.0",
-    "electron": "^12.0.1",
+    "electron": "12.0.0",
     "electron-builder": "^22.9.1",
     "rollup": "^2.36.2",
     "sslkeylog": "^0.2.2",
