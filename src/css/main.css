@@ -260,8 +260,9 @@ button.icon-button {
 
     border:     none;
     box-shadow: none;
-    padding:    0 7px 0 7px;
+    padding:    5px;
     margin:     0;
+    height:     fit-content;
 }
 button.icon-button:hover {
     filter: brightness(1.5);
@@ -271,10 +272,6 @@ button.icon-button img {
     max-height: 16px;
 }
 
-.cg-button:not(.group-icon) {
-    padding: 5px;
-    height:  fit-content;
-}
 .cg-button img,
 .cg-img {
     filter: brightness(calc(100% - var(--darken-icon)));
