@@ -92,7 +92,7 @@ function loadConfig() {
 }
 
 app.on("ready", () => {
-    global["webprotState"] = webprotState;
+    global["sweet"] = sweet;
     global["tmpDir"] = tmpDir;
     loadConfig();
 
@@ -117,7 +117,7 @@ app.on("ready", () => {
 
     // Ping the server occasionally
     setInterval(() => {
-        if(!webprotState.connected) return;
+        if(!sweet.connected) return;
 
         webprotSendPacket(new packets.PingPacket(123));
     }, 20000);
@@ -136,7 +136,7 @@ const webprotSettings = {
     fileChunkSize:        1024 * 5
 };
 
-const webprotState: {
+const sweet: {
     connected:  boolean,
     connecting: boolean,
     socket:     any,
@@ -175,9 +175,9 @@ const webprotState: {
 };
 
 function regCb(fn: (p: packets.Packet) => any) {
-    const id = Number.parseInt(Object.keys(webprotState.mainCbs).reduce(
+    const id = Number.parseInt(Object.keys(sweet.mainCbs).reduce(
         (p, c, i, a) => `${Math.max(Number.parseInt(p), Number.parseInt(c))}`, "0")) + 1;
-    webprotState.mainCbs[id] = fn;
+    sweet.mainCbs[id] = fn;
     return id;
 }
 
@@ -192,26 +192,26 @@ function webprotData(bytes: Buffer) {
 
     // Measure ping to the server
     if(packet instanceof packets.PongPacket) {
-        webprotState.pingTime = new Date().getTime() - webprotState.pingSent;
-        if(webprotState.pingSent !== 0)
-            ipcSend({ type: "webprot.status", message: `Latency (round trip): ${webprotState.pingTime}ms` });
+        sweet.pingTime = new Date().getTime() - sweet.pingSent;
+        if(sweet.pingSent !== 0)
+            ipcSend({ type: "webprot.status", message: `Latency (round trip): ${sweet.pingTime}ms` });
         return;
     }
 
     // File downloading
     if(packet instanceof packets.FileDataChunkPacket) {
-        const stream = webprotState.downStates[packet.replyTo].stream as fs.WriteStream;
+        const stream = sweet.downStates[packet.replyTo].stream as fs.WriteStream;
         stream.write(packet.data);
         return;
     }
 
     // Voice join approval
     if(packet instanceof packets.VoiceJoinPacket) {
-        if(webprotState.tasty === null)
+        if(sweet.tasty === null)
             throw new Error("Spurious voice join approval");
 
         ipcSend({ type: "tasty.status", status: "establishing session" });
-        webprotState.tasty.finish(packet.addr, packet.crypto,
+        sweet.tasty.finish(packet.addr, packet.crypto,
             ()      => ipcSend({ type: "tasty.status", status: "connected" }),
             (stats) => ipcSend({ type: "tasty.stats", stats: stats })
         );
@@ -224,18 +224,18 @@ function webprotData(bytes: Buffer) {
         cb.entityPut = (e) => webprotSendPacket(new packets.EntitiesPacket(e));
         cb.entityGet = (e, cb) => webprotSendPacket(new packets.EntityGetPacket(e), undefined,
             regCb((p) => cb((p as packets.EntitiesPacket).entities)));
-        webprotState.salty = new SaltyClient(packet.userId, packet.agentId, cb);
+        sweet.salty = new SaltyClient(packet.userId, packet.agentId, cb);
     }
 
     // File uploading
     if(packet instanceof packets.StatusPacket) {
         if(packet.status == packets.StatusCode.STREAM_END) {
-            const state = webprotState.downStates[packet.replyTo];
+            const state = sweet.downStates[packet.replyTo];
             (state.stream as fs.WriteStream).close();
             ipcSend({ type: "webprot.trigger-reference", reason: "download-finished", references: state.refs, args: [state.path] });
             return;
         } else if(packet.status == packets.StatusCode.START_UPLOADING) {
-            const state = webprotState.upStates[packet.replyTo];
+            const state = sweet.upStates[packet.replyTo];
             const stream = state.stream as fs.ReadStream;
             const bytesTotal = fs.statSync(state.path).size;
             // Send data in chunks
@@ -252,7 +252,7 @@ function webprotData(bytes: Buffer) {
     }
 
     // Check references
-    const ref = webprotState.references[packet.replyTo];
+    const ref = sweet.references[packet.replyTo];
     packet.spontaneous = packet.replyTo === 0;
 
     const finish = () => {
@@ -285,7 +285,7 @@ function webprotData(bytes: Buffer) {
 
         // See if this response was triggered by a packet sent by the main process
         // Don't tell the renderer about it in this case
-        const mainCb = webprotState.mainCbs[ref];
+        const mainCb = sweet.mainCbs[ref];
         if(mainCb === undefined)
             ipcSend({ type: "webprot.packet-recv", packet: packet, pType: packet.constructor.name, reference: ref });
         else
@@ -298,14 +298,14 @@ function webprotData(bytes: Buffer) {
             for(const ent of packet.entities) {
                 // Mainain a DM-to-user mapping
                 if(ent instanceof entities.User && ent.dmChannel !== undefined)
-                    webprotState.dmChanRev[ent.dmChannel] = ent.id;
+                    sweet.dmChanRev[ent.dmChannel] = ent.id;
     
                 // Initiate Salty sessions
                 if(ent instanceof entities.Channel) {
-                    const other = webprotState.dmChanRev[ent.id];
-                    const alice = webprotState.selfId < other;
+                    const other = sweet.dmChanRev[ent.id];
+                    const alice = sweet.selfId < other;
                     if(ent.group === 0 && ent.lcid === 0 && alice) {
-                        webprotState.salty.handshakeInit(other, ent.id, finish);
+                        sweet.salty.handshakeInit(other, ent.id, finish);
                         return;
                     }
                 }
@@ -313,9 +313,9 @@ function webprotData(bytes: Buffer) {
                 // Decrypt messages
                 if(ent instanceof entities.Message) {
                     if(ent.latest.encrypted === undefined) continue;
-                    if(webprotState.dmChanRev[ent.channel] === undefined) continue;
-                    ent.latest.sections = await webprotState.salty.processMsg(ent.channel,
-                            webprotState.dmChanRev[ent.channel], ent.id, ent.latest.encrypted);
+                    if(sweet.dmChanRev[ent.channel] === undefined) continue;
+                    ent.latest.sections = await sweet.salty.processMsg(ent.channel,
+                            sweet.dmChanRev[ent.channel], ent.id, ent.latest.encrypted);
                 }
             }  
         };
@@ -326,13 +326,13 @@ function webprotData(bytes: Buffer) {
 }
 
 function webprotSendBytes(bytes: Buffer) {
-    if(!webprotState.connected) {
-        webprotState.queue.push(bytes);
+    if(!sweet.connected) {
+        sweet.queue.push(bytes);
         webprotConnect();
         return;
     }
 
-    webprotState.socket.write(bytes);
+    sweet.socket.write(bytes);
 }
 
 function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?: number, ref2?: number) {
@@ -389,15 +389,28 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
         if(packet instanceof packets.LoginPacket || packet instanceof packets.SignupPacket)
             packet.agent = Object.assign(new entities.Agent(), packet.agent);
     }
+    
     // Measure ping to the server
     if(packet instanceof packets.PingPacket)
-        webprotState.pingSent = new Date().getTime();
+        sweet.pingSent = new Date().getTime();
+
+    // Encrypt DM messages
+    if(packet instanceof packets.EntitiesPacket) {
+        for(const entity of packet.entities) {
+            if(entity instanceof entities.Message) {
+                if(!(entity.channel in sweet.dmChanRev) || !entity.latest.sections)
+                    continue;
+                entity.latest.encrypted = sweet.salty.encryptMsg(entity.channel, entity.latest.sections);
+                entity.latest.sections = undefined;
+            }
+        }
+    }
 
     // Encode the packet
     var buf = packet.encode();
     // Save the reference ID (encode() sets SEQ)
     if(ref !== undefined)
-        webprotState.references[packet.seq] = ref;
+        sweet.references[packet.seq] = ref;
 
     const encodeAndSend = () => {
         // Compress the data
@@ -417,20 +430,20 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
     // Create a up-/download state
     if(packet instanceof packets.FileDownloadRequestPacket) {
         // Don't download if we're already downloading, add a reference instead
-        const existing: [string, any] = Object.entries(webprotState.downStates)
+        const existing: [string, any] = Object.entries(sweet.downStates)
                                    // @ts-ignore
             .find(x => x[1].id === packet.id);
         if(existing !== undefined) {
             var state = existing[1];
             const seq = existing[0];
             state.refs.push(ref);
-            webprotState.downStates[seq] = state;
+            sweet.downStates[seq] = state;
             return;
         }
 
         const p = path.join(tmpDir, `file_${packet.id}`);
         const stream = fs.createWriteStream(p);
-        webprotState.downStates[packet.seq] = { id: packet.id, path: p, stream: stream, refs: [ref] };
+        sweet.downStates[packet.seq] = { id: packet.id, path: p, stream: stream, refs: [ref] };
     }
 
     if(packet instanceof packets.EntitiesPacket) {
@@ -441,7 +454,7 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
             const seq = packet.seq;
             const proceed = (p) => {
                 const stream = fs.createReadStream(p); // the renderer actually sends the path here
-                webprotState.upStates[seq] = { path: p, stream: stream, ref: ref, ref2: ref2 };
+                sweet.upStates[seq] = { path: p, stream: stream, ref: ref, ref2: ref2 };
                 encodeAndSend();
             };
 
@@ -461,7 +474,7 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
                         normalize:  undefined
                     }]
                 }).then((paths: string[]) =>
-                    setTimeout(proceed, 100, paths[0])); // jank level 100 here
+                    setTimeout(proceed, 50, paths[0])); // jank level 100 here
             } else {
                 proceed(entity.path);
             }
@@ -480,24 +493,24 @@ function ipcSend(data) {
 
 function webprotConnect(force: boolean =false) {
     // Abort if connected already
-    if((webprotState.connecting || webprotState.connected) && !force)
+    if((sweet.connecting || sweet.connected) && !force)
         return;
 
-    webprotState.connecting = true;
-    webprotState.seqId = 1;
-    webprotState.selfId = 0;
-    webprotState.agentId = 0;
-    webprotState.self = {};
-    webprotState.pingSent = 0;
-    webprotState.tasty = null;
-    webprotState.salty?.end();
-    webprotState.salty = null;
-    webprotState.mainCbs = {};
-    webprotState.dmChanRev = {};
+    sweet.connecting = true;
+    sweet.seqId = 1;
+    sweet.selfId = 0;
+    sweet.agentId = 0;
+    sweet.self = {};
+    sweet.pingSent = 0;
+    sweet.tasty = null;
+    sweet.salty?.end();
+    sweet.salty = null;
+    sweet.mainCbs = {};
+    sweet.dmChanRev = {};
     packets.Packet.nextSeq = 1;
 
     // Disconnect if connected
-    webprotState.socket?.end();
+    sweet.socket?.end();
 
     // Initiate a TLS connection to the server
     const logMessage = `Connecting to ${webprotSettings.host}:${webprotSettings.port} with protocol version ${webprotSettings.version}`;
@@ -506,7 +519,7 @@ function webprotConnect(force: boolean =false) {
     ipcSend({ type: "webprot.connecting" });
 
     var timeStart = new Date().getTime();
-    webprotState.socket = tls.connect({
+    sweet.socket = tls.connect({
         host: webprotSettings.host,
         port: webprotSettings.port
     }, () => {
@@ -520,33 +533,33 @@ function webprotConnect(force: boolean =false) {
         });
         ipcSend({ type: "webprot.connected" });
 
-        webprotState.connected = true;
-        webprotState.connecting = false;
+        sweet.connected = true;
+        sweet.connecting = false;
 
         // Tell the server our protocol version
         // and the fact that we support compression
         webprotSendPacket(new packets.IdentificationPacket(webprotSettings.version, webprotSettings.supportsComp))
 
         // Send the packets in the queue
-        webprotState.queue.forEach((bytes) => {
+        sweet.queue.forEach((bytes) => {
             webprotSendBytes(bytes);
         });
-        webprotState.queue = [];
+        sweet.queue = [];
     })
 
     // Register some events
-    webprotState.socket.on("data", webprotData);
-    webprotState.socket.on("end", () => {
-        webprotState.connected  = false;
-        webprotState.connecting = false;
+    sweet.socket.on("data", webprotData);
+    sweet.socket.on("end", () => {
+        sweet.connected  = false;
+        sweet.connecting = false;
 
         console.log("Disconnected");
         ipcSend({ type: "webprot.status", message: "Disconnected" })
         ipcSend({ type: "webprot.disconnected" })
     });
-    webprotState.socket.on("error", (error) => {
-        webprotState.connected  = false;
-        webprotState.connecting = false;
+    sweet.socket.on("error", (error) => {
+        sweet.connected  = false;
+        sweet.connecting = false;
 
         console.log(error);
     });
@@ -561,21 +574,21 @@ ipcMain.on("asynchronous-message", (event, arg) => {
         webprotSendPacket(arg.packet, arg.type, arg.reference, arg.ref2);
     } else if(arg.action === "tasty.connect") {
         // stop existing connection
-        if(webprotState.tasty instanceof TastyClient)
-            webprotState.tasty.stop();
+        if(sweet.tasty instanceof TastyClient)
+            sweet.tasty.stop();
         ipcSend({ type: "tasty.status", status: "generating session key" });
         // ask the server to join a voice channel
-        webprotState.tasty = new TastyClient((key) => {
+        sweet.tasty = new TastyClient((key) => {
             ipcSend({ type: "tasty.status", status: "retrieving session token" });
             webprotSendPacket(new packets.VoiceJoinPacket(arg.channel, "", key));
         });
     } else if(arg.action === "tasty.mic-data") {
-        if(webprotState.tasty === null) return;
-        webprotState.tasty.micData(arg.data);
+        if(sweet.tasty === null) return;
+        sweet.tasty.micData(arg.data);
     } else if(arg.action === "tasty.disconnect") {
-        if(webprotState.tasty === null) return;
-        webprotState.tasty.stop();
-        webprotState.tasty = null;
+        if(sweet.tasty === null) return;
+        sweet.tasty.stop();
+        sweet.tasty = null;
         ipcSend({ type: "tasty.status", status: "disconnected" });
     }
 });

@@ -86,7 +86,7 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
 
     // Edit on double-click
     elm.ondblclick = () => {
-        if(msg.sender === remote.getGlobal("webprotState").self.id)
+        if(msg.sender === remote.getGlobal("sweet").self.id)
             editMessage(state.msg_id)
     };
 
@@ -460,7 +460,7 @@ function createMessageActionBar(id: number): HTMLDivElement {
 
     for(const btnDesc of buttons) {
         // Don"t add "self-only" buttons to messages not sent by self
-        const sentBySelf = window.entityCache[id].sender === remote.getGlobal("webprotState").self.id
+        const sentBySelf = window.entityCache[id].sender === remote.getGlobal("sweet").self.id
         if((btnDesc.selfOnly && sentBySelf) || !btnDesc.selfOnly) {
             const btn = document.createElement("button");
             btn.classList.add("icon-button", "cg-button");

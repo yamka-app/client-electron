@@ -1,16 +1,18 @@
 // Custom ratcheting implementation
 // Largely based on https://www.signal.org/docs/specifications/doubleratchet
 
-import * as ser    from "../../serUtil";
-import * as crypto from "crypto";
-import hkdf        from "futoin-hkdf";
-import { KeyPair } from "./salty";
-import types       from "../dataTypes";
-import * as fs     from "fs";
-import * as path   from "path";
+import * as ser        from "../../serUtil";
+import * as crypto     from "crypto";
+import { KeyObject }   from "crypto";
+import hkdf            from "futoin-hkdf";
+import { KeyPair }     from "./salty";
+import types           from "../dataTypes";
+import * as fs         from "fs";
+import * as path       from "path";
+import { fingerprint } from "./salty";
 
 export class KDFRatchet {
-    @ser.member chainKey: crypto.KeyObject;
+    @ser.member chainKey: KeyObject;
     @ser.member iter:     number; // we don't actually need this
     @ser.member ad:       Buffer;
 
@@ -19,7 +21,7 @@ export class KDFRatchet {
     }
 
     @ser.member
-    public reset(newKey: crypto.KeyObject) {
+    public reset(newKey: KeyObject) {
         this.iter = 0;
         this.chainKey = newKey;
     }
@@ -37,7 +39,7 @@ export class KDFRatchet {
     }
 
     @ser.member
-    public encrypt(plaintext: Buffer): [crypto.KeyObject, Buffer] {
+    public encrypt(plaintext: Buffer): [KeyObject, Buffer] {
         const key = this.step();
         const nonce = Buffer.from(Array(12).fill(0));
         const cipher = crypto.createCipheriv("aes-256-gcm", key, nonce, { authTagLength: 16 });
@@ -54,12 +56,13 @@ export class KDFRatchet {
     }
 
     @ser.member
-    public decrypt(data: Buffer, givenKey?: crypto.KeyObject): [crypto.KeyObject, Buffer] {
+    public decrypt(data: Buffer, givenKey?: KeyObject): [KeyObject, Buffer] {
         const ctLen = types.decNum(data.slice(0, 2));
         const ciphertext = data.slice(2, 2 + ctLen);
         const auth = data.slice(2 + ctLen);
 
         const key = givenKey ?? this.step();
+        console.log(key.export().toString("base64"));
         const nonce = Buffer.from(Array(12).fill(0));
         const decipher = crypto.createDecipheriv("aes-256-gcm", key, nonce, { authTagLength: 16 });
         decipher.setAuthTag(auth);
@@ -72,18 +75,18 @@ export class KDFRatchet {
 
 export class DHRatchet {
     @ser.member keyPair:  KeyPair;
-    @ser.member pubKey:   crypto.KeyObject;
-    @ser.member rootKey:  crypto.KeyObject;
+    @ser.member pubKey:   KeyObject;
+    @ser.member rootKey:  KeyObject;
     @ser.member send:     KDFRatchet;
     @ser.member recv:     KDFRatchet;
-    @ser.member iter:     number;
-    @ser.member lastR:    boolean;
+    @ser.member iter:     number = 0;
+    @ser.member lastR:    boolean; // whether the last processed request was a decryption one
     @ser.member basePath: string; // for storing per-message keys
     @ser.member seq:      number = 0;
 
-    constructor(basePath: string, rk: crypto.KeyObject, ad: Buffer, kp?: KeyPair) {
+    constructor(basePath: string, rk: KeyObject, ad: Buffer, kp?: KeyPair) {
         this.basePath = basePath;
-        if(basePath !== undefined &&  !fs.existsSync(basePath))
+        if(basePath !== undefined && !fs.existsSync(basePath))
             fs.mkdirSync(basePath);
         this.rootKey = rk;
         this.keyPair = kp;
@@ -100,7 +103,7 @@ export class DHRatchet {
     }
 
     @ser.member
-    public step(pk: crypto.KeyObject) {
+    public step(pk: KeyObject) {
         this.pubKey = pk;
         this.iter++;
 
@@ -113,6 +116,7 @@ export class DHRatchet {
             });
             this.send.reset(this.rootStep(dh));
             
+            console.log("initial step", this.send.chainKey.export().toString("base64"));
             return this.keyPair.pub;
         } else {
             // All other steps: reset both rachets
@@ -120,15 +124,16 @@ export class DHRatchet {
                 privateKey: this.keyPair.priv,
                 publicKey:  this.pubKey
             });
-            this.send.reset(this.rootStep(dh1));
+            this.recv.reset(this.rootStep(dh1));
 
             this.keyPair = KeyPair.generate();
             const dh2 = crypto.diffieHellman({
                 privateKey: this.keyPair.priv,
                 publicKey:  this.pubKey
             });
-            this.recv.reset(this.rootStep(dh2));
+            this.send.reset(this.rootStep(dh2));
 
+            console.log("normal step", this.send.chainKey.export().toString("base64"), this.recv.chainKey.export().toString("base64"));
             return this.keyPair.pub;
         }
     }
@@ -153,7 +158,7 @@ export class DHRatchet {
         fs.writeFileSync(rangeFile, keys.join("\n"));
     }
 
-    private saveKey(seq: number, key: crypto.KeyObject) {
+    private saveKey(seq: number, key: KeyObject) {
         const keys = this.readKeyRange(seq) ?? [];
         keys[seq % 100] = key.export().toString("base64");
         this.writeKeyRange(seq, keys);
@@ -163,23 +168,29 @@ export class DHRatchet {
     public encrypt(plaintext: Buffer) {
         this.lastR = false;
         const [key, ciphertext] = this.send.encrypt(plaintext);
+        console.log("encr seq", ++this.seq);
         this.saveKey(this.seq, key);
         return Buffer.concat([
-            types.encNum(this.seq++, 4),
+            types.encNum(this.seq, 4),
             ciphertext
         ]);
     }
     
     @ser.member
     public decrypt(ciphertext: Buffer) {
-        this.lastR = true;
         const seq = types.decNum(ciphertext.slice(0, 4));
+        console.log("decr seq", seq);
         ciphertext = ciphertext.slice(4);
 
         const existingKey = this.loadKey(seq); // may be undefined
         const [key, plaintext] = this.recv.decrypt(ciphertext, existingKey);
-        if(seq >= this.seq + 1)
-            this.saveKey(this.seq++, key);
+        if(seq > this.seq) {
+            // only set this to true when we receive a new message
+            // because this function can also be used to decrypt older messages
+            this.lastR = true;
+            this.saveKey(++this.seq, key);
+            console.log("incr seq", this.seq);
+        }
         return plaintext;
     }
 }

@@ -427,7 +427,7 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
 
     elm.onclick = (e) => (special === "friend") ? openDm() : showProfile(id);
 
-    const isFriend = remote.getGlobal("webprotState").self.friends.includes(id);
+    const isFriend = remote.getGlobal("sweet").self.friends.includes(id);
     var contextMenu: context.Entry[] = [
         new context.ButtonEntry("Profile", showProfile, [id])
     ];
@@ -577,7 +577,7 @@ export function updAgentList() {
     const agentList = util.elmById("agent-list");
     while(agentList.firstChild) agentList.firstChild.remove();
 
-    const agentIds: number[] = remote.getGlobal("webprotState").self.agents
+    const agentIds: number[] = remote.getGlobal("sweet").self.agents
     util.reqEntities(agentIds.map(x => new packets.EntityGetRequest(entities.Agent.typeNum, x)), false, (agents) => {
         for(const agent of (agents as entities.Agent[])) {
             const div = document.createElement("div");
@@ -589,7 +589,7 @@ export function updAgentList() {
             // 3) a left arrow if that's the current agent
             // 4) a green circle if that agent is online
             // 5) a button to unlink the agent if that's NOT the current one
-            const thisAgent = remote.getGlobal("webprotState").agentId == agent.id;
+            const thisAgent = remote.getGlobal("sweet").agentId == agent.id;
             div.innerHTML = `<img src="icons/agents/${icon}.png"/>
                 <span>${util.escapeHtml(agent.name)}</span>
                 ${agent.online ? "<img src=\"icons/online.png\">" : ""}
@@ -600,7 +600,7 @@ export function updAgentList() {
             if(unlink !== null) unlink.onclick = (e) => {
                 util.stopPropagation(e);
                 const user = new entities.User();
-                user.id = remote.getGlobal("webprotState").selfId;
+                user.id = remote.getGlobal("sweet").selfId;
                 user.agents = agentIds.filter(x => x !== agent.id);
                 util.putEntities([user]);
             };

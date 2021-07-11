@@ -35,7 +35,7 @@ export function updMemberList() {
             memberList.removeChild(memberList.firstChild);
 
         // Determine what users should end up in the member list
-        const self = remote.getGlobal("webprotState").self;
+        const self = remote.getGlobal("sweet").self;
         const friendType = util.elmById("member-list-friend-type");
 
         friendType.innerHTML = util.escapeHtml(
@@ -154,7 +154,7 @@ export function updMessageArea(updMessages: boolean =true) {
         // Show the list of people that are typing
         const typingElm  = util.elmById("channel-typing");
         const typingAnim = util.elmById("typing-dots");
-        const typing = channel.typing.filter(x => x !== remote.getGlobal("webprotState").self.id);
+        const typing = channel.typing.filter(x => x !== remote.getGlobal("sweet").self.id);
         util.reqEntities(typing.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {
             var content = "";
             const verb = (typing.length === 1) ? "is" : "are";
@@ -176,7 +176,7 @@ export function updGroupList() {
     util.setElmVisibility(groupPanels, window.viewingChan === 0);
 
     // Request the groups the user's in
-    const groups = remote.getGlobal("webprotState").self.groups;
+    const groups = remote.getGlobal("sweet").self.groups;
     util.reqEntities(groups.map(x => new packets.EntityGetRequest(entities.Group.typeNum, x)), false, () => {
         // Delete old panels except for the "create" one
         for(var i = groupPanels.children.length - 1; i >= 0; i--) {

@@ -272,7 +272,7 @@ function _rendererFunc() {
     // Change info about self
     function sendSelfValue(key: string, val: any) {
         const entity = new entities.User();
-        entity.id = remote.getGlobal("webprotState").selfId;
+        entity.id = remote.getGlobal("sweet").selfId;
         entity[key] = val;
 
         util.putEntities([entity]);
@@ -295,7 +295,7 @@ function _rendererFunc() {
     }
     function setSelfMfaStatus(mfaStatus: boolean) {
         domUtil.updateSelfMfaStatus(mfaStatus);
-        remote.getGlobal("webprotState").self.mfaEnabled = mfaStatus;
+        remote.getGlobal("sweet").self.mfaEnabled = mfaStatus;
         sendSelfValue("mfaEnabled", mfaStatus);
     }
 
@@ -456,9 +456,9 @@ function _rendererFunc() {
             }
         } else if(packet instanceof packets.ClientIdentityPacket) { // Logged in successfully
             // Save our ID
-            remote.getGlobal("webprotState").selfId  = packet.userId;
-            remote.getGlobal("webprotState").agentId = packet.agentId;
-            remote.getGlobal("webprotState").sendPings = true;
+            remote.getGlobal("sweet").selfId  = packet.userId;
+            remote.getGlobal("sweet").agentId = packet.agentId;
+            remote.getGlobal("sweet").sendPings = true;
 
             // Show the main UI
             util.hideElm("user-select");
@@ -502,7 +502,7 @@ function _rendererFunc() {
                 const self  = window.entityCache[packet.userId]  as entities.User;
                 const agent = window.entityCache[packet.agentId] as entities.Agent;
                 console.log("Got client user and agent:", self, agent);
-                remote.getGlobal("webprotState").self = self;
+                remote.getGlobal("sweet").self = self;
 
                 layout.updMessageArea();
                 accountSelector.cacheUser(self);
@@ -537,7 +537,7 @@ function _rendererFunc() {
                 // Request the DM channel for new friends
                 if(entity instanceof entities.User
                         && oldEntity instanceof entities.User
-                        && entity.id === remote.getGlobal("webprotState").selfId
+                        && entity.id === remote.getGlobal("sweet").selfId
                         && entity.friends.length !== oldEntity.friends.length) {
                     const friends    = entity.friends;
                     const oldFriends = oldEntity.friends;
@@ -600,8 +600,8 @@ function _rendererFunc() {
                 }
 
                 // Update info about self
-                if(entity instanceof entities.User && entity.id === remote.getGlobal("webprotState").selfId) {
-                    remote.getGlobal("webprotState").self = entity;
+                if(entity instanceof entities.User && entity.id === remote.getGlobal("sweet").selfId) {
+                    remote.getGlobal("sweet").self = entity;
                     domUtil.updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
 
                     util.setElmVisibility(util.elmById("email-unconfirmed-bar-container"), !entity.emailConfirmed);
@@ -657,7 +657,7 @@ function _rendererFunc() {
         } else if(packet instanceof packets.MFASecretPacket) {
             // Construct the string to put into the QR code
             const qrString = "otpauth://totp/"
-                + encodeURIComponent(remote.getGlobal("webprotState").self.email)
+                + encodeURIComponent(remote.getGlobal("sweet").self.email)
                 + "?secret="
                 + packet.secret
                 + "&issuer=Yamka";
@@ -683,7 +683,7 @@ function _rendererFunc() {
 
     function userAgent() {
         const agents = configGet("agents");
-        const id = agents[remote.getGlobal("webprotState").id];
+        const id = agents[remote.getGlobal("sweet").id];
         if(id === undefined) {
             const agent = new entities.Agent();
             agent.name = `Desktop client on ${os.hostname()}`;
@@ -980,7 +980,7 @@ function _rendererFunc() {
     // 2FA toggling
     util.elmById("self-mfa-toggle-button").onclick = (evt) => {
         // Disable it if enabled, enable if disabled
-        setSelfMfaStatus(!remote.getGlobal("webprotState").self.mfaEnabled);
+        setSelfMfaStatus(!remote.getGlobal("sweet").self.mfaEnabled);
     };
 
     // 2FA floating box closing

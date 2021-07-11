@@ -122,7 +122,7 @@ export class Level2Msg {
 
     public encode(ratchet: DHRatchet) {
         const includePub = this.pub !== undefined;
-        const pubData = this.pub.export(pubkeyFormat);
+        const pubData = includePub ? this.pub.export(pubkeyFormat) : undefined;
         return Buffer.concat([
             Buffer.from([this.op | (includePub ? 0x80 : 0)]),
             includePub ? types.encNum(pubData.length, 2) : Buffer.from([]),
@@ -160,7 +160,6 @@ export class Level2Msg {
             // Step the ratchet only if it's a new message
             const seq = types.decNum(data.slice(offs, offs + 4));
             if(ratchet.seq < seq) {
-                console.log(ratchet.seq, seq);
                 const pubData = data.slice(3, 3 + pubLen);
                 pub = crypto.createPublicKey({ key: pubData, format: "der", type: "spki" });
                 ratchet.step(pub);
@@ -203,7 +202,7 @@ export class Level2TextMsg extends Level2Msg {
     op = Level2Command.TEXT;
     sections: MessageSection[];
 
-    constructor(pub?: crypto.KeyObject, s?: MessageSection[]) { super(pub); }
+    constructor(pub?: crypto.KeyObject, s?: MessageSection[]) { super(pub); this.sections = s }
     protected encodePayload() { return types.encMsgSections(this.sections); }
     protected static decodePayload(data: Buffer) {
         return new Level2TextMsg(undefined, types.decMsgSections(data));

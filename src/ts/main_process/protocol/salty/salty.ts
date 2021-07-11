@@ -25,6 +25,7 @@ import * as fs       from "fs";
 import * as path     from "path";
 import { app }       from "electron";
 import * as crypto   from "crypto";
+import { KeyObject } from "crypto";
 import hkdf          from "futoin-hkdf";
 import EventEmitter  from "events";
 
@@ -36,7 +37,8 @@ import {
     Level2AliceHelloMsg,
     Level2BobHelloMsg,
     Level1NormalMsg,
-    Level2TextMsg
+    Level2TextMsg,
+    Level2TastyKeyMsg
 } from "./salty_wire";
 import {
     PKey, User, PkeyType,
@@ -49,21 +51,23 @@ const PREKEY_EXPIRATION = 12 * 3600 * 1000; // 12 hours
 const OTPREKEY_STOCK = 32;
 export const pubkeyFormat: crypto.KeyExportOptions<"der"> = { type: "spki", format: "der" };
 
-function fingerprint(key: crypto.KeyObject) {
+export function fingerprint(key: KeyObject) {
+    if(key === undefined)
+        return "none";
     if(key.type === "public")
         return crypto.createHash("sha256")
-            .update(key.export(pubkeyFormat))
-            .digest("base64");
+                .update(key.export(pubkeyFormat))
+                .digest("base64");
     else if(key.type === "secret")
         return crypto.createHash("sha256")
-            .update(key.export())
-            .digest("base64");
+                .update(key.export())
+                .digest("base64");
     else throw new Error();
 }
 
 export class KeyPair {
-    @ser.member pub:   crypto.KeyObject;
-    @ser.member priv:  crypto.KeyObject;
+    @ser.member pub:   KeyObject;
+    @ser.member priv:  KeyObject;
     @ser.member date:  Date;
     @ser.member stale: boolean = false;
 
@@ -104,7 +108,7 @@ export class KeyPair {
     }
 
     @ser.member
-    static publicOnly(pub: crypto.KeyObject) {
+    static publicOnly(pub: KeyObject) {
         const pair = new KeyPair();
         pair.pub   = pub;
         pair.date  = new Date();
@@ -116,10 +120,10 @@ export class KeyPair {
 // Conversation State
 export class CState {
     @ser.member alice:    boolean;
-    @ser.member identity: crypto.KeyObject;
-    @ser.member idSign:   crypto.KeyObject;
+    @ser.member identity: KeyObject;
+    @ser.member idSign:   KeyObject;
     @ser.member eph:      KeyPair;
-    @ser.member sk:       crypto.KeyObject;
+    @ser.member sk:       KeyObject;
     @ser.member stale:    boolean;
     @ser.member ratchet:  DHRatchet;
 
@@ -219,10 +223,10 @@ export default class SaltyClient {
             ]);
         }
         // Sign and upload new one-time and master prekeys as they're generated
-        this.keys.on("new_mp", (key: crypto.KeyObject) =>
+        this.keys.on("new_mp", (key: KeyObject) =>
             this.cb.entityPut([PKey.fromKeyObj(this.uid, PkeyType.PREKEY,
             key, this.keys.idSign.priv)]));
-        this.keys.on("new_otp", (keys: crypto.KeyObject[]) =>
+        this.keys.on("new_otp", (keys: KeyObject[]) =>
             this.cb.entityPut(keys.map(x => PKey.fromKeyObj(this.uid, PkeyType.OTPREKEY,
             x, this.keys.idSign.priv))));
     }
@@ -259,6 +263,7 @@ export default class SaltyClient {
     public handshakeInit(uid: number, cid: number, done: () => void) {
         // Fetch the user's X3DH key bundle
         const state = new CState();
+        state.alice = true;
         this.cb.entityGet([
             new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDSIGN),
             new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDENTITY),
@@ -316,7 +321,7 @@ export default class SaltyClient {
         });
     }
 
-    private findOtp(pub: crypto.KeyObject) {
+    private findOtp(pub: KeyObject) {
         if(pub === undefined)
             return undefined;
         const pair = this.keys.otprekeys.find(x => x.fingerprint() === fingerprint(pub));
@@ -332,6 +337,7 @@ export default class SaltyClient {
                 new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDENTITY)
             ], ([idsp, idkp]) => {
                 const state = new CState();
+                state.alice = false;
                 // Save the keys (verify them with the signature identity key)
                 state.idSign   = (idsp as User).idsignKey  .toKeyObj();
                 state.identity = (idkp as User).identityKey.toKeyObj(state.idSign);
@@ -364,11 +370,11 @@ export default class SaltyClient {
                 ]);
                 const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
                 state.ratchet = new DHRatchet(keyBase, state.sk, ad, this.keys.prekeys[0]);
-                state.ratchet.step(Level2Msg.extractPubkey(l1.l2d));
                 this.conv[`${cid}`] = state;
                 this.dumpConv(cid);
     
                 // Reply to the initial message
+                const aliceHello = Level2Msg.decode(l1.l2d, state.ratchet);
                 const msg = new Message();
                 msg.channel = cid;
                 msg.latest = new MessageState();
@@ -376,7 +382,7 @@ export default class SaltyClient {
                     state.ratchet.keyPair.pub, 231).encode(state.ratchet)).encode();
                 this.cb.entityPut([msg]);
 
-                success(Level2Msg.decode(l1.l2d, state.ratchet));
+                success(aliceHello);
             });
         });
     }
@@ -396,6 +402,7 @@ export default class SaltyClient {
             var l2 = (bob && !(`${cid}` in this.conv))
                     ? await this.handshakeAck(cid, uid, l1)
                     : Level2Msg.decode(l1.l2d, this.conv[`${cid}`].ratchet);
+            const state = this.conv[`${cid}`];
 
             if(!(l2 instanceof Level2AliceHelloMsg))
                 throw new Error("L1 Alice Hello should enclose L2 Alice Hello");
@@ -403,41 +410,116 @@ export default class SaltyClient {
                 console.error(`[salty] L2 Alice Hello check is ${l2.check}, expected 123`);
             return [this.e2eeDbgSection({
                 "Type": "Alice Hello",
-                "Ephemeral key fingerprint": fingerprint(l1.eph),
-                "One-time prekey fingerprint": fingerprint(l1.otp),
-                "Other party's identity key fingerprint": fingerprint(this.conv[`${cid}`].identity),
-                "Other party's signature key fingerprint": fingerprint(this.conv[`${cid}`].idSign),
+                "We're Alice": `${state.alice}`,
+                "Ephemeral key": fingerprint(l1.eph),
+                "One-time prekey": fingerprint(l1.otp),
+                "Channel ID": `${cid}`,
+                "Other party ID": `${uid}`,
+                "Other party identity key": fingerprint(state.identity),
+                "Other party signature key": fingerprint(state.idSign),
+                "Own identity key": this.keys.identity.fingerprint(),
+                "Own signature key": this.keys.idSign.fingerprint(),
                 "Elliptic curve": "curve25519",
                 "Signature algorithm": "Ed25519",
-                "Key agreement algorithm": "X25519",
-                "Symmetric key cipher": "AES-256-GCM",
+                "Key agreement": "X25519",
+                "Cipher": "AES-256-GCM",
+                "HKDF (X3DH + DH-ratchet) hash": "SHA-512",
+                "HMAC (KDF-ratchet) hash": "SHA-256",
                 "Auth tag length": "16",
-                "X3DH common secret fingerprint": fingerprint(this.conv[`${cid}`].sk),
-                "Check (must be 123 if everythting is OK)": l2.check
+                "X3DH secret": fingerprint(state.sk),
+                "Check string": this.checkString(cid),
+                "Check (must be 123 if everythting adds up)": l2.check
             })];
         } else if(l1 instanceof Level1NormalMsg) {
+            const state = this.conv[`${cid}`];
             try {
-                const l2 = Level2Msg.decode(l1.data, this.conv[`${cid}`].ratchet);
+                const l2 = Level2Msg.decode(l1.data, state.ratchet);
                 if(l2 instanceof Level2BobHelloMsg) {
                     return [this.e2eeDbgSection({
                         "Type": "Bob Hello",
                         "Check (must be 231)": l2.check
                     })];
                 } else if(l2 instanceof Level2TextMsg) {
-                    return l2.sections;
+                    return l2.sections.concat([
+                        this.e2eeDbgSection({
+                            "Message ID": `${mid}`,
+                            "Channel ID": `${cid}`,
+                            "Other party ID": `${uid}`,
+                            "Other party identity key": fingerprint(state.identity),
+                            "Other party signature key": fingerprint(state.idSign),
+                            "Own identity key": this.keys.identity.fingerprint(),
+                            "Own signature key": this.keys.idSign.fingerprint(),
+                            "X3DH secret": fingerprint(state.sk),
+                            "Current DH-ratchet root key": fingerprint(state.ratchet.rootKey),
+                            "Current DH-ratchet public key": fingerprint(state.ratchet.pubKey),
+                            "Current DH-ratchet key pair": state.ratchet.keyPair.fingerprint(),
+                            "Current receiving KDF-ratchet chain key": fingerprint(state.ratchet.recv.chainKey),
+                            "Current sending KDF-ratchet chain key": fingerprint(state.ratchet.send.chainKey),
+                            "Check string": this.checkString(cid)
+                        })
+                    ]);
+                } else if(l2 instanceof Level2TastyKeyMsg) {
+                    return [this.e2eeDbgSection({
+                        "Type": "Voice encryption key",
+                        "Key": fingerprint(l2.key)
+                    })];
                 }
-            } catch(ex) { 
-                // We might be trying to access a ratchet that hasn't been created yet
-                // in case we're Bob and still processing the Alice Hello message
-                return null;
+            } catch(ex) {
+                console.log(ex.stack);
+                console.log(ex.message);
+                return [this.e2eeDbgSection({
+                    "Type": "L2: Unknown (L1: Normal Message)",
+                    "Warning": "Something went wrong and this message can't be decrypted. Please contact support",
+                    "Message ID": `${mid}`,
+                    "Channel ID": `${cid}`,
+                    "Other party ID": `${uid}`,
+                    "Other party identity key": fingerprint(state.identity),
+                    "Other party signature key": fingerprint(state.idSign),
+                    "Own identity key": this.keys.identity.fingerprint(),
+                    "Own signature key": this.keys.idSign.fingerprint(),
+                    "X3DH secret": fingerprint(state.sk),
+                    "Current DH-ratchet root key": fingerprint(state.ratchet.rootKey),
+                    "Current DH-ratchet public key": fingerprint(state.ratchet.pubKey),
+                    "Current DH-ratchet key pair": state.ratchet.keyPair.fingerprint(),
+                    "Current receiving KDF-ratchet chain key": fingerprint(state.ratchet.recv.chainKey),
+                    "Current sending KDF-ratchet chain key": fingerprint(state.ratchet.send.chainKey),
+                    "Check string": this.checkString(cid)
+                })];
             }
         }
     }
 
-    public encryptMsg(cid: number, sections: MessageSection[]) {
-        // if(!(`${cid}` in this.conv))
-        //     this.loadConv(cid);
-        // return new Level1NormalMsg(new Level2TextMsg(sections).encode(state.ratchet)).encode();
+    // Encrypts a TextMessage or a TastyKey
+    public encryptMsg(cid: number, data: MessageSection[] | KeyObject) {
+        if(!(`${cid}` in this.conv))
+            this.loadConv(cid);
+        const state = this.conv[`${cid}`];
+        const includePub = state.ratchet.lastR;
+        const pub = includePub ? state.ratchet.keyPair.pub : undefined;
+        return new Level1NormalMsg(
+                (data instanceof KeyObject
+                ? new Level2TastyKeyMsg(pub, data)
+                : new Level2TextMsg(pub, data))
+            .encode(state.ratchet)).encode();
+    }
+
+    // Calculates a check string
+    public checkString(cid: number) {
+        if(!(`${cid}` in this.conv))
+            this.loadConv(cid);
+        const state = this.conv[`${cid}`];
+        // Order is important: Alice's key first and Bob's key second
+        if(state.alice) {
+            return crypto.createHash("sha256")
+                    .update(this.keys.idSign.pub.export(pubkeyFormat))
+                    .update(state.idSign.export(pubkeyFormat))
+                    .digest("base64"); 
+        } else {
+            return crypto.createHash("sha256")
+                    .update(state.idSign.export(pubkeyFormat))
+                    .update(this.keys.idSign.pub.export(pubkeyFormat))
+                    .digest("base64"); 
+        }
     }
 
     private convPath(id: number) {

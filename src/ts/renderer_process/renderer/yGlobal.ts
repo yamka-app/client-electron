@@ -59,5 +59,5 @@ export function sendPacket(p: packets.Packet, cb?: (r: packets.Packet) => any, a
     });
 }
 
-export function webprotState() { return remote.getGlobal("webprotState"); }
-export function self(): entities.User { return webprotState().self; }
+export function sweet() { return remote.getGlobal("sweet"); }
+export function self(): entities.User { return sweet().self; }

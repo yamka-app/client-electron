@@ -1,9 +1,16 @@
-// Dontcha just hate it when you de-serialize JSON in TS and try to call the methods?
+// Okay, real talk.
+// This is quite possibly the worst code I ever wrote.
+// Please don't look at it. I hate it. You're going to hate it.
+// You're going to hate me.
+//
+// Please. Look away. Read all the other files, but not this one.
+// Or, if you do read it, please quietly submit a PR if you know
+// a way to improve it. I don't.
 
 import "reflect-metadata";
 import {
     KeyExportOptions,
-    createSecretKey, createPublicKey, createPrivateKey, KeyObject
+    createSecretKey, createPublicKey, createPrivateKey
 } from "crypto";
 import { KeyPair } from "./protocol/salty/salty";
 
@@ -113,15 +120,19 @@ function unmush<T>(c: { new(...a: any[]): T }, data: any): T {
     const inst = new c();
     if (Reflect.hasMetadata("meta:fields", inst)) {
         for(const kv of Object.entries(Reflect.getMetadata("meta:fields", inst))) {
-            const [key, ftype]: [string, any] = kv;
+            var [key, ftype]: [string, any] = kv;
+            // Look away.
+            if(c?.name === "DHRatchet" && key === "keyPair")
+                ftype = KeyPair;
             otherObj[key] = unmush(ftype as any, data[key]);
         }
     }
+
     return Object.assign(inst, data, otherObj);
 }
 
 // Usage: dejsonify(ClassName, json)
 export function dejsonify<T>(c: { new(...a: any[]): T }, data: string): T {
-    const deser = JSON.parse(data)
+    const deser = JSON.parse(data);
     return unmush(c, deser);
 }
