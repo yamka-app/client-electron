@@ -309,12 +309,10 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
     })
 }
 
-const tinycolor_layout = window["_modules"].tinycolor;
 function hashRandomart(data: Uint8Array) {
     const sz = 144;
-    const sq_cnt = 21;
-    if(data.length < sq_cnt * 3)
-        throw new Error("Expected data length to be at least sq_cnt * 3 bytes");
+    var x = sz / 2, y = sz / 2;
+    var d = 0;
 
     const canv = document.createElement("canvas");
     canv.width  = sz;
@@ -322,19 +320,23 @@ function hashRandomart(data: Uint8Array) {
     const ctx = canv.getContext("2d");
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, sz, sz);
+    ctx.lineWidth = 1.5;
 
-    const scale = sz / 16;
-    for(var i = 0; i < sq_cnt; i++){
-        const x = (data[i * 3 + 0] & 15) * scale;
-        const y = (data[i * 3 + 0] >> 4) * scale;
-        const w = (data[i * 3 + 1] & 15) * scale;
-        const h = (data[i * 3 + 1] >> 4) * scale;
-        const r = ((data[i * 3 + 2] >> 0) & 3) * 64;
-        const g = ((data[i * 3 + 2] >> 2) & 3) * 64;
-        const b = ((data[i * 3 + 2] >> 6) & 3) * 64;
-        ctx.fillStyle = tinycolor_layout(`rgba(${r}, ${g}, ${b}, .5)`)
-                .saturate(100).brighten(25).toString();
-        ctx.fillRect(x, y, w, h);
+    for(var i = 0; i < data.length; i++) {
+        const byte = data[i];
+        d += ((byte & 3) - 1);
+        const col = 128 + (((byte >> 2) & 15) * 8);
+        const len = ((byte >> 6) & 3) * 2 + 1;
+        const x1 = x, y1 = y;
+        x += Math.cos(d) * len;
+        y += Math.sin(d) * len;
+        if(x < 0 || x >= sz || y < 0 || y >= sz)
+            d -= Math.PI / 2;
+        ctx.strokeStyle = `rgb(${col}, ${col}, ${col})`;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x, y);
+        ctx.stroke();
     }
 
     return canv;

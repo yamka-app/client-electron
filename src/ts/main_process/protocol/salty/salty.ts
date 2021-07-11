@@ -495,12 +495,12 @@ export default class SaltyClient {
         const state = this.conv[`${cid}`];
         // Order is important: Alice's key first and Bob's key second
         if(state.alice) {
-            return crypto.createHash("sha512")
+            return crypto.createHash("sha256")
                     .update(this.keys.idSign.pub.export(pubkeyFormat))
                     .update(state.idSign.export(pubkeyFormat))
                     .digest(); 
         } else {
-            return crypto.createHash("sha512")
+            return crypto.createHash("sha256")
                     .update(state.idSign.export(pubkeyFormat))
                     .update(this.keys.idSign.pub.export(pubkeyFormat))
                     .digest(); 
@@ -508,21 +508,7 @@ export default class SaltyClient {
     }
 
     public checkString(cid: number) {
-        if(!(`${cid}` in this.conv))
-            this.loadConv(cid);
-        const state = this.conv[`${cid}`];
-        // Order is important: Alice's key first and Bob's key second
-        if(state.alice) {
-            return crypto.createHash("sha256")
-                    .update(this.keys.idSign.pub.export(pubkeyFormat))
-                    .update(state.idSign.export(pubkeyFormat))
-                    .digest("base64"); 
-        } else {
-            return crypto.createHash("sha256")
-                    .update(state.idSign.export(pubkeyFormat))
-                    .update(this.keys.idSign.pub.export(pubkeyFormat))
-                    .digest("base64"); 
-        }
+        return this.checkBuffer(cid).toString("base64");
     }
 
     // Returns conversation info
@@ -532,8 +518,10 @@ export default class SaltyClient {
         const state = this.conv[`${cid}`];
         return (state.ratchet.seq) >= 2 ? {
             incomplete:  false,
-            checkBuf:    this.checkBuffer(cid),
-            checkString: this.checkString(cid)
+            checkString: this.checkString(cid),
+            checkBuf: hkdf(this.checkBuffer(cid), 4096,
+                { salt: Buffer.from(Array(64).fill(0)),
+                  info: "YamkaKeyVerif", hash: "sha256" })
         } : {
             incomplete : true
         };

@@ -112,6 +112,7 @@ app.on("ready", () => {
             fs.rmdir(tmpDir, { recursive: true }, () => {});
             mainWindow.destroy();
             app.quit();
+            sweet.salty?.end();
         } }
     ]));
 
@@ -121,8 +122,9 @@ app.on("ready", () => {
 
         webprotSendPacket(new packets.PingPacket(123));
     }, 20000);
-})
+});
 
+process.on("exit", () => sweet.salty?.end());
 app.on("window-all-closed", () => { windowCreated = false; });
 
 // =========================================== PROTOCOL SECTION
