@@ -1359,7 +1359,7 @@ function _rendererFunc() {
     });
 
     notif.show("Editing and deleting messages in DMs causes "
-             + "undefned behavior. Files in DMs are "
+             + "undefned behavior. Files and calls in DMs are "
              + "unencrypted.", undefined, "yellow");
 }
 

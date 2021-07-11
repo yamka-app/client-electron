@@ -6,7 +6,7 @@ import path      from "path";
 import tls       from "tls";
 import fs        from "fs";
 import resizer   from "node-image-resizer";
-import sslkeylog from "sslkeylog";
+// import sslkeylog from "sslkeylog";
 
 import DataTypes                       from "./protocol/dataTypes";
 import * as packets                    from "./protocol/packets";
@@ -51,7 +51,7 @@ function createWindow() {
     if(!windowCreated){
         // Create the window
         mainWindow = new BrowserWindow({
-            title:       "Yamka - beta",
+            title:       "Yamka - alpha",
             icon:        path.join(__dirname, "../../logo.png"),
             maximizable: true,
             frame:       false,
@@ -96,8 +96,8 @@ app.on("ready", () => {
     global["tmpDir"] = tmpDir;
     loadConfig();
 
-    if(config.sslkeylog && process.env["SSLKEYLOGFILE"] !== undefined)
-        sslkeylog.hookAll();
+    // if(config.sslkeylog && process.env["SSLKEYLOGFILE"] !== undefined)
+    //     sslkeylog.hookAll();
     
     // Create the window
     createWindow();
