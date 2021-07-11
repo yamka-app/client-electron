@@ -9,11 +9,11 @@ function foreground(color: string) {
 
 export function show(text: string, img?: string, color?: string, click?: () => any) {
     if(color == undefined) color = "background";
-    const textColor = `var(--${foreground(color)}`;
+    const textColor = `var(--${foreground(color)})`;
 
     const notif = document.createElement("div");
     text = `<span style="color: ${textColor}">${escapeHtml(text)}</span>`;
-    notif.innerHTML = (img == undefined ? "" : `<img src="${img}"/>`) + text;
+    notif.innerHTML = (img === undefined ? "" : `<img src="${img}"/>`) + text;
     notif.onclick = click;
     notif.style.background = `var(--${color})`;
 

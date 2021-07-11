@@ -514,7 +514,7 @@ function webprotConnect(force: boolean =false) {
     sweet.socket?.end();
 
     // Initiate a TLS connection to the server
-    const logMessage = `Connecting to ${webprotSettings.host}:${webprotSettings.port} with protocol version ${webprotSettings.version}`;
+    const logMessage = `[sweet] connecting to ${webprotSettings.host}:${webprotSettings.port} with protocol version ${webprotSettings.version}`;
     console.log(logMessage);
     ipcSend({ type: "webprot.status", message: logMessage });
     ipcSend({ type: "webprot.connecting" });
@@ -527,7 +527,7 @@ function webprotConnect(force: boolean =false) {
         // We have connected
         const timeEnd = new Date().getTime();
         const took = timeEnd - timeStart;
-        console.log("Connected in", took, "ms");
+        console.log(`[sweet] connected in ${took} ms`);
         ipcSend({
             type:    "webprot.status",
             message: "Connected in " + took + " ms"
@@ -554,7 +554,7 @@ function webprotConnect(force: boolean =false) {
         sweet.connected  = false;
         sweet.connecting = false;
 
-        console.log("Disconnected");
+        console.log("[sweet] disconnected");
         ipcSend({ type: "webprot.status", message: "Disconnected" })
         ipcSend({ type: "webprot.disconnected" })
     });

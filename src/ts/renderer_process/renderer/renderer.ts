@@ -1326,12 +1326,12 @@ function _rendererFunc() {
         }
     };
 
-    util.elmById("create-bot").onclick = (e) => {
-        ipcSend({
-            action: "webprot.create-bot",
-            name:   (util.elmById("create-bot-name") as HTMLInputElement).value
-        });
-    };
+    // util.elmById("create-bot").onclick = (e) => {
+    //     ipcSend({
+    //         action: "webprot.create-bot",
+    //         name:   (util.elmById("create-bot-name") as HTMLInputElement).value
+    //     });
+    // };
 
     util.elmById("invite-bot-button").onclick = (e) => {
         ipcSend({
@@ -1357,6 +1357,10 @@ function _rendererFunc() {
         if(e.key === "F4" && e.altKey)
             browserWindow.minimize();
     });
+
+    notif.show("Editing and deleting messages in DMs causes "
+             + "undefned behavior. Files in DMs are "
+             + "unencrypted.", undefined, "yellow");
 }
 
 window.addEventListener("load", _rendererFunc);

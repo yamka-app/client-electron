@@ -515,9 +515,12 @@ export default class SaltyClient {
         if(!(`${cid}` in this.conv))
             this.loadConv(cid);
         const state = this.conv[`${cid}`];
-        return {
+        return (state.ratchet.seq) >= 2 ? {
+            incomplete:  false,
             checkBuf:    this.checkBuffer(cid),
             checkString: this.checkString(cid)
+        } : {
+            incomplete : true
         };
     }
 

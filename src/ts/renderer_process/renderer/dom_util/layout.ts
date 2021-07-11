@@ -145,6 +145,7 @@ export function updMessageArea(updMessages: boolean =true) {
 
     // Set "join voice" button visibility
     util.setElmVisibility(util.elmById("message-area-voice"), chan.voice);
+    util.setElmVisibility(util.elmById("message-area-e2ee"), chan.group === 0);
 
     // Get channel messages
     if(window.viewingChan !== 0 && updMessages)
@@ -308,6 +309,9 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
     })
 }
 
+function fitColor(c: number) {
+    return c >= 128 ? c : Math.min(c * 2, 255);
+}
 function hashRandomart(data: Uint8Array) {
     const w = 3, h = 3;
     const cw = 48, ch = 48;
@@ -320,9 +324,9 @@ function hashRandomart(data: Uint8Array) {
 
     for(var y = 0; y < h; y++) {
         for(var x = 0; x < w; x++) {
-            const r = Math.min(data[(y * w) + x + 0] * 4, 255);
-            const g = Math.min(data[(y * w) + x + 1] * 4, 255);
-            const b = Math.min(data[(y * w) + x + 2] * 4, 255);
+            const r = fitColor(data[(y * w) + x + 0]);
+            const g = fitColor(data[(y * w) + x + 1]);
+            const b = fitColor(data[(y * w) + x + 2]);
             ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
             ctx.fillRect(x * cw, y * ch, cw, ch);
         }
@@ -337,6 +341,7 @@ function hashRandomart(data: Uint8Array) {
 const ipcRenderer_layout = window["_modules"].electron.ipcRenderer;
 export function showE2eeInfo(ev: MouseEvent) {
     const info: {
+        incomplete: boolean,
         checkString: string,
         checkBuf: Uint8Array
     } = ipcRenderer_layout.sendSync("synchronous-message", {
@@ -349,7 +354,10 @@ export function showE2eeInfo(ev: MouseEvent) {
 
     const title = document.createElement("span");
     div.appendChild(title);
-    title.innerHTML = `
+    title.innerHTML = info.incomplete ? `
+        This direct message conversation is getting set up to use end-to-end
+        encryption.
+    ` : `
         This direct message conversation is end-to-end encrypted.
         Nobody (even us) can read it except you and the person
         you're communicating with.
@@ -358,14 +366,15 @@ export function showE2eeInfo(ev: MouseEvent) {
         in real life or using another app.
     `;
 
-    const str = document.createElement("code");
-    div.appendChild(str);
-    str.innerHTML = util.escapeHtml(info.checkString);
-
-    const randomart = hashRandomart(info.checkBuf);
-    div.appendChild(randomart);
+    if(!info.incomplete) {
+        const str = document.createElement("code");
+        div.appendChild(str);
+        str.innerHTML = util.escapeHtml(info.checkString);
+    
+        const randomart = hashRandomart(info.checkBuf);
+        div.appendChild(randomart);
+    }
 
     div.onclick = (e) => util.stopPropagation(e);
-
     popups.createWrapper(ev.x, ev.y, div);
 }

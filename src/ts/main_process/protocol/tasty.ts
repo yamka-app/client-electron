@@ -56,7 +56,7 @@ export default class TastyClient {
         this.sock.on("message", (d, r) => this.onRecv(d, r));
 
         this.sock.on("connect", () => {
-            console.log("TASTY: connected");
+            console.log("[tasty] connected");
             // authenticate to the remote server
             this.send(Buffer.concat([
                 Buffer.from([0]),
@@ -68,7 +68,7 @@ export default class TastyClient {
         });
 
         this.sock.on("listening", () => {
-            console.log("TASTY: listening");
+            console.log("[tasty] listening");
             this.sock.connect(TASTY_PORT, addr);
         });
         this.sock.bind();
