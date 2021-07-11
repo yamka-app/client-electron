@@ -388,7 +388,6 @@ export default class SaltyClient {
         try {
             if(!(`${cid}` in this.conv))
                 this.loadConv(cid);
-            console.log(this.conv[`${cid}`].ratchet.keyPair.fingerprint());
         } catch(ex) { }
         // Decode L1
         const l1 = Level1Msg.decode(data);
@@ -404,10 +403,17 @@ export default class SaltyClient {
                 console.error(`[salty] L2 Alice Hello check is ${l2.check}, expected 123`);
             return [this.e2eeDbgSection({
                 "Type": "Alice Hello",
-                "Ephemeral key fingerprint":   fingerprint(l1.eph),
+                "Ephemeral key fingerprint": fingerprint(l1.eph),
                 "One-time prekey fingerprint": fingerprint(l1.otp),
-                "X3DH secret (do not share)":  fingerprint(this.conv[`${cid}`].sk),
-                "Check (must be 123 if all keys are OK)": l2.check
+                "Other party's identity key fingerprint": fingerprint(this.conv[`${cid}`].identity),
+                "Other party's signature key fingerprint": fingerprint(this.conv[`${cid}`].idSign),
+                "Elliptic curve": "curve25519",
+                "Signature algorithm": "Ed25519",
+                "Key agreement algorithm": "X25519",
+                "Symmetric key cipher": "AES-256-GCM",
+                "Auth tag length": "16",
+                "X3DH common secret fingerprint": fingerprint(this.conv[`${cid}`].sk),
+                "Check (must be 123 if everythting is OK)": l2.check
             })];
         } else if(l1 instanceof Level1NormalMsg) {
             try {
@@ -426,6 +432,12 @@ export default class SaltyClient {
                 return null;
             }
         }
+    }
+
+    public encryptMsg(cid: number, sections: MessageSection[]) {
+        // if(!(`${cid}` in this.conv))
+        //     this.loadConv(cid);
+        // return new Level1NormalMsg(new Level2TextMsg(sections).encode(state.ratchet)).encode();
     }
 
     private convPath(id: number) {
