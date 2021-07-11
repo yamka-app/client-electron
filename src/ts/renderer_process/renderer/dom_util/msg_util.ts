@@ -25,7 +25,7 @@ import * as notif    from "./notif.js"
 // Creates a message box seen in the message area
 export function createMessage(state: entities.MessageState, short: boolean =false): HTMLElement|null {
     if(!util.clientDebug && state.sections.every(x => x.type === types.MessageSectionType.E2EEDBG))
-        return null;
+        return undefined;
     // Get the message entity by the id
     const msg = window.entityCache[state.msg_id] as entities.Message;
 
@@ -78,7 +78,7 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
         ];
 
         const sectionElement = section.type === types.MessageSectionType.E2EEDBG
-                ? createE2eeDbgSection(section)
+                ? (util.clientDebug ? createE2eeDbgSection(section) : undefined)
                 : creationFunctions[section.type](section);
         if(sectionElement !== undefined)
             content.appendChild(sectionElement);
