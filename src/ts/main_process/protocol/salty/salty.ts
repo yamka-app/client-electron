@@ -495,19 +495,34 @@ export default class SaltyClient {
         const state = this.conv[`${cid}`];
         // Order is important: Alice's key first and Bob's key second
         if(state.alice) {
-            return crypto.createHash("sha256")
+            return crypto.createHash("sha512")
                     .update(this.keys.idSign.pub.export(pubkeyFormat))
                     .update(state.idSign.export(pubkeyFormat))
                     .digest(); 
         } else {
-            return crypto.createHash("sha256")
+            return crypto.createHash("sha512")
                     .update(state.idSign.export(pubkeyFormat))
                     .update(this.keys.idSign.pub.export(pubkeyFormat))
                     .digest(); 
         }
     }
+
     public checkString(cid: number) {
-        return this.checkBuffer(cid).toString("base64");
+        if(!(`${cid}` in this.conv))
+            this.loadConv(cid);
+        const state = this.conv[`${cid}`];
+        // Order is important: Alice's key first and Bob's key second
+        if(state.alice) {
+            return crypto.createHash("sha256")
+                    .update(this.keys.idSign.pub.export(pubkeyFormat))
+                    .update(state.idSign.export(pubkeyFormat))
+                    .digest("base64"); 
+        } else {
+            return crypto.createHash("sha256")
+                    .update(state.idSign.export(pubkeyFormat))
+                    .update(this.keys.idSign.pub.export(pubkeyFormat))
+                    .digest("base64"); 
+        }
     }
 
     // Returns conversation info

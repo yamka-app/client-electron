@@ -309,31 +309,33 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
     })
 }
 
-function fitColor(c: number) {
-    return c >= 128 ? c : Math.min(c * 2, 255);
-}
+const tinycolor_layout = window["_modules"].tinycolor;
 function hashRandomart(data: Uint8Array) {
-    const w = 3, h = 3;
-    const cw = 48, ch = 48;
-    if(data.length < w * h * 3) throw new Error("Expected data length to be at least w*h*3 bytes");
+    const sz = 144;
+    const sq_cnt = 21;
+    if(data.length < sq_cnt * 3)
+        throw new Error("Expected data length to be at least sq_cnt * 3 bytes");
 
     const canv = document.createElement("canvas");
-    canv.width  = cw * w;
-    canv.height = ch * h;
+    canv.width  = sz;
+    canv.height = sz;
     const ctx = canv.getContext("2d");
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, sz, sz);
 
-    for(var y = 0; y < h; y++) {
-        for(var x = 0; x < w; x++) {
-            const r = fitColor(data[(y * w) + x + 0]);
-            const g = fitColor(data[(y * w) + x + 1]);
-            const b = fitColor(data[(y * w) + x + 2]);
-            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-            ctx.fillRect(x * cw, y * ch, cw, ch);
-        }
+    const scale = sz / 16;
+    for(var i = 0; i < sq_cnt; i++){
+        const x = (data[i * 3 + 0] & 15) * scale;
+        const y = (data[i * 3 + 0] >> 4) * scale;
+        const w = (data[i * 3 + 1] & 15) * scale;
+        const h = (data[i * 3 + 1] >> 4) * scale;
+        const r = ((data[i * 3 + 2] >> 0) & 3) * 64;
+        const g = ((data[i * 3 + 2] >> 2) & 3) * 64;
+        const b = ((data[i * 3 + 2] >> 6) & 3) * 64;
+        ctx.fillStyle = tinycolor_layout(`rgba(${r}, ${g}, ${b}, .5)`)
+                .saturate(100).brighten(25).toString();
+        ctx.fillRect(x, y, w, h);
     }
-
-    // The canvas gets blurred in CSS, so we get a nice colorful gradient
-    // instead of a sharp image
 
     return canv;
 }
@@ -362,7 +364,7 @@ export function showE2eeInfo(ev: MouseEvent) {
         Nobody (even us) can read it except you and the person
         you're communicating with.
         You can make sure this is true by comparing this string
-        and/or colorful image to what's displayed on their screen
+        and/or image to what's displayed on their screen
         in real life or using another app.
     `;
 
