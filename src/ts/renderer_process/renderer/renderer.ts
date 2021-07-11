@@ -1095,6 +1095,9 @@ function _rendererFunc() {
         window.viewingChan = 0;
         layout.updLayout();
     };
+    util.elmById("message-area-e2ee").onclick = (e) => {
+        layout.showE2eeInfo(e);
+    };
     util.elmById("message-area-voice").onclick = (e) => {
         window.voiceChan = window.viewingChan;
         ipcSend({ action: "tasty.connect", channel: window.voiceChan });

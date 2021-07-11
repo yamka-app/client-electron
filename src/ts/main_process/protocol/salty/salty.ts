@@ -486,7 +486,7 @@ export default class SaltyClient {
     }
 
     // Calculates a check string
-    public checkString(cid: number) {
+    private checkBuffer(cid: number) {
         if(!(`${cid}` in this.conv))
             this.loadConv(cid);
         const state = this.conv[`${cid}`];
@@ -495,13 +495,27 @@ export default class SaltyClient {
             return crypto.createHash("sha256")
                     .update(this.keys.idSign.pub.export(pubkeyFormat))
                     .update(state.idSign.export(pubkeyFormat))
-                    .digest("base64"); 
+                    .digest(); 
         } else {
             return crypto.createHash("sha256")
                     .update(state.idSign.export(pubkeyFormat))
                     .update(this.keys.idSign.pub.export(pubkeyFormat))
-                    .digest("base64"); 
+                    .digest(); 
         }
+    }
+    public checkString(cid: number) {
+        return this.checkBuffer(cid).toString("base64");
+    }
+
+    // Returns conversation info
+    public convInfo(cid: number) {
+        if(!(`${cid}` in this.conv))
+            this.loadConv(cid);
+        const state = this.conv[`${cid}`];
+        return {
+            checkBuf:    this.checkBuffer(cid),
+            checkString: this.checkString(cid)
+        };
     }
 
     private convPath(id: number) {

@@ -9,6 +9,7 @@ import * as domUtil    from "./dom_util.js";
 import * as domMsgUtil from "./msg_util.js";
 import * as packets    from "../../protocol.s/packets.s.js";
 import * as entities   from "../../protocol.s/entities.s.js";
+import * as popups     from "../popups.js";
 
 // Updates the member list sidebar
 export function updMemberList() {
@@ -305,4 +306,66 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
                 callback();
         })
     })
+}
+
+function hashRandomart(data: Uint8Array) {
+    const w = 3, h = 3;
+    const cw = 48, ch = 48;
+    if(data.length < w * h * 3) throw new Error("Expected data length to be at least w*h*3 bytes");
+
+    const canv = document.createElement("canvas");
+    canv.width  = cw * w;
+    canv.height = ch * h;
+    const ctx = canv.getContext("2d");
+
+    for(var y = 0; y < h; y++) {
+        for(var x = 0; x < w; x++) {
+            const r = Math.min(data[(y * w) + x + 0] * 4, 255);
+            const g = Math.min(data[(y * w) + x + 1] * 4, 255);
+            const b = Math.min(data[(y * w) + x + 2] * 4, 255);
+            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.fillRect(x * cw, y * ch, cw, ch);
+        }
+    }
+
+    // The canvas gets blurred in CSS, so we get a nice colorful gradient
+    // instead of a sharp image
+
+    return canv;
+}
+
+const ipcRenderer_layout = window["_modules"].electron.ipcRenderer;
+export function showE2eeInfo(ev: MouseEvent) {
+    const info: {
+        checkString: string,
+        checkBuf: Uint8Array
+    } = ipcRenderer_layout.sendSync("synchronous-message", {
+        action: "salty.convInfo",
+        cid: window.viewingChan
+    });
+
+    const div = document.createElement("div");
+    div.classList.add("e2ee-info");
+
+    const title = document.createElement("span");
+    div.appendChild(title);
+    title.innerHTML = `
+        This direct message conversation is end-to-end encrypted.
+        Nobody (even us) can read it except you and the person
+        you're communicating with.
+        You can make sure this is true by comparing this string
+        and/or colorful image to what's displayed on their screen
+        in real life or using another app.
+    `;
+
+    const str = document.createElement("code");
+    div.appendChild(str);
+    str.innerHTML = util.escapeHtml(info.checkString);
+
+    const randomart = hashRandomart(info.checkBuf);
+    div.appendChild(randomart);
+
+    div.onclick = (e) => util.stopPropagation(e);
+
+    popups.createWrapper(ev.x, ev.y, div);
 }

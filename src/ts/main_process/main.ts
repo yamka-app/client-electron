@@ -603,6 +603,8 @@ ipcMain.on("synchronous-message", (event, arg) => {
         event.returnValue = config[arg.k];
     } else if(arg.action === "config.appDataPath") {
         event.returnValue = dataHomePath;
+    } else if(arg.action === "salty.convInfo") {
+        event.returnValue = sweet.salty.convInfo(arg.cid);
     } else {
         event.returnValue = undefined;
     }

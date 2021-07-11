@@ -1,3 +1,5 @@
+import * as popups from "./popups.js";
+
 export class Entry {
     title: string;
 
@@ -76,44 +78,11 @@ export class ContextMenu {
 }
 
 export function create(x: number, y: number, entries: Entry[]) {
+    const menu = new ContextMenu();
     const menuElm = document.createElement("div");
     menuElm.classList.add("context-menu");
-
-    for(const entry of entries) {
-        const elm = entry.create();
-        menuElm.appendChild(elm);
-    }
-
-    // this image is only used to trigger an "onload"
-    const loadImg = document.createElement("img");
-    loadImg.src = window["_modules"].path.join(window["__dirname"], "icons/leave.png"); // random image
-    menuElm.appendChild(loadImg);
-    menuElm.style.opacity = "0";
-
-    loadImg.onload = (e) => {
-        // calculate position of the context menu:
-        // if it won't fit on either of the axes due
-        // to its THICCness, flip it
-
-        const bw = menuElm.clientWidth;
-        const bh = menuElm.clientHeight;
-        const ww = window.innerWidth;
-        const wh = window.innerHeight;
-
-        const xright  = (x + bw) > ww;
-        const ybottom = (y + bh) > wh;
-
-        if (xright) menuElm.style.right  = `${ww - x}px`;
-               else menuElm.style.left   = `${x}px`;
-        if(ybottom) menuElm.style.bottom = `${wh - y}px`;
-               else menuElm.style.top    = `${y}px`;
-
-        menuElm.style.opacity = "1";
-    };
-
-    const menu = new ContextMenu();
     menu.element = menuElm;
-
+    popups.create(x, y, menuElm);
     return menu;
 }
 
