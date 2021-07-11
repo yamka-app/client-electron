@@ -1,3 +1,14 @@
+@keyframes move-up {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
 .e2ee-info {
     display:        flex;
     flex-direction: column;
@@ -8,6 +19,8 @@
     border-radius: 10px;
     padding:       10px;
     width:         400px;
+
+    animation: move-up 100ms;
 }
 
 .e2ee-info > span,

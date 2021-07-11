@@ -62,7 +62,7 @@ body {
 }
 
 span {
-    font-size: var(--font-size);
+    font-size: calc(var(--font-size) + 0.5pt);
 }
 
 *::-webkit-scrollbar {
