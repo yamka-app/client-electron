@@ -88,7 +88,6 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
                     : undefined;
                 break;
             default:
-                console.log(section.type);
                 sectionElement = creationFunctions[section.type](section);
                 break;
         }

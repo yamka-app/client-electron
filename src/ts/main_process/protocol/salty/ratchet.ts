@@ -115,6 +115,7 @@ export class DHRatchet {
             });
             this.send.reset(this.rootStep(dh));
             
+            // console.log("initial step", this.send.chainKey.export().toString("base64"));
             return this.keyPair.pub;
         } else {
             // All other steps: reset both rachets
@@ -131,6 +132,9 @@ export class DHRatchet {
             });
             this.send.reset(this.rootStep(dh2));
 
+            // console.log("normal step",
+            //         this.send.chainKey.export().toString("base64"),
+            //         this.recv.chainKey.export().toString("base64"));
             return this.keyPair.pub;
         }
     }
@@ -146,7 +150,8 @@ export class DHRatchet {
 
     private loadKey(seq: number) {
         const keys = this.readKeyRange(seq);
-        if(keys === undefined) return undefined;
+        if(keys === undefined)            return undefined;
+        if(keys[seq % 100] === undefined) return undefined;
         return crypto.createSecretKey(Buffer.from(keys[seq % 100], "base64"));
     }
 

@@ -450,6 +450,9 @@ export default class SaltyClient {
                     })];
                 }
             } catch(ex) {
+                console.error("Error decrypting message");
+                console.error(ex.message);
+                console.error(ex.stack);
                 return [this.e2eeDbgSection({
                     "Info": "Something went wrong and this message can't be decrypted. Please contact support",
                     "Message ID": `${mid}`,
