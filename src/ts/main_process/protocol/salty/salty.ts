@@ -387,8 +387,10 @@ export default class SaltyClient {
         });
     }
 
-    private e2eeDbgSection(info: any) {
-        return new MessageSection(MessageSectionType.E2EEDBG, 0, JSON.stringify(info));
+    private e2eeDbgSection(info: any, error: boolean = false) {
+        return new MessageSection(error
+                ? MessageSectionType.E2EEERR
+                : MessageSectionType.E2EEDBG, 0, JSON.stringify(info));
     }
     public async processMsg(cid: number, uid: number, mid: number, data: Buffer): Promise<MessageSection[]> {
         try {
@@ -440,24 +442,7 @@ export default class SaltyClient {
                         "Check (must be 231)": l2.check
                     })];
                 } else if(l2 instanceof Level2TextMsg) {
-                    return l2.sections.concat([
-                        this.e2eeDbgSection({
-                            "Message ID": `${mid}`,
-                            "Channel ID": `${cid}`,
-                            "Other party ID": `${uid}`,
-                            "Other party identity key": fingerprint(state.identity),
-                            "Other party signature key": fingerprint(state.idSign),
-                            "Own identity key": this.keys.identity.fingerprint(),
-                            "Own signature key": this.keys.idSign.fingerprint(),
-                            "X3DH secret": fingerprint(state.sk),
-                            "Current DH-ratchet root key": fingerprint(state.ratchet.rootKey),
-                            "Current DH-ratchet public key": fingerprint(state.ratchet.pubKey),
-                            "Current DH-ratchet key pair": state.ratchet.keyPair.fingerprint(),
-                            "Current receiving KDF-ratchet chain key": fingerprint(state.ratchet.recv.chainKey),
-                            "Current sending KDF-ratchet chain key": fingerprint(state.ratchet.send.chainKey),
-                            "Check string": this.checkString(cid)
-                        })
-                    ]);
+                    return l2.sections;
                 } else if(l2 instanceof Level2TastyKeyMsg) {
                     return [this.e2eeDbgSection({
                         "Type": "Voice encryption key",
@@ -465,11 +450,8 @@ export default class SaltyClient {
                     })];
                 }
             } catch(ex) {
-                console.log(ex.stack);
-                console.log(ex.message);
                 return [this.e2eeDbgSection({
-                    "Type": "L2: Unknown (L1: Normal Message)",
-                    "Warning": "Something went wrong and this message can't be decrypted. Please contact support",
+                    "Info": "Something went wrong and this message can't be decrypted. Please contact support",
                     "Message ID": `${mid}`,
                     "Channel ID": `${cid}`,
                     "Other party ID": `${uid}`,
@@ -484,7 +466,7 @@ export default class SaltyClient {
                     "Current receiving KDF-ratchet chain key": fingerprint(state.ratchet.recv.chainKey),
                     "Current sending KDF-ratchet chain key": fingerprint(state.ratchet.send.chainKey),
                     "Check string": this.checkString(cid)
-                })];
+                }, true)];
             }
         }
     }

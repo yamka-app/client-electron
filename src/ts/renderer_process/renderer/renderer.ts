@@ -350,7 +350,8 @@ function _rendererFunc() {
         const msgElm = domMsgUtil.createMessage(msg.latest,
             msg.sender === window.lastChanSender[msg.channel]
             && util.timeDiff(window.lastChanMsg[msg.channel].id, msg.id) <= layout.messageTimeThres);
-        msgArea.appendChild(msgElm);
+        if(msgElm !== undefined)
+            msgArea.appendChild(msgElm);
         domUtil.updateRelatedUsers(msg.latest);
 
         // Store metadata

@@ -77,9 +77,21 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
             createBotUiSection,  createPollSection
         ];
 
-        const sectionElement = section.type === types.MessageSectionType.E2EEDBG
-                ? (util.clientDebug ? createE2eeDbgSection(section) : undefined)
-                : creationFunctions[section.type](section);
+        var sectionElement: HTMLElement;
+        switch(section.type) {
+            case types.MessageSectionType.E2EEERR:
+                sectionElement = createE2eeDbgSection(section);
+                break;
+            case types.MessageSectionType.E2EEDBG:
+                sectionElement = util.clientDebug
+                    ? createE2eeDbgSection(section)
+                    : undefined;
+                break;
+            default:
+                console.log(section.type);
+                sectionElement = creationFunctions[section.type](section);
+                break;
+        }
         if(sectionElement !== undefined)
             content.appendChild(sectionElement);
     }
@@ -339,9 +351,14 @@ function createE2eeDbgSection(section: types.MessageSection) {
     const info = JSON.parse(section.text);
     const div = document.createElement("div");
     div.classList.add("message-e2ee-section");
-    div.innerHTML = `<span>E2EE debug data. Should be hidden from
-        the user's eye in release builds!</span>
-    `;
+    if(section.type === types.MessageSectionType.E2EEERR) {
+        div.classList.add("error");
+        div.innerHTML = `<span>E2EE error!</span>`;
+    } else {
+        div.innerHTML = `<span>E2EE debug data. Should be hidden from
+            the user's eye in release builds!</span>
+        `;
+    }
     for(const [k, v] of Object.entries(info))
         div.innerHTML += `<span>${k}: <code>${v}</code></span>`;
     return div;

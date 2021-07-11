@@ -267,7 +267,9 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
                 const lastMsg = msgs[msgs.indexOf(msg) + 1];
                 const short = lastMsg ? (msg.sender === lastMsg.sender
                     && util.timeDiff(lastMsg.id, msg.id) <= messageTimeThres) : false; // bundling
-                header.after(domMsgUtil.createMessage(msg.latest, short));
+                const msgElm = domMsgUtil.createMessage(msg.latest, short);
+                if(msgElm !== undefined)
+                    header.after(msgElm);
 
                 const chan = window.entityCache[msg.channel] as entities.Channel;
                 if(id === chan.firstUnread && chan.unread > 0)

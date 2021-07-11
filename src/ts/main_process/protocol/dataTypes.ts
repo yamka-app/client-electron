@@ -151,6 +151,7 @@ export enum MessageSectionType {
     USER    = 5,
     BOT_UI  = 6,
     POLL    = 7,
+    E2EEERR = 254,
     E2EEDBG = 255
 }
 export class MessageSection {

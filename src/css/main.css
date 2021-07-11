@@ -1055,7 +1055,6 @@ span.fg-1 {
 .message-text-section > span {
     white-space: pre-wrap;
     align-items: center;
-    margin: 3px 0;
 }
 .message-quote-section span > *:not(img.emoji),
 .message-text-section span > *:not(img.emoji) {
@@ -1129,20 +1128,26 @@ canvas.message-img-section.deblur {
     background:    var(--green-trans);
     border-radius: 10px;
     box-shadow:    var(--shadow);
-    margin-top: 5px;
+    margin-top:    5px;
+}
+.message-e2ee-section.error {
+    background: var(--red-trans);
 }
 .message-e2ee-section > span {
     color:      var(--foreground);
     font-size:  var(--font-size);
-    margin-top: 5px;
+}
+.message-e2ee-section > span:not(:nth-child(1)) {
+    margin-top: 8px;
 }
 .message-e2ee-section > span:nth-child(1) {
     font-weight: bold;
 }
 .message-e2ee-section > span > code {
-    background:    var(--background);
+    background:    #00000033;
     padding:       4px;
     border-radius: 4px;
+    user-select:   text;
 }
 
 .message-time {

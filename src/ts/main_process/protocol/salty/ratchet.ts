@@ -62,7 +62,6 @@ export class KDFRatchet {
         const auth = data.slice(2 + ctLen);
 
         const key = givenKey ?? this.step();
-        console.log(key.export().toString("base64"));
         const nonce = Buffer.from(Array(12).fill(0));
         const decipher = crypto.createDecipheriv("aes-256-gcm", key, nonce, { authTagLength: 16 });
         decipher.setAuthTag(auth);
@@ -116,7 +115,6 @@ export class DHRatchet {
             });
             this.send.reset(this.rootStep(dh));
             
-            console.log("initial step", this.send.chainKey.export().toString("base64"));
             return this.keyPair.pub;
         } else {
             // All other steps: reset both rachets
@@ -133,7 +131,6 @@ export class DHRatchet {
             });
             this.send.reset(this.rootStep(dh2));
 
-            console.log("normal step", this.send.chainKey.export().toString("base64"), this.recv.chainKey.export().toString("base64"));
             return this.keyPair.pub;
         }
     }
@@ -168,7 +165,6 @@ export class DHRatchet {
     public encrypt(plaintext: Buffer) {
         this.lastR = false;
         const [key, ciphertext] = this.send.encrypt(plaintext);
-        console.log("encr seq", ++this.seq);
         this.saveKey(this.seq, key);
         return Buffer.concat([
             types.encNum(this.seq, 4),
@@ -179,7 +175,6 @@ export class DHRatchet {
     @ser.member
     public decrypt(ciphertext: Buffer) {
         const seq = types.decNum(ciphertext.slice(0, 4));
-        console.log("decr seq", seq);
         ciphertext = ciphertext.slice(4);
 
         const existingKey = this.loadKey(seq); // may be undefined
@@ -189,7 +184,6 @@ export class DHRatchet {
             // because this function can also be used to decrypt older messages
             this.lastR = true;
             this.saveKey(++this.seq, key);
-            console.log("incr seq", this.seq);
         }
         return plaintext;
     }

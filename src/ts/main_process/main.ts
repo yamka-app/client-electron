@@ -316,6 +316,7 @@ function webprotData(bytes: Buffer) {
                     if(sweet.dmChanRev[ent.channel] === undefined) continue;
                     ent.latest.sections = await sweet.salty.processMsg(ent.channel,
                             sweet.dmChanRev[ent.channel], ent.id, ent.latest.encrypted);
+                    delete ent.latest.encrypted;
                 }
             }  
         };
@@ -389,7 +390,7 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
         if(packet instanceof packets.LoginPacket || packet instanceof packets.SignupPacket)
             packet.agent = Object.assign(new entities.Agent(), packet.agent);
     }
-    
+
     // Measure ping to the server
     if(packet instanceof packets.PingPacket)
         sweet.pingSent = new Date().getTime();
@@ -401,7 +402,7 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
                 if(!(entity.channel in sweet.dmChanRev) || !entity.latest.sections)
                     continue;
                 entity.latest.encrypted = sweet.salty.encryptMsg(entity.channel, entity.latest.sections);
-                entity.latest.sections = undefined;
+                delete entity.latest.sections;
             }
         }
     }
