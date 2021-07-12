@@ -367,9 +367,10 @@ function _rendererFunc() {
         // Scroll down again if it was like that before
         if(scrolled) {
             //msgScrollArea.scrollBy({ top: -msgElm.offsetHeight, left: 0 });
-            msgElm.scrollIntoView({ block: "end", behavior: "smooth" });
+            msgElm.scrollIntoView({ block: "end" });
+            msgElm.scrollIntoView({ block: "start", behavior: "smooth" });
         }
-        util.triggerAppear(msgElm, false);
+        // util.triggerAppear(msgElm, false);
     }
 
     // Deletes a message
@@ -788,7 +789,10 @@ function _rendererFunc() {
                     const cb = window.packetCallbacks[arg.reference];
                     cb(...arg.args);
                 } else {
-                    arg.references.forEach(x => window.packetCallbacks[x](...arg.args));
+                    arg.references.forEach(x => {
+                        const cb = window.packetCallbacks[x];
+                        if(cb !== undefined) cb(...arg.args);
+                    });
                 }
                 break;
 

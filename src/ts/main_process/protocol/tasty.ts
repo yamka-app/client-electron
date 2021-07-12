@@ -14,7 +14,7 @@ export const TASTY_PORT         = 1747;
 export const TASTY_BITRATE      = 32000;
 export const TASTY_SAMPLE_RATE  = 16000;
 export const TASTY_CHANNELS     = 1;
-export const TASTY_FRAME_LENGTH = 160;
+export const TASTY_FRAME_LENGTH = 640;
 
 export class TastyEncoderStats {
     frameRate:        number;
