@@ -22,6 +22,7 @@ import * as layout              from "./dom_util/layout.js";
 import * as notif               from "./dom_util/notif.js";
 import * as accountSelector     from "./dom_util/account_selector.js";
 import { configGet, configSet } from "./settings.js";
+import { commit }               from "./_git_commit.js";
 
 import { reset, ipcSend, sendPacket, self } from "./yGlobal.js";
 
@@ -63,7 +64,8 @@ function _rendererFunc() {
     setInterval(util.checkClientVersion, 600000); // 10 minutes
     util.checkClientVersion();
 
-    util.elmById("client-version").innerHTML = escapeHtml(util.clientVersion);
+    util.elmById("client-version").innerHTML
+        = escapeHtml(`${util.clientVersion} (commit ${commit.substr(0, 7)})`);
 
     // Determines whether we sould receive notifications
     function shouldReceiveNotif() {

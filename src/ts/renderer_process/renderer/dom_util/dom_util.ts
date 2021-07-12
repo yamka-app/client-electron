@@ -54,7 +54,7 @@ export function updateSelfStatus(status: number) {
         "You will appear online",
         "You will appear idle",
         "You will not receive desktop notifications",
-        "You will only receive important notifications"
+        "You will only receive DM notifications"
     ][status];
     util.elmById("self-status-explainer").innerHTML = explainer;
 }

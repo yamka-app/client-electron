@@ -11,7 +11,7 @@
 
 ![](promo.png)
 
-:construction: Both the client the back-end are in their aplha stage right now. :construction:\
+:construction: Both the client the back end are in their aplha stage right now. :construction:\
 Latest version: **0.7.2**
 
 ## Committing code

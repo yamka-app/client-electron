@@ -81,6 +81,10 @@ export function create(x: number, y: number, entries: Entry[]) {
     const menu = new ContextMenu();
     const menuElm = document.createElement("div");
     menuElm.classList.add("context-menu");
+
+    for(const entry of entries)
+        menuElm.appendChild(entry.create());
+
     menu.element = menuElm;
     popups.create(x, y, menuElm);
     return menu;

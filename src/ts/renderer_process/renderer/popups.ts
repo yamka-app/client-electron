@@ -7,7 +7,7 @@ export function create(x: number, y: number, menuElm: HTMLElement) {
     loadImg.src = window["_modules"].path.join(window["__dirname"], "icons/leave.png"); // random image
     menuElm.appendChild(loadImg);
     menuElm.style.opacity = "0";
-    menuElm.style.position = "relative";
+    menuElm.style.position = "absolute";
 
     loadImg.onload = (e) => {
         // calculate position of the context menu:

@@ -1,6 +1,6 @@
 #voice-encoder-stats {
     height: fit-content;
-    margin: 0 16px;
+    margin: 0 8px 5px 8px;
 }
 
 #voice-members {
@@ -20,9 +20,9 @@
 }
 
 #voice-members > div {
-    display:         flex;
-    flex-direction:  row;
-    align-items:     center;
+    display:        flex;
+    flex-direction: row;
+    align-items:    center;
 
     width: 150px;
     padding: 5px;
