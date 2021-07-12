@@ -632,6 +632,7 @@ img.verified-badge:not(.true) {
     transition:    border 0.1s ease;
     border-radius: 15px;
     margin-top:    0;
+    padding:       0;
 
     background:          url('../icons/close.png');
     background-size:     12px;
