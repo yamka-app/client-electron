@@ -213,7 +213,8 @@ export function upload(filePath: string, onEnd: (id: number) => any,
                              else onProgressMade(p, m);
     });
 }
-export function download(id: number, onEnd?: (path: string) => any, keyhash: string = "") {
+export function download(id: number, onEnd?: (path: string) => any,
+        onProg?: (d: number) => any, keyhash: string = "") {
     if(id === undefined)
         throw new Error();
     // Files, like message states and unlike all other entities,
@@ -230,7 +231,7 @@ export function download(id: number, onEnd?: (path: string) => any, keyhash: str
         const filePath = (r as unknown) as string;
         window.filePaths[id] = filePath;
         onEnd(filePath);
-    });
+    }, onProg);
 }
 
 // Requests entities (or returns cached ones if possible)

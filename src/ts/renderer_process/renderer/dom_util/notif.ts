@@ -7,7 +7,8 @@ function foreground(color: string) {
     return `${color}-foreground`;
 }
 
-export function show(text: string, img?: string, color?: string, click?: () => any) {
+export function show(text: string, img?: string, color?: string,
+        click?: () => any, progress: boolean = false) {
     if(color == undefined) color = "background";
     const textColor = `var(--${foreground(color)})`;
 
@@ -15,9 +16,25 @@ export function show(text: string, img?: string, color?: string, click?: () => a
     text = `<span style="color: ${textColor}">${escapeHtml(text)}</span>`;
     notif.innerHTML = (img === undefined ? "" : `<img src="${img}"/>`) + text;
     notif.onclick = click;
+    if(click !== undefined)
+        notif.style.cursor = "pointer";
     notif.style.background = `var(--${color})`;
 
     elmById("notification-list").appendChild(notif);
-    setTimeout(() => triggerDisappear(notif, false, true), 5000);
     triggerAppear(notif, false);
+
+    if(progress) {
+        const bar = document.createElement("progress");
+        notif.appendChild(bar);
+        notif.classList.add("hasProgress");
+        bar.classList.add("thin");
+        return (val: number, max: number) => {
+            bar.value = val;
+            bar.max = max;
+            if(val === max)
+                triggerDisappear(notif, false, true)
+        };
+    } else {
+        setTimeout(() => triggerDisappear(notif, false, true), 5000);
+    }
 }

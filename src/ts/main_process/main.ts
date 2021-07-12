@@ -200,8 +200,11 @@ function webprotData(bytes: Buffer) {
 
     // File downloading
     if(packet instanceof packets.FileDataChunkPacket) {
-        const stream = sweet.downStates[packet.replyTo].stream as fs.WriteStream;
+        const state = sweet.downStates[packet.replyTo];
+        const stream = state.stream as fs.WriteStream;
         stream.write(packet.data);
+        ipcSend({ type: "webprot.trigger-reference", reason: "download-progress", references: state.refs2,
+            args: [packet.position] });
         return;
     }
 
@@ -439,7 +442,7 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
         webprotSendBytes(buf);
     };
 
-    // Create an up-/download state
+    // Create a download state
     if(packet instanceof packets.FileDownloadRequestPacket) {
         // Don't download if we're already downloading, add a reference instead
         const existing: [string, any] = Object.entries(sweet.downStates)
@@ -449,6 +452,7 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
             var state = existing[1];
             const seq = existing[0];
             state.refs.push(ref);
+            state.refs2.push(ref2);
             sweet.downStates[seq] = state;
             return;
         }
@@ -460,6 +464,7 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
             path: p,
             stream: stream,
             refs: [ref],
+            refs2: [ref2],
             decr: packet.__decrypt
         };
     }

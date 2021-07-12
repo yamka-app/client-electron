@@ -530,7 +530,8 @@ export default class SaltyClient {
     }
 
     public tmpEncPath(p: string) {
-        const rand = crypto.randomBytes(3).toString("base64");
+        const rand = crypto.randomBytes(3).toString("base64")
+            .replace("/", "_").replace("+", "-");
         return path.join(os.tmpdir(), path.basename(p) + ".salty-" + rand);
     }
 

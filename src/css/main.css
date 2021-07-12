@@ -315,6 +315,9 @@ progress {
     box-shadow:    var(--shadow);
     background:    var(--background);
 }
+progress.thin {
+    height: 5px;
+}
 progress::-webkit-progress-bar {
     background:    var(--background);
     border-radius: 8px;
@@ -324,6 +327,9 @@ progress::-webkit-progress-value {
                 color 0.1s ease;
     height:        10px;
     border-radius: 5px;
+}
+progress.thin::-webkit-progress-value {
+    height: 5px;
 }
 progress#mic-vol-val::-webkit-progress-value {
     transition: width 0.05s ease;

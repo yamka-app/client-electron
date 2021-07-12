@@ -22,9 +22,22 @@
     width:         -webkit-fill-available;
     box-shadow:    var(--shadow);
 
-    display:         flex;
-    flex-direction:  row;
-    align-items:     flex-start;
+    display:        flex;
+    flex-direction: row;
+    align-items:    flex-start;
+    position:       relative;
+}
+
+#notification-list > div > progress {
+    position: absolute;
+    bottom:   0;
+    left:     0;
+    right:    0;
+    width:    100%;
+}
+
+#notification-list > div.hasProgress {
+    padding-bottom: 15px;
 }
 
 #notification-list > div > span {

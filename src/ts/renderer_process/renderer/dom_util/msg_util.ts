@@ -208,7 +208,7 @@ function createFileSection(section: types.MessageSection) {
                     util.stopPropagation(e);
                     domUtil.showFloatingImage(section.blob);
                 }
-            }, section.text);
+            }, undefined, section.text);
         } else {
             elm.classList.add("message-file-section", "flex-row");
 
@@ -243,7 +243,15 @@ function createFileSection(section: types.MessageSection) {
                     return;
 
                 // Download the file
-                util.download(section.blob, (blob) => fs.copyFileSync(blob, filePath), section.text);
+                const progressBar = notif.show("Downloading " + file.name,
+                    undefined, "background", undefined, true);
+                util.download(section.blob, (blob) => {
+                    progressBar(file.length, file.length);
+                    fs.copyFileSync(blob, filePath);
+                    notif.show("Downloaded " + file.name, "icons/approve.png", "green");
+                }, (prog: number) => {
+                    progressBar(prog, file.length);
+                }, section.text);
             }
 
             const dlBtnIcon = document.createElement("img");
