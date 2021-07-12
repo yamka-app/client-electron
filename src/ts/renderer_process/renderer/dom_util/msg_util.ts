@@ -135,7 +135,7 @@ function createCodeSection(section: types.MessageSection) {
     wrapper.appendChild(elm);
 
     const copyButton = document.createElement("button");
-    copyButton.classList.add("icon-button");
+    copyButton.classList.add("icon-button", "cg-button");
     copyButton.onclick = (e) => {
         util.stopPropagation(e);
         clipboard.writeText(section.text);

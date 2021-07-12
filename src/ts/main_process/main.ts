@@ -12,7 +12,7 @@ import DataTypes                       from "./protocol/dataTypes";
 import * as packets                    from "./protocol/packets";
 import * as entities                   from "./protocol/entities";
 import TastyClient                     from "./protocol/tasty";
-import SaltyClient, { SaltyCallbacks } from "./protocol/salty/salty";
+import SaltyClient, { SaltyCallbacks, SessionStatus } from "./protocol/salty/salty";
 
 const dataHomePath = path.join(app.getPath("appData"), "yamka");
 const configPath   = path.join(dataHomePath, "yamka_config.json");
@@ -132,7 +132,7 @@ const webprotSettings = {
     port:                 1746,
     version:              10,
     supportsComp:         false,
-    compressionThreshold: 256,
+    compressionThreshold: 512,
     fileChunkSize:        1024 * 4
 };
 
@@ -153,7 +153,8 @@ const sweet: {
     upStates:   any,
     references: any,
     mainCbs:    any,
-    dmChanRev:  any
+    dmChanRev:  any,
+    dmChanSt:   any
 } = {
     connected:  false,
     connecting: false,
@@ -171,7 +172,8 @@ const sweet: {
     upStates:   {},
     references: {},
     mainCbs:    {},
-    dmChanRev:  {}
+    dmChanRev:  {},
+    dmChanSt:   {}
 };
 
 function regCb(fn: (p: packets.Packet) => any) {
@@ -306,7 +308,7 @@ function webprotData(bytes: Buffer) {
             mainCb(packet);
     };
 
-    // Intercept incloming channel entities
+    // Intercept incloming entities
     if(packet instanceof packets.EntitiesPacket) {
         const processor = async () => {
             for(const ent of packet.entities) {
@@ -314,13 +316,15 @@ function webprotData(bytes: Buffer) {
                 if(ent instanceof entities.User && ent.dmChannel !== undefined)
                     sweet.dmChanRev[ent.dmChannel] = ent.id;
     
-                // Initiate Salty sessions
-                if(ent instanceof entities.Channel) {
-                    const other = sweet.dmChanRev[ent.id];
-                    const alice = sweet.selfId < other;
-                    if(ent.group === 0 && ent.lcid === 0 && alice) {
-                        sweet.salty.handshakeInit(other, ent.id, finish);
-                        return;
+                // Manage Salty sessions
+                if(ent instanceof entities.Channel && ent.group === 0) {
+                    const status = sweet.salty.e2eeStatus(ent.id, ent.lcid);
+                    sweet.dmChanSt[ent.id] = status;
+                    ent.__e2eeReady = status === SessionStatus.NORMAL;
+                    // Initiate a session
+                    if(status === SessionStatus.NOT_CREATED) {
+                        const other = sweet.dmChanRev[ent.id];
+                        await sweet.salty.handshakeInit(other, ent.id);
                     }
                 }
     
@@ -329,7 +333,12 @@ function webprotData(bytes: Buffer) {
                     if(ent.latest.encrypted === undefined) continue;
                     if(sweet.dmChanRev[ent.channel] === undefined) continue;
                     ent.latest.sections = await sweet.salty.processMsg(ent.channel,
-                            sweet.dmChanRev[ent.channel], ent.id, ent.latest.encrypted);
+                            sweet.dmChanRev[ent.channel], ent.id, sweet.dmChanSt[ent.channel],
+                            ent.latest.encrypted);
+                    const chanUpd = new entities.Channel();
+                    chanUpd.id = ent.channel;
+                    chanUpd.__e2eeReady = sweet.dmChanSt[ent.channel] >= SessionStatus.BOB_READY;
+                    packet.entities.push(chanUpd);
                     delete ent.latest.encrypted;
                 }
             }  
@@ -538,6 +547,7 @@ function webprotConnect(force: boolean =false) {
     sweet.salty = null;
     sweet.mainCbs = {};
     sweet.dmChanRev = {};
+    sweet.dmChanSt = {};
     packets.Packet.nextSeq = 1;
 
     // Disconnect if connected

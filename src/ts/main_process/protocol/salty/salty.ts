@@ -261,64 +261,66 @@ export default class SaltyClient {
             { salt: salt, info: "YamkaX3DHKDF", hash: "sha512" }));
     }
 
-    public handshakeInit(uid: number, cid: number, done: () => void) {
-        // Fetch the user's X3DH key bundle
-        const state = new CState();
-        state.alice = true;
-        this.cb.entityGet([
-            new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDSIGN),
-            new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDENTITY),
-            new EntityGetRequest(EntityType.USER, uid, EntityKeyType.PREKEY),
-            new EntityGetRequest(EntityType.USER, uid, EntityKeyType.OTPREKEY)
-        ], ([idsp, idkp, pkp, otkp]) => {
-            // Save the keys (verify them with the signature identity key)
-            state.idSign   = (idsp as User).idsignKey  .toKeyObj();
-            state.identity = (idkp as User).identityKey.toKeyObj(state.idSign);
-            const prek   = (pkp  as User).prekey   .toKeyObj(state.idSign);
-            const otprek = (otkp as User).otprekey?.toKeyObj(state.idSign); // may be undefined
-
-            // Generate an ephemeral key pair and perform 3-4 Diffie-Hellmans
-            state.eph = KeyPair.generate();
-            const dh1 = crypto.diffieHellman({ // IK_A - SPK_B
-                privateKey: this.keys.identity.priv,
-                publicKey:  prek
-            });
-            const dh2 = crypto.diffieHellman({ // EK_A - IK_B
-                privateKey: state.eph.priv,
-                publicKey:  state.identity
-            });
-            const dh3 = crypto.diffieHellman({ // EK_A - SPK_B
-                privateKey: state.eph.priv,
-                publicKey:  prek
-            });
-            var dh4 = Buffer.from([]);
-            if(otprek !== undefined)
-                dh4 = crypto.diffieHellman({ // EK_A - OPK_B
-                    privateKey: state.eph.priv,
-                    publicKey:  otprek
+    public handshakeInit(uid: number, cid: number): Promise<void> {
+        return new Promise<void>((success) => {
+            // Fetch the user's X3DH key bundle
+            const state = new CState();
+            state.alice = true;
+            this.cb.entityGet([
+                new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDSIGN),
+                new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDENTITY),
+                new EntityGetRequest(EntityType.USER, uid, EntityKeyType.PREKEY),
+                new EntityGetRequest(EntityType.USER, uid, EntityKeyType.OTPREKEY)
+            ], ([idsp, idkp, pkp, otkp]) => {
+                // Save the keys (verify them with the signature identity key)
+                state.idSign   = (idsp as User).idsignKey  .toKeyObj();
+                state.identity = (idkp as User).identityKey.toKeyObj(state.idSign);
+                const prek   = (pkp  as User).prekey   .toKeyObj(state.idSign);
+                const otprek = (otkp as User).otprekey?.toKeyObj(state.idSign); // may be undefined
+    
+                // Generate an ephemeral key pair and perform 3-4 Diffie-Hellmans
+                state.eph = KeyPair.generate();
+                const dh1 = crypto.diffieHellman({ // IK_A - SPK_B
+                    privateKey: this.keys.identity.priv,
+                    publicKey:  prek
                 });
+                const dh2 = crypto.diffieHellman({ // EK_A - IK_B
+                    privateKey: state.eph.priv,
+                    publicKey:  state.identity
+                });
+                const dh3 = crypto.diffieHellman({ // EK_A - SPK_B
+                    privateKey: state.eph.priv,
+                    publicKey:  prek
+                });
+                var dh4 = Buffer.from([]);
+                if(otprek !== undefined)
+                    dh4 = crypto.diffieHellman({ // EK_A - OPK_B
+                        privateKey: state.eph.priv,
+                        publicKey:  otprek
+                    });
+    
+                // Calculate the shared secret key and store all keys
+                state.sk = SaltyClient.x3dhKdf(Buffer.concat([dh1, dh2, dh3, dh4]));
+                const ad = Buffer.concat([
+                    state.identity.export(pubkeyFormat),
+                    this.keys.identity.pub.export(pubkeyFormat)
+                ]);
+                const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
+                state.ratchet = new DHRatchet(keyBase, state.sk, ad);
+                state.ratchet.step(prek);
+                this.conv[`${cid}`] = state;
+                this.dumpConv(cid);
+    
+                // Send an initial message
+                const msg = new Message();
+                msg.channel = cid;
+                msg.latest = new MessageState();
+                msg.latest.encrypted = new Level1AliceHelloMsg(state.eph.pub, otprek,
+                        new Level2AliceHelloMsg(state.ratchet.keyPair.pub, 123).encode(state.ratchet)).encode();
+                this.cb.entityPut([msg]);
 
-            // Calculate the shared secret key and store all keys
-            state.sk = SaltyClient.x3dhKdf(Buffer.concat([dh1, dh2, dh3, dh4]));
-            const ad = Buffer.concat([
-                state.identity.export(pubkeyFormat),
-                this.keys.identity.pub.export(pubkeyFormat)
-            ]);
-            const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
-            state.ratchet = new DHRatchet(keyBase, state.sk, ad);
-            state.ratchet.step(prek);
-            this.conv[`${cid}`] = state;
-            this.dumpConv(cid);
-
-            // Send an initial message
-            const msg = new Message();
-            msg.channel = cid;
-            msg.latest = new MessageState();
-            msg.latest.encrypted = new Level1AliceHelloMsg(state.eph.pub, otprek,
-                    new Level2AliceHelloMsg(state.ratchet.keyPair.pub, 123).encode(state.ratchet)).encode();
-            this.cb.entityPut([msg]);
-
-            done();
+                success();
+            });
         });
     }
 
@@ -393,7 +395,7 @@ export default class SaltyClient {
                 ? MessageSectionType.E2EEERR
                 : MessageSectionType.E2EEDBG, 0, JSON.stringify(info));
     }
-    public async processMsg(cid: number, uid: number, mid: number, data: Buffer): Promise<MessageSection[]> {
+    public async processMsg(cid: number, uid: number, mid: number, status: SessionStatus, data: Buffer): Promise<MessageSection[]> {
         try {
             if(!(`${cid}` in this.conv))
                 this.loadConv(cid);
@@ -401,16 +403,13 @@ export default class SaltyClient {
         // Decode L1
         const l1 = Level1Msg.decode(data);
         if(l1 instanceof Level1AliceHelloMsg) {
-            const bob = uid < this.uid;
-            var l2 = (bob && !(`${cid}` in this.conv))
+            var l2 = (status === SessionStatus.BOB_READY && !(`${cid}` in this.conv))
                     ? await this.handshakeAck(cid, uid, l1)
                     : Level2Msg.decode(l1.l2d, this.conv[`${cid}`].ratchet);
             const state = this.conv[`${cid}`];
 
             if(!(l2 instanceof Level2AliceHelloMsg))
                 throw new Error("L1 Alice Hello should enclose L2 Alice Hello");
-            if(l2.check !== 123)
-                console.error(`[salty] L2 Alice Hello check is ${l2.check}, expected 123`);
             return [this.e2eeDbgSection({
                 "Type": "Alice Hello",
                 "We're Alice": `${state.alice}`,
@@ -573,6 +572,23 @@ export default class SaltyClient {
         return dest;
     }
 
+    // Check the status of an E2EE session
+    public e2eeStatus(cid: number, lcid: number) {
+        try {
+            if(!(`${cid}` in this.conv))
+                this.loadConv(cid);
+        } catch(ex) {
+            return lcid === 0
+                    ? SessionStatus.NOT_CREATED
+                    : SessionStatus.BOB_READY;
+        }
+        const state = this.conv[`${cid}`];
+        if(lcid === 1) return state.alice
+                ? SessionStatus.AWAITING_BOB_HELLO
+                : SessionStatus.BOB_READY;
+        if(lcid >= 2) return SessionStatus.NORMAL;
+    }
+
     private convPath(id: number) {
         return path.join(app.getPath("appData"), "yamka", `conv_${this.uid}_${id}.json`);
     }
@@ -582,4 +598,8 @@ export default class SaltyClient {
     public dumpConv(id: number) {
         fs.writeFileSync(this.convPath(id), ser.jsonify(this.conv[`${id}`]), "utf8");
     }
+}
+
+export enum SessionStatus {
+    NOT_CREATED = 0, AWAITING_BOB_HELLO = 1, BOB_READY = 2, NORMAL = 3
 }

@@ -43,3 +43,13 @@
 .e2ee-info > canvas {
     border-radius: 10px;
 }
+
+#e2ee-placeholder {
+    text-align:    center;
+    font-size:     var(--font-size);
+    box-shadow:    var(--shadow);
+    border-radius: 10px;
+    padding:       20px;
+    margin:        20px;
+    background:    var(--bg-2);
+}

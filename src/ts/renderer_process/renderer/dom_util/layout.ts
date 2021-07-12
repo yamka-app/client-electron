@@ -143,6 +143,10 @@ export function updMessageArea(updMessages: boolean =true) {
         return;
     }
 
+    const e2eeReady = (chan.group !== 0) || chan.__e2eeReady;
+    util.setElmVisibility(util.elmById("message-input-popup"), e2eeReady);
+    util.setElmVisibility(util.elmById("e2ee-placeholder"), !e2eeReady);
+
     // Set "join voice" button visibility
     util.setElmVisibility(util.elmById("message-area-voice"), chan.voice);
     util.setElmVisibility(util.elmById("message-area-e2ee"), chan.group === 0);
@@ -273,11 +277,11 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
                 const chan = window.entityCache[msg.channel] as entities.Channel;
                 if(id === chan.firstUnread && chan.unread > 0)
                     header.after(domUtil.createUnreadSep());
-                    domUtil.updateRelatedUsers(msg.latest);
 
                 const msgElm = domMsgUtil.createMessage(msg.latest, short);
                 if(msgElm !== undefined)
                     header.after(msgElm);
+                domUtil.updateRelatedUsers(msg.latest);
             });
 
             if(msgs.length > 0) {
@@ -351,7 +355,6 @@ function hashRandomart(data: Uint8Array) {
 const ipcRenderer_layout = window["_modules"].electron.ipcRenderer;
 export function showE2eeInfo(ev: MouseEvent) {
     const info: {
-        incomplete: boolean,
         checkString: string,
         checkBuf: Uint8Array
     } = ipcRenderer_layout.sendSync("synchronous-message", {
@@ -363,8 +366,9 @@ export function showE2eeInfo(ev: MouseEvent) {
     div.classList.add("e2ee-info");
 
     const title = document.createElement("span");
+    const complete = (window.entityCache[window.viewingChan] as entities.Channel).__e2eeReady;
     div.appendChild(title);
-    title.innerHTML = info.incomplete ? `
+    title.innerHTML = !complete ? `
         This direct message conversation is getting set up to use end-to-end
         encryption.
     ` : `
@@ -376,7 +380,7 @@ export function showE2eeInfo(ev: MouseEvent) {
         in real life or using another app.
     `;
 
-    if(!info.incomplete) {
+    if(complete) {
         const str = document.createElement("code");
         div.appendChild(str);
         str.innerHTML = util.escapeHtml(info.checkString);

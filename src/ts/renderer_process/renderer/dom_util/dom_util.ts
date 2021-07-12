@@ -135,7 +135,7 @@ export function updateUser(id: number) {
             util.download(user.avaFile, (blob) => {
                 for(const ava of avas)
                     ava.src = "file://" + blob;
-            })
+            });
         }
 
         // Update statuses

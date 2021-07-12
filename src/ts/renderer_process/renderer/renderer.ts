@@ -352,9 +352,10 @@ function _rendererFunc() {
         const msgElm = domMsgUtil.createMessage(msg.latest,
             msg.sender === window.lastChanSender[msg.channel]
             && util.timeDiff(window.lastChanMsg[msg.channel].id, msg.id) <= layout.messageTimeThres);
-        if(msgElm !== undefined)
-            msgArea.appendChild(msgElm);
-        domUtil.updateRelatedUsers(msg.latest);
+        if(msgElm === undefined)
+            return;
+
+        msgArea.appendChild(msgElm);
 
         // Store metadata
         window.lastChanSender[msg.channel] = msg.sender;
@@ -370,7 +371,8 @@ function _rendererFunc() {
             msgElm.scrollIntoView({ block: "end" });
             msgElm.scrollIntoView({ block: "start", behavior: "smooth" });
         }
-        // util.triggerAppear(msgElm, false);
+        
+        domUtil.updateRelatedUsers(msg.latest);
     }
 
     // Deletes a message

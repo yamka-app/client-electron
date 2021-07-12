@@ -59,6 +59,8 @@ export class Channel extends Entity {
     __type_name = "Channel";
     static typeNum = 2;
 
+    __e2eeReady?: boolean;
+
     name?:        string;
     members?:     number[];
     group?:       number;
