@@ -104,7 +104,10 @@ export enum StatusCode {
     STREAM_END                    = 23,
     ONE_UPLOAD_ONLY               = 24,
     INVALID_CONFIRMATION_CODE     = 25,
-    POLL_ERROR                    = 26
+    POLL_ERROR                    = 26,
+    KEY_ERROR                     = 27,
+    INVALID_REQUEST               = 28,
+    EXCESSIVE_DATA                = 29
 }
 export class StatusPacket extends SimpleFieldPacket {
     typeNum = 4;

@@ -451,6 +451,9 @@ function _rendererFunc() {
                 case packets.StatusCode.INVALID_INVITE:
                 case packets.StatusCode.INTERNAL_ERROR:
                 case packets.StatusCode.POLL_ERROR:
+                case packets.StatusCode.KEY_ERROR:
+                case packets.StatusCode.INVALID_REQUEST:
+                case packets.StatusCode.EXCESSIVE_DATA:
                     notif.show(packet.message, "icons/ban.png", "red");
                     break;
                 case packets.StatusCode.FRIEND_REQUEST_SENT:
