@@ -433,10 +433,11 @@ label {
 }
 
 #message-unread-sep {
-    position: relative;
-    z-index:  2000;
-    margin:   0 20px 0 20px;
-    height:   1px;
+    position:   relative;
+    z-index:    300;
+    margin:     0 20px 0 20px;
+    height:     1px;
+    transform:  translateY(4px);
     background: var(--accent);
 }
 
