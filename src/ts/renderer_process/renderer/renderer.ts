@@ -1229,7 +1229,7 @@ function _rendererFunc() {
     }
     util.elmById("group-join-ok").onclick = (e) => {
         sendPacket(new packets.InviteResolvePacket(
-            (util.elmById("group-join-code") as HTMLInputElement).value,
+            (util.elmById("group-join-code") as HTMLInputElement).value.trim(),
             true
         ));
     }
