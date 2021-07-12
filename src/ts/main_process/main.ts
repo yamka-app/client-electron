@@ -29,6 +29,8 @@ class YamkaConfig {
     sslkeylog?:     boolean;
 
     bounds?: {
+        x:      number;
+        y:      number;
         width:  number;
         height: number;
     };
@@ -63,18 +65,11 @@ function createWindow() {
                 enableRemoteModule: true,
                 preload: path.join(__dirname, "../esnext/renderer/preload.js")
             },
-            width:  (config && config.bounds) ? config.bounds.width  : 1280,
-            height: (config && config.bounds) ? config.bounds.height : 720
+            width:  config?.bounds?.width  ?? 1280,
+            height: config?.bounds?.height ?? 720
         });
         mainWindow.loadFile("src/index.html");
         windowCreated = true;
-
-        // Write configuration when closing
-        mainWindow.on("close", (e) => {
-            config.bounds = mainWindow.getBounds();
-            fs.writeFileSync(configPath, JSON.stringify(config));
-            e.preventDefault(); // don"t destroy the window when closing it
-        });
     } else {
         mainWindow.show();
     }
@@ -108,6 +103,9 @@ app.on("ready", () => {
     tray.setContextMenu(Menu.buildFromTemplate([
         { label: "Open", type: "normal", click() { createWindow() } },
         { label: "Exit", type: "normal", click() {
+            // Write config
+            config.bounds = mainWindow.getBounds();
+            fs.writeFileSync(configPath, JSON.stringify(config));
             // Clean temporary files
             fs.rmdir(tmpDir, { recursive: true }, () => {});
             mainWindow.destroy();
