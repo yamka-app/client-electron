@@ -426,6 +426,7 @@ export default class SaltyClient {
                 "Key agreement": "X25519",
                 "Cipher": "AES-256-GCM",
                 "HKDF (X3DH + DH-ratchet) hash": "SHA-512",
+                "HKDF (randomart material) hash": "SHA-256",
                 "HMAC (KDF-ratchet) hash": "SHA-256",
                 "Auth tag length": "16",
                 "X3DH secret": fingerprint(state.sk),

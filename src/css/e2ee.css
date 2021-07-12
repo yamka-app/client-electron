@@ -41,6 +41,5 @@
 }
 
 .e2ee-info > canvas {
-    -webkit-mask-image: url('../icons/e2ee-randomart-mask.png');
-            mask-image: url('../icons/e2ee-randomart-mask.png');
+    border-radius: 10px;
 }
