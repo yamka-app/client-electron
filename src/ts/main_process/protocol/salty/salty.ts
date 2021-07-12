@@ -20,7 +20,8 @@
 //     there will be some more changes)
 
 import * as ser      from "../../serUtil";
-import { DHRatchet } from "./ratchet"
+import { DHRatchet } from "./ratchet";
+import * as os       from "os";
 import * as fs       from "fs";
 import * as path     from "path";
 import { app }       from "electron";
@@ -499,12 +500,12 @@ export default class SaltyClient {
             return crypto.createHash("sha256")
                     .update(this.keys.idSign.pub.export(pubkeyFormat))
                     .update(state.idSign.export(pubkeyFormat))
-                    .digest(); 
+                    .digest();
         } else {
             return crypto.createHash("sha256")
                     .update(state.idSign.export(pubkeyFormat))
                     .update(this.keys.idSign.pub.export(pubkeyFormat))
-                    .digest(); 
+                    .digest();
         }
     }
 
@@ -526,6 +527,49 @@ export default class SaltyClient {
         } : {
             incomplete : true
         };
+    }
+
+    public tmpEncPath(p: string) {
+        const rand = crypto.randomBytes(3).toString("base64");
+        return path.join(os.tmpdir(), path.basename(p) + ".salty-" + rand);
+    }
+
+    // Encrypts a file
+    // Returns a key+hash string along with the path to the encrypted file
+    public encryptFile(p: string): [string, string] {
+        const encPath = this.tmpEncPath(p);
+        const plaintext = fs.readFileSync(p);
+        const key = crypto.createSecretKey(crypto.randomBytes(16));
+        const iv = Buffer.from(Array(16).fill(0));
+
+        const cipher = crypto.createCipheriv("aes-128-ctr", key, iv);
+        const ciphertext = cipher.update(plaintext);
+        cipher.end();
+        fs.writeFileSync(encPath, ciphertext);
+
+        const hash = crypto.createHash("sha256").update(plaintext).digest("base64");
+        const keyhash = hash + "|" + key.export().toString("base64");
+        return [encPath, keyhash];
+    }
+
+    // Decrypts a file
+    public decryptFile(encPath: string, keyhash: string) {
+        const dest = this.tmpEncPath(encPath);
+        const [hash, keyB64] = keyhash.split("|");
+        const key = crypto.createSecretKey(Buffer.from(keyB64, "base64"));
+        const iv = Buffer.from(Array(16).fill(0));
+        const ciphertext = fs.readFileSync(encPath);
+
+        const decipher = crypto.createDecipheriv("aes-128-ctr", key, iv);
+        const plaintext = decipher.update(ciphertext);
+        decipher.end();
+        fs.writeFileSync(dest, plaintext);
+
+        const calculatedHash = crypto.createHash("sha256").update(plaintext).digest("base64");
+        // Poor man's AEAD
+        if(hash !== calculatedHash)
+            throw new Error("Decrypted file hash doesn't match");
+        return dest;
     }
 
     private convPath(id: number) {

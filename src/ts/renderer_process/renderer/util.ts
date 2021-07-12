@@ -197,17 +197,23 @@ export function readableFileSize(fileSize: number): string {
 }
 
 export function upload(filePath: string, onEnd: (id: number) => any,
-            onProgressMade?: (p: number, m: number) => any, scale: boolean = false) {
+            onProgressMade?: (p: number, m: number) => any,
+            onEncryptionKey?: (keyhash: string) => any,
+            encrypt: boolean = true, scale: boolean = false) {
     const file = new entities.File();
     file.id = 0; file.length = fs.statSync(filePath).size;
     file.path = filePath; file.name = path.basename(filePath);
     file.__scale = scale;
+    file.__encryptToChan = encrypt ? 1 : undefined;
     sendPacket(new packets.EntitiesPacket([file]), (resp: packets.EntitiesPacket) => {
         // There's only a single entity in the packet
         onEnd(resp.entities[0].id);
-    }, onProgressMade);
+    }, (p: number|string, m: number) => {
+        if(typeof p === "string") onEncryptionKey(p);
+                             else onProgressMade(p, m);
+    });
 }
-export function download(id: number, onEnd?: (path: string) => any) {
+export function download(id: number, onEnd?: (path: string) => any, keyhash: string = "") {
     if(id === undefined)
         throw new Error();
     // Files, like message states and unlike all other entities,
@@ -219,7 +225,7 @@ export function download(id: number, onEnd?: (path: string) => any) {
         onEnd(existingPath);
         return;
     }
-    sendPacket(new packets.FileDownloadRequestPacket(id), (r: packets.Packet) => {
+    sendPacket(new packets.FileDownloadRequestPacket(id, keyhash), (r: packets.Packet) => {
         // Trust me, it's a string
         const filePath = (r as unknown) as string;
         window.filePaths[id] = filePath;

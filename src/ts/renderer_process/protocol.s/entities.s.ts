@@ -117,8 +117,9 @@ export class File extends Entity {
     length?:  number;
 
     // only used in main-to-renderer communication
-    path?:    string;
-    __scale?: boolean;
+    path?:            string;
+    __scale?:         boolean;
+    __encryptToChan?: number;
 }
 
 export class MessageState extends Entity {

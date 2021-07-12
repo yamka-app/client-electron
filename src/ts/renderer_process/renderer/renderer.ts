@@ -1031,7 +1031,7 @@ function _rendererFunc() {
             });
             // Update the blob ID
             sendSelfValue("avaFile", id);
-        }, undefined, true);
+        }, undefined, undefined, false, true);
     }
 
     util.elmById("group-icon-huge").onclick = () => {
@@ -1142,13 +1142,15 @@ function _rendererFunc() {
         const fileProgressBar = window.msgSections[id].typeElm.getElementsByTagName("progress")[0];
 
         // Upload the file
+        var encKey = "";
         util.upload(filePath, (blobId) => {
+            window.msgSections[id].text = encKey;
             window.msgSections[id].blob = blobId;
             fileProgressBar.remove();
         }, (progress, max) => {
             fileProgressBar.max = max;
             fileProgressBar.value = progress;
-        })
+        }, (enc) => encKey = enc, window.viewingGroup === 0);
     })
     // Paste images on Ctrl+V
     document.onkeydown = (e) => {
@@ -1165,15 +1167,17 @@ function _rendererFunc() {
         
                 // Upload the file
                 const fileProgressBar = window.msgSections[id].typeElm.getElementsByTagName("progress")[0];
+                var encKey = "";
                 util.upload(fileName, (blobId) => {
                     window.msgSections[id].blob = blobId;
+                    window.msgSections[id].text = encKey;
                     fileProgressBar.remove();
                     // Remove it when done
                     fs.unlinkSync(fileName);
                 }, (progress, max) => {
                     fileProgressBar.max = max;
                     fileProgressBar.value = progress;
-                });
+                }, (enc) => encKey = enc, window.viewingGroup === 0);
             });
         }
     }
@@ -1360,9 +1364,9 @@ function _rendererFunc() {
             browserWindow.minimize();
     });
 
-    notif.show("Editing and deleting messages in DMs causes "
-             + "undefned behavior. Files and calls in DMs are "
-             + "unencrypted.", undefined, "yellow");
+    notif.show("Editing and deleting messages in DMs is not "
+             + "supported. Direct calls are not end-to-end "
+             + "encrypted.", undefined, "yellow");
 }
 
 window.addEventListener("load", _rendererFunc);

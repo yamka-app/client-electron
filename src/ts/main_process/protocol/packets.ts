@@ -26,11 +26,14 @@ export class Packet {
     encodePayload?: ()          => Buffer;
     decodePayload?: (b: Buffer) => Packet;
 
+    createSeq: () => void = function() {
+        this.seq = Packet.nextSeq++;
+    }
+
     encode: () => Buffer = function() {
         if(this.typeNum === undefined || this.encodePayload === undefined)
             throw new Error("Can't encode a generic packet");
 
-        this.seq = Packet.nextSeq++;
         return Buffer.concat([
             DataTypes.encNum(this.typeNum, 1),
             DataTypes.encNum(this.seq, 4),
@@ -335,6 +338,7 @@ export class FileDownloadRequestPacket extends SimpleFieldPacket {
     typeNum = 8;
     
     id: number;
+    __decrypt?: string;
 
     constructor(id?: number) { super([new fields.NumField("id", 8)]); this.id = id; }
 }

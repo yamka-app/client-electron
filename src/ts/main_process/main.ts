@@ -227,12 +227,22 @@ function webprotData(bytes: Buffer) {
         sweet.salty = new SaltyClient(packet.userId, packet.agentId, cb);
     }
 
-    // File uploading
+    // File up-/downloading
     if(packet instanceof packets.StatusPacket) {
         if(packet.status == packets.StatusCode.STREAM_END) {
             const state = sweet.downStates[packet.replyTo];
-            (state.stream as fs.WriteStream).close();
-            ipcSend({ type: "webprot.trigger-reference", reason: "download-finished", references: state.refs, args: [state.path] });
+            const stream = state.stream as fs.WriteStream;
+            stream.once("finish", () => {
+                var decPath = state.path;
+                // Possible decrypt the file
+                if(state.decr !== "") {
+                    decPath = sweet.salty.decryptFile(state.path, state.decr);
+                    fs.rmSync(state.path);
+                }
+                ipcSend({ type: "webprot.trigger-reference", reason: "download-finished", references: state.refs,
+                    args: [decPath] });
+            });
+            stream.end();
             return;
         } else if(packet.status == packets.StatusCode.START_UPLOADING) {
             const state = sweet.upStates[packet.replyTo];
@@ -246,7 +256,7 @@ function webprotData(bytes: Buffer) {
                 webprotSendPacket(dataPacket);
                 ipcSend({ type: "webprot.trigger-reference", reason: "upload-progress", reference: state.ref2,
                     args: [bytesRead, bytesTotal] });
-            })
+            });
             return;
         }
     }
@@ -257,6 +267,7 @@ function webprotData(bytes: Buffer) {
 
     const finish = () => {
         // Clear all unnecessary fields before sending the packet to the renderer
+        delete packet.createSeq;
         delete packet.encode;
         delete packet.decodePayload;
         delete packet.encodePayload;
@@ -336,7 +347,7 @@ function webprotSendBytes(bytes: Buffer) {
     sweet.socket.write(bytes);
 }
 
-function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?: number, ref2?: number) {
+function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, ref2?: number) {
     // Make the packet "full" if requested
     if(type !== undefined) {
         const proto = {
@@ -407,13 +418,13 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
         }
     }
 
-    // Encode the packet
-    var buf = packet.encode();
-    // Save the reference ID (encode() sets SEQ)
+    // Save the reference ID
+    packet.createSeq();
     if(ref !== undefined)
         sweet.references[packet.seq] = ref;
 
     const encodeAndSend = () => {
+        var buf = packet.encode();
         // Compress the data
         const compressed = buf.length >= webprotSettings.compressionThreshold;
         if(compressed) buf = zlib.gzipSync(buf);
@@ -428,11 +439,11 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
         webprotSendBytes(buf);
     };
 
-    // Create a up-/download state
+    // Create an up-/download state
     if(packet instanceof packets.FileDownloadRequestPacket) {
         // Don't download if we're already downloading, add a reference instead
         const existing: [string, any] = Object.entries(sweet.downStates)
-                                   // @ts-ignore
+            // @ts-ignore
             .find(x => x[1].id === packet.id);
         if(existing !== undefined) {
             var state = existing[1];
@@ -444,7 +455,13 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
 
         const p = path.join(tmpDir, `file_${packet.id}`);
         const stream = fs.createWriteStream(p);
-        sweet.downStates[packet.seq] = { id: packet.id, path: p, stream: stream, refs: [ref] };
+        sweet.downStates[packet.seq] = {
+            id: packet.id,
+            path: p,
+            stream: stream,
+            refs: [ref],
+            decr: packet.__decrypt
+        };
     }
 
     if(packet instanceof packets.EntitiesPacket) {
@@ -454,8 +471,16 @@ function webprotSendPacket(packet: Partial<packets.Packet>, type?: string, ref?:
 
             const seq = packet.seq;
             const proceed = (p) => {
-                const stream = fs.createReadStream(p); // the renderer actually sends the path here
-                sweet.upStates[seq] = { path: p, stream: stream, ref: ref, ref2: ref2 };
+                // Encrypt the file if the renderer asked for it
+                var actualPath = p;
+                if(entity.__encryptToChan !== undefined) {
+                    const [encPath, keyhash] = sweet.salty.encryptFile(p);
+                    actualPath = encPath;
+                    ipcSend({ type: "webprot.trigger-reference", reason: "upload-keyhash", reference: ref2,
+                        args: [keyhash] });
+                }
+                const stream = fs.createReadStream(actualPath); // the renderer actually sends the path here
+                sweet.upStates[seq] = { path: actualPath, stream: stream, ref: ref, ref2: ref2 };
                 encodeAndSend();
             };
 

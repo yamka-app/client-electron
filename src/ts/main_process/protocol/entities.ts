@@ -262,14 +262,15 @@ export class File extends Entity {
     __type_name = "File";
     typeNum = EntityType.FILE;
 
-    path?: string; // only used in main-to-renderer communication
-
     name?:    string;
     size?:    string;
     preview?: string;
     length?:  number;
 
-    __scale?: boolean;
+    // only used in main-to-renderer communication
+    path?:            string;
+    __scale?:         boolean;
+    __encryptToChan?: number;
 
     constructor() {
         super([

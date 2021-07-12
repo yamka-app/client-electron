@@ -190,8 +190,9 @@ export class FileDownloadRequestPacket extends SimpleFieldPacket {
     typeNum = 8;
 
     id: number;
+    __decrypt?: string;
 
-    constructor(id?: number) { super(); this.id = id; }
+    constructor(id?: number, d?: string) { super(); this.id = id; this.__decrypt = d; }
 }
 
 export class MFASecretPacket extends SimpleFieldPacket {
