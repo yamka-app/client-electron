@@ -524,7 +524,6 @@ function _rendererFunc() {
                 remote.getGlobal("sweet").self = self;
 
                 layout.updMessageArea();
-                accountSelector.cacheUser(self);
             })
         } else if(packet instanceof packets.AccessTokenPacket) {
             // Save the token
@@ -534,26 +533,26 @@ function _rendererFunc() {
             // Try to log in immediately
             sendPacket(new packets.AccessTokenPacket(packet.token));
         } else if(packet instanceof packets.EntitiesPacket) {
-            for(var entity of packet.entities) {
+            for(var ent of packet.entities) {
                 // Shove the entity into the cache
                 // And merge the new fields with the old ones
-                const oldEntity = window.entityCache[entity.id];
+                const oldEntity = window.entityCache[ent.id];
                 if(oldEntity !== undefined)
-                    entity = Object.assign(oldEntity, entity);
-                window.entityCache[entity.id] = entity;
+                    ent = Object.assign(oldEntity, ent);
+                window.entityCache[ent.id] = ent;
 
                 // Update group settings
-                if(entity instanceof entities.Group && entity.id === window.viewingGroup)
-                    updateGroup(entity.id);
+                if(ent instanceof entities.Group && ent.id === window.viewingGroup)
+                    updateGroup(ent.id);
 
                 // Delete groups from the main screen
-                if(entity instanceof entities.Group && entity.owner === 0) {
+                if(ent instanceof entities.Group && ent.owner === 0) {
                     const us = self();
                     // Just local cache
-                    us.groups = us.groups.filter(x => x !== entity.id);
+                    us.groups = us.groups.filter(x => x !== ent.id);
                     entityCache[us.id] = us;
                     console.log(entityCache[us.id], window.viewingGroup);
-                    if(window.viewingGroup === entity.id) {
+                    if(window.viewingGroup === ent.id) {
                         window.viewingGroup = 0;
                         window.viewingChan = 0;
                     }
@@ -561,18 +560,18 @@ function _rendererFunc() {
                 }
 
                 // message states are immutable, no need to "merge" them with the old version
-                if(entity instanceof entities.Message && entity.latest !== undefined)
-                    window.entityCache[entity.latest.id] = entity.latest;
+                if(ent instanceof entities.Message && ent.latest !== undefined)
+                    window.entityCache[ent.latest.id] = ent.latest;
 
-                if(entity instanceof entities.User && entity.dmChannel !== undefined)
-                    window.userDm[entity.dmChannel] = entity.id;
+                if(ent instanceof entities.User && ent.dmChannel !== undefined)
+                    window.userDm[ent.dmChannel] = ent.id;
 
                 // Request the DM channel for new friends
-                if(entity instanceof entities.User
+                if(ent instanceof entities.User
                         && oldEntity instanceof entities.User
-                        && entity.id === remote.getGlobal("sweet").selfId
-                        && entity.friends.length !== oldEntity.friends.length) {
-                    const friends    = entity.friends;
+                        && ent.id === remote.getGlobal("sweet").selfId
+                        && ent.friends.length !== oldEntity.friends.length) {
+                    const friends    = ent.friends;
                     const oldFriends = oldEntity.friends;
                     const newFriends = friends.filter(x => !oldFriends.includes(x));
                     util.reqEntities(newFriends.map(x =>
@@ -580,46 +579,46 @@ function _rendererFunc() {
                 }
 
                 // Update the unread bubble, just in case
-                if(packet.spontaneous && entity instanceof entities.Message) {
-                    const chan = window.entityCache[entity.channel] as entities.Channel;
-                    if(chan.unread !== 0 && entity.sender !== 0) {
-                        chan.firstUnread = entity.id;
+                if(packet.spontaneous && ent instanceof entities.Message) {
+                    const chan = window.entityCache[ent.channel] as entities.Channel;
+                    if(chan.unread !== 0 && ent.sender !== 0) {
+                        chan.firstUnread = ent.id;
                         chan.unread++;
                     }
-                    else if(entity.sender === 0)
+                    else if(ent.sender === 0)
                         chan.unread--; // the message was deleted
 
                     if(chan.group !== 0 && window.viewingGroup === 0)
                         layout.updGroupList();
                 }
-                if(packet.spontaneous && entity instanceof entities.Message && window.viewingGroup === 0 && entity.sender !== 0)
-                    domUtil.updateUser(entity.sender);
+                if(packet.spontaneous && ent instanceof entities.Message && window.viewingGroup === 0 && ent.sender !== 0)
+                    domUtil.updateUser(ent.sender);
 
                 // append/edit/delete messages in the open channel
-                if(packet.spontaneous && entity instanceof entities.Message && entity.channel === window.viewingChan) {
-                    if(oldEntity === undefined && entity.sender !== 0)
-                        appendMessage(entity.id);
-                    else if(oldEntity !== undefined && entity.sender !== 0)
-                        editExistingMesssage(entity.id);
-                    else if(entity.sender === 0)
-                        removeMesssage(entity.id);
+                if(packet.spontaneous && ent instanceof entities.Message && ent.channel === window.viewingChan) {
+                    if(oldEntity === undefined && ent.sender !== 0)
+                        appendMessage(ent.id);
+                    else if(oldEntity !== undefined && ent.sender !== 0)
+                        editExistingMesssage(ent.id);
+                    else if(ent.sender === 0)
+                        removeMesssage(ent.id);
                 }
 
-                if(packet.spontaneous && entity instanceof entities.Channel && entity.id === window.viewingChan)
+                if(packet.spontaneous && ent instanceof entities.Channel && ent.id === window.viewingChan)
                 layout.updMessageArea(false);
 
-                if(packet.spontaneous && entity instanceof entities.Channel
-                        && [window.viewingChan, window.voiceChan].includes(entity.id))
-                    updateVoiceMembers(entity.id);
+                if(packet.spontaneous && ent instanceof entities.Channel
+                        && [window.viewingChan, window.voiceChan].includes(ent.id))
+                    updateVoiceMembers(ent.id);
 
-                if(packet.spontaneous && entity instanceof entities.Message
-                        && (entity.channel !== window.viewingChan || !document.hasFocus())
-                        && shouldReceiveNotif(Object.keys(window.userDm).includes(`${entity.channel}`))) {
-                    const reqArr = [new packets.EntityGetRequest(entities.User.typeNum, entity.sender)];
-                    if(entity.channel !== 0)
-                        reqArr.push(new packets.EntityGetRequest(entities.Channel.typeNum, entity.channel));
+                if(packet.spontaneous && ent instanceof entities.Message
+                        && (ent.channel !== window.viewingChan || !document.hasFocus())
+                        && shouldReceiveNotif(Object.keys(window.userDm).includes(`${ent.channel}`))) {
+                    const reqArr = [new packets.EntityGetRequest(entities.User.typeNum, ent.sender)];
+                    if(ent.channel !== 0)
+                        reqArr.push(new packets.EntityGetRequest(entities.Channel.typeNum, ent.channel));
                     util.reqEntities(reqArr, false, () => {
-                        const msg = entity as entities.Message;
+                        const msg = ent as entities.Message;
                         const chan = entityCache[msg.channel] as entities.Channel;
                         const user = entityCache[msg.sender] as entities.User;
                         const title = chan === undefined ? user.name : `${user.name} in ${chan.name}`;
@@ -631,15 +630,16 @@ function _rendererFunc() {
                 }
 
                 // Update info about self
-                if(entity instanceof entities.User && entity.id === remote.getGlobal("sweet").selfId) {
-                    remote.getGlobal("sweet").self = entity;
-                    domUtil.updateSelfInfo(entity.name, entity.tag, entity.status, entity.statusText, entity.email, entity.mfaEnabled);
+                if(ent instanceof entities.User && ent.id === remote.getGlobal("sweet").selfId) {
+                    accountSelector.cacheUser(entityCache[ent.id] as entities.User);
+                    remote.getGlobal("sweet").self = ent;
+                    domUtil.updateSelfInfo(ent.name, ent.tag, ent.status, ent.statusText, ent.email, ent.mfaEnabled);
 
-                    util.setElmVisibility(util.elmById("email-unconfirmed-bar-container"), !entity.emailConfirmed);
-                    util.setElmVisibility(util.elmById("email-conf-cont"),                 !entity.emailConfirmed);
+                    util.setElmVisibility(util.elmById("email-unconfirmed-bar-container"), !ent.emailConfirmed);
+                    util.setElmVisibility(util.elmById("email-conf-cont"),                 !ent.emailConfirmed);
 
                     // Request own avatar
-                    util.download(entity.avaFile, (blob) => domUtil.updateSelfAva(blob));
+                    util.download(ent.avaFile, (blob) => domUtil.updateSelfAva(blob));
 
                     // Update DM, friend and group list
                     if(window.viewingGroup === 0) {
@@ -649,12 +649,12 @@ function _rendererFunc() {
                     }
 
                     // Check new friend requests
-                    const pin = entity.pendingIn;
+                    const pin = ent.pendingIn;
                     util.elmById("pending-in-count").innerHTML = escapeHtml(pin.length);
                     util.setElmVisibility(util.elmById("pin-cnt-container"), pin.length > 0);
-                    if(packet.spontaneous && oldEntity.pendingIn.length !== entity.pendingIn.length
+                    if(packet.spontaneous && oldEntity.pendingIn.length !== ent.pendingIn.length
                         && shouldReceiveNotif(true)) {
-                        const newFriends = entity.pendingIn.filter(x => !oldEntity.pendingIn.includes(x));
+                        const newFriends = ent.pendingIn.filter(x => !oldEntity.pendingIn.includes(x));
                         // Request their entities
                         util.reqEntities(newFriends.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {
                             for(const fid of newFriends) {
@@ -670,20 +670,20 @@ function _rendererFunc() {
                     }
 
                     // Update the owned bot list
-                    if(entity.ownedBots !== undefined)
-                        util.elmById("owned-bot-list").innerHTML = entity.ownedBots.join(", ");
+                    if(ent.ownedBots !== undefined)
+                        util.elmById("owned-bot-list").innerHTML = ent.ownedBots.join(", ");
 
                     // Update the device list
                     domUtil.updAgentList();
                 }
 
                 // Update info about other users
-                if(entity instanceof entities.User)
-                    domUtil.updateUser(entity.id);
+                if(ent instanceof entities.User)
+                    domUtil.updateUser(ent.id);
 
                 // Update polls
-                if(entity instanceof entities.Poll && packet.spontaneous)
-                    domMsgUtil.updatePolls(entity.id);
+                if(ent instanceof entities.Poll && packet.spontaneous)
+                    domMsgUtil.updatePolls(ent.id);
             }
         } else if(packet instanceof packets.MFASecretPacket) {
             // Construct the string to put into the QR code

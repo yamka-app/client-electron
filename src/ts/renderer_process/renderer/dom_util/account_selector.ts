@@ -63,7 +63,7 @@ export function hide() {
 
 export function cacheUser(user: User) {
     var users: {id: number, ava: string, name: string}[] = configGet("users");
-    if(!users.every(x => x.id !== user.id)) return;
+    users = users.filter(x => x.id !== user.id);
 
     download(user.avaFile, (ava) => {
         // Copy the avatar to a persistent location
