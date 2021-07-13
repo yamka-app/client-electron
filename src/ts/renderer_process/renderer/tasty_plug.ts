@@ -33,6 +33,7 @@ async function _tasty_plug_func() {
     micThrSlider.onchange = (e) =>
         { const val = micThrSlider.value; thr = val; configSet("micThres", val); };
 
+    var shouldntSendFor = 0;
     function processBuffer(input: Int16Array) {
         // apply gain and calculate loudness
         var loudness = 0;
@@ -43,7 +44,15 @@ async function _tasty_plug_func() {
         }
         loudness = Math.sqrt(loudness / input.length);
 
-        return { data: input, loudness, send: loudness >= thr };
+        var send = true;
+        if(loudness < thr) {
+            if(++shouldntSendFor >= 4)
+                send = false;
+        } else {
+            shouldntSendFor = 0;
+        }
+
+        return { data: input, loudness, send };
     }
 
     // @ts-ignore
