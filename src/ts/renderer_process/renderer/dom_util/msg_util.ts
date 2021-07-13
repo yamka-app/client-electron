@@ -23,9 +23,11 @@ import * as layout   from "./layout.js";
 import * as notif    from "./notif.js"
 
 // Creates a message box seen in the message area
-export function createMessage(state: entities.MessageState, short: boolean =false): HTMLElement|null {
-    if(!util.clientDebug && state.sections.every(x => x.type === types.MessageSectionType.E2EEDBG))
+export function createMessage(state: entities.MessageState, short: boolean =false): HTMLElement | undefined {
+    const sections = sanitizeSections(state.sections);
+    if(sections.length === 0)
         return undefined;
+
     // Get the message entity by the id
     const msg = window.entityCache[state.msg_id] as entities.Message;
 
@@ -69,7 +71,7 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
         nicknameContainer.appendChild(timeElm);
     }
 
-    for(const section of state.sections) {
+    for(const section of sections) {
         const creationFunctions: ((s: types.MessageSection) => HTMLElement|undefined)[] = [
             createTextSection,   createFileSection,
             createCodeSection,   createQuoteSection,
@@ -83,9 +85,7 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
                 sectionElement = createE2eeDbgSection(section);
                 break;
             case types.MessageSectionType.E2EEDBG:
-                sectionElement = util.clientDebug
-                    ? createE2eeDbgSection(section)
-                    : undefined;
+                sectionElement = createE2eeDbgSection(section)
                 break;
             default:
                 sectionElement = creationFunctions[section.type](section);
@@ -757,6 +757,45 @@ export function resetMsgInput(fullReset: boolean =false) {
     }
 }
 
+function filterSection(s: types.MessageSection) {
+    switch(s.type) {
+        case types.MessageSectionType.USER:
+        case types.MessageSectionType.INVITE:
+        case types.MessageSectionType.TEXT:
+        case types.MessageSectionType.CODE:
+        case types.MessageSectionType.BOT_UI:
+            return s.text.length > 0;
+        case types.MessageSectionType.POLL:
+        case types.MessageSectionType.FILE:
+            return s.blob !== 0;
+        case types.MessageSectionType.QUOTE:
+            return s.text.length > 0 || s.blob !== 0;
+        case types.MessageSectionType.E2EEDBG:
+            return util.clientDebug;
+        case types.MessageSectionType.E2EEERR:
+            return true;
+    }
+}
+function sanitizeSection(s: types.MessageSection) {
+    const x = {...s};
+    switch(s.type) {
+        case types.MessageSectionType.USER:
+        case types.MessageSectionType.INVITE:
+        case types.MessageSectionType.TEXT:
+        case types.MessageSectionType.CODE:
+        case types.MessageSectionType.BOT_UI:
+            x.blob = 0;
+            break;
+        case types.MessageSectionType.POLL:
+            x.text = "";
+            break;
+    }
+    return x;
+}
+export function sanitizeSections(s: types.MessageSection[]) {
+    return s.map(x => sanitizeSection(x)).filter(x => filterSection(x));
+}
+
 // Sends the message
 export function sendMessage() {
     var sects = window.msgSections;
@@ -803,7 +842,7 @@ export function sendMessage() {
             const state = new entities.MessageState();
             const msg = new entities.Message();
             state.id = 0;
-            state.sections = sects;
+            state.sections = sanitizeSections(sects);
             msg.id = window.editingMessage;
             msg.latest = state;
             msg.channel = window.viewingChan;
