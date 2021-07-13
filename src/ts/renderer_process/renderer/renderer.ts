@@ -76,11 +76,9 @@ function _rendererFunc() {
         if(!configGet("notifications"))
             return false;
         const status = self().status;
-        if(status < entities.UserStatus.FOCUS)
+        if(status < entities.UserStatus.DND) // online, idle, offline
             return true;
-        if(status === entities.UserStatus.DND)
-            return false;
-        if(direct && self().status === entities.UserStatus.FOCUS)
+        if(direct && status === entities.UserStatus.FOCUS)
             return true;
         return false;
     }
@@ -599,9 +597,10 @@ function _rendererFunc() {
                         && [window.viewingChan, window.voiceChan].includes(entity.id))
                     updateVoiceMembers(entity.id);
 
+                console.log(window.userDm);
                 if(packet.spontaneous && entity instanceof entities.Message
                         && (entity.channel !== window.viewingChan || !document.hasFocus())
-                        && shouldReceiveNotif(entity.channel === 0)) {
+                        && shouldReceiveNotif(Object.keys(window.userDm).includes(`${entity.channel}`))) {
                     const reqArr = [new packets.EntityGetRequest(entities.User.typeNum, entity.sender)];
                     if(entity.channel !== 0)
                         reqArr.push(new packets.EntityGetRequest(entities.Channel.typeNum, entity.channel));
