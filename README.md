@@ -12,7 +12,7 @@
 ![](promo.png)
 
 :construction: Both the client the back end are in their aplha stage right now. :construction:\
-Latest version: **0.7.2**
+Latest version: **0.7.3**
 
 ## Committing code
 Please sign your commits. It is really easy to set up. This would be very nice, but you don't have to do it if you don't want to.

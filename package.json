@@ -1,7 +1,7 @@
 {
   "name": "yamka",
   "productName": "Yamka",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Yet Another (secure) Messenger with powerful features",
   "main": "src/js/commonjs/main.js",
   "scripts": {
