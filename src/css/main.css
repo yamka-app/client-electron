@@ -1066,6 +1066,7 @@ span.fg-1 {
 }
 .message-quote-section > span,
 .message-text-section > span {
+    display:     flex;
     white-space: pre-wrap;
     align-items: center;
 }

@@ -72,10 +72,17 @@ function _rendererFunc() {
         = escapeHtml(`${util.clientVersion} (commit ${commit.substr(0, 7)})`);
 
     // Determines whether we sould receive notifications
-    function shouldReceiveNotif() {
-        // no in "do not distract" mode
-        return (self().status !== entities.UserStatus.DND)
-            && configGet("notifications");
+    function shouldReceiveNotif(direct: boolean) {
+        if(!configGet("notifications"))
+            return false;
+        const status = self().status;
+        if(status < entities.UserStatus.FOCUS)
+            return true;
+        if(status === entities.UserStatus.DND)
+            return false;
+        if(direct && self().status === entities.UserStatus.FOCUS)
+            return true;
+        return false;
     }
 
     // Show and hide the user settings panel
@@ -593,8 +600,8 @@ function _rendererFunc() {
                     updateVoiceMembers(entity.id);
 
                 if(packet.spontaneous && entity instanceof entities.Message
-                        && entity.channel !== window.viewingChan
-                        && shouldReceiveNotif()) {
+                        && (entity.channel !== window.viewingChan || !document.hasFocus())
+                        && shouldReceiveNotif(entity.channel === 0)) {
                     const reqArr = [new packets.EntityGetRequest(entities.User.typeNum, entity.sender)];
                     if(entity.channel !== 0)
                         reqArr.push(new packets.EntityGetRequest(entities.Channel.typeNum, entity.channel));
@@ -602,12 +609,10 @@ function _rendererFunc() {
                         const msg = entity as entities.Message;
                         const chan = entityCache[msg.channel] as entities.Channel;
                         const user = entityCache[msg.sender] as entities.User;
-                        const text = chan === undefined ?
-                              `${user.name}: ${util.messageSummary(msg)}`
-                            : `${user.name} in ${chan.name}: ${util.messageSummary(msg)}`;
+                        const title = chan === undefined ? user.name : `${user.name} in ${chan.name}`;
                         util.download(user.avaFile, (ava) => {
-                            new Notification(text, {icon: ava});
-                            notif.show(text, ava, "background");
+                            new Notification(title, {icon: ava, body: util.messageSummary(msg)});
+                            notif.show(title + ": " + util.messageSummary(msg), ava, "background");
                         });
                     });
                 }
@@ -635,7 +640,7 @@ function _rendererFunc() {
                     util.elmById("pending-in-count").innerHTML = escapeHtml(pin.length);
                     util.setElmVisibility(util.elmById("pin-cnt-container"), pin.length > 0);
                     if(packet.spontaneous && oldEntity.pendingIn.length !== entity.pendingIn.length
-                        && shouldReceiveNotif()) {
+                        && shouldReceiveNotif(true)) {
                         const newFriends = entity.pendingIn.filter(x => !oldEntity.pendingIn.includes(x));
                         // Request their entities
                         util.reqEntities(newFriends.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {

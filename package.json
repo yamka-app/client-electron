@@ -47,6 +47,7 @@
     "qrcode": "^1.4.4",
     "reflect-metadata": "^0.1.13",
     "remark": "^13.0.0",
+    "remark-emoji": "^2.2.0",
     "remark-gemoji-to-emoji": "^1.1.0",
     "smoothscroll-polyfill": "^0.4.4",
     "speaker": "^0.5.3",

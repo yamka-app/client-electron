@@ -17,6 +17,7 @@ const _modules = window["_modules"];
 const path            = _modules.path;
 const remote          = _modules.remote;
 const remark          = _modules.remark;
+const remarkEmoji     = _modules.remarkEmoji;
 const _escapeHtml     = _modules.escapeHtml;
 const marked          = _modules.marked;
 const compareVersions = _modules.compareVersions;
@@ -63,7 +64,7 @@ export function prepareMsgText(txt: string): string {
     return escapeHtml(txt).replace(/(?:\r\n|\r|\n)/g, "<br>");
 }
 export function markupText(txt: string) {
-    var esc = remark.processSync(
+    var esc = remark().use(remarkEmoji).processSync(
         ("<span>" +
         marked.parseInline(                           // Markdown parser
         escapeHtml(txt)) +                            // no XSS for ya today, sorry

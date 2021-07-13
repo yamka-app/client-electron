@@ -19,6 +19,9 @@ export function show(text: string, img?: string, color?: string,
     const notif = document.createElement("div");
     text = `<span style="color: ${textColor}">${escapeHtml(text)}</span>`;
     notif.innerHTML = (img === undefined ? "" : `<img src="${img}"/>`) + text;
+    // Make the image circular if it's not a builtin icon
+    if(!img.startsWith("icons/"))
+        notif.querySelector("img").classList.add("round");
     notif.onclick = click;
     if(click !== undefined)
         notif.style.cursor = "pointer";
