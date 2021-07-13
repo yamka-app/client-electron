@@ -1106,10 +1106,13 @@ function _rendererFunc() {
     util.elmById("friend-add").onclick = (e) => {
         util.toggleElm(util.elmById("user-search-bar"));
     };
-    util.elmById("friend-add-commit").onclick = (e) => {
+    const _add_friend = () => {
         sendPacket(new packets.SearchPacket(packets.SearchTarget.USER, 0,
             (util.elmById("user-search-input") as HTMLInputElement).value));
+        (util.elmById("user-search-input") as HTMLInputElement).value = "";
     };
+    util.elmById("friend-add-commit").onclick = (e) => _add_friend();
+    util.elmById("user-search-input").onkeydown = (e) => { if(e.keyCode === 13) _add_friend(); };
 
     util.elmById("message-area-leave").onclick = (e) => {
         window.viewingGroup = 0;
