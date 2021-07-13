@@ -546,6 +546,20 @@ function _rendererFunc() {
                 if(entity instanceof entities.Group && entity.id === window.viewingGroup)
                     updateGroup(entity.id);
 
+                // Delete groups from the main screen
+                if(entity instanceof entities.Group && entity.owner === 0) {
+                    const us = self();
+                    // Just local cache
+                    us.groups = us.groups.filter(x => x !== entity.id);
+                    entityCache[us.id] = us;
+                    console.log(entityCache[us.id], window.viewingGroup);
+                    if(window.viewingGroup === entity.id) {
+                        window.viewingGroup = 0;
+                        window.viewingChan = 0;
+                    }
+                    layout.updLayout();
+                }
+
                 // message states are immutable, no need to "merge" them with the old version
                 if(entity instanceof entities.Message && entity.latest !== undefined)
                     window.entityCache[entity.latest.id] = entity.latest;
@@ -1235,17 +1249,29 @@ function _rendererFunc() {
 
     // Create/join a group
     util.elmById("group-create-join-panel").onclick = showGroupCreateBox;
-    util.elmById("group-create-ok").onclick = (e) => {
+    const _create_group = () => {
         const group = new entities.Group();
-        group.id = 0; group.name = (util.elmById("group-create-name") as HTMLInputElement).value;
+        group.id = 0;
+        group.name = (util.elmById("group-create-name") as HTMLInputElement).value;
         util.putEntities([group]);
+        hideGroupCreateBox();
+        (util.elmById("group-create-name") as HTMLInputElement).value = "";
     }
-    util.elmById("group-join-ok").onclick = (e) => {
+    util.elmById("group-create-ok").onclick = (e) => _create_group();
+    util.elmById("group-create-name").onkeydown = (e) => { if(e.keyCode === 13) _create_group(); }
+    const _join_group = () => {
         sendPacket(new packets.InviteResolvePacket(
             (util.elmById("group-join-code") as HTMLInputElement).value.trim(),
             true
-        ));
+        ), (p: packets.Packet) => {
+            // A status packet means the invite is invalid
+            if(!(p instanceof packets.StatusPacket))
+                hideGroupCreateBox();
+        });
+        (util.elmById("group-join-code") as HTMLInputElement).value = "";
     }
+    util.elmById("group-join-ok").onclick = (e) => _join_group();
+    util.elmById("group-join-code").onkeydown = (e) => { if(e.keyCode === 13) _join_group(); }
 
     // Group settings
     const groupNameChange = util.elmById("group-name-change") as HTMLInputElement;
