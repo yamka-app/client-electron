@@ -470,6 +470,8 @@ export function createChannelButton(id: number, clickCb:
     return elm;
 }
 
+// @ts-ignore
+const colorThief = new ColorThief();
 // Creates a group panel
 export function createGroupPanel(id: number) {
     const group = window.entityCache[id] as entities.Group;
@@ -550,6 +552,16 @@ export function createGroupPanel(id: number) {
         new context.Separator(),
         new context.ButtonEntry("Copy ID", clipboard.writeText, [`${id}`])
     ]);
+
+    // Totally not inspired by the Spotify home page
+    icon.onload = () => {
+        const [r, g, b] = colorThief.getColor(icon);
+        const dominant = `rgb(${r}, ${g}, ${b})`;
+        panel.onmouseover = () =>
+            util.elmById("group-panel-area").style.backgroundColor = dominant;
+        panel.onmouseout = () =>
+            util.elmById("group-panel-area").style.backgroundColor = "";
+    };
 
     return panel;
 }
