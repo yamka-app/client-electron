@@ -25,6 +25,7 @@ import * as domMsgUtil          from "./dom_util/msg_util.js";
 import * as layout              from "./dom_util/layout.js";
 import * as notif               from "./dom_util/notif.js";
 import * as accountSelector     from "./dom_util/account_selector.js";
+import * as popups              from "./popups.js";
 import { configGet, configSet } from "./settings.js";
 import { commit }               from "./_git_commit.js";
 
@@ -597,7 +598,6 @@ function _rendererFunc() {
                         && [window.viewingChan, window.voiceChan].includes(entity.id))
                     updateVoiceMembers(entity.id);
 
-                console.log(window.userDm);
                 if(packet.spontaneous && entity instanceof entities.Message
                         && (entity.channel !== window.viewingChan || !document.hasFocus())
                         && shouldReceiveNotif(Object.keys(window.userDm).includes(`${entity.channel}`))) {
@@ -1008,18 +1008,6 @@ function _rendererFunc() {
         util.triggerDisappear(util.elmById("mfa-qr-banner"), true)
     };
 
-    // Floaty stuffs closing
-    document.onkeydown = (e) => {
-        if (e.keyCode === 27) {
-            domUtil.hideProfile();
-            hideUserSettings();
-            domUtil.hideFloatingMessage();
-            domUtil.hideFloatingImage();
-            hideGroupCreateBox();
-            hideGroupSettings();
-        }
-    }
-
     // Add listeners to self status selectors
     // We can"t query multiple sections and just iterate them :(
     util.elmById("self-status-offline").addEventListener("click", (e) => setSelfStatus(0));
@@ -1196,6 +1184,14 @@ function _rendererFunc() {
                     fileProgressBar.value = progress;
                 }, (enc) => encKey = enc, window.viewingGroup === 0);
             });
+        } else if (e.keyCode === 27) {
+            domUtil.hideProfile();
+            domUtil.hideFloatingMessage();
+            domUtil.hideFloatingImage();
+            popups.closeAll();
+            hideUserSettings();
+            hideGroupCreateBox();
+            hideGroupSettings();
         }
     }
     util.elmById("message-code-section-button").onclick = (e) => {

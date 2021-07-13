@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+var popups: [HTMLElement, HTMLElement][] = [];
+
 export function create(x: number, y: number, menuElm: HTMLElement) {
     // this image is only used to trigger an "onload"
     const loadImg = document.createElement("img");
@@ -44,7 +46,14 @@ export function createWrapper(x: number, y: number, menuElm: HTMLElement) {
     background.onclick = (e) => {
         menuElm.remove();
         background.remove();
+        popups = popups.filter(x => x !== [background, menuElm]);
     };
+    popups.push([background, menuElm]);
 
     document.body.appendChild(background);
+}
+
+export function closeAll() {
+    popups.forEach(([x, y]) => { x.remove(); y.remove(); });
+    popups = [];
 }
