@@ -414,9 +414,8 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
     // Pending in users (add an accept button)
     if(special === "pending-in") {
         const friendAcceptBtn = document.createElement("button");
-        friendAcceptBtn.classList.add("hover-show-button");
-        friendAcceptBtn.classList.add("icon-button");
-        friendAcceptBtn.classList.add("friend-accept-button");
+        friendAcceptBtn.classList.add("hover-show-button", "icon-button",
+                "cg-button", "friend-accept-buttom");
         friendAcceptBtn.onclick = (e) => {
             yGlobal.sendPacket(new packets.ContactsManagePacket(packets.ContactType.FRIEND,
                 packets.ContactAction.ADD, id));
