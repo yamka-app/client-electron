@@ -30,7 +30,6 @@
     flex-direction: row;
     align-items:    center;
 
-    width: 150px;
     padding: 5px;
     margin:  5px;
 }
@@ -42,6 +41,11 @@
 }
 #voice-members > div > span {
     margin: 0 5px;
+
+    white-space:   nowrap;
+    text-overflow: ellipsis;
+    overflow:      hidden;
+    max-width:     100px;
 }
 #voice-members > div > img:not(:nth-child(1)) {
     width:  16px;
