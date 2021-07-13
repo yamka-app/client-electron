@@ -9,7 +9,7 @@ import tmp       from "tmp";
 import path      from "path";
 import tls       from "tls";
 import fs        from "fs";
-import resizer   from "node-image-resizer";
+import sharp     from "sharp";
 // import sslkeylog from "sslkeylog";
 
 import DataTypes                       from "./protocol/dataTypes";
@@ -255,16 +255,15 @@ function webprotData(bytes: Buffer) {
             return;
         } else if(packet.status == packets.StatusCode.START_UPLOADING) {
             const state = sweet.upStates[packet.replyTo];
-            const stream = state.stream as fs.ReadStream;
-            const bytesTotal = fs.statSync(state.path).size;
             // Send data in chunks
+            const stream = fs.createReadStream(state.path);
             stream.on("data", (chunk: Buffer) => {
                 const bytesRead = stream.bytesRead;
                 const dataPacket = new packets.FileDataChunkPacket(bytesRead, chunk);
                 dataPacket.replyTo = packet.seq;
                 webprotSendPacket(dataPacket);
                 ipcSend({ type: "webprot.trigger-reference", reason: "upload-progress", reference: state.ref2,
-                    args: [bytesRead, bytesTotal] });
+                    args: [bytesRead, state.length] });
             });
             return;
         }
@@ -497,28 +496,37 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
                     ipcSend({ type: "webprot.trigger-reference", reason: "upload-keyhash", reference: ref2,
                         args: [keyhash] });
                 }
-                const stream = fs.createReadStream(actualPath); // the renderer actually sends the path here
-                sweet.upStates[seq] = { path: actualPath, stream: stream, ref: ref, ref2: ref2 };
+                sweet.upStates[seq] = { path: actualPath, ref: ref, ref2: ref2, length: entity.length };
                 encodeAndSend();
             };
 
             // if the renderer asked us to scale the image down, do exactly that
             if(entity.__scale) {
-                resizer(entity.path, {
-                    all: undefined,
-                    versions: [{
-                        path:       tmpDir + '/',
-                        quality:    100,
-                        width:      128,
-                        height:     128,
-                        prefix:     undefined,
-                        suffix:     undefined,
-                        contrast:   undefined,
-                        brightness: undefined,
-                        normalize:  undefined
-                    }]
-                }).then((paths: string[]) =>
-                    setTimeout(proceed, 50, paths[0])); // jank level 100 here
+                // resizer(entity.path, {
+                //     all: undefined,
+                //     versions: [{
+                //         path:       tmpDir + '/',
+                //         quality:    100,
+                //         width:      128,
+                //         height:     128,
+                //         prefix:     undefined,
+                //         suffix:     undefined,
+                //         contrast:   undefined,
+                //         brightness: undefined,
+                //         normalize:  undefined
+                //     }]
+                // }).then(([resPath]) => setTimeout(() => { // jank level 100 here
+                //     entity.length = fs.statSync(resPath).size;
+                //     proceed(resPath);
+                // }, 50));
+                const resizedPath = path.join(tmpDir, "_ava_temp.png");
+                sharp(entity.path)
+                    .resize(128, 128)
+                    .toFile(resizedPath)
+                    .then((data: any) => {
+                        entity.length = fs.statSync(resizedPath).size;
+                        proceed(resizedPath);
+                    });
             } else {
                 proceed(entity.path);
             }
@@ -530,7 +538,7 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
     encodeAndSend();
 }
 
-function ipcSend(data) {
+function ipcSend(data: any) {
     if(mainWindow?.isDestroyed() === false)
         mainWindow.webContents.send("message", data);
 }

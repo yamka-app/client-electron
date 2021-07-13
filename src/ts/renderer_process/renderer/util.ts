@@ -249,8 +249,8 @@ export function readableFileSize(fileSize: number): string {
 }
 
 export function upload(filePath: string, onEnd: (id: number) => any,
-            onProgressMade?: (p: number, m: number) => any,
-            onEncryptionKey?: (keyhash: string) => any,
+            onProgressMade: (p: number, m: number) => any = (p, m) => null,
+            onEncryptionKey: (keyhash: string) => any = (k) => null,
             encrypt: boolean = true, scale: boolean = false) {
     const file = new entities.File();
     file.id = 0; file.length = fs.statSync(filePath).size;
