@@ -7,14 +7,15 @@ import OpusScript from "opusscript";
 import stream     from "stream";
 import DataTypes  from "./dataTypes";
 import Speaker    from "speaker";
+import { createWriteStream } from "fs";
 
 export const OPUS_SET_BITRATE_REQUEST = 4002;
 
 export const TASTY_PORT         = 1747;
-export const TASTY_BITRATE      = 32000;
+export const TASTY_BITRATE      = 16000;
 export const TASTY_SAMPLE_RATE  = 16000;
 export const TASTY_CHANNELS     = 1;
-export const TASTY_FRAME_LENGTH = 640;
+export const TASTY_FRAME_LENGTH = 160;
 
 export class TastyEncoderStats {
     frameRate:        number;
@@ -28,7 +29,6 @@ export class TastyEncoderStats {
 export default class TastyClient {
     private sock:    dgram.Socket;
     private key:     KeyObject;
-    private iv:      Buffer;
     private session: Buffer;
 
     private micStream:         MemoryStream;        
@@ -41,10 +41,9 @@ export default class TastyClient {
 
     constructor(keyCreated: (key: Buffer) => void) {
         const kb = crypto.randomBytes(128 / 8);
-        this.iv  = crypto.randomBytes(128 / 8);
         this.key = crypto.createSecretKey(kb);
 
-        keyCreated(Buffer.concat([kb, this.iv]));
+        keyCreated(kb);
     }
 
     finish(addr: string, session: Buffer, finished: () => void, statCb: (stats: TastyEncoderStats) => void) {
@@ -76,12 +75,15 @@ export default class TastyClient {
 
     private encrypt(data: Buffer) {
         // we create a new cipher each time because some packets may be lost because of UDP
-        const cipher = crypto.createCipheriv("aes-128-ctr", this.key, this.iv);
-        return cipher.update(data);
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipheriv("aes-128-ctr", this.key, iv);
+        return Buffer.concat([iv, cipher.update(data)]);
     }
 
     private decrypt(data: Buffer) {
-        const decipher = crypto.createDecipheriv("aes-128-ctr", this.key, this.iv);
+        const iv = data.slice(0, 16);
+        data = data.slice(16);
+        const decipher = crypto.createDecipheriv("aes-128-ctr", this.key, iv);
         return decipher.update(data);
     }
 
