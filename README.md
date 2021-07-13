@@ -14,14 +14,6 @@
 :construction: Both the client the back end are in their aplha stage right now. :construction:\
 Latest version: **0.7.3**
 
-## Committing code
-Please sign your commits. It is really easy to set up. This would be very nice, but you don't have to do it if you don't want to.
-
-## Disclosing security vulnerabilities
-Please disclose security vulnerabilities responsively. E-Mail me (`portasynthinca3@gmail.com`) about any security vulnerabilities. You should expect a response within 48 hours, though I will try to reply within 12 hours. If I do not reply within a week though, feel free to disclose it publicly.
-
-I will receive your report and do my best to mitigate the vulnerability. Feel free to disclose it two weeks after the patch has been pushed to master if it's client-related, or immediately after me saying it's fixed if it's backend-related. Thank you.
-
 ## Build
 Do `npm start` to run the app without producing any artifacts:
 ```sh
@@ -41,3 +33,18 @@ npm run dist
 
 ## Or download binaries
 [...on our website](https://yamka.app/download)
+
+## Credits
+  - End-to-End Encryption scheme invented by [Signal](https://www.signal.org/docs)
+  - Icons by [Icons8](https://icons8.com)
+  - [Twemoji](https://twemoji.twitter.com) by Twitter
+  - Montserrat by the Montserrat Project authors
+  - Noto Sans by Google
+  - [JetBrains Mono](https://www.jetbrains.com/lp/mono) by JetBrains
+  - `web-voice-processor.js` in `src/` by [Picovoice](https://picovoice.ai)
+  - Special thanks to:
+    - [hetyh](https://github.com/hetyh) and LukasTM for suporting the project financially
+    - [FlyingPotato_131](https://github.com/FlyingPotato-131), [hetyh](https://github.com/hetyh) and [pySAr5](https://github.com/NOTNOTsergey) for testing
+
+## Disclosing security vulnerabilities
+Please refer to our latest [security policy](https://github.com/yamka-app/legal/blob/master/SECURITY.md).

@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 // Salty (E2EE protocol)
 // Shamelessly ripped off of the Signal protocol
 // ...so please go read their docs, they pretty much apply here:
