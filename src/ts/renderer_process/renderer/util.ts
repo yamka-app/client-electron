@@ -144,6 +144,53 @@ export function idToTime(id: number): string {
     });
 }
 
+function timeStr(date: Date): {abs: boolean, val: string} {
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if(diff >= 3600 * 24) {
+        return {
+            abs: true,
+            val: date.toLocaleDateString(undefined, {
+                year:   "numeric",
+                month:  "long",
+                day:    "numeric",
+                hour:   "numeric",
+                minute: "numeric"
+            })
+        };
+    } else if(diff >= 3600) {
+        return {
+            abs: false,
+            val: Math.round(diff / 3600) + "h ago"
+        };
+    } else if(diff >= 60) {
+        return {
+            abs: false,
+            val: Math.round(diff / 60) + "m ago"
+        };
+    } else {
+        return {
+            abs: false,
+            val: diff + "s ago"
+        };
+    }
+}
+// Creates a self-updating "x <units> ago" string
+export function timeElm(id: number, prefixRel: string = "", prefixAbs: string = "", suffix: string = "") {
+    const timestamp = (BigInt(id) >> BigInt(16)) + BigInt(1577836800000);
+    const date = new Date(Number(timestamp));
+    const elm = document.createElement("span");
+    const upd = () => {
+        const {abs, val} = timeStr(date);
+        // Add a prefix dependeing on whether the function returned an absolute
+        // value or not
+        elm.innerHTML = escapeHtml((abs ? prefixAbs : prefixRel) + " " + val + " " + suffix);
+    };
+    upd();
+    setInterval(upd, 1000);
+    return elm;
+}
+
 // Gets time difference in ms
 export function timeDiff(id1: number, id2: number): number {
     if(id1 === undefined || id2 === undefined)

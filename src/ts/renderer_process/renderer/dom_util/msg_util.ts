@@ -69,9 +69,8 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
         nickname.classList.add("message-user-nickname", "user-nickname-" + msg.sender);
         nicknameContainer.appendChild(nickname);
 
-        const timeElm = document.createElement("span");
+        const timeElm = util.timeElm(msg.id, "", "", msg.states.length > 1 ? "(edited)" : "");
         timeElm.classList.add("message-time");
-        timeElm.innerHTML = util.escapeHtml("· " + util.idToTime(state.msg_id) + ((msg.states.length > 1) ? " (edited)" : ""));
         nicknameContainer.appendChild(timeElm);
     }
 
@@ -302,9 +301,8 @@ function createQuoteSection(section: types.MessageSection) {
                 replyNickname.classList.add("message-user-nickname", "user-nickname-" + replyMsg.sender);
                 replyAvaContainer.appendChild(replyNickname);
 
-                const replySaid = document.createElement("span");
+                const replySaid = util.timeElm(replyMsg.id, "said", "said on");
                 replySaid.classList.add("message-time");
-                replySaid.innerHTML = util.escapeHtml(`said on ${util.idToTime(replyMsg.id)}:`);
                 replyAvaContainer.appendChild(replySaid);
             });
         });
