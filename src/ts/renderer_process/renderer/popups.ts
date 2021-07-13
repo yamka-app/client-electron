@@ -2,7 +2,31 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import { updAgentList } from "./dom_util/dom_util.js";
+import { escapeHtml, stopPropagation } from "./util.js";
+
 var popups: [HTMLElement, HTMLElement][] = [];
+
+export function position(x: number, y: number, elm: HTMLElement, setOpacity: boolean = true) {
+    // if it won't fit on either of the axes due
+    // to its THICCness, flip it
+
+    const bw = elm.clientWidth;
+    const bh = elm.clientHeight;
+    const ww = window.innerWidth;
+    const wh = window.innerHeight;
+
+    const xright  = (x + bw) > ww;
+    const ybottom = (y + bh) > wh;
+
+    if (xright) elm.style.right  = `${ww - x}px`;
+           else elm.style.left   = `${x}px`;
+    if(ybottom) elm.style.bottom = `${wh - y}px`;
+           else elm.style.top    = `${y}px`;
+
+    if(setOpacity)
+        elm.style.opacity = "1";
+}
 
 export function create(x: number, y: number, menuElm: HTMLElement) {
     // this image is only used to trigger an "onload"
@@ -15,26 +39,7 @@ export function create(x: number, y: number, menuElm: HTMLElement) {
     menuElm.style.opacity = "0";
     menuElm.style.position = "absolute";
 
-    loadImg.onload = (e) => {
-        // calculate position of the context menu:
-        // if it won't fit on either of the axes due
-        // to its THICCness, flip it
-
-        const bw = menuElm.clientWidth;
-        const bh = menuElm.clientHeight;
-        const ww = window.innerWidth;
-        const wh = window.innerHeight;
-
-        const xright  = (x + bw) > ww;
-        const ybottom = (y + bh) > wh;
-
-        if (xright) menuElm.style.right  = `${ww - x}px`;
-               else menuElm.style.left   = `${x}px`;
-        if(ybottom) menuElm.style.bottom = `${wh - y}px`;
-               else menuElm.style.top    = `${y}px`;
-
-        menuElm.style.opacity = "1";
-    };
+    loadImg.onload = (e) => position(x, y, menuElm);
 }
 
 export function createWrapper(x: number, y: number, menuElm: HTMLElement) {
@@ -56,4 +61,28 @@ export function createWrapper(x: number, y: number, menuElm: HTMLElement) {
 export function closeAll() {
     popups.forEach(([x, y]) => { x.remove(); y.remove(); });
     popups = [];
+}
+
+export function addHoverText(elm: HTMLElement, text: string) {
+    elm.onmouseover = (e) => {
+        stopPropagation(e);
+        if(elm["hoverText"] !== undefined)
+            return;
+        elm["hoverText"] = document.createElement("div");
+        document.body.appendChild(elm["hoverText"]);
+        elm["hoverText"].classList.add("hover-text");
+        elm["hoverText"].innerHTML = escapeHtml(text);
+    };
+    elm.onmousemove = (e) => {
+        stopPropagation(e);
+        if(elm["hoverText"] !== undefined)
+            position(e.x, e.y, elm["hoverText"]);
+    };
+    elm.onmouseout = (e) => {
+        stopPropagation(e);
+        elm["hoverText"].style.opacity = 0;
+        const h = elm["hoverText"];
+        setTimeout(() => h.remove(), 200); // wait for it to fade away
+        elm["hoverText"] = undefined;
+    };
 }

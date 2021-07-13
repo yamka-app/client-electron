@@ -9,8 +9,9 @@ import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
 
-import { sendPacket } from "./yGlobal.js";
-import { configGet }  from "./settings.js";
+import { sendPacket }   from "./yGlobal.js";
+import { configGet }    from "./settings.js";
+import { addHoverText } from "./popups.js";
 
 const _modules = window["_modules"];
 
@@ -186,6 +187,7 @@ export function timeElm(id: number, prefixRel: string = "", prefixAbs: string = 
         // Add a prefix dependeing on whether the function returned an absolute
         // value or not
         elm.innerHTML = escapeHtml((abs ? prefixAbs : prefixRel) + " " + val + " " + suffix);
+        addHoverText(elm, idToTime(id));
     };
     upd();
     setInterval(upd, 1000);
