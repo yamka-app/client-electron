@@ -473,6 +473,7 @@ function _rendererFunc() {
                 case packets.StatusCode.KEY_ERROR:
                 case packets.StatusCode.INVALID_REQUEST:
                 case packets.StatusCode.EXCESSIVE_DATA:
+                case packets.StatusCode.FILE_TOO_LARGE:
                     notif.show(packet.message, "icons/ban.png", "red");
                     break;
                     
