@@ -1238,6 +1238,7 @@ function _rendererFunc() {
             hideUserSettings();
             hideGroupCreateBox();
             hideGroupSettings();
+            util.triggerDisappear(util.elmById("password-chg-box"), true);
         }
     }
     util.elmById("message-code-section-button").onclick = (e) => {
