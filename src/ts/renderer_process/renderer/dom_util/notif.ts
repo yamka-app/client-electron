@@ -20,7 +20,7 @@ export function show(text: string, img: string = "", color?: string,
     text = `<span style="color: ${textColor}">${escapeHtml(text)}</span>`;
     notif.innerHTML = (img === "" ? "" : `<img src="${img}"/>`) + text;
     // Make the image circular if it's not a builtin icon
-    if(!img.startsWith("icons/"))
+    if(!img.startsWith("icons/") && img !== "")
         notif.querySelector("img").classList.add("round");
     notif.onclick = click;
     if(click !== undefined)
