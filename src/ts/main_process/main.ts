@@ -134,7 +134,7 @@ app.on("window-all-closed", () => { windowCreated = false; });
 const webprotSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
-    version:              10,
+    version:              11,
     supportsComp:         false,
     compressionThreshold: 512,
     fileChunkSize:        1024 * 4
