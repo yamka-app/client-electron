@@ -376,7 +376,8 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
             "ContactsManagePacket":      new packets.ContactsManagePacket(),
             "InviteResolvePacket":       new packets.InviteResolvePacket(),
             "EmailConfirmationPacket":   new packets.EmailConfirmationPacket(),
-            "MFASecretPacket":           new packets.MFASecretPacket()
+            "MFASecretPacket":           new packets.MFASecretPacket(),
+            "PasswordChangePacket":      new packets.PasswordChangePacket()
         }[type];
 
         if(proto === undefined)

@@ -111,7 +111,10 @@ export enum StatusCode {
     POLL_ERROR                    = 26,
     KEY_ERROR                     = 27,
     INVALID_REQUEST               = 28,
-    EXCESSIVE_DATA                = 29
+    EXCESSIVE_DATA                = 29,
+    INVALID_CREDENTIAL            = 30,
+    PASSWORD_CHANGED              = 31,
+    MFA_TOGGLED                   = 32
 }
 export class StatusPacket extends SimpleFieldPacket {
     typeNum = 4;
@@ -321,4 +324,19 @@ export class EmailConfirmationPacket extends SimpleFieldPacket {
     code: string;
 
     constructor(code?: string) { super(); this.code = code; }
+}
+
+export class PasswordChangePacket extends SimpleFieldPacket {
+    typeNum = 22;
+
+    oldPass: string;
+    mfaCode: string;
+    newPass: string;
+
+    constructor(op?: string, mc?: string, np?: string) {
+        super();
+        this.oldPass = op;
+        this.mfaCode = mc;
+        this.newPass = np;
+    }
 }

@@ -86,6 +86,16 @@
       </div>
     </div>
 
+    <div id="password-chg-box-bg" class="darken-bg" style="display: none;">
+      <div id="password-chg-box" class="flex-col">
+        <input id="password-chg-current" placeholder="CURRENT PASSWORD" type="password"/>
+        <input id="password-chg-mfa" placeholder="2FA CODE"/>
+        <input id="password-chg-new" placeholder="NEW PASSWORD" type="password"/>
+        <button id="password-chg-ok" class="apply-button">CHANGE PASSWORD</button>
+        <button id="password-chg-cancel">CANCEL</button>
+      </div>
+    </div>
+
     <div id="profile-bg" class="darken-bg" style="display: none;">
       <div id="profile">
         <div id="profile-topbar" class="flex-row">
@@ -282,6 +292,9 @@
                     <span id="self-mfa-enable-status">DISABLED</span>
                   </span>
                   <button id="self-mfa-toggle-button" class="danger-button">ENABLE 2FA</button>
+                </div>
+                <div class="self-profile-setting-input-container">
+                  <button id="self-password-change-button" class="danger-button">CHANGE PASSWORD</button>
                 </div>
               </div>
             </div>
@@ -590,10 +603,6 @@
                     <!-- Messages reside here -->
                     <div id="message-area-header" style="display: none">
                       <p>You've reached the start of this channel</p>
-                    </div>
-                    <div id="message-area-explainer">
-                      <p>It's quite quiet here...</p>
-                      <p>Find a few friends, click on them in the right bar and have a chat!</p>
                     </div>
                   </div>
                 </div>

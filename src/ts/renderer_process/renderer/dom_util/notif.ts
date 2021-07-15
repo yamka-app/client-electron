@@ -11,14 +11,14 @@ function foreground(color: string) {
     return `${color}-foreground`;
 }
 
-export function show(text: string, img?: string, color?: string,
+export function show(text: string, img: string = "", color?: string,
         click?: () => any, progress: boolean = false) {
     if(color == undefined) color = "background";
     const textColor = `var(--${foreground(color)})`;
 
     const notif = document.createElement("div");
     text = `<span style="color: ${textColor}">${escapeHtml(text)}</span>`;
-    notif.innerHTML = (img === undefined ? "" : `<img src="${img}"/>`) + text;
+    notif.innerHTML = (img === "" ? "" : `<img src="${img}"/>`) + text;
     // Make the image circular if it's not a builtin icon
     if(!img.startsWith("icons/"))
         notif.querySelector("img").classList.add("round");

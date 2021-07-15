@@ -332,6 +332,7 @@ input[type="radio"].settings-radio:checked + label {
 #group-create-box,
 #group-delete-box,
 #floating-box,
+#password-chg-box,
 #update-popup {
     z-index:  2500;
     position: fixed;
@@ -381,6 +382,7 @@ input[type="radio"].settings-radio:checked + label {
     padding:          unset;
     backdrop-filter:  unset;
 }
+#password-chg-box,
 #group-create-box {
     width: 300px;
 }

@@ -457,8 +457,14 @@ function _rendererFunc() {
                     break;
 
                 case packets.StatusCode.LOGIN_ERROR:
+                    (util.elmById("login-password") as HTMLInputElement).value = "";
+                    (util.elmById("login-mfa-code") as HTMLInputElement).value = "";
                 case packets.StatusCode.SIGNUP_ERROR:
                     (util.elmById("signup-password") as HTMLInputElement).value = "";
+                case packets.StatusCode.INVALID_CREDENTIAL:
+                    (util.elmById("password-chg-current") as HTMLInputElement).value = "";
+                    (util.elmById("password-chg-mfa") as HTMLInputElement).value = "";
+                    (util.elmById("password-chg-new") as HTMLInputElement).value = "";
                 case packets.StatusCode.RATE_LIMITING:
                 case packets.StatusCode.INVALID_USERNAME:
                 case packets.StatusCode.INVALID_INVITE:
@@ -469,6 +475,13 @@ function _rendererFunc() {
                 case packets.StatusCode.EXCESSIVE_DATA:
                     notif.show(packet.message, "icons/ban.png", "red");
                     break;
+                    
+                case packets.StatusCode.PASSWORD_CHANGED:
+                    (util.elmById("password-chg-current") as HTMLInputElement).value = "";
+                    (util.elmById("password-chg-mfa") as HTMLInputElement).value = "";
+                    (util.elmById("password-chg-new") as HTMLInputElement).value = "";
+                    util.triggerDisappear(util.elmById("password-chg-box"), true);
+                case packets.StatusCode.MFA_TOGGLED:
                 case packets.StatusCode.FRIEND_REQUEST_SENT:
                     notif.show(packet.message, "icons/approve.png", "green");
                     break;
@@ -1015,6 +1028,21 @@ function _rendererFunc() {
     util.elmById("self-mfa-toggle-button").onclick = (evt) => {
         // Disable it if enabled, enable if disabled
         setSelfMfaStatus(!remote.getGlobal("sweet").self.mfaEnabled);
+    };
+
+    // Chnaging the password
+    util.elmById("self-password-change-button").onclick = (evt) => {
+        util.triggerAppear(util.elmById("password-chg-box"), true);
+        util.setElmVisibility(util.elmById("password-chg-mfa"), self().mfaEnabled);
+    }
+    util.elmById("password-chg-cancel").onclick = (evt) =>
+        util.triggerDisappear(util.elmById("password-chg-box"), true);
+    util.elmById("password-chg-ok").onclick = (evt) => {
+        sendPacket(new packets.PasswordChangePacket(
+            (util.elmById("password-chg-current") as HTMLInputElement).value,
+            (util.elmById("password-chg-mfa") as HTMLInputElement).value,
+            (util.elmById("password-chg-new") as HTMLInputElement).value
+        ));
     };
 
     // 2FA floating box closing
