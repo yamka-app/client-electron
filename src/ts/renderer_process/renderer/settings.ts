@@ -10,7 +10,7 @@ const escapeHtml = _modules.escapeHtml;
 
 // Default settings
 const defaultSettings = [
-    { name: "accentColor",   value: "#fa3c1b"         },
+    { name: "accentColor",   value: "#f50f54"         },
     { name: "fontSize",      value: 9                 },
     { name: "customTheme",   value: false             },
     { name: "theme",         value: "themes/dark.css" },
