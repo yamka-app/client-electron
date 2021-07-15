@@ -466,8 +466,8 @@ function createMessageActionBar(id: number): HTMLDivElement {
     // The set of all message action buttons
     const msg = new entities.Message();
     msg.id = id; msg.sender = 0;
-    const buttons: {icon: string, selfOnly: boolean, onclick: (this: GlobalEventHandlers, ev: MouseEvent) => any}[] = [
-        { icon: "reply", selfOnly: false, onclick: (e) => {
+    const buttons = [
+        { icon: "reply", selfOnly: false, dmPrevent: false, onclick: (e) => {
             const sectionId = window.msgSections.length
             createInputSection(types.MessageSectionType.QUOTE, sectionId, () => {
                 removeInputSection(sectionId);
@@ -479,15 +479,17 @@ function createMessageActionBar(id: number): HTMLDivElement {
                     = util.messageSummary(window.entityCache[id]);
             util.adjTaHeight(window.msgSections[sectionId].typeElm as HTMLTextAreaElement);
         } },
-        { icon: "delete",  selfOnly: true,  onclick: (e) => util.putEntities([msg]) },
-        { icon: "edit",    selfOnly: true,  onclick: (e) => editMessage(id) },
-        { icon: "history", selfOnly: false, onclick: (e) => domUtil.showMessageHistory(id, e.clientX, e.clientY) }
+        { icon: "delete",  selfOnly: true,  dmPrevent: true, onclick: (e) => util.putEntities([msg]) },
+        { icon: "edit",    selfOnly: true,  dmPrevent: true, onclick: (e) => editMessage(id) },
+        { icon: "history", selfOnly: false, dmPrevent: true, onclick: (e) => domUtil.showMessageHistory(id, e.clientX, e.clientY) }
     ];
 
     for(const btnDesc of buttons) {
-        // Don"t add "self-only" buttons to messages not sent by self
-        const sentBySelf = window.entityCache[id].sender === remote.getGlobal("sweet").self.id
-        if((btnDesc.selfOnly && sentBySelf) || !btnDesc.selfOnly) {
+        // Don"t add "self-only" buttons to messages not sent by us
+        // dmPrevent is temporary
+        const sentByUs = window.entityCache[id].sender === remote.getGlobal("sweet").self.id;
+        const sentInDm = viewingGroup === 0;
+        if(!(btnDesc.selfOnly && !sentByUs) && !(btnDesc.dmPrevent && sentInDm)) {
             const btn = document.createElement("button");
             btn.classList.add("icon-button", "cg-button");
             btn.onclick = btnDesc.onclick;
