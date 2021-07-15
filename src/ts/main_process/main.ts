@@ -2,14 +2,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import { app, BrowserWindow, Tray, Menu, ipcMain } from "electron";
+import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage } from "electron";
 import { initialize as remoteInit } from "@electron/remote/main";
 import zlib      from "zlib";
 import tmp       from "tmp";
 import path      from "path";
 import tls       from "tls";
 import fs        from "fs";
-import sharp     from "sharp";
 // import sslkeylog from "sslkeylog";
 
 import DataTypes                       from "./protocol/dataTypes";
@@ -488,49 +487,29 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
                 continue;
 
             const seq = packet.seq;
-            const proceed = (p) => {
-                // Encrypt the file if the renderer asked for it
-                var actualPath = p;
-                if(entity.__encryptToChan !== undefined) {
-                    const [encPath, keyhash] = sweet.salty.encryptFile(p);
-                    actualPath = encPath;
-                    ipcSend({ type: "webprot.trigger-reference", reason: "upload-keyhash", reference: ref2,
-                        args: [keyhash] });
-                }
-                sweet.upStates[seq] = { path: actualPath, ref: ref, ref2: ref2, length: entity.length };
-                encodeAndSend();
-            };
 
-            // if the renderer asked us to scale the image down, do exactly that
+            // If the renderer asked us to scale the image down, do exactly that
+            var actualPath = entity.path;
             if(entity.__scale) {
-                // resizer(entity.path, {
-                //     all: undefined,
-                //     versions: [{
-                //         path:       tmpDir + '/',
-                //         quality:    100,
-                //         width:      128,
-                //         height:     128,
-                //         prefix:     undefined,
-                //         suffix:     undefined,
-                //         contrast:   undefined,
-                //         brightness: undefined,
-                //         normalize:  undefined
-                //     }]
-                // }).then(([resPath]) => setTimeout(() => { // jank level 100 here
-                //     entity.length = fs.statSync(resPath).size;
-                //     proceed(resPath);
-                // }, 50));
                 const resizedPath = path.join(tmpDir, "_ava_temp.png");
-                sharp(entity.path)
-                    .resize(128, 128)
-                    .toFile(resizedPath)
-                    .then((data: any) => {
-                        entity.length = fs.statSync(resizedPath).size;
-                        proceed(resizedPath);
-                    });
-            } else {
-                proceed(entity.path);
+                const img = nativeImage.createFromPath(entity.path);
+                img.resize({ width: 128, height: 128 });
+                fs.writeFileSync(resizedPath, img.toPNG());
+                actualPath = resizedPath;
             }
+            
+            // Encrypt the file if the renderer asked for it
+            if(entity.__encryptToChan !== undefined) {
+                const [encPath, keyhash] = sweet.salty.encryptFile(actualPath);
+                actualPath = encPath;
+                ipcSend({ type: "webprot.trigger-reference", reason: "upload-keyhash", reference: ref2,
+                    args: [keyhash] });
+            }
+            entity.length = fs.statSync(actualPath).size;
+            sweet.upStates[seq] = { path: actualPath, ref: ref, ref2: ref2,
+                length: entity.length };
+
+            encodeAndSend();
 
             return;
         }

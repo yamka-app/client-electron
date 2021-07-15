@@ -1,7 +1,7 @@
 {
   "name": "yamka",
   "productName": "Yamka",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Yet Another (secure) Messenger with powerful features",
   "main": "src/js/commonjs/main.js",
   "scripts": {
@@ -49,7 +49,6 @@
     "remark": "^13.0.0",
     "remark-emoji": "^2.2.0",
     "remark-gemoji-to-emoji": "^1.1.0",
-    "sharp": "^0.28.3",
     "smoothscroll-polyfill": "^0.4.4",
     "speaker": "^0.5.3",
     "tinycolor2": "^1.4.2",
