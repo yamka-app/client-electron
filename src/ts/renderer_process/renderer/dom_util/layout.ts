@@ -141,7 +141,7 @@ export function updMessageArea(updMessages: boolean =true) {
         const msgArea = util.elmById("message-area");
         for(var i = msgArea.children.length - 1; i >= 0; i--) {
             const child = msgArea.children[i];
-            if(child.id != "message-area-header")
+            if(child.id !== "message-area-header")
                 child.remove();
         }
         return;
@@ -268,7 +268,7 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
             if(clear) {
                 for(var i = msgArea.children.length - 1; i >= 0; i--) {
                     const child = msgArea.children[i];
-                    if(child.id != "message-area-header")
+                    if(child.id !== "message-area-header")
                         child.remove();
                 }
             }

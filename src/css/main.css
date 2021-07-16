@@ -993,17 +993,16 @@ span.fg-1 {
     justify-items:  flex-end;
 }
 
-#message-area-header,
-#message-area-explainer {
-    padding: 10px;
-    margin:  10px;
+#message-area-header {
+    padding:    10px;
+    margin:     10px;
+    text-align: center;
 
-    background: var(--background);
-    border-radius:    10px;
-    box-shadow: var(--shadow);
+    background:    var(--background);
+    border-radius: 10px;
+    box-shadow:    var(--shadow);
 }
-#message-area-header p,
-#message-area-explainer p {
+#message-area-header p {
     font-family: Montserrat, sans-serif;
 }
 
