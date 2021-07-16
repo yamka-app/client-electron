@@ -17,10 +17,10 @@
     --green-trans:  #2ac02a90;
     --rainbow-grad: linear-gradient(90deg, #fa1b1b, #fab31b);
     
-    --background:       #131519;
-    --background-trans: #131519af;
-    --bg-2:             #15171c;
-    --bg-3:             #20242b;
+    --background:       #16171a;
+    --background-trans: #16171aaf;
+    --bg-2:             #18191d;
+    --bg-3:             #1d1e22;
 
     --red-foreground:    #efefef;
     --yellow-foreground: #242424;
@@ -29,7 +29,7 @@
     --foreground-1:      #a7a7a7;
     --foreground-2:      #979797;
 
-    --shadow:        0 0 8px #11111167;
+    --shadow: 0 0 16px #111111a8;
 
     --darken-icon: 0%;
 }

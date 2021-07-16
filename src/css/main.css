@@ -787,9 +787,9 @@ input[type="color"] {
     margin:  0 12px 20px 12px;
     padding: 10px;
 
-    border-radius:    10px;
-    background: var(--background);
-    box-shadow: var(--shadow);
+    border-radius: 10px;
+    background:    var(--bg-2);
+    box-shadow:    var(--shadow);
 }
 
 textarea.message-input {
