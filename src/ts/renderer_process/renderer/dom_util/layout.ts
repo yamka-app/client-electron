@@ -164,8 +164,7 @@ export function updMessageArea(updMessages: boolean =true) {
         // Show the list of people that are typing
         const typingElm  = util.elmById("channel-typing");
         const typingAnim = util.elmById("typing-dots");
-        // const typing = channel.typing.filter(x => x !== remote.getGlobal("sweet").self.id);
-        const typing = channel.typing;
+        const typing = channel.typing.filter(x => x !== remote.getGlobal("sweet").self.id);
         util.reqEntities(typing.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {
             var content = "";
             const verb = (typing.length === 1) ? "is" : "are";
