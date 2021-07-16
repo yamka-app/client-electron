@@ -548,16 +548,6 @@ export function createGroupPanel(id: number) {
         new context.ButtonEntry("Copy ID", clipboard.writeText, [`${id}`])
     ]);
 
-    // Totally not inspired by the Spotify home page
-    icon.onload = () => {
-        const [r, g, b] = colorThief.getColor(icon);
-        const dominant = `rgb(${r}, ${g}, ${b})`;
-        panel.onmouseover = () =>
-            util.elmById("group-panel-area").style.backgroundColor = dominant;
-        panel.onmouseout = () =>
-            util.elmById("group-panel-area").style.backgroundColor = "";
-    };
-
     return panel;
 }
     

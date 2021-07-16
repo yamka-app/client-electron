@@ -13,8 +13,7 @@
     
     padding: 10px;
 
-    background-image: linear-gradient(var(--background-trans), var(--background));
-    transition:       background-color 1s ease;
+    background: var(--background);
 }
 
 .group-panel,

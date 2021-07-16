@@ -204,7 +204,6 @@ export function updGroupList() {
 
 // Updates the layout: member list, messages, etc.
 export function updLayout() {
-    util.elmById("group-panel-area").style.backgroundColor = "";
     console.log("Updating layout, gId=" + window.viewingGroup + ", cId=" + window.viewingChan + ", cgId=" + window.viewingContactGroup);
 
     updMemberList();
