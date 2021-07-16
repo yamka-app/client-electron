@@ -880,7 +880,7 @@ textarea.code-input {
 
 .mention {
     padding:       3px;
-    border-radius: 6px;
+    border-radius: 10px;
     background:    var(--accent-grad-trans);
     color:         var(--accent-foreground);
 
