@@ -394,6 +394,12 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
                 packets.ContactAction.REMOVE, id));
             util.stopPropagation(e);
         });
+        layout.addHint(friendRemoveBtn, {
+            "friend":      "Remove friend",
+            "pending-in":  "Deny friend request",
+            "pending-out": "Cancel friend request",
+            "blocked":     "Unblock",
+        }[special]);
         elm.appendChild(friendRemoveBtn);
 
         const friendRemoveImg = document.createElement("img");
@@ -410,6 +416,7 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
                 packets.ContactAction.ADD, id));
             util.stopPropagation(e);
         };
+        layout.addHint(friendAcceptBtn, "Accept friend request");
         elm.appendChild(friendAcceptBtn);
 
         const friendAcceptImg = document.createElement("img");

@@ -400,6 +400,10 @@ export function showE2eeInfo(ev: MouseEvent) {
     popups.createWrapper(ev.x, ev.y, div);
 }
 
+export function addHint(elm: HTMLElement, hint: string) {
+    elm.setAttribute("x-hint", hint);
+    popups.addHoverText(elm, hint);
+}
 export function addHints() {
     const elms = document.querySelectorAll("[x-hint]");
     for(const elm of elms)
