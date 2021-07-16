@@ -37,7 +37,7 @@
 }
 
 .e2ee-info > code {
-    font-family:      monospace;
+    font-family:      JetBrainsMono;
     background-color: var(--bg-3);
     border-radius:    5px;
     padding:          5px;
