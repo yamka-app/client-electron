@@ -850,16 +850,6 @@ function _rendererFunc() {
                 util.elmById("voice-status").innerHTML = escapeHtml(arg.status === "disconnected"
                     ? "" : `VOICE: ${arg.status.toUpperCase()}`);
                 break;
-
-            case "tasty.stats":
-                const stats: tasty.TastyEncoderStats = arg.stats;
-                util.elmById("voice-encoder-stats").title
-                    = `Effective compression ratio: ${(stats.compressionRatio * 100).toFixed(0)}%\n`
-                    + `Frame rate: ${stats.frameRate}\n`
-                    + `Bit rate: ${stats.bitRate}\n`
-                    + `Key length: ${stats.keySize}\n`
-                    + `Channels: ${stats.channels === 2 ? "stereo" : "mono"}`;
-                break;
         }
     }
     ipcRenderer.on("message", ipcRecv)
@@ -1439,6 +1429,8 @@ function _rendererFunc() {
     notif.show("Editing and deleting messages in DMs is not "
              + "supported. Direct calls are not end-to-end "
              + "encrypted.", undefined, "yellow");
+
+    layout.addHints();
 }
 
 window.addEventListener("load", _rendererFunc);

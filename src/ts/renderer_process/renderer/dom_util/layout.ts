@@ -399,3 +399,9 @@ export function showE2eeInfo(ev: MouseEvent) {
     div.onclick = (e) => util.stopPropagation(e);
     popups.createWrapper(ev.x, ev.y, div);
 }
+
+export function addHints() {
+    const elms = document.querySelectorAll("[x-hint]");
+    for(const elm of elms)
+        popups.addHoverText(elm as HTMLElement, elm.getAttribute("x-hint"));
+}

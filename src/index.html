@@ -99,7 +99,7 @@
     <div id="profile-bg" class="darken-bg" style="display: none;">
       <div id="profile">
         <div id="profile-topbar" class="flex-row">
-          <img id="profile-avatar" class="user-avatar-huge"/>
+          <img id="profile-avatar" class="user-avatar-huge" x-hint="Click to open user settings"/>
           <div class="flex-col">
             <div id="profile-nickname-container" class="flex-row">
               <span id="profile-nickname" class="user-nickname">nickname</span>
@@ -138,7 +138,8 @@
       <span id="update-popup-text">OLD → NEW</span>
 
       <button id="update-popup-upd" class="accent-button fill-width" style="margin-top: 20px;">UPDATE</button>
-      <button id="update-popup-ign" class="              fill-width" style="margin-top: 20px;">IGNORE</button>
+      <button id="update-popup-ign" class="fill-width"
+        style="margin-top: 20px;" x-hint="Older clients may be rejected in the future">IGNORE</button>
     </div>
 
     <div id="message-history-bg" class="popup-bg" style="display: none;">
@@ -247,15 +248,14 @@
                         <span>
                           <img src="./icons/focus.png"/>
                           <input id= "self-status-focus" type="radio" name="self-status-sel" class="hidden-radio"/>
-                          <label for="self-status-focus" class="status-sel">FOCUSED</label>
+                          <label for="self-status-focus" class="status-sel" x-hint="You are only going to receive DM notifications">FOCUSED</label>
                         </span>
                         <span>
                           <img src="./icons/dnd.png"/>
                           <input id= "self-status-dnd" type="radio" name="self-status-sel" class="hidden-radio"/>
-                          <label for="self-status-dnd" class="status-sel">DO NOT DISTURB</label>
+                          <label for="self-status-dnd" class="status-sel" x-hint="You are not going to receive any notifications">DO NOT DISTURB</label>
                         </span>
                       </span>
-                      <span id="self-status-explainer">Status explainer</span>
 
                       <div class="self-profile-setting-input-container">
                         STATUS TEXT
@@ -424,7 +424,7 @@
                       <input id="en-sslkeylog" type="checkbox"/>
                       <span class="slider round"></span>
                     </label>
-                    <span>ENABLE TLS KEY LOGGING (read docs, major security hole!)</span>
+                    <span x-hint="Disabled temporarily">ENABLE TLS KEY LOGGING (read docs, major security hole!)</span>
                   </div>
                   <!--
                   <div class="self-profile-setting-input-container">
@@ -564,7 +564,9 @@
           <td id="channel-list-sidebar">
             <div id="channel-list-container" class="flex-col">
               <div id="channel-list-header" class="flex-row">
-                <button id="group-leave" class="icon-button cg-button"><img src="icons/leave.png"/></button>
+                <button id="group-leave" class="icon-button cg-button" x-hint="Leave the group forever">
+                  <img src="icons/leave.png"/>
+                </button>
                 <span id="group-name"></span>
               </div>
               <div class="scroll-area">
@@ -588,12 +590,12 @@
               <div id="message-container-area" class="flex-col">
                 <div id="message-area-title">
                   <div class="flex-row">
-                    <button id="message-area-leave" class="icon-button cg-button"><img src="icons/leave.png"></button>
-                    <button id="message-area-e2ee" class="icon-button"><img src="icons/e2ee.png"></button>
-                    <button id="message-area-voice" class="icon-button cg-button"><img src="icons/voice.png"></button>
-                    <abbr id="voice-encoder-stats"><span id="voice-status"></span></abbr>
+                    <button id="message-area-leave" class="icon-button cg-button" x-hint="Go to the main screen"><img src="icons/leave.png"></button>
+                    <button id="message-area-e2ee" class="icon-button" x-hint="Encryption info"><img src="icons/e2ee.png"></button>
+                    <button id="message-area-voice" class="icon-button cg-button" x-hint="Join voice"><img src="icons/voice.png"></button>
+                    <span id="voice-status"></span>
                     <button id="message-area-voice-disconnect" class="icon-button cg-button" style="display:none">
-                      <img src="icons/disconnect.png"></button>
+                      <img src="icons/disconnect.png" x-hint="Leave voice"></button>
                   </div>
                   <div id="voice-members">
                   </div>
@@ -611,11 +613,11 @@
                   <div id="message-input-container" class="input-container">
                     <!-- Message sections reside here -->
                     <div id="message-section-add-btns" class="flex-row">
-                      <button id="message-text-section-button"  class="icon-button cg-button"><img src="icons/add_text.png"></button>
-                      <button id="message-file-section-button"  class="icon-button cg-button"><img src="icons/add_file.png"></button>
-                      <button id="message-code-section-button"  class="icon-button cg-button"><img src="icons/add_code.png"></button>
-                      <button id="message-quote-section-button" class="icon-button cg-button"><img src="icons/add_quote.png"></button>
-                      <button id="message-poll-section-button"  class="icon-button cg-button"><img src="icons/add_poll.png"></button>
+                      <button id="message-text-section-button"  class="icon-button cg-button" x-hint="Add text" ><img src="icons/add_text.png"></button>
+                      <button id="message-file-section-button"  class="icon-button cg-button" x-hint="Add file" ><img src="icons/add_file.png"></button>
+                      <button id="message-code-section-button"  class="icon-button cg-button" x-hint="Add code" ><img src="icons/add_code.png"></button>
+                      <button id="message-quote-section-button" class="icon-button cg-button" x-hint="Add quote"><img src="icons/add_quote.png"></button>
+                      <button id="message-poll-section-button"  class="icon-button cg-button" x-hint="Add poll" ><img src="icons/add_poll.png"></button>
                       <span id="message-editing"></span>
                       <span id="channel-typing"></span>
                       <div id="typing-dots" class="flex-row" style="display: none;">
@@ -630,7 +632,7 @@
                 </div>
 
                 <div id="e2ee-placeholder" style="display: none;">
-                  This conversation is getting set up to use ecryption. This user needs to get online before you can start chatting
+                  This conversation is getting set up to use ecryption. This user needs to open this DM before you can start chatting
                 </div>
               </div>
             </div>
@@ -639,21 +641,21 @@
           <td id="member-list-sidebar"><table style="border: none; border-spacing: 0; height: 100%; width: 100%">
             <tr style="height: fit-content;"><td id="member-list-friend-header" class="flex-row">
               CONTACTS
-              <button id="friends-all"         class="icon-button cg-button"><img src="icons/friend.png"/></button>
-              <button id="friends-online"      class="icon-button cg-button"><img src="icons/friend_online.png"/></button>
-              <button id="friends-pending-in"  class="icon-button cg-button">
+              <button id="friends-all"         class="icon-button cg-button" x-hint="All friends"><img src="icons/friend.png"/></button>
+              <button id="friends-online"      class="icon-button cg-button" x-hint="Online friends"><img src="icons/friend_online.png"/></button>
+              <button id="friends-pending-in"  class="icon-button cg-button" x-hint="Incoming requests">
                 <img src="icons/friend_pending_in.png"/>
                 <div id="pin-cnt-container" class="bubble"><span id="pending-in-count">0</span></div>
               </button>
-              <button id="friends-pending-out" class="icon-button cg-button"><img src="icons/friend_pending_out.png"/></button>
-              <button id="friends-blocked"     class="icon-button cg-button"><img src="icons/ban.png"/></button>
+              <button id="friends-pending-out" class="icon-button cg-button" x-hint="Outgoing requests"><img src="icons/friend_pending_out.png"/></button>
+              <button id="friends-blocked"     class="icon-button cg-button" x-hint="Blocked users"><img src="icons/ban.png"/></button>
 
-              <button id="friend-add"          class="icon-button cg-button"><img src="icons/friend_add.png"/></button>
+              <button id="friend-add"          class="icon-button cg-button" x-hint="Send friend request"><img src="icons/friend_add.png"/></button>
             </td></tr>
 
             <tr style="height: fit-content;"><td class="input-container" id="user-search-bar" style="display: none;">
               <input id="user-search-input" class="fill-width" placeholder="username#00000"/>
-              <button id="friend-add-commit" class="apply-button fill-width">ADD FRIEND</button>
+              <button id="friend-add-commit" class="apply-button fill-width">SEND REQUEST</button>
             </td></tr>
 
             <tr style="height: fit-content;"><td id="member-list-friend-type">

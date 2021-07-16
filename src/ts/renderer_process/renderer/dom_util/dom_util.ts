@@ -48,19 +48,8 @@ export function showUpdBox(text: string) {
 export function updateSelfStatus(status: number) {
     // Update the icon in the user bar
     (util.elmById("self-status") as HTMLImageElement).src = util.statusIconPath(status);
-
     // Update the switch in the user settings
     (util.elmById("self-status-" + util.statusStr(status)) as HTMLInputElement).checked = true;
-
-    // Update the explainer below the switch
-    const explainer = [
-        "You will appear offline",
-        "You will appear online",
-        "You will appear idle",
-        "You will not receive desktop notifications",
-        "You will only receive DM notifications"
-    ][status];
-    util.elmById("self-status-explainer").innerHTML = explainer;
 }
 export function updateSelfStatusText(statusText: string) {
     util.elmById("self-status-text").innerHTML = util.escapeHtml(statusText);
