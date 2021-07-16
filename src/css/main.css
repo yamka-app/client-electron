@@ -1258,8 +1258,7 @@ img.large-emoji {
     height: 20px;
 
     padding: 10px;
-    border-radius: 0 0 0 10px;
-    border-right:  2px solid var(--background);
+    border-right: 2px solid var(--background);
 
     background: var(--bg-2);
     transition: background-color 0.1s ease;
@@ -1272,7 +1271,7 @@ img.large-emoji {
     align-items: center;
 }
 #channel-list-header:hover {
-    background: var(--background);
+    background: var(--bg-3);
 }
 #group-leave {
     height: unset;
