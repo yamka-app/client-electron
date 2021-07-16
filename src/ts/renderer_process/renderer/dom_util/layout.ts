@@ -164,15 +164,18 @@ export function updMessageArea(updMessages: boolean =true) {
         // Show the list of people that are typing
         const typingElm  = util.elmById("channel-typing");
         const typingAnim = util.elmById("typing-dots");
-        const typing = channel.typing.filter(x => x !== remote.getGlobal("sweet").self.id);
+        // const typing = channel.typing.filter(x => x !== remote.getGlobal("sweet").self.id);
+        const typing = channel.typing;
         util.reqEntities(typing.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {
             var content = "";
             const verb = (typing.length === 1) ? "is" : "are";
             if(typing.length > 0) {
-                content = "<b>" + typing.map(x => util.escapeHtml(window.entityCache[x].name)).join("</b>, <b>") + "</b> " + verb + " typing";
+                content = "<b>" + typing.map(x => util.escapeHtml(window.entityCache[x].name))
+                    .join("</b>, <b>") + "</b> " + verb + " typing";
                 util.showElm(typingAnim);
-            } else
+            } else {
                 util.hideElm(typingAnim);
+            }
             typingElm.innerHTML = content;
         });
     });
