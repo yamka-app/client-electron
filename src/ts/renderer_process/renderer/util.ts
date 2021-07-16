@@ -142,7 +142,8 @@ export function idToTime(id: number): string {
         month:  "long",
         day:    "numeric",
         hour:   "numeric",
-        minute: "numeric"
+        minute: "numeric",
+        second: "numeric"
     });
 }
 
@@ -173,7 +174,7 @@ function timeStr(date: Date): {abs: boolean, val: string} {
     } else {
         return {
             abs: false,
-            val: diff + "s ago"
+            val: "less than a minute ago"
         };
     }
 }
