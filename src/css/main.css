@@ -1072,10 +1072,6 @@ span.fg-1 {
     white-space: pre-wrap;
     align-items: center;
 }
-.message-quote-section span > *:not(img.emoji),
-.message-text-section span > *:not(img.emoji) {
-    transform: translateY(3px);
-}
 .message-quote-section span:empty::before,
 .message-text-section span:empty::before {
     content: "\200b"; /* zero width space */
