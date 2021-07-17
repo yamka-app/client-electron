@@ -217,17 +217,14 @@ export function showProfile(id: number) {
     // Add badges
     for(const bid of user.badges) {
         const file = path.join(window["__dirname"], "icons", "badges", ["verified", "staff", "bot"][bid - 1] + ".png")
-        const abbr = ["This user is who they claim to be",
+        const hint = ["This user is who they claim to be",
                       "This user is a member of the core Yamka team",
-                      "This user is a bot"][bid - 1]
-        
-        const abbrElm = document.createElement("abbr");
-        abbrElm.title = util.escapeHtml(abbr);
-        badges.appendChild(abbrElm);
+                      "This user is a bot"][bid - 1];
 
         const iconElm = document.createElement("img");
         iconElm.src = "file://" + file;
-        abbrElm.appendChild(iconElm);
+        badges.appendChild(iconElm);
+        layout.addHint(iconElm, hint);
     }
 
     // Remove old mutual servers/friends
@@ -593,7 +590,7 @@ export function updAgentList() {
             div.innerHTML = `<img src="icons/agents/${icon}.png"/>
                 <span>${util.escapeHtml(agent.name)}</span>
                 ${agent.online ? "<img src=\"icons/online.png\">" : ""}
-                ${thisAgent ? "<abbr title=\"This instance\"><img class=\"cg-img\" src=\"icons/agents/this.png\"></abbr>" : ""}
+                ${thisAgent ? "<img class=\"cg-img\" src=\"icons/agents/this.png\">" : ""}
                 ${thisAgent ? "" : "<button class=\"icon-button cg-button\"><img src=\"icons/disconnect.png\"/></img></button>"}`;
             // The unlinking button should do something
             const unlink = div.querySelector("button");

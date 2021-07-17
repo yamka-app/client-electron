@@ -214,8 +214,7 @@ input[type="radio"].settings-radio:checked + label {
 #agent-list > div:not(:nth-child(1)) {
     margin: 10px 0;
 }
-#agent-list > div > span ~ img,
-#agent-list > div > span ~ abbr > img {
+#agent-list > div > span ~ img {
     margin-left: 8px;
 }
 
@@ -424,9 +423,6 @@ input[type="radio"].settings-radio:checked + label {
 }
 #profile-badges {
     margin-left: 10px;
-}
-#profile-badges abbr {
-    margin-right: 5px;
 }
 #profile-groups-container {
     width:   50%;
