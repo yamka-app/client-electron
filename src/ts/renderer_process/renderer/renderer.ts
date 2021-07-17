@@ -1429,10 +1429,10 @@ function _rendererFunc() {
     browserWindow.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.add   ("unfocused") });
     browserWindow.addListener("focus", (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.remove("unfocused") });
 
-    window.addEventListener("keydown", (e) => {
-        if(e.key === "F4" && e.altKey)
-            browserWindow.minimize();
-    });
+    browserWindow.onbeforeunload = (e) => {
+        browserWindow.hide();
+        e.returnValue = false;
+    };
 
     notif.show("Editing and deleting messages in DMs is not "
              + "supported. Direct calls are not end-to-end "
