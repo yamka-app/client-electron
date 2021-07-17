@@ -335,7 +335,7 @@ function webprotData(bytes: Buffer) {
                 }
     
                 // Decrypt messages
-                if(ent instanceof entities.Message) {
+                if(ent instanceof entities.Message && ent.sender !== 0) {
                     if(ent.latest.encrypted === undefined) continue;
                     if(sweet.dmChanRev[ent.channel] === undefined) continue;
                     ent.latest.sections = await sweet.salty.processMsg(ent.channel,
