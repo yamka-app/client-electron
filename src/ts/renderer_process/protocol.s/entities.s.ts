@@ -76,6 +76,7 @@ export class Channel extends Entity {
     voiceUsers?:  number[];
     voiceStatus?: ChannelVoiceStatus[];
     mentions?:    number[];
+    lcid:         number;
 }
 
 export class Group extends Entity {

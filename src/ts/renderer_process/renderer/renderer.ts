@@ -552,8 +552,15 @@ function _rendererFunc() {
                 // And merge the new fields with the old ones
                 const oldEntity = window.entityCache[ent.id];
                 if(oldEntity !== undefined)
-                    ent = Object.assign(oldEntity, ent);
+                    ent = Object.assign(Object.create(oldEntity), ent);
                 window.entityCache[ent.id] = ent;
+
+                // We know when a channel is ready better than the main process!
+                if(ent instanceof entities.Channel && ent.lcid >= 2) {
+                    ent.__e2eeReady = true;
+                    if(window.viewingChan === ent.id)
+                        layout.updMessageArea();
+                }
 
                 // Update group settings
                 if(ent instanceof entities.Group && ent.id === window.viewingGroup)
@@ -590,9 +597,12 @@ function _rendererFunc() {
                     const newFriends = friends.filter(x => !oldFriends.includes(x));
                     util.reqEntities(newFriends.map(x =>
                         new packets.EntityGetRequest(entities.User.typeNum, x)), true, undefined);
+                    // update the friend list
+                    if(window.viewingChan === 0)
+                        layout.updMemberList();
                 }
 
-                // Update the unread bubble, just in case
+                // Update the unread bubbles and counts
                 if(packet.spontaneous && ent instanceof entities.Message) {
                     const chan = window.entityCache[ent.channel] as entities.Channel;
                     if(chan.unread !== 0 && ent.sender !== 0) {
