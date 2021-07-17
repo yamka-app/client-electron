@@ -71,6 +71,10 @@ span {
     font-size: calc(var(--font-size) + 0.5pt);
 }
 
+code {
+    font-family: JetBrainsMono;
+}
+
 *::-webkit-scrollbar {
     width: 8px;
 }
@@ -934,6 +938,17 @@ textarea.code-input {
 
     justify-content: space-between;
     box-shadow: var(--shadow);
+}
+.message-file-section > img {
+    display: block;
+
+    margin-top: 5px;
+
+    max-width:  125px;
+    width:   auto;
+    height:  auto;
+
+    border-radius: 5px;
 }
 .file-section-name {
     margin-top:  5px;

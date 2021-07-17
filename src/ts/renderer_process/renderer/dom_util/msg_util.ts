@@ -25,6 +25,7 @@ import { configGet } from "../settings.js";
 import * as domUtil  from "./dom_util.js";
 import * as layout   from "./layout.js";
 import * as notif    from "./notif.js"
+import { file } from "tmp";
 
 // Creates a message box seen in the message area
 export function createMessage(state: entities.MessageState, short: boolean =false): HTMLElement | undefined {
@@ -607,11 +608,10 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             typeElm.classList.add("message-file-section", "flex-col");
 
             const readableSize = util.readableFileSize(fileSize);
-
             const headerSpan = document.createElement("span");
             headerSpan.innerHTML = (readableSize === undefined) ? "File" : ("File (" + readableSize + "):");
-            headerSpan.classList.add("message-file-header")
-            typeElm.appendChild(headerSpan)
+            headerSpan.classList.add("message-file-header");
+            typeElm.appendChild(headerSpan);
 
             if(filename !== undefined) {
                 const nameSpan = document.createElement("code");
@@ -624,7 +624,16 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
                 progress.max = 100;
                 progress.value = 0;
             }
+
+            // Add a preview if it's an image
+            if(filename !== undefined && ["png", "jpeg", "jpg", "gif", "bmp"].includes(filename.split(".").pop())) {
+                const preview = document.createElement("img");
+                typeElm.appendChild(preview);
+                preview.src = filename;
+            }
+
             break;
+
         case types.MessageSectionType.CODE:
             typeElm = document.createElement("textarea");
             typeElm.classList.add("code-input", "fill-width");
@@ -639,6 +648,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
                 }
             };
             break;
+
         case types.MessageSectionType.QUOTE:
             typeElm = document.createElement("textarea");
             typeElm.classList.add("message-input", "fill-width", "message-quote-section");
@@ -652,6 +662,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
                 }
             };
             break;
+
         case types.MessageSectionType.INVITE:
             typeElm = document.createElement("textarea");
             typeElm.classList.add("message-input", "fill-width");
