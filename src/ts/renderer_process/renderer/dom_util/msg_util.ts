@@ -154,8 +154,7 @@ function createCodeSection(section: types.MessageSection) {
 
 function createFileSection(section: types.MessageSection) {
     const elm = document.createElement("div"); // a temporary replacement
-    util.reqEntities([new packets.EntityGetRequest(entities.File.typeNum, section.blob)], false,
-            (files) => {
+    util.reqEntities([new packets.EntityGetRequest(entities.File.typeNum, section.blob)], false, (files) => {
         const file = files[0] as entities.File;
         // Check if it"s an image
         const extenstion = file.name.split(".").pop();
@@ -573,6 +572,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
                 util.adjTaHeight(typeElm);
                 util.updTyping(typeElm.value);
 
+                // process possible mentions
                 if(viewingGroup === 0) return;
                 const mention = util.extractMention(typeElm.value, typeElm.selectronStart, ["@"]);
                 const tok     = util.mentionToken(typeElm.value, typeElm.selectronStart, ["@"])
@@ -593,6 +593,12 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
                             setMentionList(users, typeElm, tok);
                         });
                         break;
+                }
+            };
+            typeElm.onkeydown = (e) => {
+                if(e.keyCode === 9) {
+                    typeElm.value += "\t";
+                    e.returnValue = false;
                 }
             };
             break;
@@ -626,6 +632,12 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             typeElm.rows = 1;
             typeElm.oninput = () => { util.adjTaHeight(typeElm); util.updTyping(typeElm.value) };
             typeElm.spellcheck = false;
+            typeElm.onkeydown = (e) => {
+                if(e.keyCode === 9) {
+                    typeElm.value += "\t";
+                    e.returnValue = false;
+                }
+            };
             break;
         case types.MessageSectionType.QUOTE:
             typeElm = document.createElement("textarea");
@@ -633,11 +645,17 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             typeElm.placeholder = "Quote section";
             typeElm.rows = 1;
             typeElm.oninput = () => { util.adjTaHeight(typeElm); util.updTyping(typeElm.value) };
+            typeElm.onkeydown = (e) => {
+                if(e.keyCode === 9) {
+                    typeElm.value += "\t";
+                    e.returnValue = false;
+                }
+            };
             break;
         case types.MessageSectionType.INVITE:
             typeElm = document.createElement("textarea");
             typeElm.classList.add("message-input", "fill-width");
-            typeElm.placeholder = "Text section";
+            typeElm.placeholder = "Invite section";
             typeElm.rows = 1;
             typeElm.value = filename;
             typeElm.disabled = true;
@@ -684,6 +702,8 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
 
             typeElm.appendChild(optionContainer);
             typeElm.appendChild(addOptionButton);
+
+            addOption();
             break;
     }
     section.appendChild(typeElm);
