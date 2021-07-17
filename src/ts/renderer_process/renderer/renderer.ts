@@ -636,9 +636,17 @@ function _rendererFunc() {
                         const chan = entityCache[msg.channel] as entities.Channel;
                         const user = entityCache[msg.sender] as entities.User;
                         const title = chan === undefined ? user.name : `${user.name} in ${chan.name}`;
+                        const openChan = () => {
+                            window.viewingGroup = chan.group;
+                            window.viewingChan = chan.id;
+                            layout.updLayout();
+                            browserWindow.focus();
+                        };
                         util.download(user.avaFile, (ava) => {
-                            new Notification(title, {icon: ava, body: util.messageSummary(msg)});
-                            notif.show(title + ": " + util.messageSummary(msg), ava, "background");
+                            if(!document.hasFocus())
+                                new Notification(title, {icon: ava, body: util.messageSummary(msg)})
+                                    .onclick = openChan;
+                            notif.show(title + ": " + util.messageSummary(msg), ava, "background", openChan);
                         });
                     });
                 }

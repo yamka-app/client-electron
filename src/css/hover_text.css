@@ -1,5 +1,5 @@
 .hover-text {
-    z-index:    250;
+    z-index:    2500;
     position:   absolute;
     transition: top     0.2s ease,
                 bottom  0.2s ease,
