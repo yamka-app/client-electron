@@ -382,13 +382,27 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
         friendRemoveBtn.classList.add("icon-button", "cg-button",
                 "friend-remove-button", "hover-show-button");
         friendRemoveBtn.addEventListener("click", (e) => {
-            yGlobal.sendPacket(new packets.ContactsManagePacket({
-                    "friend":      packets.ContactType.FRIEND,
-                    "pending-in":  packets.ContactType.PENDING_IN,
-                    "pending-out": packets.ContactType.PENDING_OUT,
-                    "blocked":     packets.ContactType.BLOCKED,
-                }[special],
-                packets.ContactAction.REMOVE, id));
+            const box = util.elmById("contact-remove-box");
+            const title = {
+                "friend":      `Do you really want to remove ${user.name} from your friend list?`,
+                "pending-in":  `Do you really want to deny ${user.name}'s friend request?`,
+                "pending-out": `Do you really want to cancel your friend request to ${user.name}?`,
+                "blocked":     `Do you really want to unblock ${user.name}?`,
+            }[special];
+            util.elmById("contact-remove-title").innerHTML = util.escapeHtml(title);
+            util.triggerAppear(box, true);
+            util.elmById("contact-remove-confirm").onclick = () => {
+                yGlobal.sendPacket(new packets.ContactsManagePacket({
+                        "friend":      packets.ContactType.FRIEND,
+                        "pending-in":  packets.ContactType.PENDING_IN,
+                        "pending-out": packets.ContactType.PENDING_OUT,
+                        "blocked":     packets.ContactType.BLOCKED,
+                    }[special],
+                    packets.ContactAction.REMOVE, id));
+                util.triggerDisappear(box, true);
+            };
+            util.elmById("contact-remove-cancel").onclick = () =>
+                util.triggerDisappear(box, true);
             util.stopPropagation(e);
         });
         layout.addHint(friendRemoveBtn, {
