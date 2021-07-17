@@ -50,6 +50,10 @@ const tmpDir = tmp.dirSync().name;
 console.log("Temporary directory: " + tmpDir);
 console.log("Config and auth: " + configPath);
 
+// electron.app.Electron fix
+if(process.platform === "win32")
+    app.setAppUserModelId("Yamka");
+
 remoteInit();
 
 function createWindow() {
