@@ -881,8 +881,7 @@ export function sendMessage() {
             msg.id = window.editingMessage;
             msg.latest = state;
             msg.channel = window.viewingChan;
-            util.putEntities([msg]);
-            util.clearTyping();
+            util.clearTyping([msg]);
 
             util.markRead(window.viewingChan);
             util.markRead(window.viewingChan, true);
