@@ -163,11 +163,6 @@ function createFileSection(section: types.MessageSection) {
             const w = Number(file.size.split("x")[0]);
             const h = Number(file.size.split("x")[1]);
             elm.classList.add("message-img-section-container");
-
-            /*const fake = document.createElement("img"); // to force container dimensions
-            fileSectionElement.appendChild(fake);
-            fake.classList.add("message-img-section-fake");
-            fake.width = w; fake.height = h;*/
             
             // Create the preview element
             var canvasElement: HTMLCanvasElement;
@@ -175,6 +170,11 @@ function createFileSection(section: types.MessageSection) {
             imgElement.classList.add("message-img-section");
             elm.appendChild(imgElement);
             if(file.preview !== "") {
+                const fake = document.createElement("img"); // to force container dimensions
+                elm.appendChild(fake);
+                fake.classList.add("message-img-section-fake");
+                fake.width = w; fake.height = h;
+
                 canvasElement = document.createElement("canvas");
                 canvasElement.classList.add("message-img-section");
                 canvasElement.width  = w;
@@ -193,7 +193,6 @@ function createFileSection(section: types.MessageSection) {
                     ctx.scale(w / adjW, h / 32);
                     ctx.drawImage(imageObj, 0, 0);
                 }
-                //fake.src = canvasElement.toDataURL();
                 imageObj.src = canvasElement.toDataURL();
 
                 elm.appendChild(canvasElement);
