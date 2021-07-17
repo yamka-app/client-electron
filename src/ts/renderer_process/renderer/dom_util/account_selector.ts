@@ -70,7 +70,7 @@ export function cacheUser(user: User) {
         const persistentAva = `${avaStorage()}${user.id}.png`;
         fs.copyFileSync(ava, persistentAva);
 
-        users.push({ id: user.id, ava: persistentAva, name: user.name });
+        users.splice(0, 0, { id: user.id, ava: persistentAva, name: user.name });
         configSet("users", users);
     });
 }
