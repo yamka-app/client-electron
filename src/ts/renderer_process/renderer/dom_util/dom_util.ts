@@ -511,7 +511,7 @@ export function createGroupPanel(id: number) {
         const bottom = document.createElement("div"); panel.appendChild(bottom);
         var i; // to reference the leftover channel count later
         unreadChans = unreadChans.sort((a, b) => b.u - a.u); // reverse sort by unread count (most uptop)
-        for(i = 0; i < Math.min(3, unreadChans.length); i++) {
+        for(i = 0; i < Math.min(5, unreadChans.length); i++) {
             const desc = unreadChans[i];
             const chan = document.createElement("div"); bottom.appendChild(chan);
             chan.classList.add("gp-channel");

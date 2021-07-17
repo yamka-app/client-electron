@@ -619,7 +619,12 @@ function _rendererFunc() {
                 }
 
                 if(packet.spontaneous && ent instanceof entities.Channel && ent.id === window.viewingChan)
-                layout.updMessageArea(false);
+                    layout.updMessageArea(false);
+
+                if(packet.spontaneous && ent instanceof entities.Channel && ent.group === window.viewingGroup) {
+                    layout.updChannelList();
+                    updateGroupSettingsChannelList();
+                }
 
                 if(packet.spontaneous && ent instanceof entities.Channel
                         && [window.viewingChan, window.voiceChan].includes(ent.id))
