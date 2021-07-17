@@ -134,7 +134,7 @@ const webprotSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
     version:              11,
-    supportsComp:         false,
+    supportsComp:         true,
     compressionThreshold: 512,
     fileChunkSize:        1024 * 4
 };

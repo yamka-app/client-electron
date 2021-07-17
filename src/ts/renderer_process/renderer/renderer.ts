@@ -1264,19 +1264,21 @@ function _rendererFunc() {
     };
 
     // Load new messages when scrolled to the top
-    const msgScrollArea = util.elmById("message-scroll-area") as HTMLElement
+    const scrollArea = util.elmById("message-scroll-area") as HTMLElement
     const loadingFunc = (e) => {
-        const messages = window.entityCache[window.viewingChan].messages
-        if(msgScrollArea.scrollTop <= 500 && messages.length === 50) { // if the last batch gave less than 50 msgs, it must be the end
+        const messages = window.entityCache[window.viewingChan].messages;
+        // if the last batch gave less than 50 msgs, it must be the end
+        const top = scrollArea.scrollHeight + scrollArea.scrollTop - scrollArea.clientHeight;
+        if(top <= 500 && messages.length === 50) {
             // Remove the handler and request messages
-            msgScrollArea.onscroll = undefined
+            scrollArea.onscroll = undefined;
             layout.appendMsgsTop(messages[messages.length - 1], () => {
                 // Bring the handler back when messages finish loading
-                msgScrollArea.onscroll = loadingFunc;
+                scrollArea.onscroll = loadingFunc;
             });
         }
     }
-    msgScrollArea.onscroll = loadingFunc;
+    scrollArea.onscroll = loadingFunc;
 
     // Create/join a group
     util.elmById("group-create-join-panel").onclick = showGroupCreateBox;

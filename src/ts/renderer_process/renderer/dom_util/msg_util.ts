@@ -235,10 +235,10 @@ function createFileSection(section: types.MessageSection) {
 
             // Download the file
             dlBtn.onclick = (e) => {
-                e.stopPropagation()
+                e.stopPropagation();
                 // Ask where to save it
                 var filePath = dialog.showSaveDialogSync(BrowserWindow.getFocusedWindow(), {
-                    properties: [ "showOverwriteConfirmation", "createDirectory" ],
+                    properties: ["showOverwriteConfirmation", "createDirectory"],
                     defaultPath: "~/" + file.name
                 });
                 // Don"t continue if the user decided not to
