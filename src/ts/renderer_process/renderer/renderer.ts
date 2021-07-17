@@ -556,7 +556,7 @@ function _rendererFunc() {
                 window.entityCache[ent.id] = ent;
 
                 // We know when a channel is ready better than the main process!
-                if(ent instanceof entities.Channel && ent.lcid >= 2) {
+                if(ent instanceof entities.Channel && ent.group === 0 && !ent.__e2eeReady && ent.lcid >= 2) {
                     ent.__e2eeReady = true;
                     if(window.viewingChan === ent.id)
                         layout.updMessageArea();
