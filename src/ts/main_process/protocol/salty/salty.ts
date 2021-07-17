@@ -414,6 +414,7 @@ export default class SaltyClient {
 
             if(!(l2 instanceof Level2AliceHelloMsg))
                 throw new Error("L1 Alice Hello should enclose L2 Alice Hello");
+            this.dumpConv(cid);
             return [this.e2eeDbgSection({
                 "Type": "Alice Hello",
                 "We're Alice": `${state.alice}`,
@@ -439,6 +440,7 @@ export default class SaltyClient {
             })];
         } else if(l1 instanceof Level1NormalMsg) {
             const state = this.conv[`${cid}`];
+            this.dumpConv(cid);
             try {
                 const l2 = Level2Msg.decode(l1.data, state.ratchet);
                 if(l2 instanceof Level2BobHelloMsg) {
@@ -479,18 +481,20 @@ export default class SaltyClient {
         }
     }
 
-    // Encrypts a TextMessage or a TastyKey
+    // Encrypts a TextMessage or a Tasty key
     public encryptMsg(cid: number, data: MessageSection[] | KeyObject) {
         if(!(`${cid}` in this.conv))
             this.loadConv(cid);
         const state = this.conv[`${cid}`];
         const includePub = state.ratchet.lastR;
         const pub = includePub ? state.ratchet.keyPair.pub : undefined;
-        return new Level1NormalMsg(
+        const encrypted = new Level1NormalMsg(
                 (data instanceof KeyObject
                 ? new Level2TastyKeyMsg(pub, data)
                 : new Level2TextMsg(pub, data))
             .encode(state.ratchet)).encode();
+        this.dumpConv(cid);
+        return encrypted;
     }
 
     // Calculates a check string
@@ -532,7 +536,7 @@ export default class SaltyClient {
         };
     }
 
-    public tmpEncPath(p: string) {
+    public static tmpEncPath(p: string) {
         const rand = crypto.randomBytes(3).toString("base64")
             .replace("/", "_").replace("+", "-");
         return path.join(os.tmpdir(), path.basename(p) + ".salty-" + rand);
@@ -540,8 +544,8 @@ export default class SaltyClient {
 
     // Encrypts a file
     // Returns a key+hash string along with the path to the encrypted file
-    public encryptFile(p: string): [string, string] {
-        const encPath = this.tmpEncPath(p);
+    public static encryptFile(p: string): [string, string] {
+        const encPath = SaltyClient.tmpEncPath(p);
         const plaintext = fs.readFileSync(p);
         const key = crypto.createSecretKey(crypto.randomBytes(16));
         const iv = Buffer.from(Array(16).fill(0));
@@ -557,8 +561,8 @@ export default class SaltyClient {
     }
 
     // Decrypts a file
-    public decryptFile(encPath: string, keyhash: string) {
-        const dest = this.tmpEncPath(encPath);
+    public static decryptFile(encPath: string, keyhash: string) {
+        const dest = SaltyClient.tmpEncPath(encPath);
         const [hash, keyB64] = keyhash.split("|");
         const key = crypto.createSecretKey(Buffer.from(keyB64, "base64"));
         const iv = Buffer.from(Array(16).fill(0));
@@ -605,5 +609,8 @@ export default class SaltyClient {
 }
 
 export enum SessionStatus {
-    NOT_CREATED = 0, AWAITING_BOB_HELLO = 1, BOB_READY = 2, NORMAL = 3
+    NOT_CREATED = 0,
+    AWAITING_BOB_HELLO = 1,
+    BOB_READY = 2,
+    NORMAL = 3
 }

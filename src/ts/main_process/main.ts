@@ -248,7 +248,7 @@ function webprotData(bytes: Buffer) {
                 var decPath = state.path;
                 // Possible decrypt the file
                 if(state.decr !== "") {
-                    decPath = sweet.salty.decryptFile(state.path, state.decr);
+                    decPath = SaltyClient.decryptFile(state.path, state.decr);
                     fs.rmSync(state.path);
                 }
                 ipcSend({ type: "webprot.trigger-reference", reason: "download-finished", references: state.refs,
@@ -504,7 +504,7 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
             
             // Encrypt the file if the renderer asked for it
             if(entity.__encryptToChan !== undefined) {
-                const [encPath, keyhash] = sweet.salty.encryptFile(actualPath);
+                const [encPath, keyhash] = SaltyClient.encryptFile(actualPath);
                 actualPath = encPath;
                 ipcSend({ type: "webprot.trigger-reference", reason: "upload-keyhash", reference: ref2,
                     args: [keyhash] });
