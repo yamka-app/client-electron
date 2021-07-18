@@ -12,7 +12,7 @@
 ![](promo.png)
 
 :construction: Both the client the back end are in their aplha stage right now. :construction:\
-Latest version: **0.8.1**
+Latest version: **0.8.2**
 
 ## Build
 Do `npm start` to run the app without producing any artifacts:
