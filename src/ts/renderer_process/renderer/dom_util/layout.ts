@@ -278,7 +278,7 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
                 const id = msg.id;
                 const lastMsg = msgs[msgs.indexOf(msg) + 1];
                 const short = lastMsg ? (msg.sender === lastMsg.sender
-                    && util.timeDiff(lastMsg.id, msg.id) <= messageTimeThres) : false; // bundling
+                    && util.timeDiff(lastMsg.id, msg.id) <= messageTimeThres) : false;
 
                 const chan = window.entityCache[msg.channel] as entities.Channel;
                 if(id === chan.firstUnread && chan.unread > 0)
@@ -290,9 +290,10 @@ export function appendMsgsTop(id_from: number, callback?: () => void, clear: boo
                 domUtil.updateRelatedUsers(msg.latest);
             });
 
-            if(msgs.length > 0) {
-                window.lastChanSender[window.viewingChan] = msgs[0].sender;
-                window.lastChanMsg   [window.viewingChan] = msgs[0].id;
+            const vc = window.viewingChan;
+            if(msgs.length > 0 && msgs[0].id > window.lastChanMsg[vc]) {
+                window.lastChanSender[vc] = msgs[0].sender;
+                window.lastChanMsg   [vc] = msgs[0].id;
             }
 
             // Request senders (uncached, because they might have different colors in different groups)

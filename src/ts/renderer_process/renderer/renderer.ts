@@ -359,9 +359,12 @@ function _rendererFunc() {
 
         // Create the message
         const msg = window.entityCache[id] as entities.Message;
-        const msgElm = domMsgUtil.createMessage(msg.latest,
-            msg.sender === window.lastChanSender[msg.channel]
-            && util.timeDiff(window.lastChanMsg[msg.channel].id, msg.id) <= layout.messageTimeThres);
+        // Message should be stripped of its avatar, nickname and timestamp ("shortened") if either:
+        //   - it's sent by someone new
+        //   - 10 minutes have passed since the last message
+        const long = (msg.sender !== window.lastChanSender[msg.channel])
+                || (util.timeDiff(window.lastChanMsg[msg.channel], msg.id) >= layout.messageTimeThres);
+        const msgElm = domMsgUtil.createMessage(msg.latest, !long);
         if(msgElm === undefined)
             return;
 
