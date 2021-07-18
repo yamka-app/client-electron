@@ -168,25 +168,26 @@ function createFileSection(section: types.MessageSection) {
             const h = Number(file.size.split("x")[1]);
             elm.classList.add("message-img-section-container");
             
-            // Create the preview element
-            var canvasElement: HTMLCanvasElement;
-            const imgElement = document.createElement("img");
-            imgElement.classList.add("message-img-section");
-            elm.appendChild(imgElement);
-            if(file.preview !== "") {
-                const fake = document.createElement("img"); // to force container dimensions
-                elm.appendChild(fake);
-                fake.classList.add("message-img-section-fake");
-                fake.width = w; fake.height = h;
+            var canvasElm: HTMLCanvasElement;
+            const imgElm = document.createElement("img");
+            imgElm.classList.add("message-img-section");
 
-                canvasElement = document.createElement("canvas");
-                canvasElement.classList.add("message-img-section");
-                canvasElement.width  = w;
-                canvasElement.height = h;
+            // To force container dimensions
+            const fake = document.createElement("img");
+            elm.appendChild(fake);
+            fake.classList.add("message-img-section-fake");
+            fake.width = w; fake.height = h;
+            elm.appendChild(imgElm);
+            
+            if(file.preview !== "") {
+                canvasElm = document.createElement("canvas");
+                canvasElm.classList.add("message-img-section");
+                canvasElm.width  = w;
+                canvasElm.height = h;
 
                 const adjW = Number((32 * w / h).toFixed(0)); // to preserve the aspect ratio
                 const pixels = blurhash.decode(file.preview, adjW, 32);
-                const ctx = canvasElement.getContext("2d");
+                const ctx = canvasElm.getContext("2d");
                 const imageData = ctx.createImageData(adjW, 32);
                 imageData.data.set(pixels);
                 ctx.putImageData(imageData, 0, 0);
@@ -197,23 +198,27 @@ function createFileSection(section: types.MessageSection) {
                     ctx.scale(w / adjW, h / 32);
                     ctx.drawImage(imageObj, 0, 0);
                 }
-                imageObj.src = canvasElement.toDataURL();
+                imageObj.src = canvasElm.toDataURL();
 
-                elm.appendChild(canvasElement);
+                elm.appendChild(canvasElm);
             }
 
             // Download the image
             util.download(section.blob, (imgPath) => {
-                imgElement.src = "file://" + imgPath;
-                elm.appendChild(imgElement);
+                imgElm.src = "file://" + imgPath;
+                elm.appendChild(imgElm);
                 // Deblur the preview element
-                if(canvasElement)
-                    canvasElement.classList.add("deblur");
+                if(canvasElm)
+                    canvasElm.classList.add("deblur");
                 // Enlarge the image when clicking on it
                 elm.onclick = (e) => {
                     util.stopPropagation(e);
                     domUtil.showFloatingImage(section.blob);
-                }
+                };
+                imgElm.onload = () => {
+                    fake.width = imgElm.width;
+                    fake.height = imgElm.height;
+                };
             }, undefined, section.text);
         } else {
             elm.classList.add("message-file-section", "flex-row");
