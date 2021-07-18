@@ -28,7 +28,7 @@ import * as notif    from "./notif.js"
 import { file } from "tmp";
 
 // Creates a message box seen in the message area
-export function createMessage(state: entities.MessageState, short: boolean =false): HTMLElement | undefined {
+export function createMessage(state: entities.MessageState, short = false): HTMLElement | undefined {
     const sections = sanitizeSections(state.sections);
     if(sections.length === 0)
         return undefined;
@@ -57,18 +57,22 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
     elm.appendChild(content);
 
     if(!short) {
-        var nicknameContainer = document.createElement("div");
+        const nicknameContainer = document.createElement("div");
         nicknameContainer.classList.add("flex-row");
         content.appendChild(nicknameContainer);
 
-        var verifiedBadge = document.createElement("img");
-        verifiedBadge.classList.add("verified-badge", "verified-badge-" + msg.sender);
+        const verifiedBadge = document.createElement("img");
+        verifiedBadge.classList.add("verified-badge", `verified-badge-${msg.sender}`);
         verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
         nicknameContainer.appendChild(verifiedBadge);
 
         const nickname = document.createElement("span");
-        nickname.classList.add("message-user-nickname", "user-nickname-" + msg.sender);
+        nickname.classList.add("message-user-nickname", `user-nickname-${msg.sender}`);
         nicknameContainer.appendChild(nickname);
+
+        const noteElm = document.createElement("span");
+        noteElm.classList.add("user-note", `user-note-${msg.sender}`);
+        nicknameContainer.appendChild(noteElm);
 
         const timeElm = util.timeElm(msg.id, "", msg.states.length > 1 ? "(edited)" : "");
         timeElm.classList.add("message-time");
@@ -76,7 +80,7 @@ export function createMessage(state: entities.MessageState, short: boolean =fals
     }
 
     for(const section of sections) {
-        const creationFunctions: ((s: types.MessageSection) => HTMLElement|undefined)[] = [
+        const creationFunctions = [
             createTextSection,   createFileSection,
             createCodeSection,   createQuoteSection,
             createInviteSection, createUserSection,

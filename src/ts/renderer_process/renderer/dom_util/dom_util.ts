@@ -181,6 +181,26 @@ export function updateUser(id: number) {
                 cnt.innerHTML = util.escapeHtml(`${dm.unread}`);
             }
         }
+
+        // Update notes
+        // We do this when at least one avatar loads so that we have a color to pick up on
+        const avaZero = avas.item(0);
+        if(avaZero !== null) {
+            avaZero.onload = () => {
+                const notes = document.getElementsByClassName("user-note-" + id) as
+                        HTMLCollectionOf<HTMLSpanElement>;
+                for(const note of notes) {
+                    if(user.note === undefined) {
+                        note.style.display = "none";
+                        continue;
+                    }
+                    const color = util.getPrimaryColor(avaZero);
+                    note.style.background = color;
+                    note.style.color = util.isColorLight(color) ? "#000" : "#fff";
+                    note.innerHTML = util.escapeHtml(user.note);
+                }
+            };
+        }
     });
 }
 
@@ -477,8 +497,6 @@ export function createChannelButton(id: number, clickCb:
     return elm;
 }
 
-// @ts-ignore
-const colorThief = new ColorThief();
 // Creates a group panel
 export function createGroupPanel(id: number) {
     const group = window.entityCache[id] as entities.Group;

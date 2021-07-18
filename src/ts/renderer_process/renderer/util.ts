@@ -23,6 +23,7 @@ const _escapeHtml     = _modules.escapeHtml;
 const marked          = _modules.marked;
 const compareVersions = _modules.compareVersions;
 const fs              = _modules.fs;
+const tinycolor       = _modules.tinycolor;
 
 export const clientVersion = "0.8.2";
 export const clientDebug = true;
@@ -95,15 +96,21 @@ export function toggleElm(element: HTMLElement) {
 
 // Apply "appearing" or "disappearing" animations (optionally hiding and showing the parent element)
 export function triggerAppear(element: HTMLElement, affectParent: boolean =false) {
-    if(affectParent)
+    if(affectParent) {
         showElm(element.parentElement);
+        element.parentElement.classList.remove("deblur");
+        element.parentElement.classList.add("blur");
+    }
 
     element.classList.remove("disappearing");
     element.classList.add   ("appearing");
 }
 export function triggerDisappear(element: HTMLElement, affectParent: boolean =false, destroy: boolean =false) {
-    if(affectParent) // 200 ms is the animation duration
+    if(affectParent) { // 200 ms is the animation duration
+        element.parentElement.classList.remove("blur");
+        element.parentElement.classList.add("deblur");
         setTimeout(() => hideElm(element.parentElement), 200);
+    }
 
     element.classList.remove("appearing");
     element.classList.add   ("disappearing");
@@ -425,4 +432,15 @@ export function formatMentions(elm: Element) {
 
     for(const child of [...elm.children])
         formatMentions(child);
+}
+
+// Color operations
+// @ts-ignore
+const colorThief = new ColorThief();
+export function getPrimaryColor(img: HTMLImageElement) {
+    const [r, g, b] = colorThief.getColor(img);
+    return `rgb(${r},${g},${b})`;
+}
+export function isColorLight(color: string) {
+    return tinycolor(color).isLight();
 }

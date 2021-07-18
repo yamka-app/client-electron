@@ -115,6 +115,7 @@ export class User extends Entity {
     prekey?:         PKey;
     otprekey?:       PKey;
     idsignKey?:      PKey;
+    note?:           string;
 
     constructor() {
         super([
@@ -142,7 +143,8 @@ export class User extends Entity {
             new fields.EntityField ("identityKey",    22),
             new fields.EntityField ("prekey",         23),
             new fields.EntityField ("otprekey",       24),
-            new fields.EntityField ("idsignKey",      25)
+            new fields.EntityField ("idsignKey",      25),
+            new fields.StrField    ("note",           26)
         ]);
     }
 }

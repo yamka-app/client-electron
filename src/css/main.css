@@ -546,17 +546,23 @@ img.verified-badge:not(.true) {
     top: 10px;
 }
 .user-nickname {
-    display: inline-block;
-    max-width: 130px;
-
-    white-space: nowrap;
-    overflow: hidden;
+    display:       inline-block;
+    max-width:     130px;
+    white-space:   nowrap;
+    overflow:      hidden;
     text-overflow: ellipsis;
 }
 .user-tag {
-    color: var(--foreground-1);
+    color:       var(--foreground-1);
     font-family: Montserrat, sans-serif;
-    font-size: var(--font-size);
+    font-size:   var(--font-size);
+}
+.user-note {
+    padding:       3px 10px;
+    margin:        0 3px;
+    border-radius: 100px;
+    font-size:     calc(var(--font-size) - 1pt);
+    transform:     translateY(-2px);
 }
 
 .user-status {
@@ -618,7 +624,16 @@ img.verified-badge:not(.true) {
 
     margin: auto;
 
-    background: #0000007a;
+    transition: background      0.2s ease,
+                backdrop-filter 0.2s ease;
+}
+.darken-bg.blur {
+    background:      #00000018;
+    backdrop-filter: blur(5px);
+}
+.darken-bg.deblur {
+    background:      #00000000;
+    backdrop-filter: blur(0px);
 }
 .popup-bg {
     position: absolute;

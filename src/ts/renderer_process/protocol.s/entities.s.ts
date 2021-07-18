@@ -52,6 +52,7 @@ export class User extends Entity {
     ownedBots?:      number[];
     agents?:         number[];
     emailConfirmed?: boolean;
+    note?:           string;
 }
 
 export enum ChannelVoiceStatus {
