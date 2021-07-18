@@ -139,7 +139,7 @@ function createCodeSection(section: types.MessageSection) {
     const elm = document.createElement("pre");
     elm.classList.add("message-code-section");
     elm.innerHTML = util.prepareMsgText(section.text);
-    highlightBlock(elm);
+    // highlightBlock(elm);
     wrapper.appendChild(elm);
 
     const copyButton = document.createElement("button");
@@ -487,11 +487,11 @@ function createMessageActionBar(id: number): HTMLDivElement {
         { icon: "history", selfOnly: false, dmPrevent: true, onclick: (e) => domUtil.showMessageHistory(id, e.clientX, e.clientY) }
     ];
 
+    const sentByUs = window.entityCache[id].sender === window.selfId;
+    const sentInDm = viewingGroup === 0;
     for(const btnDesc of buttons) {
         // Don"t add "self-only" buttons to messages not sent by us
         // dmPrevent is temporary
-        const sentByUs = window.entityCache[id].sender === remote.getGlobal("sweet").self.id;
-        const sentInDm = viewingGroup === 0;
         if(!(btnDesc.selfOnly && !sentByUs) && !(btnDesc.dmPrevent && sentInDm)) {
             const btn = document.createElement("button");
             btn.classList.add("icon-button", "cg-button");

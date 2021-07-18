@@ -31,7 +31,7 @@ function panel(img: string, title: string, click: () => void, logout?: () => voi
 }
 
 export function show(login: (id: number) => void, logout: (id: number) => void) {
-    window.selectedUser = 0;
+    window.selfId = 0;
 
     const sel = elmById("user-select");
     while(sel.lastChild)

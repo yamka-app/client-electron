@@ -128,6 +128,9 @@ export class File extends Entity {
     path?:            string;
     __scale?:         boolean;
     __encryptToChan?: number;
+
+    // only used by the renderer process
+    __color?: string;
 }
 
 export class MessageState extends Entity {

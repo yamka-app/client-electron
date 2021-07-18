@@ -122,6 +122,21 @@ export function updateRelatedUsers(state: entities.MessageState, deep:number =5)
 export function updateUser(id: number) {
     util.reqEntities([new packets.EntityGetRequest(entities.User.typeNum, id)], false, () => {
         const user = window.entityCache[id] as entities.User;
+
+        const updateNotes = () => {
+            const notes = document.getElementsByClassName("user-note-" + id) as HTMLCollectionOf<HTMLSpanElement>;
+            const color = (window.entityCache[user.avaFile] as entities.File).__color;
+            for(const note of notes) {
+                if(user.note === undefined) {
+                    note.style.display = "none";
+                    continue;
+                }
+                note.style.background = color;
+                note.style.color = util.isColorLight(color) ? "#000" : "#fff";
+                note.innerHTML = util.escapeHtml(user.note);
+            }
+        };
+
         // Update avatars
         const avas = document.getElementsByClassName("user-avatar-" + id) as HTMLCollectionOf<HTMLImageElement>;
         if(avas.length > 0) {
@@ -130,6 +145,23 @@ export function updateUser(id: number) {
                     ava.src = "file://" + blob;
             });
         }
+
+        // Calculate the color of the avatar if not done already
+        // then update user notes
+        util.reqEntities([new packets.EntityGetRequest(entities.File.typeNum, user.avaFile)], false, () => {
+            const ava = window.entityCache[user.avaFile] as entities.File;
+            if(ava?.__color === undefined) {
+                const avaZero = avas.item(0);
+                if(avaZero !== null) {
+                    avaZero.onload = () => {
+                        ava.__color = util.getPrimaryColor(avaZero);
+                        updateNotes();
+                    };
+                }
+            } else if(ava !== undefined) {
+                updateNotes();
+            }
+        });
 
         // Update statuses
         const statuses = document.getElementsByClassName("user-online-" + id) as HTMLCollectionOf<HTMLImageElement>;
@@ -180,26 +212,6 @@ export function updateUser(id: number) {
             for(const cnt of bubbleCnts) {
                 cnt.innerHTML = util.escapeHtml(`${dm.unread}`);
             }
-        }
-
-        // Update notes
-        // We do this when at least one avatar loads so that we have a color to pick up on
-        const avaZero = avas.item(0);
-        if(avaZero !== null) {
-            avaZero.onload = () => {
-                const notes = document.getElementsByClassName("user-note-" + id) as
-                        HTMLCollectionOf<HTMLSpanElement>;
-                for(const note of notes) {
-                    if(user.note === undefined) {
-                        note.style.display = "none";
-                        continue;
-                    }
-                    const color = util.getPrimaryColor(avaZero);
-                    note.style.background = color;
-                    note.style.color = util.isColorLight(color) ? "#000" : "#fff";
-                    note.innerHTML = util.escapeHtml(user.note);
-                }
-            };
         }
     });
 }

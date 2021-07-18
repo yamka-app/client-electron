@@ -20,7 +20,7 @@ declare global {
         addOption?: (t?: string) => void;
     }
 
-    var selectedUser: number;
+    var selfId: number;
 
     var entityCache: any;
     var filePaths: any;

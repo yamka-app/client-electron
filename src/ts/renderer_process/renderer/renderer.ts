@@ -101,7 +101,7 @@ function _rendererFunc() {
             util.showElm(util.elmById("user-select"));
 
             // Reconnect
-            window.selectedUser = 0;
+            window.selfId = 0;
             ipcSend({ action: "webprot.force-connect" });
             return;
         }
@@ -520,12 +520,12 @@ function _rendererFunc() {
             const agents = configGet("agents");
             agents[packet.userId] = packet.agentId;
             configSet("agents", agents);
-            window.selectedUser = packet.userId;
+            window.selfId = packet.userId;
 
             // Save the token
             var tokens = configGet("tokens");
             if(tokens["temp"] !== undefined) {
-                tokens[window.selectedUser] = tokens["temp"];
+                tokens[window.selfId] = tokens["temp"];
                 tokens["temp"] = undefined;
                 configSet("tokens", tokens);
             }
@@ -793,10 +793,10 @@ function _rendererFunc() {
                 util.hideElm("connecting-screen-bg");
                 // Show the account selector
                 accountSelector.show((id) => {
-                    window.selectedUser = id;
+                    window.selfId = id;
                     accountSelector.hide();
                     // Send the access token
-                    const accessToken = configGet("tokens")[window.selectedUser];
+                    const accessToken = configGet("tokens")[window.selfId];
                     sendPacket(new packets.AccessTokenPacket(accessToken));
                 }, (id) => {
                     // Yank the token
