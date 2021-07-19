@@ -332,6 +332,7 @@ input[type="radio"].settings-radio:checked + label {
 #group-delete-box,
 #floating-box,
 #password-chg-box,
+#mfa-toggle-box,
 #contact-remove-box,
 #update-popup {
     z-index:  2500;
@@ -383,6 +384,7 @@ input[type="radio"].settings-radio:checked + label {
     backdrop-filter:  unset;
 }
 #password-chg-box,
+#mfa-toggle-box,
 #contact-remove-box,
 #group-create-box {
     width: 300px;

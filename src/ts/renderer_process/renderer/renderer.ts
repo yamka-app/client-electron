@@ -486,6 +486,8 @@ function _rendererFunc() {
                     (util.elmById("password-chg-new") as HTMLInputElement).value = "";
                     util.triggerDisappear(util.elmById("password-chg-box"), true);
                 case packets.StatusCode.MFA_TOGGLED:
+                    (util.elmById("mfa-toggle-password") as HTMLInputElement).value = "";
+                    util.triggerDisappear(util.elmById("mfa-toggle-box"), true);
                 case packets.StatusCode.FRIEND_REQUEST_SENT:
                     notif.show(packet.message, "icons/approve.png", "green");
                     break;
@@ -742,6 +744,9 @@ function _rendererFunc() {
                 util.elmById("mfa-code-manual").innerHTML = escapeHtml(packet.secret);
                 util.triggerAppear(util.elmById("mfa-qr-banner"), true);
             });
+            // Close the MFA toggling box
+            (util.elmById("mfa-toggle-password") as HTMLInputElement).value = "";
+            util.triggerDisappear(util.elmById("mfa-toggle-box"), true);
         }
 
         // Call the callback
@@ -1042,9 +1047,15 @@ function _rendererFunc() {
     }
 
     // 2FA toggling
-    util.elmById("self-mfa-toggle-button").onclick = (evt) => {
-        // Disable it if enabled, enable if disabled
-        setSelfMfaStatus(!remote.getGlobal("sweet").self.mfaEnabled);
+    util.elmById("self-mfa-toggle-button").onclick = (evt) =>
+        util.triggerAppear(util.elmById("mfa-toggle-box"), true);
+    util.elmById("mfa-toggle-cancel").onclick = (evt) =>
+        util.triggerDisappear(util.elmById("mfa-toggle-box"), true);
+    util.elmById("mfa-toggle-ok").onclick = (evt) => {
+        sendPacket(new packets.MfaTogglePacket(
+            !self().mfaEnabled,
+            (util.elmById("mfa-toggle-password") as HTMLInputElement).value
+        ));
     };
 
     // Chnaging the password

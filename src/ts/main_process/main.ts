@@ -380,7 +380,8 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
             "InviteResolvePacket":       new packets.InviteResolvePacket(),
             "EmailConfirmationPacket":   new packets.EmailConfirmationPacket(),
             "MFASecretPacket":           new packets.MFASecretPacket(),
-            "PasswordChangePacket":      new packets.PasswordChangePacket()
+            "PasswordChangePacket":      new packets.PasswordChangePacket(),
+            "MfaTogglePacket":           new packets.MfaTogglePacket()
         }[type];
 
         if(proto === undefined)

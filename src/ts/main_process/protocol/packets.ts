@@ -573,3 +573,19 @@ export class PasswordChangePacket extends SimpleFieldPacket {
         this.newPass = np;
     }
 }
+
+export class MfaTogglePacket extends SimpleFieldPacket {
+    typeNum = 23;
+
+    enable?: boolean;
+    pass?:   string;
+
+    constructor(en?: boolean, p?: string) {
+        super([
+            new fields.BoolField("enable"),
+            new fields.StrField("pass")
+        ]);
+        this.enable = en;
+        this.pass = p;
+    }
+}
