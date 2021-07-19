@@ -564,6 +564,17 @@ img.verified-badge:not(.true) {
     font-size:     calc(var(--font-size) - 1pt);
     transform:     translateY(-2px);
 }
+input.user-note {
+    width:      100px;
+    height:     20px;
+    box-shadow: none;
+    transform:  translateY(-3px);
+}
+input.user-note,
+input.user-note:focus,
+input.user-note:hover {
+    border: none;
+}
 
 .user-status {
     display:   inline-block;

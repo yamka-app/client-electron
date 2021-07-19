@@ -123,20 +123,6 @@ export function updateUser(id: number) {
     util.reqEntities([new packets.EntityGetRequest(entities.User.typeNum, id)], false, () => {
         const user = window.entityCache[id] as entities.User;
 
-        const updateNotes = () => {
-            const notes = document.getElementsByClassName("user-note-" + id) as HTMLCollectionOf<HTMLSpanElement>;
-            const color = (window.entityCache[user.avaFile] as entities.File).__color;
-            for(const note of notes) {
-                if(user.note === undefined) {
-                    note.style.display = "none";
-                    continue;
-                }
-                note.style.background = color;
-                note.style.color = util.isColorLight(color) ? "#000" : "#fff";
-                note.innerHTML = util.escapeHtml(user.note);
-            }
-        };
-
         // Update avatars
         const avas = document.getElementsByClassName("user-avatar-" + id) as HTMLCollectionOf<HTMLImageElement>;
         if(avas.length > 0) {
@@ -145,23 +131,6 @@ export function updateUser(id: number) {
                     ava.src = "file://" + blob;
             });
         }
-
-        // Calculate the color of the avatar if not done already
-        // then update user notes
-        util.reqEntities([new packets.EntityGetRequest(entities.File.typeNum, user.avaFile)], false, () => {
-            const ava = window.entityCache[user.avaFile] as entities.File;
-            if(ava?.__color === undefined) {
-                const avaZero = avas.item(0);
-                if(avaZero !== null) {
-                    avaZero.onload = () => {
-                        ava.__color = util.getPrimaryColor(avaZero);
-                        updateNotes();
-                    };
-                }
-            } else if(ava !== undefined) {
-                updateNotes();
-            }
-        });
 
         // Update statuses
         const statuses = document.getElementsByClassName("user-online-" + id) as HTMLCollectionOf<HTMLImageElement>;
@@ -213,15 +182,51 @@ export function updateUser(id: number) {
                 cnt.innerHTML = util.escapeHtml(`${dm.unread}`);
             }
         }
+
+        const updateNotes = () => {
+            const notes = document.getElementsByClassName("user-note-" + id) as HTMLCollectionOf<HTMLSpanElement>;
+            const color = (window.entityCache[user.avaFile] as entities.File).__color;
+            for(const note of notes) {
+                note.style.background = color;
+                note.style.color = util.isColorLight(color) ? "#000" : "#fff";
+                if(user.note === undefined) {
+                    if(note.id !== "profile-note")
+                        note.style.display = "none";
+                    else
+                        (note as HTMLInputElement).value = "";
+                    continue;
+                }
+                note.innerHTML = util.escapeHtml(user.note);
+            }
+        };
+
+        // Calculate the color of the avatar if not done already
+        // then update user notes
+        util.reqEntities([new packets.EntityGetRequest(entities.File.typeNum, user.avaFile)], false, () => {
+            const ava = window.entityCache[user.avaFile] as entities.File;
+            if(ava?.__color === undefined) {
+                const avaZero = avas.item(0);
+                if(avaZero !== null) {
+                    avaZero.onload = () => {
+                        ava.__color = util.getPrimaryColor(avaZero);
+                        updateNotes();
+                    };
+                }
+            } else if(ava !== undefined) {
+                updateNotes();
+            }
+        });
     });
 }
 
 // Shows/hides a profile
 export function showProfile(id: number) {
-    const user = window.entityCache[id];
+    const user = window.entityCache[id] as entities.User;
     const profile  = util.elmById("profile");
     const nickname = util.elmById("profile-nickname").classList;
     const tag      = util.elmById("profile-tag").classList;
+    const note     = util.elmById("profile-note") as HTMLInputElement;
+    const noteCl   = note.classList;
     const avatar   = util.elmById("profile-avatar").classList;
     const badges   = util.elmById("profile-badges");
     const groups   = util.elmById("profile-groups");
@@ -237,11 +242,17 @@ export function showProfile(id: number) {
     for(const c of avatar.values())
         if(c.startsWith("user-avatar-") && c !== "user-avatar-huge")
             avatar.remove(c);
-    // Add new classes so that updateUser() could pick up on them
+    for(const c of noteCl.values())
+        if(c.startsWith("user-note-"))
+            noteCl.remove(c);
+    // Add new classes so that updateUser() picks them up
     nickname.add("user-nickname-" + id);
     tag     .add("user-tag-"      + id);
     avatar  .add("user-avatar-"   + id);
+    noteCl  .add("user-note-"     + id);
     updateUser(id);
+    // Hide the note editor if we're viewing ourselves
+    note.style.display = id === window.selfId ? "none" : "";
 
     // Remove old badges
     while(badges.firstChild)
@@ -284,6 +295,19 @@ export function showProfile(id: number) {
         elm.onclick = (e) => showProfile(fid);
         friends.appendChild(elm);
     }
+
+    // Update the note on tag editor defocus
+    note.value = user.note;
+    util.resizeSlInput(note);
+    note.onblur = () => {
+        const noteUser = new entities.User();
+        noteUser.id = id;
+        noteUser.note = note.value;
+        util.putEntities([noteUser]);
+        (window.entityCache[id] as entities.User).note = note.value;
+        updateUser(id);
+    }
+    note.oninput = () => util.resizeSlInput(note);
 
     util.triggerAppear(profile, true);
 }

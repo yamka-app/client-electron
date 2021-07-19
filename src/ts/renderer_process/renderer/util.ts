@@ -438,3 +438,16 @@ export function getPrimaryColor(img: HTMLImageElement) {
 export function isColorLight(color: string) {
     return tinycolor(color).isLight();
 }
+
+// Single-line input auto-size
+const _width_canvas = document.createElement("canvas").getContext("2d");
+export function textWidth(text: string, style: string) {
+    _width_canvas.font = style;
+    return _width_canvas.measureText(text).width;
+}
+export function resizeSlInput(elm: HTMLInputElement) {
+    const value = (elm.value === "") ? elm.placeholder : elm.value;
+    const style = getComputedStyle(elm).font;
+    console.log(value, style);
+    elm.style.width = `${textWidth(value, style) + 25}px`;
+}
