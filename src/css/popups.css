@@ -377,7 +377,7 @@ input[type="radio"].settings-radio:checked + label {
     max-width:  80vw;
     max-height: 80vh;
 
-    background: unset;
+    background:       unset;
     border-radius:    0;
     padding:          unset;
     backdrop-filter:  unset;

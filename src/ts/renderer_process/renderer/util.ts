@@ -96,21 +96,15 @@ export function toggleElm(element: HTMLElement) {
 
 // Apply "appearing" or "disappearing" animations (optionally hiding and showing the parent element)
 export function triggerAppear(element: HTMLElement, affectParent: boolean =false) {
-    if(affectParent) {
+    if(affectParent)
         showElm(element.parentElement);
-        element.parentElement.classList.remove("deblur");
-        element.parentElement.classList.add("blur");
-    }
 
     element.classList.remove("disappearing");
     element.classList.add   ("appearing");
 }
 export function triggerDisappear(element: HTMLElement, affectParent: boolean =false, destroy: boolean =false) {
-    if(affectParent) { // 200 ms is the animation duration
-        element.parentElement.classList.remove("blur");
-        element.parentElement.classList.add("deblur");
+    if(affectParent) // 200 ms is the animation duration
         setTimeout(() => hideElm(element.parentElement), 200);
-    }
 
     element.classList.remove("appearing");
     element.classList.add   ("disappearing");

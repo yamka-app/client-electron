@@ -119,7 +119,7 @@ export enum AccessTokenPermission {
     DELETE_GROUPS          = 16,
     JOIN_GROUPS            = 17,
     LEAVE_GROUPS           = 18,
-    BAN_MEMBER             = 19,
+    BAN_MEMERS             = 19,
     KICK_MEMBERS           = 20,
     MANAGE_ROLES           = 21,
     DELETE_OTHERS_MESSAGES = 22,

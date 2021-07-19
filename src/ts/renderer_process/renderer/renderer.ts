@@ -283,11 +283,11 @@ function _rendererFunc() {
 
     // Change info about self
     function sendSelfValue(key: string, val: any) {
-        const entity = new entities.User();
-        entity.id = remote.getGlobal("sweet").selfId;
-        entity[key] = val;
+        const user = new entities.User();
+        user.id = 0;
+        user[key] = val;
 
-        util.putEntities([entity]);
+        util.putEntities([user]);
     }
     function setSelfStatus(status: number) {
         domUtil.updateSelfStatus(status);

@@ -624,16 +624,7 @@ img.verified-badge:not(.true) {
 
     margin: auto;
 
-    transition: background      0.2s ease,
-                backdrop-filter 0.2s ease;
-}
-.darken-bg.blur {
-    background:      #00000018;
-    backdrop-filter: blur(5px);
-}
-.darken-bg.deblur {
-    background:      #00000000;
-    backdrop-filter: blur(0px);
+    background: #00000085;
 }
 .popup-bg {
     position: absolute;

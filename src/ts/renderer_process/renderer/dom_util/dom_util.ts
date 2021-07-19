@@ -641,7 +641,7 @@ export function updAgentList() {
             if(unlink !== null) unlink.onclick = (e) => {
                 util.stopPropagation(e);
                 const user = new entities.User();
-                user.id = remote.getGlobal("sweet").selfId;
+                user.id = 0;
                 user.agents = agentIds.filter(x => x !== agent.id);
                 util.putEntities([user]);
             };
