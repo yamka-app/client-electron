@@ -161,7 +161,7 @@ class KeyStore extends EventEmitter {
             if(tdiff(key.date) >= PREKEY_EXPIRATION) {
                 const idx = this.prekeys.push(KeyPair.generate()) - 1;
                 key.stale = true;
-                console.log("[salty] master prekey generated");
+                console.log("[salty-keychain] master prekey generated");
                 this.emit("new_mp", this.prekeys[idx]);
             }
         }
@@ -175,7 +175,7 @@ class KeyStore extends EventEmitter {
         for(var i = 0; i < new_otp; i++)
             this.otprekeys.push(KeyPair.generate());
         if(new_otp > 0) {
-            console.log(`[salty] ${new_otp} one-time prekeys generated`);
+            console.log(`[salty-keychain] ${new_otp} one-time prekeys generated`);
             const new_keys = this.otprekeys.filter(x => !old_keys.includes(x)).map(x => x.pub);
             this.emit("new_otp", new_keys);
         }
@@ -186,8 +186,8 @@ class KeyStore extends EventEmitter {
         const store = new KeyStore();
         store.identity = KeyPair.generate();
         store.idSign   = KeyPair.generate(true); // ed25519 keypair to sign other keys
-        console.log(`[salty] identity key generated (fingerprint ${store.identity.fingerprint()})`);
-        console.log(`[salty] id_sign  key generated (fingerprint ${store.idSign.fingerprint()})`);
+        console.log(`[salty-keychain] identity key generated (fingerprint ${store.identity.fingerprint()})`);
+        console.log(`[salty-keychain] id signature key generated (fingerprint ${store.idSign.fingerprint()})`);
         store.updPrekeys();
         return store;
     }
@@ -254,8 +254,32 @@ export default class SaltyClient {
         this.load();
     }
 
-    public otprekeyUsed(pkey: PKey) {
-        // TODO
+    private static keyArrDiff(to: Buffer[], from: KeyPair[]) {
+        const toStr = to.map(x => x.toString("base64"));
+        return {
+            added:   toStr.filter(x => !from.some(k => k.fingerprint() === x)),
+            removed: from.filter(k => !toStr.some(x => k.fingerprint() === x)).map(x => x.fingerprint())
+        };
+    }
+    public updateOtprekeys(fingerprints: Buffer[]) {
+        console.log(`[salty] ${fingerprints.length} one-time prekeys on the server`);
+        console.log(`[salty] ${this.keys.otprekeys.length} stored locally`);
+        const { added, removed } = SaltyClient.keyArrDiff(fingerprints, this.keys.otprekeys);
+        console.log(`[salty] ${added.length} unseen keys, ${removed.length} used keys`);
+
+        // Remove old keys
+        for(const k of removed)
+            this.keys.otprekeys = this.keys.otprekeys.filter(x => x.fingerprint() !== k);
+
+        // Communicate with other agents to retrieve the private parts of new keys
+        if(added.length !== 0)
+            console.warn("[salty] new one-time prekeys detected, but agent-to-agent communication has not been implemented yet");
+
+        // Generate new keys
+        this.keys.updPrekeys();
+
+        console.log(`[salty] ${this.keys.otprekeys.length} stored locally after provisioning`);
+        this.dump();
     }
 
     private static x3dhKdf(keyMaterial: Buffer) {

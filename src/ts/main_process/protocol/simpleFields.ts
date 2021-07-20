@@ -130,6 +130,32 @@ export class EntityField extends SimpleField {
     lengthingFunc = (buf: Buffer) => Entity.decode(buf, 0).posAfter;
 }
 
+export class BinListField extends SimpleField {
+    sl: number; // Size Length
+    bl: number; // Bin Length
+
+    constructor(p: string,  s: number, b: number, bid?: number) {
+        super(p, bid);
+        this.sl = s;
+        this.bl = b;
+    }
+
+    encodingFunc = (val: Buffer[]) => Buffer.concat([
+        types.encNum(val.length, this.sl),
+        ...val
+    ]);
+    decodingFunc = (val: Buffer) => {
+        const len = types.decNum(val.slice(0, this.sl));
+        const ret = [];
+        for(var offs = this.sl; offs < this.sl + (len * this.bl); offs += this.bl)
+            ret.push(val.slice(offs, offs + this.bl));
+        return ret;
+    };
+    lengthingFunc = (val: Buffer) =>
+        this.sl +
+        (types.decNum(val.slice(0, this.sl)) * this.bl);
+}
+
 
 
 export function checkBinaryIdExistence(fields: SimpleField[]): boolean {

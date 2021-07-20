@@ -116,6 +116,7 @@ export class User extends Entity {
     otprekey?:       PKey;
     idsignKey?:      PKey;
     note?:           string;
+    key_fps?:        Buffer[];
 
     constructor() {
         super([
@@ -144,7 +145,8 @@ export class User extends Entity {
             new fields.EntityField ("prekey",         23),
             new fields.EntityField ("otprekey",       24),
             new fields.EntityField ("idsignKey",      25),
-            new fields.StrField    ("note",           26)
+            new fields.StrField    ("note",           26),
+            new fields.BinListField("key_fps", 1, 32, 27)
         ]);
     }
 }

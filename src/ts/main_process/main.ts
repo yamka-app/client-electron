@@ -333,6 +333,10 @@ function webprotData(bytes: Buffer) {
                         await sweet.salty.handshakeInit(other, ent.id);
                     }
                 }
+
+                // Update one-time Salty prekeys
+                if(ent instanceof entities.User && ent.id === sweet.selfId && ent.key_fps !== undefined)
+                    sweet.salty.updateOtprekeys(ent.key_fps);
     
                 // Decrypt messages
                 if(ent instanceof entities.Message && ent.sender !== 0) {

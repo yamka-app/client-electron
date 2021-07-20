@@ -81,7 +81,7 @@ export function jsonify(obj: any) {
 
 // Recursively goes through all fields and unmushes them too if possible
 // TS is weird, ay?
-// I love it!!!!
+// I love it!!!! (not really)
 function unmush<T>(c: { new(...a: any[]): T }, data: any): T {
     if(c === undefined || data === undefined) return undefined;
 
@@ -115,8 +115,10 @@ function unmush<T>(c: { new(...a: any[]): T }, data: any): T {
                 : data.data, encoding);
     }
 
-    if(["Boolean", "Date", "String"].includes(c?.name))
+    if(["Boolean", "String"].includes(c?.name))
         return data;
+    if(c?.name === "Date")
+        return new c(data);
     if(c?.name === "Number")
         return data;
 
