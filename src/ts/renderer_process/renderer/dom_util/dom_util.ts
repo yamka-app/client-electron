@@ -141,20 +141,6 @@ export function updateUser(id: number) {
         if(window.viewingGroup === 0)
             user.color = undefined;
 
-        // Update nicknames and tags
-        const nicknames = document.getElementsByClassName("user-nickname-" + id) as HTMLCollectionOf<HTMLElement>;
-        const tags = document.getElementsByClassName("user-tag-" + id);
-        for(const name of nicknames) {
-            name.innerHTML = util.escapeHtml(user.name);
-            // Set colors
-            if(user.color !== undefined && user.color !== "#00000000")
-                name.style.color = user.color;
-            else
-                name.style.color = "unset";
-        }
-        for(const tag of tags)
-            tag.innerHTML = util.escapeHtml(util.formatTag(user.tag));
-
         // Update status texts
         const statusTexts = document.getElementsByClassName("user-status-" + id);
         for(const st of statusTexts)
@@ -183,20 +169,48 @@ export function updateUser(id: number) {
             }
         }
 
-        const updateNotes = () => {
-            const notes = document.getElementsByClassName("user-note-" + id) as HTMLCollectionOf<HTMLSpanElement>;
+        const updateColorRelated = () => {
+            // update profile background
             const color = (window.entityCache[user.avaFile] as entities.File).__color;
+            const topbar = util.elmById("profile-topbar")
+            topbar.style.background = color;
+            topbar.style.boxShadow = `0px 0px 10px ${color}`;
+            // update notes
+            const notes = document.getElementsByClassName("user-note-" + id) as HTMLCollectionOf<HTMLSpanElement>;
             for(const note of notes) {
-                note.style.background = color;
-                note.style.color = util.isColorLight(color) ? "#000" : "#fff";
-                if(user.note === undefined) {
+                note.innerHTML = util.escapeHtml(user.note);
+                // profile notes input fields should be black or white
+                // normal notes should have the user's color
+                const noteColor = note.id === "profile-note"
+                        ? (util.isColorLight(color) ? "#000" : "#fff")
+                        : color;
+                note.style.background = noteColor;
+                note.style.color = util.isColorLight(noteColor) ? "#000" : "#fff";
+                if(user.note === undefined || user.note === "") {
                     if(note.id !== "profile-note")
                         note.style.display = "none";
                     else
                         (note as HTMLInputElement).value = "";
                     continue;
+                } else {
+                    note.style.display = "";
                 }
-                note.innerHTML = util.escapeHtml(user.note);
+            }
+
+            // Update nicknames and tags
+            const profileNicknameColor = util.isColorLight(color) ? "#000" : "#fff";
+            const profileTagColor = util.isColorLight(color) ? "#444" : "#bbb";
+            const nicknames = document.getElementsByClassName("user-nickname-" + id) as HTMLCollectionOf<HTMLElement>;
+            const tags = document.getElementsByClassName("user-tag-" + id) as HTMLCollectionOf<HTMLElement>;
+            for(const name of nicknames) {
+                name.innerHTML = util.escapeHtml(user.name);
+                if(name.id === "profile-nickname")
+                    name.style.color = profileNicknameColor;
+            }
+            for(const tag of tags) {
+                tag.innerHTML = util.escapeHtml(util.formatTag(user.tag));
+                if(tag.id === "profile-tag")
+                    tag.style.color = profileTagColor;
             }
         };
 
@@ -208,7 +222,7 @@ export function updateUser(id: number) {
                 // if the user specified their favorite color, use it instead
                 if(user.favColor !== "#00000000") {
                     ava.__color = user.favColor;
-                    updateNotes();
+                    updateColorRelated();
                     return;
                 }
                 // or extract one from their avatar
@@ -216,11 +230,11 @@ export function updateUser(id: number) {
                 if(avaZero !== null) {
                     avaZero.onload = () => {
                         ava.__color = util.getPrimaryColor(avaZero);
-                        updateNotes();
+                        updateColorRelated();
                     };
                 }
             } else if(ava !== undefined) {
-                updateNotes();
+                updateColorRelated();
             }
         });
     });

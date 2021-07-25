@@ -438,6 +438,9 @@ export function getPrimaryColor(img: HTMLImageElement) {
 export function isColorLight(color: string) {
     return tinycolor(color).isLight();
 }
+export function deriveSecondary(color: string) {
+    return tinycolor(color).triad()[1].toHexString();
+}
 
 // Single-line input auto-size
 const _width_canvas = document.createElement("canvas").getContext("2d");
