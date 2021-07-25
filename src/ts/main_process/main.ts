@@ -335,8 +335,8 @@ function webprotData(bytes: Buffer) {
                 }
 
                 // Update one-time Salty prekeys
-                if(ent instanceof entities.User && ent.id === sweet.selfId && ent.key_fps !== undefined)
-                    sweet.salty.updateOtprekeys(ent.key_fps);
+                if(ent instanceof entities.User && ent.id === sweet.selfId && ent.keyFps !== undefined)
+                    sweet.salty.updateOtprekeys(ent.keyFps);
     
                 // Decrypt messages
                 if(ent instanceof entities.Message && ent.sender !== 0) {

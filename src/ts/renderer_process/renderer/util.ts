@@ -448,6 +448,5 @@ export function textWidth(text: string, style: string) {
 export function resizeSlInput(elm: HTMLInputElement) {
     const value = (elm.value === "") ? elm.placeholder : elm.value;
     const style = getComputedStyle(elm).font;
-    console.log(value, style);
     elm.style.width = `${textWidth(value, style) + 25}px`;
 }

@@ -205,6 +205,13 @@ export function updateUser(id: number) {
         util.reqEntities([new packets.EntityGetRequest(entities.File.typeNum, user.avaFile)], false, () => {
             const ava = window.entityCache[user.avaFile] as entities.File;
             if(ava?.__color === undefined) {
+                // if the user specified their favorite color, use it instead
+                if(user.favColor !== "#00000000") {
+                    ava.__color = user.favColor;
+                    updateNotes();
+                    return;
+                }
+                // or extract one from their avatar
                 const avaZero = avas.item(0);
                 if(avaZero !== null) {
                     avaZero.onload = () => {

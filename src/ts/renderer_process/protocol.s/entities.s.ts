@@ -53,6 +53,7 @@ export class User extends Entity {
     agents?:         number[];
     emailConfirmed?: boolean;
     note?:           string;
+    favColor?:       string;
 }
 
 export enum ChannelVoiceStatus {
