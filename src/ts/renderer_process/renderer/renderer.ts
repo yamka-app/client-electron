@@ -541,9 +541,10 @@ function _rendererFunc() {
                 const agent = window.entityCache[packet.agentId] as entities.Agent;
                 console.log("Got client user and agent:", self, agent);
                 remote.getGlobal("sweet").self = self;
+                (util.elmById("self-fav-color-change") as HTMLInputElement).value = self.favColor.slice(0, 7);
 
                 layout.updMessageArea();
-            })
+            });
         } else if(packet instanceof packets.AccessTokenPacket) {
             // Save the token
             var tokens = configGet("tokens");
@@ -559,6 +560,10 @@ function _rendererFunc() {
                 if(oldEntity !== undefined)
                     ent = Object.assign(Object.create(oldEntity), ent);
                 window.entityCache[ent.id] = ent;
+
+                // Update the avatar color if the user's favorite color has changed
+                if(ent instanceof entities.User && entityCache[ent.avaFile] !== undefined)
+                    (entityCache[ent.avaFile] as entities.File).__color = ent.favColor;
 
                 // We know when a channel is ready better than the main process!
                 if(ent instanceof entities.Channel && ent.group === 0 && !ent.__e2eeReady && ent.lcid >= 2) {
@@ -1022,7 +1027,7 @@ function _rendererFunc() {
         }
     });
 
-    // Various text peoperties changing
+    // Various peoperties
     const statusTextChange = util.elmById("self-status-text-change") as HTMLInputElement;
     statusTextChange.onkeypress = (evt) => {
         if(evt.keyCode === 13) // Enter
@@ -1032,6 +1037,13 @@ function _rendererFunc() {
     usernameChange.onkeypress = (evt) => {
         if(evt.keyCode === 13)
             setSelfName(usernameChange.value);
+    }
+    const favColorChange = util.elmById("self-fav-color-change") as HTMLInputElement;
+    favColorChange.onchange = (evt) => {
+        const user = new entities.User();
+        user.id = 0;
+        user.favColor = favColorChange.value + "ff"; // add alpha
+        util.putEntities([user]);
     }
     const emailChange = util.elmById("self-email-change") as HTMLInputElement;
     emailChange.onkeypress = (evt) => {

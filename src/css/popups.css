@@ -173,7 +173,7 @@ input[type="radio"].settings-radio:checked + label {
     height:        64px;
     border-radius: 72px;
 }
-.user-avatar-huge {
+.user-avatar-huge:not(#self-avatar-huge) {
     background: var(--background);
     border:     4px solid var(--background);
 }

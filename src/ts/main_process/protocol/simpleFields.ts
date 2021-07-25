@@ -59,7 +59,7 @@ export class BoolField extends SimpleField {
 export class ColorField extends SimpleField {
     constructor(p: string, bid?: number) { super(p, bid); }
 
-    encodingFunc  = (val: string) => types.encNum(parseInt(val.slice(1)), 4);
+    encodingFunc  = (val: string) => types.encNum(parseInt(val.slice(1), 16), 4);
     decodingFunc  = (buf: Buffer) => "#" + ("0000000" + types.decNum(buf).toString(16)).slice(-8);
     lengthingFunc = (buf: Buffer) => 4;
 }
