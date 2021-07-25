@@ -541,7 +541,8 @@ function _rendererFunc() {
                 const agent = window.entityCache[packet.agentId] as entities.Agent;
                 console.log("Got client user and agent:", self, agent);
                 remote.getGlobal("sweet").self = self;
-                (util.elmById("self-fav-color-change") as HTMLInputElement).value = self.favColor.slice(0, 7);
+                (util.elmById("self-fav-color-change") as HTMLInputElement).value
+                        = self.favColor?.slice(0, 7) ?? "";
 
                 layout.updMessageArea();
             });
@@ -562,7 +563,7 @@ function _rendererFunc() {
                 window.entityCache[ent.id] = ent;
 
                 // Update the avatar color if the user's favorite color has changed
-                if(ent instanceof entities.User && entityCache[ent.avaFile] !== undefined)
+                if(ent instanceof entities.User && entityCache[ent.avaFile] !== undefined && ent.favColor !== "#00000000")
                     (entityCache[ent.avaFile] as entities.File).__color = ent.favColor;
 
                 // We know when a channel is ready better than the main process!
