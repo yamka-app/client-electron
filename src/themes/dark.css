@@ -19,8 +19,8 @@
     
     --background:       #16171a;
     --background-trans: #16171aaf;
-    --bg-2:             #18191d;
-    --bg-3:             #1d1e22;
+    --bg-2:             #1b1d21;
+    --bg-3:             #26282e;
 
     --red-foreground:    #efefef;
     --yellow-foreground: #242424;
@@ -29,7 +29,7 @@
     --foreground-1:      #a7a7a7;
     --foreground-2:      #979797;
 
-    --shadow: 0 0 16px #111111a8;
+    --shadow: 0 0 16px #111111ef;
 
     --darken-icon: 0%;
 }
