@@ -1266,11 +1266,13 @@ img.large-emoji {
 .role-button,
 .channel-button {
     margin-bottom: 10px;
-    padding: 10px;
+    margin-left:   0px;
+    padding:       10px;
 
-    background:    var(--background);
+    background:    var(--bg-2);
     border-radius: 5px;
-    transition:    background-color 0.1s ease;
+    transition:    background 0.1s ease,
+                   margin-left 0.1s ease;
 
     font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
@@ -1280,8 +1282,8 @@ img.large-emoji {
 .role-button:hover,
 .channel-button:hover,
 .channel-button-selected {
-    background: var(--bg-2);
-    box-shadow: var(--shadow);
+    background: var(--bg-3);
+    margin-left: 10px;
 }
 
 .role-button {
