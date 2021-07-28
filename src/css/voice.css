@@ -51,3 +51,7 @@
     width:  16px;
     height: 16px;
 }
+
+#message-area-voice {
+    margin-left: auto;
+}
