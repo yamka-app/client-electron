@@ -1261,8 +1261,10 @@ img.large-emoji {
     height: 100%;
 }
 
-#channel-list {
+#channel-list-area {
     background: var(--bg-2);
+}
+#channel-list {
     padding: 10px;
     width: 100%;
 }
