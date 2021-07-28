@@ -707,11 +707,18 @@ function _rendererFunc() {
                         util.reqEntities(newFriends.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {
                             for(const fid of newFriends) {
                                 const f = window.entityCache[fid];
+                                const show = () => {
+                                    window.viewingGroup = 0;
+                                    window.viewingChan = 0;
+                                    window.viewingContactGroup = 2; // incoming rqs
+                                    layout.updLayout();
+                                };
                                 // Download avatars of each one
-                                const text = f.name + " wants to add you as a friend";
+                                const text = f.name + " sent a friend request";
                                 util.download(f.avaFile, (ava) => {
-                                    new Notification(text, {icon: ava});
-                                    notif.show(text, ava, "green");
+                                    new Notification(text, {icon: ava})
+                                        .onclick = show;
+                                    notif.show(text, ava, "green", show);
                                 });
                             }
                         });
