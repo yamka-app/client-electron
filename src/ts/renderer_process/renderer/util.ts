@@ -66,18 +66,19 @@ export function prepareMsgText(txt: string): string {
     return escapeHtml(txt).replace(/(?:\r\n|\r|\n)/g, "<br>");
 }
 export function markupText(txt: string) {
-    var esc = remark().use(remarkEmoji).processSync(
+    const esc = remark().use(remarkEmoji).processSync(
         ("<span>" +
         marked.parseInline(                           // Markdown parser
         escapeHtml(txt)) +                            // no XSS for ya today, sorry
         "</span>")   
         .replace(/(?:\r\n|\r|\n)/g, "</span><span>")) // insert line breaks
-        .contents
+        .contents;
     return applyKaomoji(esc.toString());
 }
 
-export function adjTaHeight(elm: HTMLTextAreaElement) {
-    elm.rows = Math.min(elm.value.split(/\r\n|\r|\n/).length, 10);
+export function adjustTextAreaHeight(elm: HTMLTextAreaElement) {
+    elm.rows = 1;
+    elm.rows = Math.min(Math.floor(elm.scrollHeight / 14), 10);
 }
 
 export function showElm(element: HTMLElement|string) {

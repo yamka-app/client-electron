@@ -485,7 +485,7 @@ function createMessageActionBar(id: number): HTMLDivElement {
 
             (window.msgSections[sectionId].typeElm as HTMLInputElement).value
                     = util.messageSummary(window.entityCache[id]);
-            util.adjTaHeight(window.msgSections[sectionId].typeElm as HTMLTextAreaElement);
+            util.adjustTextAreaHeight(window.msgSections[sectionId].typeElm as HTMLTextAreaElement);
         } },
         { icon: "delete",  selfOnly: true,  dmPrevent: true, onclick: (e) => util.putEntities([msg]) },
         { icon: "edit",    selfOnly: true,  dmPrevent: true, onclick: (e) => editMessage(id) },
@@ -578,7 +578,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             typeElm.rows = 1;
             var mentionLock = true;
             typeElm.oninput = () => {
-                util.adjTaHeight(typeElm);
+                util.adjustTextAreaHeight(typeElm);
                 util.updTyping(typeElm.value);
 
                 // process possible mentions
@@ -647,7 +647,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             typeElm.classList.add("code-input", "fill-width");
             typeElm.placeholder = "Code section";
             typeElm.rows = 1;
-            typeElm.oninput = () => { util.adjTaHeight(typeElm); util.updTyping(typeElm.value) };
+            typeElm.oninput = () => { util.adjustTextAreaHeight(typeElm); util.updTyping(typeElm.value) };
             typeElm.spellcheck = false;
             typeElm.onkeydown = (e) => {
                 if(e.keyCode === 9) {
@@ -662,7 +662,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
             typeElm.classList.add("message-input", "fill-width", "message-quote-section");
             typeElm.placeholder = "Quote section";
             typeElm.rows = 1;
-            typeElm.oninput = () => { util.adjTaHeight(typeElm); util.updTyping(typeElm.value) };
+            typeElm.oninput = () => { util.adjustTextAreaHeight(typeElm); util.updTyping(typeElm.value) };
             typeElm.onkeydown = (e) => {
                 if(e.keyCode === 9) {
                     typeElm.value += "\t";
@@ -794,7 +794,7 @@ export function resetMsgInput(fullReset: boolean =false) {
 
         const elm = window.msgSections[id].typeElm as HTMLTextAreaElement;
         setTimeout(() => elm.value = "", 1);
-        setTimeout(() => util.adjTaHeight(elm), 1);
+        setTimeout(() => util.adjustTextAreaHeight(elm), 1);
 
         util.elmById("message-editing").innerHTML = "";
     }
