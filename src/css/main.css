@@ -1102,9 +1102,10 @@ span.fg-1 {
 }
 .message-quote-section > span,
 .message-text-section > span {
-    display:     flex;
-    white-space: pre-wrap;
-    align-items: center;
+    overflow-wrap: anywhere;
+    display:       flex;
+    white-space:   pre-wrap;
+    align-items:   center;
 }
 .message-quote-section span:empty::before,
 .message-text-section span:empty::before {
