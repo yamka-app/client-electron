@@ -1004,7 +1004,6 @@ function _rendererFunc() {
 
     // Add listeners that open and close the user settings panel
     util.elmById("self-avatar")        .onclick = showUserSettings;
-    util.elmById("self-nickname")      .onclick = showUserSettings;
     util.elmById("user-settings-exit") .onclick = hideUserSettings;
     util.elmById("user-settings-bg")   .onclick = hideUserSettings;
 
@@ -1475,6 +1474,20 @@ function _rendererFunc() {
     util.elmById("update-popup-ign").onclick = (e) =>
         util.hideElm(util.elmById("update-popup"));
 
+    notif.show("Editing and deleting messages in DMs is not "
+             + "supported. Direct calls are not end-to-end "
+             + "encrypted.", undefined, "yellow");
+
+    layout.addHints();
+
+    // copy own name and tag when clicked
+    util.elmById("self-nickname").onclick = (e) => {
+        e.preventDefault();
+        util.stopPropagation(e);
+        clipboard.writeText(self().name + "#" + self().tag);
+        notif.show("Copied", "icons/approve.png", "green");
+    };
+
     // Blur the window if it's unfocused
     const mainLayoutCont = util.elmById("main-layout-container");
     browserWindow.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.add   ("unfocused") });
@@ -1484,12 +1497,6 @@ function _rendererFunc() {
         browserWindow.hide();
         e.returnValue = false;
     };
-
-    notif.show("Editing and deleting messages in DMs is not "
-             + "supported. Direct calls are not end-to-end "
-             + "encrypted.", undefined, "yellow");
-
-    layout.addHints();
 }
 
 window.addEventListener("load", _rendererFunc);
