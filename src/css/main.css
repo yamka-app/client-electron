@@ -498,6 +498,9 @@ label {
     margin-top:  8px;
     position:    relative;
 }
+#user-info-bar > .user-avatar-container {
+    margin-bottom: 4px;
+}
 .user-avatar {
     width:  32px;
     height: 32px;
