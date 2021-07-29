@@ -172,9 +172,9 @@ export function updateUser(id: number) {
         const updateColorRelated = () => {
             // update profile background
             const color = (window.entityCache[user.avaFile] as entities.File).__color;
-            const topbar = util.elmById("profile-topbar")
-            topbar.style.background = color;
-            topbar.style.boxShadow = `0px 0px 10px ${color}`;
+            const color2 = util.colorSpin(color);
+            const topbar = util.elmById("profile-topbar");
+            topbar.style.background = `linear-gradient(-45deg, ${color}, ${color2})`;
             // update notes
             const notes = document.getElementsByClassName("user-note-" + id) as HTMLCollectionOf<HTMLSpanElement>;
             for(const note of notes) {
@@ -186,12 +186,12 @@ export function updateUser(id: number) {
                         : color;
                 note.style.background = noteColor;
                 note.style.color = util.isColorLight(noteColor) ? "#000" : "#fff";
+                console.log(user.note, note.id);
                 if(user.note === undefined || user.note === "") {
                     if(note.id !== "profile-note")
                         note.style.display = "none";
                     else
-                        (note as HTMLInputElement).value = "";
-                    continue;
+                        note.innerHTML = "";
                 } else {
                     note.style.display = "";
                 }

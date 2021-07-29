@@ -442,6 +442,9 @@ export function isColorLight(color: string) {
 export function deriveSecondary(color: string) {
     return tinycolor(color).triad()[1].toHexString();
 }
+export function colorSpin(color: string, amt=-20) {
+    return tinycolor(color).spin(amt).toHexString();
+}
 
 // Single-line input auto-size
 const _width_canvas = document.createElement("canvas").getContext("2d");
