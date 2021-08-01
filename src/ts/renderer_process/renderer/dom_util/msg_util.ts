@@ -656,7 +656,8 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
             typeElm.rows = 1;
             typeElm.spellcheck = false;
             typeElm.onkeydown = (e) => {
-                util.adjustTextAreaHeight(typeElm); util.updTyping(typeElm.value);
+                util.adjustTextAreaHeight(typeElm);
+                util.updTyping(typeElm.value);
                 if(e.keyCode === 9) {
                     typeElm.value += "\t";
                     util.stopPropagation(e);
@@ -675,7 +676,8 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
             typeElm.placeholder = "Quote section";
             typeElm.rows = 1;
             typeElm.onkeydown = (e) => {
-                util.adjustTextAreaHeight(typeElm); util.updTyping(typeElm.value);
+                util.adjustTextAreaHeight(typeElm);
+                util.updTyping(typeElm.value);
                 if(e.keyCode === 9) {
                     typeElm.value += "\t";
                     e.returnValue = false;
@@ -706,6 +708,7 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
                 const opt = document.createElement("div");
                 optionContainer.appendChild(opt);
 
+                // add removal button
                 const rem = document.createElement("button");
                 opt.appendChild(rem);
                 rem.classList.add("icon-button", "cg-button");
@@ -719,7 +722,16 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
                 const inp = document.createElement("input");
                 inp.value = text ?? "";
                 opt.appendChild(inp);
+                inp.focus();
                 optObj.input = inp;
+                // insert new option when pressing Enter
+                inp.onkeydown = (e) => {
+                    if(e.keyCode === 13) {
+                        util.stopPropagation(e);
+                        e.returnValue = false;
+                        addOption();
+                    }
+                }
             };
             editorSection.addOption = addOption;
 
