@@ -543,6 +543,12 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
     return elm;
 }
 
+export function createUserSummaryPlaceholder() {
+    const div = document.createElement("div");
+    div.classList.add("user-summary", "loading");
+    return div;
+}
+
 export function createChannelButton(id: number, clickCb:
         (this: GlobalEventHandlers, ev: MouseEvent) => any, highlightSelected: boolean =true): HTMLDivElement {
     const channel = window.entityCache[id];

@@ -307,7 +307,7 @@ function _rendererFunc() {
     }
 
     // Updates all information about a group
-    function updateGroup(id: number, force: boolean=false) {
+    function updateGroup(id: number, force = false, updChans = false, updMembers = false) {
         util.reqEntities([new packets.EntityGetRequest(entities.Group.typeNum, id)], force, () => {
             const group = window.entityCache[id];
             // Update icons
@@ -320,10 +320,10 @@ function _rendererFunc() {
             }
     
             // Update the channel and member list
-            if(id === window.viewingGroup) {
+            if(id === window.viewingGroup && updChans)
                 layout.updChannelList();
+            if(id === window.viewingGroup && updMembers)
                 layout.updMemberList();
-            }
     
             try {
                 updateGroupSettingsChannelList();
@@ -570,7 +570,7 @@ function _rendererFunc() {
 
                 // Update group settings
                 if(ent instanceof entities.Group && ent.id === window.viewingGroup)
-                    updateGroup(ent.id);
+                    updateGroup(ent.id, false, ent.channels !== undefined, false);
 
                 // Delete groups from the main screen
                 if(ent instanceof entities.Group && ent.owner === 0) {

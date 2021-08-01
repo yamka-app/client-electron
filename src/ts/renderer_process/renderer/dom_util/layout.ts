@@ -17,6 +17,8 @@ import * as popups     from "../popups.js";
 
 // Updates the member list sidebar
 export function updMemberList() {
+    console.log("Updating member list");
+
     // Show or hide the friend hedaer
     const friendHeader = util.elmById("member-list-friend-header");
     const friendType   = util.elmById("member-list-friend-type");
@@ -32,13 +34,12 @@ export function updMemberList() {
         util.showElm(groupHeader);
     }
 
+    // Remove all previous members
+    const memberList = util.elmById("member-list-bar");
+    while(memberList.firstChild)
+        memberList.removeChild(memberList.firstChild);
+
     if(window.viewingGroup === 0) {
-        const memberList = util.elmById("member-list-bar");
-
-        // Remove all previous members
-        while(memberList.firstChild)
-            memberList.removeChild(memberList.firstChild);
-
         // Determine what users should end up in the member list
         const self = remote.getGlobal("sweet").self;
         const friendType = util.elmById("member-list-friend-type");
@@ -91,6 +92,8 @@ export function updMemberList() {
 
 // Updates the channel list
 export function updChannelList() {
+    console.log("Updating channel list");
+
     // Show or hide the channel list
     const channelListSidebar = util.elmById("channel-list-sidebar");
     util.setElmVisibility(channelListSidebar, window.viewingGroup !== 0);
@@ -129,7 +132,9 @@ export function updChannelList() {
 }
 
 // Updates the message area
-export function updMessageArea(updMessages: boolean =true) {
+export function updMessageArea(updMessages = true) {
+    console.log("Updating message area");
+
     const chan = window.entityCache[window.viewingChan] as entities.Channel;
 
     // Hide the panel list if we're viewing messages
@@ -184,6 +189,8 @@ export function updMessageArea(updMessages: boolean =true) {
 
 // Updates the group list
 export function updGroupList() {
+    console.log("Updating group list");
+
     const groupPanels = util.elmById("group-panel-area");
 
     // Hide the panel list if we're viewing messages
@@ -215,8 +222,16 @@ export function updLayout() {
 }
 
 // Fetches and appends members to the bottom
-export function appendMembersBottom(role: number, id_from: number, callback?: () => void, clear: boolean =false) {
-    const memberList = util.elmById("member-list-bar")
+export function appendMembersBottom(role: number, id_from: number, callback?: () => void, clear = false) {
+    const memberList = util.elmById("member-list-bar");
+
+    // Create placeholders
+    const placeholders: HTMLDivElement[] = [];
+    for(var i = 0; i < 50; i++) {
+        const p = domUtil.createUserSummaryPlaceholder();
+        placeholders.push(p);
+        memberList.appendChild(p);
+    }
     
     util.reqEntities([new packets.EntityGetRequest(entities.Role.typeNum, role,
             new packets.EntityPagination(6 /* members */,
@@ -231,6 +246,12 @@ export function appendMembersBottom(role: number, id_from: number, callback?: ()
                 while(memberList.firstChild)
                     memberList.firstChild.remove();
             }
+
+            // Remove placeholders
+            for(const p of placeholders)
+                p.remove();
+
+            // Append real summaries
             members = members.map(x => window.entityCache[x.id]);
             members.forEach(member => {
                 const id = member.id;
