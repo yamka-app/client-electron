@@ -455,7 +455,7 @@ input[type="radio"].settings-radio:checked + label {
     margin-right: 2px;
 }
 #profile-badges img.dark {
-    filter: brightness(20%);
+    filter: brightness(0%);
 }
 .profile-tab {
     overflow: hidden scroll;
@@ -474,12 +474,15 @@ input[type="radio"].settings-radio:checked + label {
     color:       var(--foreground);
     
     cursor: pointer;
+
+    display:     flex;
+    align-items: center;
 }
 .mutual-thing > img {
-    width:  36px;
-    height: 36px;
-    margin-right: 4px;
-    border-radius: 18px;
+    width:  24px;
+    height: 24px;
+    margin-right: 8px;
+    border-radius: 12px;
 }
 .mutual-thing:hover {
     background: var(--background);

@@ -301,10 +301,11 @@ export function showProfile(id: number) {
         badges.firstChild.remove();
         // Add badges
         for(const bid of user.badges) {
-            const file = path.join(window["__dirname"], "icons", "badges", ["verified", "staff", "bot"][bid - 1] + ".png")
+            const file = path.join(window["__dirname"], "icons", "badges", ["verified", "staff", "bot", "tester"][bid - 1] + ".png")
             const hint = ["This user is who they claim to be",
                         "This user is a member of the core Yamka team",
-                        "This user is a bot"][bid - 1];
+                        "This user is a bot",
+                        "This user has helped test the software"][bid - 1];
 
             const iconElm = document.createElement("img");
             iconElm.src = "file://" + file;
@@ -326,11 +327,13 @@ export function showProfile(id: number) {
     for(const gid of user.groups) {
         const elm = document.createElement("div");
         elm.classList.add("mutual-thing");
-        elm.innerHTML = util.escapeHtml(window.entityCache[gid].name);
+        const group = window.entityCache[gid] as entities.Group;
+        util.download(group.icon, (icon) =>
+            elm.innerHTML = `<img src="${icon}"/> ${util.escapeHtml(group.name)}`);
         elm.onclick = (e) => {
             hideProfile();
             window.viewingGroup = gid;
-            window.viewingChan = window.entityCache[gid].channels[0];
+            window.viewingChan = group.channels[0];
             layout.updLayout();
         }
         groups.appendChild(elm);
@@ -338,7 +341,9 @@ export function showProfile(id: number) {
     for(const fid of user.friends) {
         const elm = document.createElement("div");
         elm.classList.add("mutual-thing");
-        elm.innerHTML = util.escapeHtml(window.entityCache[fid].name);
+        const user = window.entityCache[fid] as entities.User;
+        util.download(user.avaFile, (icon) =>
+            elm.innerHTML = `<img src="${icon}"/> ${util.escapeHtml(user.name)}`);
         elm.onclick = (e) => showProfile(fid);
         friends.appendChild(elm);
     }
