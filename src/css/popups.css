@@ -407,21 +407,37 @@ input[type="radio"].settings-radio:checked + label {
     height:  55vh;
     padding: 0;
 
-    box-shadow: var(--shadow);
+    box-shadow:      var(--shadow);
+    background:      var(--background-trans);
+    backdrop-filter: blur(5px);
 }
 #profile-topbar {
+    border-radius: 10px 10px 0 0;
+}
+#profile-topbar > div:nth-child(1) {
     height: fit-content;
-
     left:  0;
     right: 0;
-
     margin:  0;
     padding: 20px;
-
-    background:    var(--background);
-    border-radius: 10px 10px 0 0;
-
     align-items: center;
+}
+#profile-topbar > div:nth-child(2) {
+    padding:      0 20px;
+    background: #00000022;
+}
+#profile-topbar > div:nth-child(2) > input {
+    display: none;
+}
+#profile-topbar > div:nth-child(2) > label {
+    color: var(--color); /* set dynamically by js */
+    border-bottom: 2px solid transparent;
+    padding:      10px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+#profile-topbar > div:nth-child(2) > input:checked + label {
+    border-bottom: 2px solid var(--color);
 }
 #profile-nickname-container {
     margin: 0 0 0 10px;
@@ -441,17 +457,9 @@ input[type="radio"].settings-radio:checked + label {
 #profile-badges img.dark {
     filter: brightness(20%);
 }
-#profile-groups-container {
-    width:   50%;
-    padding: 20px 10px 20px 20px;
-}
-#profile-friends-container {
-    width:   50%;
-    padding: 20px 20px 20px 10px;
-}
-#profile-groups,
-#profile-friends {
+.profile-tab {
     overflow: hidden scroll;
+    padding:  20px;
 }
 .mutual-thing {
     padding:          10px;
@@ -459,13 +467,19 @@ input[type="radio"].settings-radio:checked + label {
     background: var(--background-trans);
     transition:       box-shadow       0.1s ease,
                       background-color 0.1s ease;
-    border-radius:    5px;
+    border-radius:    10px;
 
     font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
     color:       var(--foreground);
     
     cursor: pointer;
+}
+.mutual-thing > img {
+    width:  36px;
+    height: 36px;
+    margin-right: 4px;
+    border-radius: 18px;
 }
 .mutual-thing:hover {
     background: var(--background);

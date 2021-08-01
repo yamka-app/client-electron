@@ -120,7 +120,7 @@ export function updateRelatedUsers(state: entities.MessageState, deep:number =5)
 }
 
 // Updates all information about a user
-export function updateUser(id: number, cb?: (light: boolean) => any) {
+export function updateUser(id: number, cb?: (light: boolean) => any, profile = false) {
     util.reqEntities([new packets.EntityGetRequest(entities.User.typeNum, id)], false, () => {
         const user = window.entityCache[id] as entities.User;
 
@@ -174,8 +174,10 @@ export function updateUser(id: number, cb?: (light: boolean) => any) {
             // update profile background
             const color = (window.entityCache[user.avaFile] as entities.File).__color;
             const color2 = util.colorSpin(color);
-            const topbar = util.elmById("profile-topbar");
-            topbar.style.background = `linear-gradient(90deg, ${color}, ${color2})`;
+            if(profile) {
+                const topbar = util.elmById("profile-topbar");
+                topbar.style.background = `linear-gradient(90deg, ${color}, ${color2})`;
+            }
             // update notes
             const notes = document.getElementsByClassName("user-note-" + id) as HTMLCollectionOf<HTMLSpanElement>;
             for(const noteElm of notes) {
@@ -240,8 +242,26 @@ export function updateUser(id: number, cb?: (light: boolean) => any) {
     });
 }
 
+// Shows a profile tab
+export function showProfileTab(tab: string) {
+    (util.elmById("profile-tab-" + tab) as HTMLInputElement).checked = true;
+    const tabs = document.querySelectorAll(".profile-tab");
+    for(const tabPanel of tabs)
+        (tabPanel as HTMLElement).style.display = "none";
+    util.elmById("profile-" + tab).style.display = "";
+}
+export function setupProfileTabs() {
+    const tabs = document.querySelectorAll("[name=\"profile-tabs\"]");
+    for(const tab of tabs) {
+        const name = tab.id.split("profile-tab-")[1];
+        (tab as HTMLElement).onclick = (e) =>
+            showProfileTab(name);
+    }
+}
+
 // Shows/hides a profile
 export function showProfile(id: number) {
+    showProfileTab("groups");
     const user = window.entityCache[id] as entities.User;
     const profile  = util.elmById("profile");
     const nickname = util.elmById("profile-nickname").classList;
@@ -274,6 +294,8 @@ export function showProfile(id: number) {
     // updateUser() also determines whether the user's favorite color is light or dark
     // we're going to use that to color our badge icons
     updateUser(id, (light) => {
+        // Set text color
+        util.elmById("profile").style.setProperty("--color", light ? "#000" : "#fff");
         // Remove old badges
         while(badges.firstChild)
         badges.firstChild.remove();
@@ -291,7 +313,7 @@ export function showProfile(id: number) {
             if(light)
                 iconElm.classList.add("dark");
         }
-    });
+    }, true);
     // Hide the note editor if we're viewing ourselves
     note.style.display = id === window.selfId ? "none" : "";
 

@@ -113,10 +113,10 @@
     </div>
 
     <div id="profile-bg" class="darken-bg" style="display: none;">
-      <div id="profile">
-        <div id="profile-topbar" class="flex-row">
-          <img id="profile-avatar" class="user-avatar-huge"/>
-          <div class="flex-col">
+      <div id="profile" class="flex-col">
+        <div id="profile-topbar" class="flex-col">
+          <div class="flex-row">
+            <img id="profile-avatar" class="user-avatar-huge"/>
             <div id="profile-nickname-container" class="flex-row">
               <span id="profile-nickname" class="user-nickname">nickname</span>
               <span id="profile-tag" class="user-tag">#11111</span>
@@ -124,16 +124,25 @@
               <span id="profile-badges" class="flex-row"></span>
             </div>
           </div>
+          <div class="flex-row">
+            <input id= "profile-tab-groups" type="radio" name="profile-tabs" checked="checked"/>
+            <label for="profile-tab-groups">MUTUAL GROUPS</label>
+
+            <input id= "profile-tab-friends" type="radio" name="profile-tabs"/>
+            <label for="profile-tab-friends">MUTUAL FRIENDS</label>
+
+            <input id= "profile-tab-activity" type="radio" name="profile-tabs"/>
+            <label for="profile-tab-activity">ACTIVITY</label>
+          </div>
         </div>
-        <div class="flex-row">
-          <div id="profile-groups-container">
-            <h6>MUTUAL GROUPS</h6>
-            <div id="profile-groups"></div>
-          </div>
-          <div id="profile-friends-container">
-            <h6>MUTUAL FRIENDS</h6>
-            <div id="profile-friends"></div>
-          </div>
+        <div id="profile-groups" class="profile-tab">
+
+        </div>
+        <div id="profile-friends" class="profile-tab">
+
+        </div>
+        <div id="profile-activity" class="profile-tab">
+          <span>...coming soon...</span>
         </div>
       </div>
     </div>

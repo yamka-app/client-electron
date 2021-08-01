@@ -1455,6 +1455,7 @@ function _rendererFunc() {
              + "encrypted.", undefined, "yellow");
 
     layout.addHints();
+    domUtil.setupProfileTabs();
 
     // copy own name and tag when clicked
     util.elmById("self-nickname").onclick = (e) => {
