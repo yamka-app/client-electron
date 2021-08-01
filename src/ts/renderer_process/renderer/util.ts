@@ -455,5 +455,5 @@ export function textWidth(text: string, style: string) {
 export function resizeSingleLineInput(elm: HTMLInputElement) {
     const value = (elm.value === "") ? elm.placeholder : elm.value;
     const style = getComputedStyle(elm).font;
-    elm.style.width = `${textWidth(value, style) + 20}px`;
+    elm.style.width = `${Math.min(textWidth(value, style) + 20, 300)}px`;
 }
