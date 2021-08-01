@@ -173,6 +173,7 @@ export function updateUser(id: number, cb?: (light: boolean) => any, profile = f
         const updateColorRelated = () => {
             // update profile background
             const color = (window.entityCache[user.avaFile] as entities.File).__color;
+            const light = util.isColorLight(color);
             const color2 = util.colorSpin(color);
             if(profile) {
                 const topbar = util.elmById("profile-topbar");
@@ -197,8 +198,8 @@ export function updateUser(id: number, cb?: (light: boolean) => any, profile = f
             }
 
             // Update nicknames and tags
-            const profileNicknameColor = util.isColorLight(color) ? "#000" : "#fff";
-            const profileTagColor = util.isColorLight(color) ? "#111" : "#eee";
+            const profileNicknameColor = light ? "#000" : "#fff";
+            const profileTagColor = light ? "#111" : "#eee";
             const nicknames = document.getElementsByClassName("user-nickname-" + id) as HTMLCollectionOf<HTMLElement>;
             const tags = document.getElementsByClassName("user-tag-" + id) as HTMLCollectionOf<HTMLElement>;
             for(const name of nicknames) {
@@ -213,7 +214,7 @@ export function updateUser(id: number, cb?: (light: boolean) => any, profile = f
             }
 
             if(cb !== undefined)
-                cb(util.isColorLight(color));
+                cb(light);
         };
 
         // Calculate the color of the avatar if not done already

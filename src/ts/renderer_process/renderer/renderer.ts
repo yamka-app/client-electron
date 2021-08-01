@@ -1406,12 +1406,13 @@ function _rendererFunc() {
 
     util.elmById("group-leave").onclick = (e) => {
         util.stopPropagation(e);
-        ipcSend({
-            action:      "webprot.manage-contacts",
-            contactType: "group",
-            method:      "remove",
-            id:          window.viewingGroup
-        });
+        sendPacket(new packets.ContactsManagePacket(
+            packets.ContactType.GROUP,
+            packets.ContactAction.REMOVE,
+            window.viewingGroup));
+        window.viewingChan = 0;
+        window.viewingGroup = 0;
+        layout.updLayout();
     };
 
     util.elmById("group-delete-revert").onclick = (e) => { util.triggerDisappear(util.elmById("group-delete-box"), true); }
