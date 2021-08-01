@@ -279,9 +279,10 @@ function createQuoteSection(section: types.MessageSection) {
     elm.classList.add("message-quote-section");
 
     const txt = document.createElement("div");
-    if(section.blob === 0)
+    if(section.blob === 0) {
         txt.innerHTML = util.markupText(section.text);
-    twemoji.parse(txt, { folder: "svg", ext: ".svg" });
+        twemoji.parse(txt, { folder: "svg", ext: ".svg" });
+    }
     elm.appendChild(txt);
 
     // If "blob" ID (actually message ID in this case) != 0 then show the message when clicking on it
@@ -295,6 +296,7 @@ function createQuoteSection(section: types.MessageSection) {
         util.reqEntities([new packets.EntityGetRequest(entities.Message.typeNum, section.blob)], false, () => {
             const replyMsg = window.entityCache[section.blob] as entities.Message;
             txt.innerHTML = util.markupText(util.messageStateSummary(replyMsg.latest));
+
             util.reqEntities([new packets.EntityGetRequest(entities.User.typeNum, replyMsg.sender)], false, () => {
                 const replyAvaContainer = document.createElement("div");
                 replyAvaContainer.classList.add("reply-avatar-container", "flex-row");
@@ -313,6 +315,8 @@ function createQuoteSection(section: types.MessageSection) {
                 replySaid.classList.add("message-time");
                 replyAvaContainer.appendChild(replySaid);
             });
+
+            twemoji.parse(txt, { folder: "svg", ext: ".svg" });
         });
     }
 
