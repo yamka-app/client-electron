@@ -186,7 +186,6 @@ export function updateUser(id: number) {
                         : color;
                 note.style.background = noteColor;
                 note.style.color = util.isColorLight(noteColor) ? "#000" : "#fff";
-                console.log(user.note, note.id);
                 if(user.note === undefined || user.note === "") {
                     if(note.id !== "profile-note")
                         note.style.display = "none";

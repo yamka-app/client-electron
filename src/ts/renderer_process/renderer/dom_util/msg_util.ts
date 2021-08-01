@@ -476,10 +476,7 @@ function createMessageActionBar(id: number): HTMLDivElement {
     msg.id = id; msg.sender = 0;
     const buttons = [
         { icon: "reply", selfOnly: false, dmPrevent: false, onclick: (e) => {
-            const sectionId = window.msgSections.length
-            createInputSection(types.MessageSectionType.QUOTE, sectionId, () => {
-                removeInputSection(sectionId);
-            })
+            const sectionId = createEditorSection(types.MessageSectionType.QUOTE);
 
             window.msgSections[sectionId].blob = id;
 
@@ -522,8 +519,7 @@ function editMessage(id: number) {
     // Create input sections
     const msg = window.entityCache[id] as entities.Message;
     for(const srcSect of msg.latest.sections) {
-        const sid = window.msgSections.length;
-        createInputSection(srcSect.type, sid, () => removeInputSection(sid));
+        const sid = createEditorSection(srcSect.type);
         
         const section = window.msgSections[sid];
         const type = section.type;
@@ -553,15 +549,21 @@ function editMessage(id: number) {
 }
 
 // Creates an input message section
-export function createInputSection(type: types.MessageSectionType, id: number, removeCb: Function, filename?: string, fileSize?: number) {
+export function createEditorSection(type: types.MessageSectionType, filename?: string, fileSize?: number) {
+    // Some sections should get inserted before the last section
+    const shouldInsert = window.msgSections.length > 0
+        && (type === types.MessageSectionType.QUOTE);
+    const id = shouldInsert ? window.msgSections.length - 1 : window.msgSections.length;
+    console.log(shouldInsert, id);
+
     const section = document.createElement("div");
-    section.classList.add("message-section", "message-section-" + type, "flex-row", "message-section-" + id);
+    section.classList.add("message-section", "flex-row");
     section.id = "message-section-" + id;
 
     const removeBtn = document.createElement("button");
     removeBtn.classList.add("icon-button", "cg-button");
     section.appendChild(removeBtn);
-    removeBtn.addEventListener("click", (e) => removeCb());
+    removeBtn.addEventListener("click", (e) => removeInputSection(id));
 
     const removeImg = document.createElement("img");
     removeImg.src = path.join(window["__dirname"], "icons/remove_section.png");
@@ -611,6 +613,7 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
                 }
             };
             break;
+
         case types.MessageSectionType.FILE:
             typeElm = document.createElement("div");
             typeElm.classList.add("message-file-section", "flex-col");
@@ -727,9 +730,12 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
     }
     section.appendChild(typeElm);
 
-    // Append the section
+    // Insert the section
     const container = util.elmById("message-input-container");
-    container.insertBefore(section, container.lastChild);
+    const before = shouldInsert
+        ? container.lastChild.previousSibling
+        : container.lastChild;
+    container.insertBefore(section, before);
 
     // Play an animation
     util.triggerAppear(section);
@@ -745,7 +751,9 @@ export function createInputSection(type: types.MessageSectionType, id: number, r
     editorSection.typeElm = typeElm;
     editorSection.elm = section;
 
-    window.msgSections.push(editorSection);
+    window.msgSections.splice(id, 0, editorSection);
+    
+    return id;
 }
 
 // Removes an input message section
@@ -784,10 +792,7 @@ export function resetMsgInput(fullReset: boolean =false) {
 
     if(!fullReset) {
         // Add a default section
-        const id = window.msgSections.length;
-        createInputSection(types.MessageSectionType.TEXT, id, () => {
-            removeInputSection(id);
-        });
+        const id = createEditorSection(types.MessageSectionType.TEXT);
 
         // Focus on it
         window.msgSections[id].typeElm.focus();

@@ -216,12 +216,8 @@ function _rendererFunc() {
             const share = document.createElement("button");
             share.classList.add("accent-button");
             share.innerHTML = "SHARE";
-            share.onclick = (e) => {
-                const id = window.msgSections.length;
-                domMsgUtil.createInputSection(types.MessageSectionType.INVITE, id, () => {
-                    domMsgUtil.removeInputSection(id);
-                }, inv);
-            }
+            share.onclick = (e) =>
+                domMsgUtil.createEditorSection(types.MessageSectionType.INVITE, inv);
             elm.appendChild(share);
 
             const remove = document.createElement("button");
@@ -1208,12 +1204,8 @@ function _rendererFunc() {
     };
 
     // Message section buttons
-    util.elmById("message-text-section-button").onclick = (e) => {
-        const id = window.msgSections.length;
-        domMsgUtil.createInputSection(types.MessageSectionType.TEXT, id, () => {
-            domMsgUtil.removeInputSection(id);
-        });
-    };
+    util.elmById("message-text-section-button").onclick = (e) =>
+        domMsgUtil.createEditorSection(types.MessageSectionType.TEXT);
     util.elmById("message-file-section-button").addEventListener("click", (e) => {
         // Select the file
         var filePath: string[]|string = dialog.showOpenDialogSync(browserWindow, {
@@ -1231,10 +1223,8 @@ function _rendererFunc() {
         filePath = filePath[0];
 
         // Add the section
-        const id = window.msgSections.length;
-        domMsgUtil.createInputSection(types.MessageSectionType.FILE, id, () => {
-            domMsgUtil.removeInputSection(id);
-        }, filePath, fs.statSync(filePath).size);
+        const id = domMsgUtil.createEditorSection(types.MessageSectionType.FILE,
+            filePath, fs.statSync(filePath).size);
 
         const fileProgressBar = window.msgSections[id].typeElm.getElementsByTagName("progress")[0];
 
@@ -1258,9 +1248,8 @@ function _rendererFunc() {
             const fileName = path.join(remote.getGlobal("tmpDir"), "tmpimg.png");
             fs.writeFile(fileName, img.toPNG(), () => {
                 const id = window.msgSections.length;
-                domMsgUtil.createInputSection(types.MessageSectionType.FILE, id, () => {
-                    domMsgUtil.removeInputSection(id);
-                }, fileName, fs.statSync(fileName).size);
+                domMsgUtil.createEditorSection(types.MessageSectionType.FILE,
+                    fileName, fs.statSync(fileName).size);
         
                 // Upload the file
                 const fileProgressBar = window.msgSections[id].typeElm.getElementsByTagName("progress")[0];
@@ -1287,24 +1276,12 @@ function _rendererFunc() {
             util.triggerDisappear(util.elmById("password-chg-box"), true);
         }
     }
-    util.elmById("message-code-section-button").onclick = (e) => {
-        const id = window.msgSections.length;
-        domMsgUtil.createInputSection(types.MessageSectionType.CODE, id, () => {
-            domMsgUtil.removeInputSection(id);
-        });
-    };
-    util.elmById("message-quote-section-button").onclick = (e) => {
-        const id = window.msgSections.length;
-        domMsgUtil.createInputSection(types.MessageSectionType.QUOTE, id, () => {
-            domMsgUtil.removeInputSection(id);
-        });
-    };
-    util.elmById("message-poll-section-button").onclick = (e) => {
-        const id = window.msgSections.length;
-        domMsgUtil.createInputSection(types.MessageSectionType.POLL, id, () => {
-            domMsgUtil.removeInputSection(id);
-        });
-    };
+    util.elmById("message-code-section-button").onclick = (e) =>
+        domMsgUtil.createEditorSection(types.MessageSectionType.CODE);
+    util.elmById("message-quote-section-button").onclick = (e) =>
+        domMsgUtil.createEditorSection(types.MessageSectionType.QUOTE);
+    util.elmById("message-poll-section-button").onclick = (e) => 
+        domMsgUtil.createEditorSection(types.MessageSectionType.POLL);
 
     // Message send button
     util.elmById("message-send-button").onclick = (e) => {
