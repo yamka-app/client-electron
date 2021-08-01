@@ -112,8 +112,10 @@ export function updChannelList() {
             channelList.firstChild.remove();
         // Add new ones
         for(let chanId of channels) {
-            const elm = domUtil.createChannelButton(chanId, (e) => { window.viewingChan = chanId; updLayout() })
-            elm.style.animationDelay = (0.2 * channels.indexOf(chanId) / channels.length) + "s";
+            const elm = domUtil.createChannelButton(chanId, (e) => {
+                window.viewingChan = chanId;
+                updLayout();
+            });
             channelList.append(elm);
 
             if(window.entityCache[chanId].rules) {

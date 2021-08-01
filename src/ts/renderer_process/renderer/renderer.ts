@@ -136,8 +136,8 @@ function _rendererFunc() {
             while(channelList.firstChild)
                 channelList.firstChild.remove();
             // Create buttons for each channel
-            for(let chanId of channels) {
-                const elm = domUtil.createChannelButton(chanId, (e) => { groupSettingsShowChannel(chanId) }, false);
+            for(const chanId of channels) {
+                const elm = domUtil.createChannelButton(chanId, (e) => groupSettingsShowChannel(chanId), false);
                 channelList.append(elm);
             }
         })
@@ -181,7 +181,7 @@ function _rendererFunc() {
             // Create buttons for each role (sorted by priority, descending)
             roles.sort((a, b) => window.entityCache[a].priority - window.entityCache[b].priority);
             roles.reverse();
-            for(let roleId of roles) {
+            for(const roleId of roles) {
                 const role = window.entityCache[roleId];
 
                 const elm  = document.createElement("div");
@@ -242,8 +242,7 @@ function _rendererFunc() {
 
         showGroupSettingsTab("group-settings-section-general");
         groupSettingsShowChannel(group.channels[0]);
-        // The earliest created role is @everyone, and it hast the smallest ID of them all
-        groupSettingsShowRole(group.roles.sort((a, b) => a - b)[0]);
+        groupSettingsShowRole(group.everyoneRole);
 
         util.download(group.icon, (b) =>
             (util.elmById("group-icon-huge") as HTMLImageElement).src = "file://" + b);
