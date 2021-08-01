@@ -77,7 +77,7 @@ export function markupText(txt: string) {
 }
 
 export function adjustTextAreaHeight(elm: HTMLTextAreaElement) {
-    elm.rows = 1;
+    elm.rows = 0;
     elm.rows = Math.min(Math.floor(elm.scrollHeight / 14), 10);
 }
 
@@ -452,8 +452,8 @@ export function textWidth(text: string, style: string) {
     _width_canvas.font = style;
     return _width_canvas.measureText(text).width;
 }
-export function resizeSlInput(elm: HTMLInputElement) {
+export function resizeSingleLineInput(elm: HTMLInputElement) {
     const value = (elm.value === "") ? elm.placeholder : elm.value;
     const style = getComputedStyle(elm).font;
-    elm.style.width = `${textWidth(value, style) + 25}px`;
+    elm.style.width = `${textWidth(value, style) + 20}px`;
 }

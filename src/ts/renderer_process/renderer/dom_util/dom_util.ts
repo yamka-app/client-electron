@@ -303,7 +303,7 @@ export function showProfile(id: number) {
             window.viewingGroup = gid;
             window.viewingChan = window.entityCache[gid].channels[0];
             layout.updLayout();
-        } 
+        }
         groups.appendChild(elm);
     }
     for(const fid of user.friends) {
@@ -315,8 +315,8 @@ export function showProfile(id: number) {
     }
 
     // Update the note on tag editor defocus
-    note.value = user.note;
-    util.resizeSlInput(note);
+    note.value = user.note ?? "";
+    util.resizeSingleLineInput(note);
     note.onblur = () => {
         const noteUser = new entities.User();
         noteUser.id = id;
@@ -325,7 +325,7 @@ export function showProfile(id: number) {
         (window.entityCache[id] as entities.User).note = note.value;
         updateUser(id);
     }
-    note.oninput = () => util.resizeSlInput(note);
+    note.oninput = () => util.resizeSingleLineInput(note);
 
     // Copy the name#tag when clicked
     util.elmById("profile-nickname").onclick = (e) => {
