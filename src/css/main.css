@@ -538,9 +538,9 @@ label {
     cursor: pointer;
 }
 img.verified-badge.true {
-    width:  12px;
-    height: 12px;
-    margin-right: 4px;
+    width:  16px;
+    height: 16px;
+    margin-right: 2px;
 }
 img.verified-badge:not(.true) {
     display: none;
@@ -1067,7 +1067,7 @@ span.fg-1 {
     vertical-align: top;
 }
 .message.short-message {
-    padding: 0 2px 2px 2px;
+    padding: 2px 2px 0 2px;
     margin:  3px 0 0 42px;
 }
 .message:hover {
@@ -1101,13 +1101,13 @@ span.fg-1 {
 
 .message-quote-section,
 .message-text-section {
-    margin-top: 5px;
+    margin-bottom:  5px;
     vertical-align: baseline;
 
     font-family: Roboto;
     user-select: text;
 
-    display: flex;
+    display:        flex;
     flex-direction: column;
 }
 .message-quote-section > div > span,

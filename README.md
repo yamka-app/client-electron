@@ -44,7 +44,7 @@ npm run dist
   - `web-voice-processor.js` in `src/` by [Picovoice](https://picovoice.ai)
   - Special thanks to:
     - [hetyh](https://github.com/hetyh) and LukasTM for suporting the project financially
-    - [FlyingPotato_131](https://github.com/FlyingPotato-131), [hetyh](https://github.com/hetyh) and [pySAr5](https://github.com/NOTNOTsergey) for testing
+    - [StaticSaga](https://github.com/StaticSaga), [FlyingPotato_131](https://github.com/FlyingPotato-131), [hetyh](https://github.com/hetyh) and [pySAr5](https://github.com/NOTNOTsergey) for testing
 
 ## Disclosing security vulnerabilities
 Please refer to our latest [security policy](https://github.com/yamka-app/legal/blob/master/SECURITY.md).
