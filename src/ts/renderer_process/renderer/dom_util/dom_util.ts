@@ -189,7 +189,7 @@ export function updateUser(id: number) {
                 if(noteElm instanceof HTMLInputElement) {
                     noteElm.value = user.note ?? "";
                 } else {
-                    noteElm.style.display = user.note === undefined ? "none" : "";
+                    noteElm.style.display = (user.note === undefined || user.note === "") ? "none" : "";
                     noteElm.innerHTML = user.note;
                 }
             }
