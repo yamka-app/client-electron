@@ -480,7 +480,7 @@ function createMessageActionBar(id: number): HTMLDivElement {
     msg.id = id; msg.sender = 0;
     const buttons = [
         { icon: "reply", selfOnly: false, dmPrevent: false, onclick: (e) => {
-            const sectionId = createEditorSection(types.MessageSectionType.QUOTE);
+            const sectionId = createInputSection(types.MessageSectionType.QUOTE);
 
             window.msgSections[sectionId].blob = id;
 
@@ -523,7 +523,7 @@ function editMessage(id: number) {
     // Create input sections
     const msg = window.entityCache[id] as entities.Message;
     for(const srcSect of msg.latest.sections) {
-        const sid = createEditorSection(srcSect.type);
+        const sid = createInputSection(srcSect.type);
         
         const section = window.msgSections[sid];
         const type = section.type;
@@ -553,7 +553,7 @@ function editMessage(id: number) {
 }
 
 // Creates an input message section
-export function createEditorSection(type: types.MessageSectionType, filename?: string, fileSize?: number) {
+export function createInputSection(type: types.MessageSectionType, filename?: string, fileSize?: number) {
     // Some sections should get inserted before the last section
     const shouldInsert = window.msgSections.length > 0
         && (type === types.MessageSectionType.QUOTE);
@@ -589,8 +589,8 @@ export function createEditorSection(type: types.MessageSectionType, filename?: s
 
                 // process possible mentions
                 if(viewingGroup === 0) return;
-                const mention = util.extractMention(typeElm.value, typeElm.selectronStart, ["@"]);
-                const tok     = util.mentionToken(typeElm.value, typeElm.selectronStart, ["@"])
+                const mention = util.extractMention(typeElm.value, typeElm.selectionStart, ["@"]);
+                const tok     = util.mentionToken(typeElm.value, typeElm.selectionStart, ["@"])
                 if(mention === undefined) { setMentionList([]); mentionLock = false; return; }
                 const tag = mention.charAt(0);
                 const name = mention.substr(1);
@@ -654,11 +654,16 @@ export function createEditorSection(type: types.MessageSectionType, filename?: s
             typeElm.classList.add("code-input", "fill-width");
             typeElm.placeholder = "Code section";
             typeElm.rows = 1;
-            typeElm.oninput = () => { util.adjustTextAreaHeight(typeElm); util.updTyping(typeElm.value) };
             typeElm.spellcheck = false;
             typeElm.onkeydown = (e) => {
+                util.adjustTextAreaHeight(typeElm); util.updTyping(typeElm.value);
                 if(e.keyCode === 9) {
                     typeElm.value += "\t";
+                    util.stopPropagation(e);
+                    e.returnValue = false;
+                } else if(e.keyCode === 13) {
+                    typeElm.value += "\n";
+                    util.stopPropagation(e);
                     e.returnValue = false;
                 }
             };
@@ -669,8 +674,8 @@ export function createEditorSection(type: types.MessageSectionType, filename?: s
             typeElm.classList.add("message-input", "fill-width", "message-quote-section");
             typeElm.placeholder = "Quote section";
             typeElm.rows = 1;
-            typeElm.oninput = () => { util.adjustTextAreaHeight(typeElm); util.updTyping(typeElm.value) };
             typeElm.onkeydown = (e) => {
+                util.adjustTextAreaHeight(typeElm); util.updTyping(typeElm.value);
                 if(e.keyCode === 9) {
                     typeElm.value += "\t";
                     e.returnValue = false;
@@ -796,7 +801,7 @@ export function resetMsgInput(fullReset: boolean =false) {
 
     if(!fullReset) {
         // Add a default section
-        const id = createEditorSection(types.MessageSectionType.TEXT);
+        const id = createInputSection(types.MessageSectionType.TEXT);
 
         // Focus on it
         window.msgSections[id].typeElm.focus();

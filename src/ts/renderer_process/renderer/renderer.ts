@@ -217,7 +217,7 @@ function _rendererFunc() {
             share.classList.add("accent-button");
             share.innerHTML = "SHARE";
             share.onclick = (e) =>
-                domMsgUtil.createEditorSection(types.MessageSectionType.INVITE, inv);
+                domMsgUtil.createInputSection(types.MessageSectionType.INVITE, inv);
             elm.appendChild(share);
 
             const remove = document.createElement("button");
@@ -1204,7 +1204,7 @@ function _rendererFunc() {
 
     // Message section buttons
     util.elmById("message-text-section-button").onclick = (e) =>
-        domMsgUtil.createEditorSection(types.MessageSectionType.TEXT);
+        domMsgUtil.createInputSection(types.MessageSectionType.TEXT);
     util.elmById("message-file-section-button").addEventListener("click", (e) => {
         // Select the file
         var filePath: string[]|string = dialog.showOpenDialogSync(browserWindow, {
@@ -1222,7 +1222,7 @@ function _rendererFunc() {
         filePath = filePath[0];
 
         // Add the section
-        const id = domMsgUtil.createEditorSection(types.MessageSectionType.FILE,
+        const id = domMsgUtil.createInputSection(types.MessageSectionType.FILE,
             filePath, fs.statSync(filePath).size);
 
         const fileProgressBar = window.msgSections[id].typeElm.getElementsByTagName("progress")[0];
@@ -1247,7 +1247,7 @@ function _rendererFunc() {
             const fileName = path.join(remote.getGlobal("tmpDir"), "tmpimg.png");
             fs.writeFile(fileName, img.toPNG(), () => {
                 const id = window.msgSections.length;
-                domMsgUtil.createEditorSection(types.MessageSectionType.FILE,
+                domMsgUtil.createInputSection(types.MessageSectionType.FILE,
                     fileName, fs.statSync(fileName).size);
         
                 // Upload the file
@@ -1276,11 +1276,11 @@ function _rendererFunc() {
         }
     }
     util.elmById("message-code-section-button").onclick = (e) =>
-        domMsgUtil.createEditorSection(types.MessageSectionType.CODE);
+        domMsgUtil.createInputSection(types.MessageSectionType.CODE);
     util.elmById("message-quote-section-button").onclick = (e) =>
-        domMsgUtil.createEditorSection(types.MessageSectionType.QUOTE);
+        domMsgUtil.createInputSection(types.MessageSectionType.QUOTE);
     util.elmById("message-poll-section-button").onclick = (e) => 
-        domMsgUtil.createEditorSection(types.MessageSectionType.POLL);
+        domMsgUtil.createInputSection(types.MessageSectionType.POLL);
 
     // Message send button
     util.elmById("message-send-button").onclick = (e) => {
