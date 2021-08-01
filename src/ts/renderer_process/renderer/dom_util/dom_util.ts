@@ -178,22 +178,19 @@ export function updateUser(id: number) {
             topbar.style.background = `linear-gradient(90deg, ${color}, ${color2})`;
             // update notes
             const notes = document.getElementsByClassName("user-note-" + id) as HTMLCollectionOf<HTMLSpanElement>;
-            for(const note of notes) {
-                note.innerHTML = util.escapeHtml(user.note);
+            for(const noteElm of notes) {
                 // profile notes input fields should be black or white
                 // normal notes should have the user's color
-                const noteColor = note.id === "profile-note"
+                const noteColor = noteElm.id === "profile-note"
                         ? (util.isColorLight(color) ? "#000" : "#fff")
                         : color;
-                note.style.background = noteColor;
-                note.style.color = util.isColorLight(noteColor) ? "#000" : "#fff";
-                if(user.note === undefined || user.note === "") {
-                    if(note.id !== "profile-note")
-                        note.style.display = "none";
-                    else
-                        note.innerHTML = "";
+                noteElm.style.background = noteColor;
+                noteElm.style.color = util.isColorLight(noteColor) ? "#000" : "#fff";
+                if(noteElm instanceof HTMLInputElement) {
+                    noteElm.value = user.note ?? "";
                 } else {
-                    note.style.display = "";
+                    noteElm.style.display = user.note === undefined ? "none" : "";
+                    noteElm.innerHTML = user.note;
                 }
             }
 
