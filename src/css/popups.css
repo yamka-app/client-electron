@@ -426,8 +426,8 @@ input[type="radio"].settings-radio:checked + label {
 #profile-nickname-container {
     margin: 0 0 0 10px;
 }
-#profile-nickname-container span {
-    user-select: text;
+#profile-nickname {
+    cursor: pointer;
 }
 #profile-badges {
     margin-left: 10px;

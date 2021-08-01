@@ -19,6 +19,7 @@ import * as layout   from "./layout.js";
 import * as msgUtil  from "./msg_util.js";
 import * as yGlobal  from "../yGlobal.js";
 import * as context  from "../context.js";
+import * as notif    from "./notif.js";
 
 // Show a floating message box
 export function showBox(header: string, text: string, showUpdate: boolean =false, updCb?:Function) {
@@ -174,7 +175,7 @@ export function updateUser(id: number) {
             const color = (window.entityCache[user.avaFile] as entities.File).__color;
             const color2 = util.colorSpin(color);
             const topbar = util.elmById("profile-topbar");
-            topbar.style.background = `linear-gradient(-45deg, ${color}, ${color2})`;
+            topbar.style.background = `linear-gradient(90deg, ${color}, ${color2})`;
             // update notes
             const notes = document.getElementsByClassName("user-note-" + id) as HTMLCollectionOf<HTMLSpanElement>;
             for(const note of notes) {
@@ -198,7 +199,7 @@ export function updateUser(id: number) {
 
             // Update nicknames and tags
             const profileNicknameColor = util.isColorLight(color) ? "#000" : "#fff";
-            const profileTagColor = util.isColorLight(color) ? "#444" : "#bbb";
+            const profileTagColor = util.isColorLight(color) ? "#111" : "#eee";
             const nicknames = document.getElementsByClassName("user-nickname-" + id) as HTMLCollectionOf<HTMLElement>;
             const tags = document.getElementsByClassName("user-tag-" + id) as HTMLCollectionOf<HTMLElement>;
             for(const name of nicknames) {
@@ -329,8 +330,15 @@ export function showProfile(id: number) {
     }
     note.oninput = () => util.resizeSlInput(note);
 
+    // Copy the name#tag when clicked
+    util.elmById("profile-nickname").onclick = (e) => {
+        clipboard.writeText(`${user.name}#${user.tag}`);
+        notif.show("Copied", "icons/approve.png", "green");
+    };
+
     util.triggerAppear(profile, true);
 }
+
 export function hideProfile() {
     const profile = util.elmById("profile");
     util.triggerDisappear(profile, true);
