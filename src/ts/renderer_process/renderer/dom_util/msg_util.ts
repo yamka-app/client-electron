@@ -62,7 +62,7 @@ export function createMessage(state: entities.MessageState, short = false): HTML
         content.appendChild(nicknameContainer);
 
         const verifiedBadge = document.createElement("img");
-        verifiedBadge.classList.add("verified-badge", `verified-badge-${msg.sender}`);
+        verifiedBadge.classList.add("verified-badge", `verified-badge-${msg.sender}`, "cg-img");
         verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
         nicknameContainer.appendChild(verifiedBadge);
 

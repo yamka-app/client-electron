@@ -120,7 +120,7 @@ export function updateRelatedUsers(state: entities.MessageState, deep:number =5)
 }
 
 // Updates all information about a user
-export function updateUser(id: number) {
+export function updateUser(id: number, cb?: (light: boolean) => any) {
     util.reqEntities([new packets.EntityGetRequest(entities.User.typeNum, id)], false, () => {
         const user = window.entityCache[id] as entities.User;
 
@@ -209,6 +209,9 @@ export function updateUser(id: number) {
                 if(tag.id === "profile-tag")
                     tag.style.color = profileTagColor;
             }
+
+            if(cb !== undefined)
+                cb(util.isColorLight(color));
         };
 
         // Calculate the color of the avatar if not done already
@@ -268,25 +271,29 @@ export function showProfile(id: number) {
     tag     .add("user-tag-"      + id);
     avatar  .add("user-avatar-"   + id);
     noteCl  .add("user-note-"     + id);
-    updateUser(id);
+    // updateUser() also determines whether the user's favorite color is light or dark
+    // we're going to use that to color our badge icons
+    updateUser(id, (light) => {
+        // Remove old badges
+        while(badges.firstChild)
+        badges.firstChild.remove();
+        // Add badges
+        for(const bid of user.badges) {
+            const file = path.join(window["__dirname"], "icons", "badges", ["verified", "staff", "bot"][bid - 1] + ".png")
+            const hint = ["This user is who they claim to be",
+                        "This user is a member of the core Yamka team",
+                        "This user is a bot"][bid - 1];
+
+            const iconElm = document.createElement("img");
+            iconElm.src = "file://" + file;
+            badges.appendChild(iconElm);
+            layout.addHint(iconElm, hint);
+            if(light)
+                iconElm.classList.add("dark");
+        }
+    });
     // Hide the note editor if we're viewing ourselves
     note.style.display = id === window.selfId ? "none" : "";
-
-    // Remove old badges
-    while(badges.firstChild)
-        badges.firstChild.remove();
-    // Add badges
-    for(const bid of user.badges) {
-        const file = path.join(window["__dirname"], "icons", "badges", ["verified", "staff", "bot"][bid - 1] + ".png")
-        const hint = ["This user is who they claim to be",
-                      "This user is a member of the core Yamka team",
-                      "This user is a bot"][bid - 1];
-
-        const iconElm = document.createElement("img");
-        iconElm.src = "file://" + file;
-        badges.appendChild(iconElm);
-        layout.addHint(iconElm, hint);
-    }
 
     // Remove old mutual servers/friends
     while(groups.firstChild)
@@ -437,7 +444,7 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
     elm.appendChild(nicknameContainer);
 
     const verifiedBadge = document.createElement("img");
-    verifiedBadge.classList.add("verified-badge", "verified-badge-" + id);
+    verifiedBadge.classList.add("verified-badge", "verified-badge-" + id, "cg-img");
     verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
     nicknameContainer.appendChild(verifiedBadge);
 
