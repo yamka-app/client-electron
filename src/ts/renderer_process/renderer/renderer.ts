@@ -35,7 +35,7 @@ function _rendererFunc() {
     reset();
     
     // Sounds
-    var sounds = {
+    const sounds = {
         notification: undefined
     };
 
@@ -57,7 +57,7 @@ function _rendererFunc() {
     }));
     
     // Load sounds
-    //sounds.notification = new Audio(path.join(window["__dirname"], "sounds/notification.wav"));
+    sounds.notification = new Audio("sounds/notif.wav");
 
     // Try to connect every 2 seconds
     const __connect = () => ipcSend({
@@ -667,6 +667,7 @@ function _rendererFunc() {
                             if(!document.hasFocus())
                                 new Notification(title, {icon: ava, body: util.messageSummary(msg)})
                                     .onclick = openChan;
+                            sounds.notification.play();
                             notif.show(title + ": " + util.messageSummary(msg), ava, "background", openChan);
                         });
                     });
@@ -711,8 +712,8 @@ function _rendererFunc() {
                                 // Download avatars of each one
                                 const text = f.name + " sent a friend request";
                                 util.download(f.avaFile, (ava) => {
-                                    new Notification(text, {icon: ava})
-                                        .onclick = show;
+                                    new Notification(text, {icon: ava}).onclick = show;
+                                    sounds.notification.play();
                                     notif.show(text, ava, "green", show);
                                 });
                             }

@@ -342,9 +342,13 @@ function createInviteSection(section: types.MessageSection) {
                 join.classList.add("apply-button");
                 join.innerText = "Join";
                 join.onclick = (e) => yGlobal.sendPacket(new packets.InviteResolvePacket(code, true), (r) => {
-                    viewingGroup = group.id;
-                    viewingChan = group.channels[0];
-                    layout.updLayout();
+                    util.reqEntities([new packets.EntityGetRequest(entities.Group.typeNum, group.id)], true, () => {
+                        const g = window.entityCache[group.id] as entities.Group;
+                        console.log(group, g);
+                        viewingGroup = g.id;
+                        viewingChan = g.channels[0];
+                        layout.updLayout();
+                    });
                 });
             } else {
                 join.innerText = "Already joined";
