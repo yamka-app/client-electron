@@ -425,12 +425,18 @@ input[type="radio"].settings-radio:checked + label {
 }
 #profile-nickname-container {
     margin: 0 0 0 10px;
+    align-items: center;
 }
 #profile-nickname {
     cursor: pointer;
 }
 #profile-badges {
-    margin-left: 10px;
+    margin-left: 5px;
+}
+#profile-badges img {
+    width:  24px;
+    height: 24px;
+    margin-right: 2px;
 }
 #profile-groups-container {
     width:   50%;

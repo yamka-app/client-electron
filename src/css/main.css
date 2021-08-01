@@ -571,7 +571,7 @@ input.user-note {
     width:      100px;
     height:     20px;
     box-shadow: none;
-    transform:  translateY(-3px);
+    transform:  translateY(0.2px);
 }
 input.user-note,
 input.user-note:focus,
