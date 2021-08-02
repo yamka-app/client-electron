@@ -59,10 +59,10 @@ body {
     overflow:    hidden;
 }
 
-#main-layout-container {
+body {
     transition: filter 0.2s ease;
 }
-#main-layout-container.unfocused {
+body.unfocused {
     filter: blur(25px);
     pointer-events: none;
 }

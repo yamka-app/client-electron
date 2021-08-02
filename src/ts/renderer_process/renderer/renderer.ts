@@ -1468,9 +1468,8 @@ function _rendererFunc() {
     };
 
     // Blur the window if it's unfocused
-    const mainLayoutCont = util.elmById("main-layout-container");
-    browserWindow.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.add   ("unfocused") });
-    browserWindow.addListener("focus", (e) => { if(configGet("blurOnDefocus")) mainLayoutCont.classList.remove("unfocused") });
+    browserWindow.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) document.body.classList.add   ("unfocused") });
+    browserWindow.addListener("focus", (e) => { if(configGet("blurOnDefocus")) document.body.classList.remove("unfocused") });
 
     browserWindow.onbeforeunload = (e) => {
         browserWindow.hide();
