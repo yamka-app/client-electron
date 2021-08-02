@@ -1468,8 +1468,20 @@ function _rendererFunc() {
     };
 
     // Blur the window if it's unfocused
-    browserWindow.addListener("blur",  (e) => { if(configGet("blurOnDefocus")) document.body.classList.add   ("unfocused") });
-    browserWindow.addListener("focus", (e) => { if(configGet("blurOnDefocus")) document.body.classList.remove("unfocused") });
+    var blurTimer = null;
+    browserWindow.addListener("blur",  (e) => {
+        if(configGet("blurOnDefocus")) {
+            blurTimer = setTimeout(() =>
+                document.body.classList.add("unfocused"), 1000);
+        }
+    });
+    browserWindow.addListener("focus", (e) => {
+        if(configGet("blurOnDefocus")) {
+            if(blurTimer !== null)
+                clearTimeout(blurTimer);
+            document.body.classList.remove("unfocused");
+        }
+    });
 
     browserWindow.onbeforeunload = (e) => {
         browserWindow.hide();
