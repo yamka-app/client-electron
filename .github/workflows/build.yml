@@ -1,0 +1,21 @@
+name: "Build"
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@master
+      with:
+        ref: prod
+    - uses: actions/setup-node@master
+      with:
+        node-version: 14.16
+    - name: Install deps
+      run: npm install
+    - name: Build
+      run: npm run dist
