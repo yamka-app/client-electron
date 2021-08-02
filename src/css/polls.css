@@ -6,9 +6,8 @@
 
 .input-poll {
     padding:       10px;
-    background:    var(--background);
+    background:    var(--bg-2);
     border-radius: 10px;
-    box-shadow:    var(--shadow);
 
     display:         flex;
     flex-direction:  column;
@@ -45,9 +44,8 @@
 .message-poll-section {
     width: 350px;
     padding:       10px;
-    background:    var(--background);
+    background:    var(--bg-2);
     border-radius: 10px;
-    box-shadow:    var(--shadow);
 
     display:         flex;
     flex-direction:  column;

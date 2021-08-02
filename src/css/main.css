@@ -954,7 +954,6 @@ textarea.code-input {
 }
 
 .message-file-section {
-    background:    var(--background);
     border:        none;
     border-radius: 10px;
 
@@ -967,7 +966,6 @@ textarea.code-input {
     font-size:   var(--font-size);
 
     justify-content: space-between;
-    box-shadow: var(--shadow);
 }
 .message-file-section > img {
     display: block;
@@ -1039,13 +1037,9 @@ span.fg-1 {
 }
 
 #message-area-header {
-    padding:    10px;
-    margin:     10px;
-    text-align: center;
-
-    background:    var(--background);
-    border-radius: 10px;
-    box-shadow:    var(--shadow);
+    padding: 10px 30px;
+    margin:  10px;
+    border-bottom: 1px solid var(--bg-3);
 }
 #message-area-header p {
     font-family: Montserrat, sans-serif;
@@ -1060,9 +1054,8 @@ span.fg-1 {
     padding: 7px 7px 0 7px;
 
     background: var(--background);
-    transition:       box-shadow       0.1s ease,
-                      background-color 0.1s ease;
-    border-radius:    10px;
+    transition: background-color 0.1s ease;
+    border-radius: 10px;
 
     vertical-align: top;
 }
@@ -1071,9 +1064,8 @@ span.fg-1 {
     margin:  3px 0 0 42px;
 }
 .message:hover {
-    background: var(--background);
-    box-shadow: var(--shadow);
-    z-index:          250;
+    background: var(--bg-2);
+    z-index:    250;
 }
 
 .message-user-nickname {
@@ -1125,9 +1117,8 @@ span.fg-1 {
 .message-quote-section {
     padding: 10px;
 
-    background:    var(--background) !important;
+    background:    var(--bg-2);
     border-radius: 10px;
-    box-shadow:    var(--shadow);
 }
 div.message-quote-section {
     cursor: pointer;
@@ -1186,7 +1177,6 @@ canvas.message-img-section.deblur {
     padding:       10px;
     background:    var(--green-trans);
     border-radius: 10px;
-    box-shadow:    var(--shadow);
     margin-top:    5px;
 }
 .message-e2ee-section.error {
