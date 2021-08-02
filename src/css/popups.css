@@ -120,9 +120,9 @@ input[type="radio"].settings-radio:checked + label {
     margin-bottom: 20px;
     padding:       20px;
 
-    background: var(--background);
-    border-radius:    5px;
-    box-shadow: var(--shadow);
+    background:    var(--bg-2);
+    box-shadow:    var(--shadow);
+    border-radius: 5px;
 
     display:        flex;
     flex-direction: column;
