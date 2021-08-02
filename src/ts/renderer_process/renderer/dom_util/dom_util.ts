@@ -365,7 +365,7 @@ export function showProfile(id: number) {
 
     // Copy the name#tag when clicked
     util.elmById("profile-nickname").onclick = (e) => {
-        clipboard.writeText(`${user.name}#${user.tag}`);
+        clipboard.writeText(`${user.name}#${util.formatTag(user.tag)}`);
         notif.show("Copied", "icons/approve.png", "green");
     };
 
@@ -570,7 +570,7 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
     else
         contextMenu.push(new context.ButtonEntry(`Add friend`,
             yGlobal.sendPacket, [new packets.SearchPacket(
-                packets.SearchTarget.USER, 0, `${user.name}#${user.tag}`)]));
+                packets.SearchTarget.USER, 0, `${user.name}#${util.formatTag(user.tag)}`)]));
 
     contextMenu.push(new context.Separator());
     contextMenu.push(new context.ButtonEntry("Copy ID", clipboard.writeText, [`${id}`]));

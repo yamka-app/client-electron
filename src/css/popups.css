@@ -59,8 +59,8 @@
     text-align: right;
     width: 100%;
 
-    color: var(--foreground-1);
-    transition: color 0.1s ease;
+    color: var(--foreground-2);
+    transition: color 0.1s ease, transform 0.1s ease;
     font-family: Montserrat, sans-serif;
     font-size: 12px;
 
@@ -74,7 +74,8 @@ input[type="radio"].settings-radio {
     display: none;
 }
 input[type="radio"].settings-radio:checked + label {
-    color: var(--foreground);
+    color:     var(--foreground);
+    transform: translateX(5px);
 }
 
 .settings-section {

@@ -1463,7 +1463,7 @@ function _rendererFunc() {
     util.elmById("self-nickname").onclick = (e) => {
         e.preventDefault();
         util.stopPropagation(e);
-        clipboard.writeText(self().name + "#" + self().tag);
+        clipboard.writeText(self().name + "#" + util.formatTag(self().tag));
         notif.show("Copied", "icons/approve.png", "green");
     };
 

@@ -204,20 +204,27 @@ export function formatTag(tag: number): string {
 }
 
 // Generates a summary text of the message
+export function limitLength(text: string, len = 50) {
+    if(text.length < len)
+        return text;
+    return text.slice(0, len) + "...";
+}
 export function messageSummary(msg: entities.Message) {
     return messageStateSummary(msg.latest);
 }
 export function messageStateSummary(state: entities.MessageState): string {
-    for(const section of state.sections) {
+    for(const section of state.sections)
         if([types.MessageSectionType.CODE, types.MessageSectionType.TEXT].includes(section.type))
-            return section.text;
+            return limitLength(section.text);
+    for(const section of state.sections)
         if(section.type === types.MessageSectionType.QUOTE)
-            return "Quote: " + section.text;
+            return "Quote: " + limitLength(section.text);
+    for(const section of state.sections)
         if(section.type === types.MessageSectionType.FILE)
             return "File";
+    for(const section of state.sections)
         if(section.type === types.MessageSectionType.INVITE)
             return "Invite";
-    }
     return "Empty message";
 }
 
