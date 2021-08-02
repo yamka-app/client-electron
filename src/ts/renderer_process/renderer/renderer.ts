@@ -665,7 +665,7 @@ function _rendererFunc() {
                         };
                         util.download(user.avaFile, (ava) => {
                             if(!document.hasFocus())
-                                new Notification(title, {icon: ava, body: util.messageSummary(msg)})
+                                new Notification(title, {icon: ava, body: util.messageSummary(msg), silent: true})
                                     .onclick = openChan;
                             sounds.notification.play();
                             notif.show(title + ": " + util.messageSummary(msg), ava, "background", openChan);
@@ -712,7 +712,7 @@ function _rendererFunc() {
                                 // Download avatars of each one
                                 const text = f.name + " sent a friend request";
                                 util.download(f.avaFile, (ava) => {
-                                    new Notification(text, {icon: ava}).onclick = show;
+                                    new Notification(text, {icon: ava, silent: true}).onclick = show;
                                     sounds.notification.play();
                                     notif.show(text, ava, "green", show);
                                 });
