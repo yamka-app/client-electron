@@ -8,7 +8,7 @@
     "build": "echo \"export const commit = \\\"`git rev-parse HEAD`\\\";\" > ./src/ts/renderer_process/renderer/_git_commit.ts && tsc --build ./src/ts/main_process/tsconfig.json & tsc --build ./src/ts/renderer_process/tsconfig.json & wait",
     "start": "npm run build && electron .",
     "lint": "eslint -c .eslintrc --ext .ts ./src/ts",
-    "dist": "npm run build && electron-builder -wl",
+    "dist": "npm run build && electron-builder --publish=never -wl",
     "start-no-comp": "electron .",
     "postinstall": "electron-builder install-app-deps"
   },
