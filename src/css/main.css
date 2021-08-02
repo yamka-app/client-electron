@@ -1006,9 +1006,8 @@ span.fg-1 {
     padding-bottom: 20px;
 }
 #message-area-title {
-    width:        -webkit-fill-available;
-    height:       fit-content;
-    border-right: 2px solid var(--background);
+    width:  -webkit-fill-available;
+    height: fit-content;
 
     display:         flex;
     flex-direction:  column;
@@ -1301,7 +1300,6 @@ img.large-emoji {
     height: 20px;
 
     padding: 10px;
-    border-right: 2px solid var(--background);
 
     background: var(--bg-2);
     transition: background-color 0.1s ease;
