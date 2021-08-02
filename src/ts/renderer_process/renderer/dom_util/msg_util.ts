@@ -670,6 +670,7 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
                     typeElm.value = typeElm.value.slice(0, idx) + char + typeElm.value.slice(idx);
                     typeElm.selectionStart = idx + 1;
                     typeElm.selectionEnd = typeElm.selectionStart;
+                    util.adjustTextAreaHeight(typeElm);
                     util.stopPropagation(e);
                     e.returnValue = false;
                 }

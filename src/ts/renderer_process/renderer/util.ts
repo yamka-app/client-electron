@@ -77,8 +77,8 @@ export function markupText(txt: string) {
 }
 
 export function adjustTextAreaHeight(elm: HTMLTextAreaElement) {
-    elm.rows = 0;
-    elm.rows = Math.min(Math.floor(elm.scrollHeight / 14), 10);
+    elm.style.height = "0px";
+    elm.style.height = `${elm.scrollHeight}px`;
 }
 
 export function showElm(element: HTMLElement|string) {

@@ -839,8 +839,7 @@ textarea.code-input {
     border: none;
     background: var(--background);
     border-radius: 5px;
-
-    padding-top: 5px;
+    padding: 5px;
 }
 
 #message-send-button {
