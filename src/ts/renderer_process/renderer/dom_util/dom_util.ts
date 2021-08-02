@@ -20,6 +20,7 @@ import * as msgUtil  from "./msg_util.js";
 import * as yGlobal  from "../yGlobal.js";
 import * as context  from "../context.js";
 import * as notif    from "./notif.js";
+import { addHoverText } from "../popups.js";
 
 // Show a floating message box
 export function showBox(header: string, text: string, showUpdate: boolean =false, updCb?:Function) {
@@ -483,6 +484,7 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
     verifiedBadge.classList.add("verified-badge", "verified-badge-" + id, "cg-img");
     verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
     nicknameContainer.appendChild(verifiedBadge);
+    addHoverText(verifiedBadge, "This user is who they claim to be");
 
     const openDm = () => {
         const channel = window.entityCache[id].dmChannel;

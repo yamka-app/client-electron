@@ -26,6 +26,7 @@ import * as domUtil  from "./dom_util.js";
 import * as layout   from "./layout.js";
 import * as notif    from "./notif.js"
 import { file } from "tmp";
+import { addHoverText } from "../popups.js";
 
 // Creates a message box seen in the message area
 export function createMessage(state: entities.MessageState, short = false): HTMLElement | undefined {
@@ -69,6 +70,7 @@ export function createMessage(state: entities.MessageState, short = false): HTML
         verifiedBadge.classList.add("verified-badge", `verified-badge-${msg.sender}`, "cg-img");
         verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
         nicknameContainer.appendChild(verifiedBadge);
+        addHoverText(verifiedBadge, "This user is who they claim to be");
 
         const noteElm = document.createElement("span");
         noteElm.classList.add("user-note", `user-note-${msg.sender}`);
