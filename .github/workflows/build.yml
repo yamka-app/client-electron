@@ -19,3 +19,5 @@ jobs:
       run: npm install
     - name: Build
       run: npm run dist
+    - name: Deploy
+      run: /home/portasynthinca3/yamka_electron_deploy.py
