@@ -18,4 +18,4 @@ jobs:
     - name: Install deps
       run: npm install
     - name: Build
-      run: npm run dist
+      run: GH_TOKEN=$GITHUB_TOKEN npm run dist
