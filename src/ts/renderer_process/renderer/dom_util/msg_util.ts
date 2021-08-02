@@ -61,14 +61,14 @@ export function createMessage(state: entities.MessageState, short = false): HTML
         nicknameContainer.classList.add("flex-row");
         content.appendChild(nicknameContainer);
 
+        const nickname = document.createElement("span");
+        nickname.classList.add("message-user-nickname", `user-nickname-${msg.sender}`);
+        nicknameContainer.appendChild(nickname);
+
         const verifiedBadge = document.createElement("img");
         verifiedBadge.classList.add("verified-badge", `verified-badge-${msg.sender}`, "cg-img");
         verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
         nicknameContainer.appendChild(verifiedBadge);
-
-        const nickname = document.createElement("span");
-        nickname.classList.add("message-user-nickname", `user-nickname-${msg.sender}`);
-        nicknameContainer.appendChild(nickname);
 
         const noteElm = document.createElement("span");
         noteElm.classList.add("user-note", `user-note-${msg.sender}`);

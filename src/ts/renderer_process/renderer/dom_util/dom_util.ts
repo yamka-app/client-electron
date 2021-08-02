@@ -471,11 +471,6 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
     nicknameContainer.classList.add("flex-row", "user-nickname-container");
     elm.appendChild(nicknameContainer);
 
-    const verifiedBadge = document.createElement("img");
-    verifiedBadge.classList.add("verified-badge", "verified-badge-" + id, "cg-img");
-    verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
-    nicknameContainer.appendChild(verifiedBadge);
-
     const nickname = document.createElement("span");
     nickname.classList.add("user-nickname", "user-nickname-" + id);
     nicknameContainer.appendChild(nickname);
@@ -483,6 +478,11 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
     const tag = document.createElement("span");
     tag.classList.add("user-tag", "user-tag-" + id);
     nicknameContainer.appendChild(tag);
+
+    const verifiedBadge = document.createElement("img");
+    verifiedBadge.classList.add("verified-badge", "verified-badge-" + id, "cg-img");
+    verifiedBadge.src = path.join(window["__dirname"], "icons/badges/verified.png");
+    nicknameContainer.appendChild(verifiedBadge);
 
     const openDm = () => {
         const channel = window.entityCache[id].dmChannel;

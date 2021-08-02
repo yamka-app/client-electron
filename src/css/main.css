@@ -540,7 +540,7 @@ label {
 img.verified-badge.true {
     width:  16px;
     height: 16px;
-    margin-right: 2px;
+    margin-left: 2px;
 }
 img.verified-badge:not(.true) {
     display: none;
