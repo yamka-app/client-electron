@@ -662,14 +662,14 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
             typeElm.rows = 1;
             typeElm.spellcheck = false;
             typeElm.onkeydown = (e) => {
+                const idx = typeElm.selectionStart;
                 util.adjustTextAreaHeight(typeElm);
                 util.updTyping(typeElm.value);
-                if(e.keyCode === 9) {
-                    typeElm.value += "\t";
-                    util.stopPropagation(e);
-                    e.returnValue = false;
-                } else if(e.keyCode === 13) {
-                    typeElm.value += "\n";
+                if(e.keyCode === 9 || e.keyCode === 13) {
+                    const char = {9: "\t", 13: "\n"}[e.keyCode];
+                    typeElm.value = typeElm.value.slice(0, idx) + char + typeElm.value.slice(idx);
+                    typeElm.selectionStart = idx + 1;
+                    typeElm.selectionEnd = typeElm.selectionStart;
                     util.stopPropagation(e);
                     e.returnValue = false;
                 }
