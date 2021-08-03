@@ -1,4 +1,6 @@
 {
+    "title": "English (US)",
+    "title_en": "English (US)",
     "authors": ["Yamka"],
 
     "yes": "YES",
@@ -11,12 +13,55 @@
     "group_delete.warning": "WARNING!",
     "group_delete.irreversible": "This action is IRREVERSIBLE! You can NOT restore a group after it has been deleted!",
     "group_delete.tooltip": "Please enter the name of the group you want to delete ($group_name) to confirm this action.",
-    "group_delete.revert": "I CHANGED MY MIND",
-    "group_delete.confirm": "DELETE THIS GROUP",
+    "group_delete.revert": "I changed my mind",
+    "group_delete.confirm": "Delete this group",
 
-    "password_chg.current": "CURRENT PASSWORD",
-    "password_chg.2fa": "2FA CODE",
-    "password_chg.new": "NEW PASSWORD",
-    "password_chg.confirm": "CHANGE PASSWORD",
-    "password_chg.cancel": "CANCEL"
+    "password_chg.current": "Current password",
+    "password_chg.2fa": "2FA code",
+    "password_chg.new": "New password",
+    "password_chg.confirm": "Change password",
+    "password_chg.cancel": "Cancel",
+
+    "mfa_toggle.password": "Password",
+    "mfa_toggle.confirm": "Toggle 2FA",
+    "mfa_toggle.cancel": "Cancel",
+
+    "profile.mutual_groups": "Mutual groups",
+    "profile.mutual_friends": "Mutual friends",
+    "profile.activity": "Activity",
+
+    "group_create_box.create.title": "CREATE GROUP",
+    "group_create_box.create.name": "Name",
+    "group_create_box.create.button": "Create",
+    "group_create_box.join.title": "Join group",
+    "group_create_box.join.invite": "Invitation code",
+    "group_create_box.join.button": "Join",
+
+    "update_available.title": "NEWER VERSION AVAILABLE",
+    "update_available.confirm": "Update",
+    "update_available.ignore": "Ignore",
+    "update_available.notice": "Older clients may get rejected in the future",
+
+    "email_unconfirmed": "Your email address is unconfirmed. Please check your inbox for instructions",
+
+    "user_settings.profile.title": "PROFILE",
+    "user_settings.profile.avatar_change": "CHANGE",
+    "user_settings.profile.username": "Username",
+    "user_settings.profile.status": "Status",
+    "user_settings.profile.status.online": "Online",
+    "user_settings.profile.status.offline": "Offline",
+    "user_settings.profile.status.idle": "Idle",
+    "user_settings.profile.status.focused": "Focused",
+    "user_settings.profile.status.focused.tooltip": "You are only going to receive DM notifications",
+    "user_settings.profile.status.dnd": "Do not disturb",
+    "user_settings.profile.status.dnd.tooltip": "You are not going to receive any notifications",
+
+    "user_settings.notifications.title": "NOTIFICATIONS",
+    "user_settings.content.title": "CONTENT",
+    "user_settings.appearance.title": "APPEARANCE",
+    "user_settings.audio.title": "AUDIO",
+    "user_settings.about.title": "ABOUT",
+    "user_settings.developers.title": "DEVELOPERS",
+    "user_settings.log_out.title": "LOG OUT"
+
 }

@@ -312,7 +312,7 @@ export function showProfile(id: number) {
             const iconElm = document.createElement("img");
             iconElm.src = "file://" + file;
             badges.appendChild(iconElm);
-            layout.addHint(iconElm, hint);
+            layout.addTooltip(iconElm, hint);
             if(light)
                 iconElm.classList.add("dark");
         }
@@ -523,7 +523,7 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
                 util.triggerDisappear(box, true);
             util.stopPropagation(e);
         });
-        layout.addHint(friendRemoveBtn, {
+        layout.addTooltip(friendRemoveBtn, {
             "friend":      "Remove friend",
             "pending-in":  "Deny friend request",
             "pending-out": "Cancel friend request",
@@ -545,7 +545,7 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
                 packets.ContactAction.ADD, id));
             util.stopPropagation(e);
         };
-        layout.addHint(friendAcceptBtn, "Accept friend request");
+        layout.addTooltip(friendAcceptBtn, "Accept friend request");
         elm.appendChild(friendAcceptBtn);
 
         const friendAcceptImg = document.createElement("img");

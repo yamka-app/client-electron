@@ -49,11 +49,17 @@ export function formatElement(elm: HTMLElement, args: dict = {}) {
 
     if(elm.getAttribute("x-key-ph") !== null && elm instanceof HTMLInputElement)
         elm.placeholder = escapeHtml(format(elm.getAttribute("x-key-ph"), args));
+
+    if(elm.getAttribute("x-key-tt") !== null)
+        elm.setAttribute("x-tooltip", format(elm.getAttribute("x-key-tt"), args));
 }
 
 export function formatDefault() {
-    for(const elm of document.querySelectorAll("[x-key]"))
-        formatElement(elm as HTMLElement);
-    for(const elm of document.querySelectorAll("[x-key-ph]"))
+    const lookFor = ["x-key", "x-key-ph", "x-key-tt"];
+    var elements = [];
+    for(const attr of lookFor)
+        elements = [...elements, ...document.querySelectorAll(`[${attr}]`)]
+    
+    for(const elm of elements)
         formatElement(elm as HTMLElement);
 }

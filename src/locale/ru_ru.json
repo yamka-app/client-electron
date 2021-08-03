@@ -1,0 +1,28 @@
+{
+    "title": "Русский",
+    "title_en": "Russian",
+    "authors": ["Yamka"],
+
+    "yes": "ДА",
+    "no": "НЕТ",
+
+    "connecting.title": "Подключение",
+    "connecting.tooltip": "Проблемы? Проверьте Ваше подключение к Интернету или",
+    "connecting.tweet": "Напишите нам в Twitter",
+
+    "group_delete.warning": "ВНИМАНИЕ!",
+    "group_delete.irreversible": "Это действие НЕВОЗМОЖНО ОТМЕНИТЬ! Удалённую группу восстановить НЕЛЬЗЯ!",
+    "group_delete.tooltip": "Пожалуйста, введите название этой группы ($group_name) ниже, чтобы подтвердить это действие.",
+    "group_delete.revert": "Я передумал(а)",
+    "group_delete.confirm": "Удалить эту группу",
+
+    "password_chg.current": "Текущий пароль",
+    "password_chg.2fa": "Код 2ФА",
+    "password_chg.new": "Новый пароль",
+    "password_chg.confirm": "Сменить пароль",
+    "password_chg.cancel": "Отмена",
+
+    "mfa_toggle.password": "Пароль",
+    "mfa_toggle.confirm": "Переключить 2ФА",
+    "mfa_toggle.cancel": "Отмена"
+}

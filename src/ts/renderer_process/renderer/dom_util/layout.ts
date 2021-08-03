@@ -423,13 +423,13 @@ export function showE2eeInfo(ev: MouseEvent) {
     popups.createWrapper(ev.x, ev.y, div);
 }
 
-export function addHint(elm: HTMLElement, hint?: string) {
+export function addTooltip(elm: HTMLElement, hint?: string) {
     if(hint !== undefined)
-        elm.setAttribute("x-hint", hint);
-    popups.addHoverText(elm, hint ?? elm.getAttribute("x-hint"));
+        elm.setAttribute("x-tooltip", hint);
+    popups.addHoverText(elm, hint ?? elm.getAttribute("x-tooltip"));
 }
-export function addHints() {
-    const elms = document.querySelectorAll("[x-hint]");
+export function addTooltips() {
+    const elms = document.querySelectorAll("[x-tooltip]");
     for(const elm of elms)
-        popups.addHoverText(elm as HTMLElement, elm.getAttribute("x-hint"));
+        popups.addHoverText(elm as HTMLElement, elm.getAttribute("x-tooltip"));
 }

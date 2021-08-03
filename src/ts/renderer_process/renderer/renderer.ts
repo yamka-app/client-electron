@@ -1457,10 +1457,10 @@ function _rendererFunc() {
              + "supported. Direct calls are not end-to-end "
              + "encrypted.", undefined, "yellow");
 
-    layout.addHints();
     domUtil.setupProfileTabs();
     i18n.loadLocale(configGet("locale"));
     i18n.formatDefault();
+    layout.addTooltips();
 
     // copy own name and tag when clicked
     util.elmById("self-nickname").onclick = (e) => {
