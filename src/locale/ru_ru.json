@@ -69,12 +69,41 @@
     "user_settings.profile.mfa_toggle": "$target 2ФА",
     "user_settings.profile.mfa_toggle.enable": "Включить",
     "user_settings.profile.mfa_toggle.disable": "Выключить",
+    "user_settings.profile.change_password": "Сменить пароль",
 
     "user_settings.notifications.title": "УВЕДОМЛЕНИЯ",
+    "user_settings.notifications.receive": "Получать уведомления",
+    "user_settings.notifications.typing": "Показывать статус \"печатает\" другим",
+
     "user_settings.content.title": "КОНТЕНТ",
+    "user_settings.content.preview": "Встраивать контент других сервисов",
+    "user_settings.content.blur": "Размывать приложение при потере фокуса",
+
     "user_settings.appearance.title": "ВНЕШНИЙ ВИД",
+    "user_settings.appearance.accent": "Главный цвет",
+    "user_settings.appearance.theme": "Тема: $name (автор: $author)",
+    "user_settings.appearance.load_theme": "Загрузить свою тему",
+    "user_settings.appearance.theming_docs": "Документация по создании тем для разработчиков",
+
     "user_settings.audio.title": "АУДИО",
+    "user_settings.audio.mic_volume": "Громкость микрофона",
+    "user_settings.audio.mic_thres": "Порог включения микрофона",
+
     "user_settings.about.title": "О ПРИЛОЖЕНИИ",
+    "user_settings.about.client_version": "Версия клиента: $ver (коммит $commit)",
+    "user_settings.about.text": "Yamka - мессенджер, не использующий технологии отслеживания, не встраивающий рекламу, не изгоняющий пользователей и/или группы и предоставляющий замечательные возможности кастомизации. Все официальные клиенты и серверный код распространяются под лицензией открытого ПО Mozilla Public License 2.0.",
+    "user_settings.about.github": "Посмотреть исходный код на GitHub",
+    "user_settings.about.donate": "Пожертвовать деньги",
+    "user_settings.about.technologies": "ТЕХНОЛОГИИ",
+    "user_settings.about.technologies.lin_win_clients": "Клиенты под Linux и Windows: Electron, TypeScript",
+    "user_settings.about.technologies.backend": "Серверная часть: Erlang/OTP, Apache Cassandra, GlusterFS",
+    "user_settings.about.technologies.website": "Веб-сайт: nginx",
+    "user_settings.about.credits": "БЛАГОДАРНОСТЬ",
+    "user_settings.about.created_by": "ПРОЕКТ СОЗДАН",
+
     "user_settings.developers.title": "РАЗРАБОТЧИКАМ",
+    "user_settings.developers.keylog": "Включить журнал ключей TLS (прочитайте документацию, громадная дыра в безопасности!)",
+    "user_settings.developers.keylog.tooltip": "Временно отключено",
+
     "user_settings.log_out.title": "ВЫЙТИ"
 }

@@ -236,7 +236,7 @@ input[type="radio"].settings-radio:checked + label {
 #user-settings-section-about p {
     font-family: Montserrat, sans-serif;
     font-size: 20px;
-    background: var(--rainbow-grad);
+    background: var(--accent-grad);
     color: transparent;
             background-clip: text;
     -webkit-background-clip: text;

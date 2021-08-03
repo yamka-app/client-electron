@@ -69,12 +69,41 @@
     "user_settings.profile.mfa_toggle": "$target 2FA",
     "user_settings.profile.mfa_toggle.enable": "Enable",
     "user_settings.profile.mfa_toggle.disable": "Disable",
+    "user_settings.profile.change_password": "Change password",
 
     "user_settings.notifications.title": "NOTIFICATIONS",
+    "user_settings.notifications.receive": "Receive notifications",
+    "user_settings.notifications.typing": "Tell others I'm typing",
+
     "user_settings.content.title": "CONTENT",
+    "user_settings.content.preview": "Embed extrenal services' content",
+    "user_settings.content.blur": "Blur the app when unfocused",
+
     "user_settings.appearance.title": "APPEARANCE",
+    "user_settings.appearance.accent": "Accent color",
+    "user_settings.appearance.theme": "Theme: $name by $author",
+    "user_settings.appearance.load_theme": "Load custom theme",
+    "user_settings.appearance.theming_docs": "Theming docs for developerss",
+
     "user_settings.audio.title": "AUDIO",
+    "user_settings.audio.mic_volume": "Microphone volume",
+    "user_settings.audio.mic_thres": "Microphone activation threshold",
+
     "user_settings.about.title": "ABOUT",
+    "user_settings.about.client_version": "Client version: $ver (commit $commit)",
+    "user_settings.about.text": "Yamka is a messaging app that does not track you, does not have ads, does not ban people or groups and provides excellent customization. All official clients and the back end are free software distributed under Mozilla Public License 2.0.",
+    "user_settings.about.github": "View code on GitHub",
+    "user_settings.about.donate": "Donate money",
+    "user_settings.about.technologies": "TECHNOLOGIES",
+    "user_settings.about.technologies.lin_win_clients": "Linux and Windows clients: Electron, TypeScript",
+    "user_settings.about.technologies.backend": "Back end: Erlang/OTP, Apache Cassandra, GlusterFS",
+    "user_settings.about.technologies.website": "Website: nginx",
+    "user_settings.about.credits": "CREDITS",
+    "user_settings.about.created_by": "CREATED BY",
+
     "user_settings.developers.title": "DEVELOPERS",
+    "user_settings.developers.keylog": "Enable TLS key logging (read docs, major security hole!)",
+    "user_settings.developers.keylog.tooltip": "Disabled temporarily",
+
     "user_settings.log_out.title": "LOG OUT"
 }

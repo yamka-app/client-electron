@@ -227,14 +227,14 @@
               <input id= "user-settings-section-audio-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-audio-sel" class="settings-section-sel" x-key="user_settings.audio.title"></label>
 
+              <input id= "user-settings-section-lang-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
+              <label for="user-settings-section-lang-sel" class="settings-section-sel">LANGUAGE</label>
+
               <input id= "user-settings-section-about-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-about-sel" class="settings-section-sel" x-key="user_settings.about.title"></label>
 
               <input id= "user-settings-section-developers-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-developers-sel" class="settings-section-sel" x-key="user_settings.developers.title"></label>
-
-              <input id= "user-settings-section-lang-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
-              <label for="user-settings-section-lang-sel" class="settings-section-sel">LANGUAGE</label>
 
               <input id= "user-settings-section-logout-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-logout-sel" class="settings-section-sel" style="color: var(--red-color);" x-key="user_settings.log_out.title"></label>
@@ -324,29 +324,26 @@
                   <button id="self-mfa-toggle-button" class="danger-button" x-key="user_settings.profile.mfa_toggle"></button>
                 </div>
                 <div class="self-profile-setting-input-container">
-                  <button id="self-password-change-button" class="danger-button">CHANGE PASSWORD</button>
+                  <button id="self-password-change-button" class="danger-button" x-key="user_settings.profile.change_password"></button>
                 </div>
               </div>
             </div>
 
             <div id="user-settings-section-about" class="settings-section user-settings-section" style="display: none;">
               <img id="about-logo" src="logo.png"><br>
-              <span class="flex-row">Client version&nbsp;<span id="client-version"></span></span>
-              <p>ABOUT</p>
-              Yamka is a messaging app that does not track you, does not have ads, does
-              not ban people or groups and provides excellent customization.
-              All official clients and the back end are free software distributed under the MPL license.
-              <br>
-              <button id="view-on-github" class="accent-button">View code on GitHub</button>
-              <button id="donate" class="accent-button">Donate money</button>
+              <span id="client-version" x-key="user_settings.about.client_version"></span>
+              <p x-key="user_settings.about.title"></p>
+              <span x-key="user_settings.about.text"></span>
+              <button id="view-on-github" class="accent-button" x-key="user_settings.about.github"></button>
+              <button id="donate" class="accent-button" x-key="user_settings.about.donate">Donate money</button>
               <br>
 
-              <p>TECHNOLOGIES</p>
-              <span>Linux and Windows clients: Electron, TypeScript</span>
-              <span>Back end: Erlang/OTP, Apache Cassandra, GlusterFS</span>
-              <span>Website: nginx</span>
+              <p x-key="user_settings.about.technologies"></p>
+              <span x-key="user_settings.about.technologies.lin_win_clients"></span>
+              <span x-key="user_settings.about.technologies.backend"></span>
+              <span x-key="user_settings.about.technologies.website"></span>
 
-              <p>CREDITS</p>
+              <p x-key="user_settings.about.credits"></p>
               <span>End-to-End Encryption scheme invented by <a href="https://www.signal.org/docs">Signal</a></span>
               <span>Icons by <a href="https://icons8.com">Icons8</a></span>
               <span><a href="https://twemoji.twitter.com">Twemoji</a> by Twitter</span>
@@ -360,27 +357,27 @@
                   <a href="https://github.com/hetyh">hetyh</a>
                   and <a href="https://github.com/NOTNOTsergey">pySAr5</a> for testing</span>
 
-              <p>CREATED BY</p>
+              <p x-key="user_settings.about.created_by"></p>
               <span><a href="https://github.com/portasynthinca3">portasynthinca3</a></span>
             </div>
 
             <div id="user-settings-section-notifications" class="settings-section user-settings-section" style="display: none;">
               <div class="settings-subsection">
-                <span class="settings-subsection-title">NOTIFICATIONS</span>
+                <span class="settings-subsection-title" x-key="user_settings.notifications.title"></span>
                 <div class="self-profile-setting-input-container">
                   <div class="setting-switch">
                     <label class="switch" style="margin-left: 0; margin-top: 2px;">
                       <input id="enable-notifications" type="checkbox"/>
                       <span class="slider round"></span>
                     </label>
-                    <span>RECEIVE NOTIFICATIONS</span>
+                    <span x-key="user_settings.notifications.receive"></span>
                   </div>
                   <div class="setting-switch">
                     <label class="switch" style="margin-left: 0; margin-top: 2px;">
                       <input id="send-typing" type="checkbox"/>
                       <span class="slider round"></span>
                     </label>
-                    <span>TELL OTHERS I'M TYPING</span>
+                    <span x-key="user_settings.notifications.typing"></span>
                   </div>
                 </div>
               </div>
@@ -388,15 +385,15 @@
 
             <div id="user-settings-section-audio" class="settings-section user-settings-section" style="display: none;">
               <div class="settings-subsection">
-                <span class="settings-subsection-title">AUDIO</span>
+                <span class="settings-subsection-title" x-key="user_settings.audio.title"></span>
                 <div class="self-profile-setting-input-container">
                   <div class="self-profile-setting-input-container">
-                    MICROPHONE VOLUME
+                    <span x-key="user_settings.audio.mic_volume"></span>
                     <input id="mic-gain" type="range" min="0" max="2" step="0.001" class="trackbar">
                     <progress id="mic-vol-val" value="0" max="1" class="fill-width"></progress>
                   </div>
                   <div class="self-profile-setting-input-container">
-                    MICROPHONE ACTIVATION THRESHOLD
+                    <span x-key="user_settings.audio.mic_thres"></span>
                     <input id="mic-thres" type="range" min="0" max="1" step="0.001" class="trackbar">
                   </div>
                 </div>
@@ -405,21 +402,21 @@
 
             <div id="user-settings-section-content" class="settings-section user-settings-section" style="display: none;">
               <div class="settings-subsection">
-                <span class="settings-subsection-title">CONTENT</span>
+                <span class="settings-subsection-title" x-key="user_settings.content.title"></span>
                 <div class="self-profile-setting-input-container">
                   <div class="setting-switch">
                     <label class="switch" style="margin-left: 0; margin-top: 2px;">
                       <input id="preview-yt" type="checkbox"/>
                       <span class="slider round"></span>
                     </label>
-                    <span>PREVIEW SUPPORTED SERVICES' CONTENT (e.g. YouTube videos)</span>
+                    <span x-key="user_settings.content.preview"></span>
                   </div>
                   <div class="setting-switch">
                     <label class="switch" style="margin-left: 0; margin-top: 2px;">
                       <input id="blur-unfocused" type="checkbox"/>
                       <span class="slider round"></span>
                     </label>
-                    <span>BLUR THE APP WHEN UNFOCUSED</span>
+                    <span x-key="user_settings.content.blur"></span>
                   </div>
                 </div>
               </div>
@@ -427,35 +424,30 @@
 
             <div id="user-settings-section-appearance" class="settings-section user-settings-section" style="display: none;">
               <div class="settings-subsection">
-                <span class="settings-subsection-title">APPEARANCE</span>
+                <span class="settings-subsection-title" x-key="user_settings.appearance.title"></span>
                 <div class="self-profile-setting-input-container">
-                  ACCENT COLOR
+                  <span x-key="user_settings.appearance.accent"></span>
                   <input id="accent-color-change" type="color"/>
                 </div>
                 <div class="self-profile-setting-input-container">
-                  THEME
-                  <span>
-                    <span id="theme-name">Name</span>
-                    <spam id="theme-name-sep"> by </spam>
-                    <span id="theme-author">Author</span>
-                  </span>
-                  <button id="theme-change" class="apply-button">LOAD CUSTOM THEME</button>
+                  <span id="theme-name" x-key="user_settings.appearance.theme"></span>
+                  <button id="theme-change" class="apply-button" x-key="user_settings.appearance.load_theme"></button>
                   <br>
-                  <a href="https://github.com/yamka-app/client-electron/wiki/Writing-custom-themes">Theming docs for developers</a>
+                  <a href="https://github.com/yamka-app/client-electron/wiki/Writing-custom-themes" x-key="user_settings.appearance.theming_docs"></a>
                 </div>
               </div>
             </div>
 
             <div id="user-settings-section-developers" class="settings-section user-settings-section" style="display: none;">
               <div class="settings-subsection">
-                <span class="settings-subsection-title">DEVELOPERS</span>
+                <span class="settings-subsection-title" x-key="user_settings.developers.title"></span>
                 <div class="self-profile-setting-input-container">
                   <div class="setting-switch">
                     <label class="switch" style="margin-left: 0; margin-top: 2px;">
                       <input id="en-sslkeylog" type="checkbox"/>
                       <span class="slider round"></span>
                     </label>
-                    <span x-tooltip="Disabled temporarily">ENABLE TLS KEY LOGGING (read docs, major security hole!)</span>
+                    <span x-key-tt="user_settings.developers.keylog.tooltip" x-key="user_settings.developers.keylog"></span>
                   </div>
                   <!--
                   <div class="self-profile-setting-input-container">

@@ -70,8 +70,10 @@ function _rendererFunc() {
     setInterval(util.checkClientVersion, 600000); // 10 minutes
     util.checkClientVersion();
 
-    util.elmById("client-version").innerHTML
-        = escapeHtml(`${util.clientVersion} (commit ${commit.substr(0, 7)})`);
+    i18n.formatElement(util.elmById("client-version"), {
+        ver: util.clientVersion,
+        commit: commit.substr(0, 7)
+    });
 
     // Determines whether we sould receive notifications
     function shouldReceiveNotif(direct: boolean) {

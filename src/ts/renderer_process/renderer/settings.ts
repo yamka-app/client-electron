@@ -2,6 +2,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import { formatElement } from "./dom_util/i18n.js";
+import { elmById }       from "./util.js";
+
 const _modules = window["_modules"];
 
 const electron   = _modules.electron;
@@ -122,13 +125,15 @@ function _settingsFunc() {
         docStyle.setProperty("--accent-foreground", tinycolor(color).isLight() ? black : white);
 
         // Set theme name and author fields
-        document.getElementById("theme-name")  .innerHTML = escapeHtml(docStyleComp.getPropertyValue("--theme-name"));
-        document.getElementById("theme-author").innerHTML = escapeHtml(docStyleComp.getPropertyValue("--theme-author"));
+        formatElement(elmById("theme-name"), {
+            name:   docStyleComp.getPropertyValue("--theme-name"),
+            author: docStyleComp.getPropertyValue("--theme-author")
+        });
     }
 
     // Loads a (presumably custom) theme
     function loadTheme(theme: string, custom: boolean =true) {
-        console.log(`Loading ${custom?"":"non-"}custom theme ${theme}`);
+        console.log(`Loading ${custom ? "" : "non-"}custom theme ${theme}`);
         const themeLink = document.getElementById("theme-css") as HTMLLinkElement;
         themeLink.href = (custom ? "file://" : "") + theme;
         setTimeout(recomputeStyling, 100); // TODO: fix :^)
