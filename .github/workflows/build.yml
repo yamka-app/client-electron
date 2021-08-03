@@ -1,9 +1,9 @@
 name: "Build"
 
 on:
-  push:
-    branches:
-      - prod
+  release:
+    types:
+      - created
 
 jobs:
   build:
