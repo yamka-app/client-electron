@@ -20,6 +20,7 @@ import * as msgUtil  from "./msg_util.js";
 import * as yGlobal  from "../yGlobal.js";
 import * as context  from "../context.js";
 import * as notif    from "./notif.js";
+import * as i18n     from "./i18n.js";
 import { addHoverText } from "../popups.js";
 
 // Show a floating message box
@@ -69,8 +70,12 @@ export function updateSelfEmail(email: string) {
     (util.elmById("self-email-change") as HTMLInputElement).value = email;
 }
 export function updateSelfMfaStatus(mfaEnabled: boolean) {
-    util.elmById("self-mfa-enable-status").innerHTML = mfaEnabled ? "ENABLED" : "DISABLED";
-    util.elmById("self-mfa-toggle-button").innerHTML = (mfaEnabled ? "DISABLE" : "ENABLE") + " 2FA";
+    i18n.formatElement(util.elmById("self-mfa-enable-status"), {
+        mfaStatus: "%user_settings.profile.mfa_status." + (mfaEnabled ? "enabled" : "disabled")
+    });
+    i18n.formatElement(util.elmById("self-mfa-toggle-button"), {
+        target: "%user_settings.profile.mfa_toggle." + (mfaEnabled ? "disable" : "enable")
+    });
 }
 export function updateSelfAva(path: string) {
     (util.elmById("self-avatar") as HTMLInputElement).src = "file://" + path;

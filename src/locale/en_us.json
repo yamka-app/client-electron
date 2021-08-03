@@ -12,7 +12,7 @@
 
     "group_delete.warning": "WARNING!",
     "group_delete.irreversible": "This action is IRREVERSIBLE! You can NOT restore a group after it has been deleted!",
-    "group_delete.tooltip": "Please enter the name of the group you want to delete ($group_name) to confirm this action.",
+    "group_delete.tooltip": "Please enter the name of the group you want to delete ($groupName) to confirm this action.",
     "group_delete.revert": "I changed my mind",
     "group_delete.confirm": "Delete this group",
 
@@ -55,6 +55,19 @@
     "user_settings.profile.status.focused.tooltip": "You are only going to receive DM notifications",
     "user_settings.profile.status.dnd": "Do not disturb",
     "user_settings.profile.status.dnd.tooltip": "You are not going to receive any notifications",
+    "user_settings.profile.status_text": "Status text",
+    "user_settings.profile.favorite_color": "Favorite color",
+    "user_settings.profile.enter_tip": "Tip: press \"Enter\" in input fields to save changes",
+    "user_settings.profile.agents": "DEVICES AND CONNECTED APPS",
+    "user_settings.profile.auth": "AUTHENTICATION",
+    "user_settings.profile.email": "E-mail",
+    "user_settings.profile.email.code": "E-mail confirmation code",
+    "user_settings.profile.mfa_status": "2FA is $mfaStatus",
+    "user_settings.profile.mfa_status.enabled": "enabled",
+    "user_settings.profile.mfa_status.disabled": "disabled",
+    "user_settings.profile.mfa_toggle": "$target 2FA",
+    "user_settings.profile.mfa_toggle.enable": "Enable",
+    "user_settings.profile.mfa_toggle.disable": "Disable",
 
     "user_settings.notifications.title": "NOTIFICATIONS",
     "user_settings.content.title": "CONTENT",

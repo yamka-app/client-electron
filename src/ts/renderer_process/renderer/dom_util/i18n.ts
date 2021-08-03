@@ -18,6 +18,7 @@ const defaultLocale = "en_us";
 
 export function loadLocale(name: string) {
     const jsonPath = path.join(window["__dirname"], `locale/${name}.json`);
+
     try {
         const json = fs.readFileSync(jsonPath);
         locale = JSON.parse(json);
@@ -29,7 +30,10 @@ export function loadLocale(name: string) {
         } else {
             console.error(`Failed to load default locale ${name}`);
         }
+        return;
     }
+
+    formatDefault();
 }
 
 export function format(key: string, args: dict = {}) {
@@ -43,7 +47,24 @@ export function format(key: string, args: dict = {}) {
     return str;
 }
 
+export function encloseArgs(args: dict) {
+    return JSON.stringify(args);
+}
+export function extractArgs(s: string) {
+    return JSON.parse(s) as dict;
+}
+
 export function formatElement(elm: HTMLElement, args: dict = {}) {
+    if(args === {} && elm.getAttribute("x-i18n-args") !== null)
+        args = extractArgs(elm.getAttribute("x-i18n-args"));
+
+    elm.setAttribute("x-i18n-args", encloseArgs(args));
+
+    // args may point to a key
+    for(const [k, v] of Object.entries(args))
+        if(v.startsWith("%"))
+            args[k] = format(v.slice(1))
+
     if(elm.getAttribute("x-key") !== null)
         elm.innerHTML = escapeHtml(format(elm.getAttribute("x-key"), args));
 

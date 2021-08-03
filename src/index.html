@@ -284,45 +284,40 @@
                       </span>
 
                       <div class="self-profile-setting-input-container">
-                        STATUS TEXT
+                        <span x-key="user_settings.profile.status_text"></span>
                         <input id="self-status-text-change"/>
                       </div>
 
                       <div class="self-profile-setting-input-container">
-                        FAVORITE COLOR
+                        <span x-key="user_settings.profile.favorite_color"></span>
                         <input id="self-fav-color-change" type="color"/>
                       </div>
 
-                      <div class="self-profile-setting-input-container">
-                        TIP: PRESS ENTER IN INPUT FIELDS TO SAVE CHANGES
-                      </div>
+                      <div class="self-profile-setting-input-container" x-key="user_settings.profile.enter_tip"></div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div class="settings-subsection">
-                <span class="settings-subsection-title">DEVICES AND CONNECTED APPS</span>
+                <span class="settings-subsection-title" x-key="user_settings.profile.agents"></span>
                 <div id="agent-list" class="flex-col">
                 </div>
               </div>
 
               <div class="settings-subsection">
-                <span class="settings-subsection-title">AUTHENTICATION</span>
+                <span class="settings-subsection-title" x-key="user_settings.profile.auth"></span>
                 <div class="self-profile-setting-input-container">
-                  E-MAIL ADDRESS
+                  <span x-key="user_settings.profile.email"></span>
                   <input id="self-email-change"/>
                 </div>
                 <div id="email-conf-cont" class="self-profile-setting-input-container">
-                  E-MAIL CONFIRMATION CODE
+                  <span x-key="user_settings.profile.email.code"></span>
                   <input id="self-email-confirm"/>
                 </div>
                 <div class="self-profile-setting-input-container">
-                  <span class="flex-row">
-                    2FA IS
-                    <span id="self-mfa-enable-status">DISABLED</span>
-                  </span>
-                  <button id="self-mfa-toggle-button" class="danger-button">ENABLE 2FA</button>
+                  <span id="self-mfa-enable-status" x-key="user_settings.profile.mfa_status"></span>
+                  <button id="self-mfa-toggle-button" class="danger-button" x-key="user_settings.profile.mfa_toggle"></button>
                 </div>
                 <div class="self-profile-setting-input-container">
                   <button id="self-password-change-button" class="danger-button">CHANGE PASSWORD</button>
