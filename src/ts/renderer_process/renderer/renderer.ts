@@ -1459,6 +1459,7 @@ function _rendererFunc() {
 
     domUtil.setupProfileTabs();
     i18n.loadLocale(configGet("locale"));
+    i18n.updateLocaleList();
     layout.addTooltips();
 
     // copy own name and tag when clicked

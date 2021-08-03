@@ -1,6 +1,7 @@
 {
     "title": "Русский",
     "title_en": "Russian",
+    "emoji": ":flag-ru:",
     "authors": ["Yamka"],
 
     "yes": "ДА",
@@ -12,7 +13,7 @@
 
     "group_delete.warning": "ВНИМАНИЕ!",
     "group_delete.irreversible": "Это действие НЕВОЗМОЖНО ОТМЕНИТЬ! Удалённую группу восстановить НЕЛЬЗЯ!",
-    "group_delete.tooltip": "Пожалуйста, введите название этой группы ($group_name) ниже, чтобы подтвердить это действие.",
+    "group_delete.tooltip": "Пожалуйста, введите название этой группы ($groupName) ниже, чтобы подтвердить это действие.",
     "group_delete.revert": "Я передумал(а)",
     "group_delete.confirm": "Удалить эту группу",
 
@@ -59,7 +60,7 @@
     "user_settings.profile.favorite_color": "Любимый цвет",
     "user_settings.profile.enter_tip": "Подсказка: нажмите \"Enter\", чтобы сохранить изменения в текстовых полях",
     "user_settings.profile.agents": "УСТРОЙСТВА И ПОДКЛЮЧЁННЫЕ ПРИЛОЖЕНИЯ",
-    "user_settings.profile.auth": "Аутентификация",
+    "user_settings.profile.auth": "АУТЕНТИФИКАЦИЯ",
     "user_settings.profile.email": "Адрес почты",
     "user_settings.profile.email.code": "Код подтверждения почты",
     "user_settings.profile.mfa_status": "Двухфакторная аутентификация $mfaStatus",

@@ -31,6 +31,7 @@
     <link rel="stylesheet" type="text/css" href="./css/e2ee.css">
     <link rel="stylesheet" type="text/css" href="./css/hover_text.css">
     <link rel="stylesheet" type="text/css" href="./css/message_input.css">
+    <link rel="stylesheet" type="text/css" href="./css/language_selector.css">
     <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
     <link rel="stylesheet" href="../node_modules/highlight.js/styles/gruvbox-dark.css">
 
@@ -231,6 +232,9 @@
 
               <input id= "user-settings-section-developers-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-developers-sel" class="settings-section-sel" x-key="user_settings.developers.title"></label>
+
+              <input id= "user-settings-section-lang-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
+              <label for="user-settings-section-lang-sel" class="settings-section-sel">LANGUAGE</label>
 
               <input id= "user-settings-section-logout-sel" type="radio" name="user-settings-sections" class="settings-radio"/>
               <label for="user-settings-section-logout-sel" class="settings-section-sel" style="color: var(--red-color);" x-key="user_settings.log_out.title"></label>
@@ -462,6 +466,15 @@
                     <span>YOUR BOTS: </span><span id="owned-bot-list"></span>
                   </div>
                   -->
+                </div>
+              </div>
+            </div>
+
+            <div id="user-settings-section-lang" class="settings-section user-settings-section" style="display: none;">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title">LANGUAGE</span>
+                <div id="language-list">
+
                 </div>
               </div>
             </div>
