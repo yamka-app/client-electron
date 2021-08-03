@@ -24,7 +24,7 @@ const compareVersions = _modules.compareVersions;
 const fs              = _modules.fs;
 const tinycolor       = _modules.tinycolor;
 
-export const clientVersion = "0.9.1";
+export const clientVersion = "0.9.2";
 export const clientDebug = true;
 
 export const escapeHtml: (t: any) => string = _escapeHtml;
