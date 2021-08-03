@@ -9,6 +9,7 @@ const _modules = window["_modules"];
 const path           = _modules.path;
 const twemoji        = _modules.twemoji;
 const highlightBlock = _modules.highlightBlock;
+const nodeEmoji      = _modules.nodeEmoji;
 const blurhash       = _modules.blurhash;
 const remote         = _modules.remote;
 const fs             = _modules.fs;
@@ -595,9 +596,14 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
 
                 // process possible mentions
                 if(viewingGroup === 0) return;
-                const mention = util.extractMention(typeElm.value, typeElm.selectionStart, ["@"]);
-                const tok     = util.mentionToken(typeElm.value, typeElm.selectionStart, ["@"])
-                if(mention === undefined) { setMentionList([]); mentionLock = false; return; }
+                const mention = util.extractMention(typeElm.value, typeElm.selectionStart, ["@", ":"]);
+                const tok     = util.mentionToken(typeElm.value, typeElm.selectionStart, ["@", ":"])
+                if(mention === undefined) {
+                    setMentionList([]);
+                    setEmojiList([]);
+                    mentionLock = false;
+                    return;
+                }
                 const tag = mention.charAt(0);
                 const name = mention.substr(1);
                 mentionLock = true;
@@ -613,6 +619,10 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
                             const users = r.list;
                             setMentionList(users, typeElm, tok);
                         });
+                        break;
+                    case ":":
+                        if(!mentionLock) return;
+                        setEmojiSuggestions(name, typeElm, tok);
                         break;
                 }
             };
@@ -810,11 +820,12 @@ export function resetMsgInput(fullReset: boolean =false) {
     // Remove all sections
     for(var i = container.children.length - 1; i >= 0; i--) {
         const child = container.children[i];
-        if(child.id !== "message-section-add-btns" && child.id !== "mention-list")
+        if(!(["message-section-add-btns", "mention-list", "emoji-suggestions"].includes(child.id)))
             child.remove();
     }
 
     setMentionList([]);
+    setEmojiList([]);
 
     window.msgSections = [];
 
@@ -979,9 +990,44 @@ export function setMentionList(userIds: number[], field?: HTMLInputElement, toke
                 field.selectionEnd = field.selectionStart = `${before}@${user.id} `.length;
                 field.focus();
                 setMentionList([]);
+                setEmojiList([]);
             };
         }
-
-        list.style.maxHeight = `${list.scrollHeight}px`;
     });
+}
+
+export function setEmojiSuggestions(start: string, field?: HTMLInputElement, tokenIdx?: number) {
+    setEmojiList(nodeEmoji.search(start).map(x => x.key), field, tokenIdx);
+}
+
+export function setEmojiList(keys: string[], field?: HTMLInputElement, tokenIdx?: number) {
+    keys = keys.slice(0, 10); // limit length
+    const list = util.elmById("emoji-suggestions");
+
+    // kill all children :>
+    while(list.firstChild) list.firstChild.remove();
+
+    for(const key of keys) {
+        const elm  = document.createElement("span");
+
+        elm.innerHTML = nodeEmoji.emojify(`:${key}: ${key}`);
+        twemoji.parse(elm, { folder: "svg", ext: ".svg" });
+
+        list.appendChild(elm);
+
+        if(field === undefined) continue;
+        elm.onclick = (e) => {
+            util.stopPropagation(e);
+
+            const tokens = field.value.split(" ");
+            const before = tokens.filter((v, i, a) => i < tokenIdx).join(" ") + " ";
+            const after  = tokens.filter((v, i, a) => i > tokenIdx).join(" ") + " ";
+            const result = `${before}:${key}:${after}`;
+            field.value = result;
+            field.selectionEnd = field.selectionStart = `${before}:${key}: `.length;
+            field.focus();
+            setMentionList([]);
+            setEmojiList([]);
+        };
+    }
 }

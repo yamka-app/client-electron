@@ -17,8 +17,7 @@ const _modules = window["_modules"];
 
 const path            = _modules.path;
 const remote          = _modules.remote;
-const remark          = _modules.remark;
-const remarkEmoji     = _modules.remarkEmoji;
+const nodeEmoji       = _modules.nodeEmoji;
 const _escapeHtml     = _modules.escapeHtml;
 const marked          = _modules.marked;
 const compareVersions = _modules.compareVersions;
@@ -31,7 +30,7 @@ export const clientDebug = true;
 export const escapeHtml: (t: any) => string = _escapeHtml;
 
 export const emailRegex = /(?:[a-z0-9!#$%&"*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&"*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/i;
-export const allEmojiRegex = /^<span>\p{Emoji}{1,5}<\/span>$/gum;
+export const allEmojiRegex = /^<pre>(\p{Emoji}| ){1,20}<\/pre>$/gum;
 
 // Kaomoji, yaaay!
 export const kaomoji: [string, string][] = [
@@ -66,14 +65,13 @@ export function prepareMsgText(txt: string): string {
     return escapeHtml(txt).replace(/(?:\r\n|\r|\n)/g, "<br>");
 }
 export function markupText(txt: string) {
-    const esc = remark().use(remarkEmoji).processSync(
-        ("<span>" +
-        marked.parseInline(                           // Markdown parser
-        escapeHtml(txt)) +                            // no XSS for ya today, sorry
-        "</span>")   
-        .replace(/(?:\r\n|\r|\n)/g, "</span><span>")) // insert line breaks
-        .contents;
-    return applyKaomoji(esc.toString());
+    const esc = "<pre>" +
+        marked.parseInline(                         // Markdown parser
+        nodeEmoji.emojify(                          // I :heart: Emoji
+        escapeHtml(txt))) +                         // no XSS for ya today, sorry
+        "</pre>"   
+        .replace(/(?:\r\n|\r|\n)/g, "</pre><pre>"); // insert line breaks
+    return applyKaomoji(esc);
 }
 
 export function adjustTextAreaHeight(elm: HTMLTextAreaElement) {

@@ -1,0 +1,27 @@
+#emoji-suggestions {
+    display:   flex;
+    flex-wrap: wrap;
+
+    overflow: hidden;
+}
+#emoji-suggestions:not(:empty) {
+    margin: 0 0 8px 6px;
+}
+
+#emoji-suggestions > span {
+    width: fit-content;
+    display: flex;
+    font-size: calc(var(--font-size) - 0.5pt);
+    border-radius: 5px;
+    background: var(--background);
+    transition: background 0.1s ease;
+    padding: 5px;
+    margin: 2px;
+    cursor: pointer;
+}
+#emoji-suggestions > span > img {
+    margin-right: 5px;
+}
+#emoji-suggestions > span:hover {
+    background: var(--bg-3);
+}

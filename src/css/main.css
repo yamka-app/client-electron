@@ -67,7 +67,7 @@ body.unfocused {
     pointer-events: none;
 }
 
-span {
+span, pre {
     font-size: calc(var(--font-size) + 0.5pt);
 }
 
@@ -884,7 +884,6 @@ textarea.code-input {
     display:        flex;
     flex-direction: column;
     overflow:       hidden;
-    transition:     max-height 0.1s ease;
 }
 #mention-list:not(:empty) {
     margin: 0 0 8px 6px;
@@ -1103,15 +1102,16 @@ span.fg-1 {
     display:        flex;
     flex-direction: column;
 }
-.message-quote-section > div > span,
-.message-text-section > span {
+.message-quote-section > div > pre,
+.message-text-section > pre {
+    font-family:   Roboto;
     overflow-wrap: anywhere;
     display:       flex;
     white-space:   pre-wrap;
     align-items:   center;
 }
-.message-quote-section > div > span:empty::before,
-.message-text-section > span:empty::before {
+.message-quote-section > div > pre:empty::before,
+.message-text-section > pre:empty::before {
     content: "\200b"; /* zero width space */
 }
 
@@ -1192,13 +1192,13 @@ canvas.message-img-section.deblur {
     color:      var(--foreground);
     font-size:  var(--font-size);
 }
-.message-e2ee-section > span:not(:nth-child(1)) {
+.message-e2ee-section > pre:not(:nth-child(1)) {
     margin-top: 8px;
 }
-.message-e2ee-section > span:nth-child(1) {
+.message-e2ee-section > pre:nth-child(1) {
     font-weight: bold;
 }
-.message-e2ee-section > span > code {
+.message-e2ee-section > pre > code {
     background:    #00000033;
     padding:       4px;
     border-radius: 4px;
