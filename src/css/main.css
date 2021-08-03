@@ -76,6 +76,7 @@ code {
 }
 
 *::-webkit-scrollbar {
+    height: 8px;
     width: 8px;
 }
 *::-webkit-scrollbar-track {
@@ -1086,11 +1087,13 @@ span.fg-1 {
 }
 
 .message-content {
+    max-width:   -webkit-fill-available;
     margin-left: 10px;
 }
 
 .message-quote-section,
 .message-text-section {
+    width: fit-content;
     margin-bottom:  5px;
     vertical-align: baseline;
 
@@ -1122,13 +1125,18 @@ div.message-quote-section {
     cursor: pointer;
 }
 .message-code-section {
-    margin-top: 5px;
-    padding: 5px;
+    overflow-x: auto;
+    width:      fit-content;
+    max-width:  -webkit-fill-available;
 
-    border-radius: 5px;
+    margin-top: 5px;
+    padding:    10px;
+
+    border-radius: 10px;
 
     font-family: JetBrainsMono;
     font-size:   var(--font-size);
+    background:  var(--bg-2);
 
     user-select: text;
 }
