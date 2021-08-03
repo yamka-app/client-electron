@@ -24,5 +24,56 @@
 
     "mfa_toggle.password": "Пароль",
     "mfa_toggle.confirm": "Переключить 2ФА",
-    "mfa_toggle.cancel": "Отмена"
+    "mfa_toggle.cancel": "Отмена",
+
+    "profile.mutual_groups": "Общие группы",
+    "profile.mutual_friends": "Общие друзья",
+    "profile.activity": "Активность",
+
+    "group_create_box.create.title": "СОЗДАТЬ ГРУППУ",
+    "group_create_box.create.name": "Название",
+    "group_create_box.create.button": "Создать",
+    "group_create_box.join.title": "ПРИСОЕДИНИТЬСЯ К ГРУППЕ",
+    "group_create_box.join.invite": "Код приглашения",
+    "group_create_box.join.button": "Присоединиться",
+
+    "update_available.title": "ДОСТУПНА НОВАЯ ВЕРСИЯ",
+    "update_available.confirm": "Обновить",
+    "update_available.ignore": "Не обновлять",
+    "update_available.notice": "Старые версии приложения в будущем могут перестать работать",
+
+    "email_unconfirmed": "Ваш адрес почты не подтверждён. Пожалуйста, следуйте инструкциям, высланным на него",
+
+    "user_settings.profile.title": "ПРОФИЛЬ",
+    "user_settings.profile.avatar_change": "ПОМЕНЯТЬ",
+    "user_settings.profile.username": "Имя пользователя",
+    "user_settings.profile.status": "Статус",
+    "user_settings.profile.status.online": "В сети",
+    "user_settings.profile.status.offline": "Не в сети",
+    "user_settings.profile.status.idle": "Бездействие",
+    "user_settings.profile.status.focused": "Сфокусирован(а)",
+    "user_settings.profile.status.focused.tooltip": "Вам будут приходить уведомления только о личных сообщениях",
+    "user_settings.profile.status.dnd": "Не беспокоить",
+    "user_settings.profile.status.dnd.tooltip": "Вам не будут приходить уведомления",
+    "user_settings.profile.status_text": "Текстовый статус",
+    "user_settings.profile.favorite_color": "Любимый цвет",
+    "user_settings.profile.enter_tip": "Подсказка: нажмите \"Enter\", чтобы сохранить изменения в текстовых полях",
+    "user_settings.profile.agents": "УСТРОЙСТВА И ПОДКЛЮЧЁННЫЕ ПРИЛОЖЕНИЯ",
+    "user_settings.profile.auth": "Аутентификация",
+    "user_settings.profile.email": "Адрес почты",
+    "user_settings.profile.email.code": "Код подтверждения почты",
+    "user_settings.profile.mfa_status": "Двухфакторная аутентификация $mfaStatus",
+    "user_settings.profile.mfa_status.enabled": "включена",
+    "user_settings.profile.mfa_status.disabled": "выключена",
+    "user_settings.profile.mfa_toggle": "$target 2ФА",
+    "user_settings.profile.mfa_toggle.enable": "Включить",
+    "user_settings.profile.mfa_toggle.disable": "Выключить",
+
+    "user_settings.notifications.title": "УВЕДОМЛЕНИЯ",
+    "user_settings.content.title": "КОНТЕНТ",
+    "user_settings.appearance.title": "ВНЕШНИЙ ВИД",
+    "user_settings.audio.title": "АУДИО",
+    "user_settings.about.title": "О ПРИЛОЖЕНИИ",
+    "user_settings.developers.title": "РАЗРАБОТЧИКАМ",
+    "user_settings.log_out.title": "ВЫЙТИ"
 }
