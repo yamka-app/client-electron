@@ -28,6 +28,7 @@ import * as accountSelector     from "./dom_util/account_selector.js";
 import * as popups              from "./popups.js";
 import { configGet, configSet } from "./settings.js";
 import { commit }               from "./_git_commit.js";
+import * as i18n                from "./dom_util/i18n.js";
 
 import { reset, ipcSend, sendPacket, self } from "./yGlobal.js";
 
@@ -1458,6 +1459,8 @@ function _rendererFunc() {
 
     layout.addHints();
     domUtil.setupProfileTabs();
+    i18n.loadLocale(configGet("locale"));
+    i18n.formatDefault();
 
     // copy own name and tag when clicked
     util.elmById("self-nickname").onclick = (e) => {

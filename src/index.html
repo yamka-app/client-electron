@@ -57,12 +57,12 @@
   <body>
     <div id="connecting-screen-bg" class="darken-bg">
       <div id="connecting-screen" class="flex-col">
-        <span>Connecting</span>
+        <span x-key="connecting.title"></span>
         <div class="loading-spinner">
           <div></div>
         </div>
-        <span>Problems? Check your Internet connection or</span>
-        <button id="connecting-tweet">Tweet at us</button>
+        <span x-key="connecting.tooltip"></span>
+        <button id="connecting-tweet" x-key="connecting.tweet"></button>
       </div>
     </div>
 
@@ -78,30 +78,30 @@
 
     <div id="group-delete-box-bg" class="darken-bg" style="display: none;">
       <div id="group-delete-box" class="flex-col">
-        <h6>WARNING!</h6>
-        <p>This action is <b>IRREVERSIBLE</b>! You can <b>NOT</b> restore a group after it has been deleted!</p>
-        <button id="group-delete-revert"  class="apply-button">I CHANGED MY MIND</button>
-        <p>Please enter the name of the group you want to delete (<b><spam id="group-delete-name"></spam></b>) to confirm this action.</p>
+        <h6 x-key="group_delete.warning"></h6>
+        <p x-key="group_delete.irreversible"></p>
+        <button id="group-delete-revert" class="apply-button" x-key="group_delete.revert"></button>
+        <p x-key="group_delete.tooltip"></p>
         <input id="group-delete-name-input"/>
-        <button id="group-delete-confirm" class="danger-button">DELETE THIS GROUP</button>
+        <button id="group-delete-confirm" class="danger-button"></button>
       </div>
     </div>
 
     <div id="contact-remove-box-bg" class="darken-bg" style="display: none;">
       <div id="contact-remove-box" class="flex-col">
         <span id="contact-remove-title"></span>
-        <button id="contact-remove-confirm" class="danger-button">YES</button>
-        <button id="contact-remove-cancel">NO</button>
+        <button id="contact-remove-confirm" class="danger-button" x-key="yes"></button>
+        <button id="contact-remove-cancel" x-key="no"></button>
       </div>
     </div>
 
     <div id="password-chg-box-bg" class="darken-bg" style="display: none;">
       <div id="password-chg-box" class="flex-col">
-        <input id="password-chg-current" placeholder="CURRENT PASSWORD" type="password"/>
-        <input id="password-chg-mfa" placeholder="2FA CODE"/>
-        <input id="password-chg-new" placeholder="NEW PASSWORD" type="password"/>
-        <button id="password-chg-ok" class="apply-button">CHANGE PASSWORD</button>
-        <button id="password-chg-cancel">CANCEL</button>
+        <input id="password-chg-current" x-key-ph="password_chg.current" type="password"/>
+        <input id="password-chg-mfa" x-key-ph="password_chg.2fa"/>
+        <input id="password-chg-new" x-key-ph="password_chg.new" type="password"/>
+        <button id="password-chg-ok" class="apply-button" x-key="password_chg.confirm"></button>
+        <button id="password-chg-cancel" x-key="password_chg.cancel"></button>
       </div>
     </div>
 

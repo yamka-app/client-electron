@@ -1,0 +1,22 @@
+{
+    "authors": ["Yamka"],
+
+    "yes": "YES",
+    "no": "NO",
+
+    "connecting.title": "Connecting",
+    "connecting.tooltip": "Problems? Check your Internet connection or",
+    "connecting.tweet": "Tweet at us",
+
+    "group_delete.warning": "WARNING!",
+    "group_delete.irreversible": "This action is IRREVERSIBLE! You can NOT restore a group after it has been deleted!",
+    "group_delete.tooltip": "Please enter the name of the group you want to delete ($group_name) to confirm this action.",
+    "group_delete.revert": "I CHANGED MY MIND",
+    "group_delete.confirm": "DELETE THIS GROUP",
+
+    "password_chg.current": "CURRENT PASSWORD",
+    "password_chg.2fa": "2FA CODE",
+    "password_chg.new": "NEW PASSWORD",
+    "password_chg.confirm": "CHANGE PASSWORD",
+    "password_chg.cancel": "CANCEL"
+}

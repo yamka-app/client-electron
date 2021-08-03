@@ -23,7 +23,8 @@ const defaultSettings = [
     { name: "agents",        value: {}                },
     { name: "tokens",        value: {}                },
     { name: "users",         value: []                },
-    { name: "sslkeylog",     value: false             }
+    { name: "sslkeylog",     value: false             },
+    { name: "locale",        value: "en_us"           }
 ];
 
 // Simple turn on/off settings that can be toggled with a switch
