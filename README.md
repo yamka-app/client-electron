@@ -14,10 +14,6 @@
 :construction: Both the client the back end are in their aplha stage right now. :construction:\
 Latest version: **0.9.2**
 
-## Branches
-  - `master`: the default branch. All development happens here
-  - `prod`: production. `master` gets merged with this branch whenever a version separation is made
-
 ## Build
 Do `npm start` to run the app without producing any artifacts:
 ```sh
