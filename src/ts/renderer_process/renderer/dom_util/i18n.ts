@@ -15,6 +15,7 @@ interface LocaleDescription {
 
 import { elmById, escapeHtml } from "../util.js";
 import { configSet }           from "../settings.js";
+import { addTooltip }          from "./layout.js";
 
 const _modules  = window["_modules"];
 const path      = _modules.path;
@@ -59,7 +60,7 @@ export function loadLocale(name: string) {
         return;
     }
 
-    formatDefault();
+    formatElements();
 }
 
 export function format(key: string, args: dict = {}) {
@@ -98,15 +99,17 @@ export function formatElement(elm: HTMLElement, args: dict = undefined) {
     if(elm.getAttribute("x-key-ph") !== null && elm instanceof HTMLInputElement)
         elm.placeholder = escapeHtml(format(elm.getAttribute("x-key-ph"), args));
 
-    if(elm.getAttribute("x-key-tt") !== null)
+    if(elm.getAttribute("x-key-tt") !== null) {
         elm.setAttribute("x-tooltip", format(elm.getAttribute("x-key-tt"), args));
+        addTooltip(elm);
+    }
 }
 
-export function formatDefault() {
+export function formatElements(root: any = document) {
     const lookFor = ["x-key", "x-key-ph", "x-key-tt"];
     var elements = [];
     for(const attr of lookFor)
-        elements = [...elements, ...document.querySelectorAll(`[${attr}]`)]
+        elements = [...elements, ...root.querySelectorAll(`[${attr}]`)]
     
     for(const elm of elements)
         formatElement(elm as HTMLElement);

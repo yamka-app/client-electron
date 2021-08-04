@@ -202,5 +202,10 @@
     "msg_time.unit.d": "$vald ago",
     "msg_time.unit.h": "$valh ago",
     "msg_time.unit.m": "$valm ago",
-    "msg_time.unit.recently": "recently"
+    "msg_time.unit.recently": "recently",
+
+    "account_selector.title": "Select account",
+    "account_selector.login": "Log in",
+    "account_selector.signup": "Sign up",
+    "account_selector.remove_tooltip": "Log out"
 }

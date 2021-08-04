@@ -179,7 +179,7 @@ export function timeElm(id: number, reply: boolean = false, edited: boolean = fa
         i18n.formatElement(elm, args);
     };
     upd();
-    setInterval(upd, 1000);
+    setInterval(upd, 10000);
     return elm;
 }
 

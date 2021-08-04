@@ -84,7 +84,7 @@
     "user_settings.appearance.accent": "Главный цвет",
     "user_settings.appearance.theme": "Тема: $name (автор: $author)",
     "user_settings.appearance.load_theme": "Загрузить свою тему",
-    "user_settings.appearance.theming_docs": "Документация по создании тем для разработчиков",
+    "user_settings.appearance.theming_docs": "Документация по созданию тем для разработчиков",
 
     "user_settings.audio.title": "АУДИО",
     "user_settings.audio.mic_volume": "Громкость микрофона",
@@ -202,5 +202,10 @@
     "msg_time.unit.d": "$valд назад",
     "msg_time.unit.h": "$valч назад",
     "msg_time.unit.m": "$valм назад",
-    "msg_time.unit.recently": "недавно"
+    "msg_time.unit.recently": "недавно",
+
+    "account_selector.title": "Выберите пользователя",
+    "account_selector.login": "Войти",
+    "account_selector.signup": "Зарегистрироваться",
+    "account_selector.remove_tooltip": "Выйти"
 }
