@@ -2,7 +2,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import * as popups from "./popups.js";
+import * as popups       from "./popups.js";
+import { escapeHtml }    from "./util.js";
+import { formatElement } from "./dom_util/i18n.js";
 
 export class Entry {
     title: string;
@@ -29,7 +31,12 @@ export class Entry {
 
         if(this.title !== undefined) {
             const title = document.createElement("span");
-            title.innerText = this.title;
+            if(!this.title.startsWith("%")) {
+                title.innerHTML = escapeHtml(this.title);
+            } else {
+                title.setAttribute("x-key", this.title.slice(1));
+                formatElement(title);
+            }
             head.appendChild(title);
         }
 

@@ -562,23 +562,23 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
 
     const isFriend = remote.getGlobal("sweet").self.friends.includes(id);
     var contextMenu: context.Entry[] = [
-        new context.ButtonEntry("Profile", showProfile, [id])
+        new context.ButtonEntry("%context_menu.user.profile", showProfile, [id])
     ];
 
-    if(isFriend) contextMenu.push(new context.ButtonEntry("Open DM", openDm));
+    if(isFriend) contextMenu.push(new context.ButtonEntry("%context_menu.user.open_dm", openDm));
 
     if(isFriend)
-        contextMenu.push(new context.ButtonEntry(`Remove friend`,
+        contextMenu.push(new context.ButtonEntry("%context_menu.user.friend.remove",
             yGlobal.sendPacket, [new packets.ContactsManagePacket(
                 packets.ContactType.FRIEND, packets.ContactAction.REMOVE,
                 id)]));
     else
-        contextMenu.push(new context.ButtonEntry(`Add friend`,
+        contextMenu.push(new context.ButtonEntry("%context_menu.user.friend.add",
             yGlobal.sendPacket, [new packets.SearchPacket(
                 packets.SearchTarget.USER, 0, `${user.name}#${util.formatTag(user.tag)}`)]));
 
     contextMenu.push(new context.Separator());
-    contextMenu.push(new context.ButtonEntry("Copy ID", clipboard.writeText, [`${id}`]));
+    contextMenu.push(new context.ButtonEntry("%context_menu.user.copy_id", clipboard.writeText, [`${id}`]));
 
     context.addRightClickMenu(elm, contextMenu);
 
@@ -680,10 +680,10 @@ export function createGroupPanel(id: number) {
     }
 
     context.addRightClickMenu(panel, [
-        new context.ButtonEntry(`Leave ${group.name}`, yGlobal.sendPacket, [new packets.ContactsManagePacket(
+        new context.ButtonEntry("%context_menu.group.leave", yGlobal.sendPacket, [new packets.ContactsManagePacket(
                 packets.ContactType.GROUP, packets.ContactAction.REMOVE, id)]),
         new context.Separator(),
-        new context.ButtonEntry("Copy ID", clipboard.writeText, [`${id}`])
+        new context.ButtonEntry("%context_menu.group.copy_id", clipboard.writeText, [`${id}`])
     ]);
 
     return panel;

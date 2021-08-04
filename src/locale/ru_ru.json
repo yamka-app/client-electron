@@ -207,5 +207,14 @@
     "account_selector.title": "Выберите пользователя",
     "account_selector.login": "Войти",
     "account_selector.signup": "Зарегистрироваться",
-    "account_selector.remove_tooltip": "Выйти"
+    "account_selector.remove_tooltip": "Выйти",
+
+    "context_menu.user.profile": "Профиль",
+    "context_menu.user.open_dm": "Открыть ЛС",
+    "context_menu.user.friend.remove": "Удалить друга",
+    "context_menu.user.friend.add": "Отправить запрос в друзья",
+    "context_menu.user.copy_id": "Скопировать ID",
+
+    "context_menu.group.leave": "Покинуть",
+    "context_menu.group.copy_id": "Скопировать ID"
 }

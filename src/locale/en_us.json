@@ -207,5 +207,14 @@
     "account_selector.title": "Select account",
     "account_selector.login": "Log in",
     "account_selector.signup": "Sign up",
-    "account_selector.remove_tooltip": "Log out"
+    "account_selector.remove_tooltip": "Log out",
+
+    "context_menu.user.profile": "Profile",
+    "context_menu.user.open_dm": "Open DM",
+    "context_menu.user.friend.remove": "Remove friend",
+    "context_menu.user.friend.add": "Send friend request",
+    "context_menu.user.copy_id": "Copy ID",
+
+    "context_menu.group.leave": "Leave",
+    "context_menu.group.copy_id": "Copy ID"
 }
