@@ -640,7 +640,7 @@ export function createGroupPanel(id: number) {
 
         const mentions = (mentionCnt === 0) ? "" : `<span class="group-bubble">${mentionCnt}</span>`;
 
-        unread.innerHTML = `<img src="icons/message.png" class="cg-img"/> ${util.escapeHtml(unreadMsgs)} NEW` + 
+        unread.innerHTML = `<img src="icons/message.png" class="cg-img"/> ${util.escapeHtml(unreadMsgs)}` + 
                            mentions + `<img src="icons/channel.png" class="cg-img"/> ${unreadChans.length}</span>`
 
         // Create the bottom panel
