@@ -14,6 +14,7 @@ import * as domMsgUtil from "./msg_util.js";
 import * as packets    from "../../protocol.s/packets.s.js";
 import * as entities   from "../../protocol.s/entities.s.js";
 import * as popups     from "../popups.js";
+import * as i18n       from "./i18n.js";
 
 // Updates the member list sidebar
 export function updMemberList() {
@@ -44,12 +45,9 @@ export function updMemberList() {
         const self = remote.getGlobal("sweet").self;
         const friendType = util.elmById("member-list-friend-type");
 
-        friendType.innerHTML = util.escapeHtml(
-            ["ALL FRIENDS",
-                "ONLINE FRIENDS",
-                "INCOMING REQUESTS",
-                "OUTGOING REQUESTS",
-                "BLOCKED"][window.viewingContactGroup]);
+        friendType.setAttribute("x-key",
+            "member_area.contacts." + ["all", "online", "pending", "sent", "blocked"][window.viewingContactGroup]);
+        i18n.formatElement(friendType);
         const userIds =
             [self.friends,
                 self.friends,
@@ -398,17 +396,8 @@ export function showE2eeInfo(ev: MouseEvent) {
     const title = document.createElement("span");
     const complete = (window.entityCache[window.viewingChan] as entities.Channel).__e2eeReady;
     div.appendChild(title);
-    title.innerHTML = !complete ? `
-        This direct message conversation is getting set up to use end-to-end
-        encryption.
-    ` : `
-        This direct message conversation is end-to-end encrypted.
-        Nobody (even us) can read it except you and the person
-        you're communicating with.
-        You can make sure this is true by comparing this string
-        and/or image to what's displayed on their screen
-        in real life or using another app.
-    `;
+    title.setAttribute("x-key", "e2ee_info." + (complete ? "complete" : "setup"));
+    i18n.formatElement(title);
 
     if(complete) {
         const str = document.createElement("code");

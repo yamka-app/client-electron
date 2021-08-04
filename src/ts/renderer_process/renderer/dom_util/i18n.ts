@@ -90,7 +90,7 @@ export function formatElement(elm: HTMLElement, args: dict = undefined) {
     // args may point to a key
     for(const [k, v] of Object.entries(args))
         if(v.startsWith("%"))
-            args[k] = format(v.slice(1))
+            args[k] = format(v.slice(1), args);
 
     if(elm.getAttribute("x-key") !== null)
         elm.innerHTML = escapeHtml(format(elm.getAttribute("x-key"), args));

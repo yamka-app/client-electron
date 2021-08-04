@@ -8,6 +8,7 @@ import * as domUtil  from "./dom_util/dom_util.js";
 import * as packets  from "../protocol.s/packets.s.js";
 import * as entities from "../protocol.s/entities.s.js";
 import * as types    from "../protocol.s/dataTypes.s.js";
+import * as i18n     from "./dom_util/i18n.js";
 
 import { sendPacket }   from "./yGlobal.js";
 import { configGet }    from "./settings.js";
@@ -146,8 +147,7 @@ export function idToTime(id: number): string {
         second: "numeric"
     });
 }
-
-function timeStr(date: Date) {
+function timeFormatArgs(date: Date) {
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
     const milestones = [
@@ -159,20 +159,24 @@ function timeStr(date: Date) {
     ];
     for(const ms of milestones)
         if(diff >= ms.div)
-            return (diff / ms.div).toFixed(ms.fraction) + ms.suffix + " ago";
-    return "recently";
+            return {
+                key: "msg_time.unit." + ms.suffix,
+                val: (diff / ms.div).toFixed(ms.fraction)
+            };
+    return {key: "msg_time.unit.recently", val: "0"};
 }
 // Creates a self-updating "x <units> ago" string
-export function timeElm(id: number, prefix:string = "", suffix: string = "") {
+export function timeElm(id: number, reply: boolean = false, edited: boolean = false) {
     const timestamp = (BigInt(id) >> BigInt(16)) + BigInt(1577836800000);
     const date = new Date(Number(timestamp));
     const elm = document.createElement("span");
+    addHoverText(elm, idToTime(id));
     const upd = () => {
-        const val = timeStr(date);
-        // Add a prefix dependeing on whether the function returned an absolute
-        // value or not
-        elm.innerHTML = escapeHtml(prefix + " " + val + " " + suffix);
-        addHoverText(elm, idToTime(id));
+        var args = {edited: edited ? "%msg_time.edited" : ""};
+        elm.setAttribute("x-key", "msg_time.format." + (reply ? "reply" : "normal"));
+        const {key, val} = timeFormatArgs(date);
+        args = {...args, ...{val: val, time: `%${key}`}};
+        i18n.formatElement(elm, args);
     };
     upd();
     setInterval(upd, 1000);

@@ -186,5 +186,21 @@
     "tooltips.contact_type.sent": "Outgoing requests",
     "tooltips.contact_type.blocked": "Blocked users",
     "tooltips.contact_type.send_rq": "Send friend request",
-    "tooltips.open_settings": "Click to open user settings"
+    "tooltips.open_settings": "Click to open user settings",
+
+    "fb.update": "Update",
+    "fb.ok": "OK",
+
+    "e2ee_info.complete": "This direct message channel is end-to-end encrypted. Nobody (even us) can read it except you and the person you're communicating with. You can make sure this is true by comparing this string and/or image to what's displayed on their screen in real life or using another app.",
+    "e2ee_info.setup": "This direct message channel is getting set up to use end-to-end encryption.",
+
+    "msg_time.format.normal": "$time $edited",
+    "msg_time.format.reply": "said $time $edited",
+    "msg_time.edited": "(edited)",
+    "msg_time.unit.y": "$valy ago",
+    "msg_time.unit.mo": "$valmo ago",
+    "msg_time.unit.d": "$vald ago",
+    "msg_time.unit.h": "$valh ago",
+    "msg_time.unit.m": "$valm ago",
+    "msg_time.unit.recently": "recently"
 }

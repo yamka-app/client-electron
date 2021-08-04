@@ -77,7 +77,7 @@ export function createMessage(state: entities.MessageState, short = false): HTML
         noteElm.classList.add("user-note", `user-note-${msg.sender}`);
         nicknameContainer.appendChild(noteElm);
 
-        const timeElm = util.timeElm(msg.id, "", msg.states.length > 1 ? "(edited)" : "");
+        const timeElm = util.timeElm(msg.id, false, msg.states.length > 1);
         timeElm.classList.add("message-time");
         nicknameContainer.appendChild(timeElm);
     }
@@ -314,7 +314,7 @@ function createQuoteSection(section: types.MessageSection) {
                 replyNickname.classList.add("message-user-nickname", "user-nickname-" + replyMsg.sender);
                 replyAvaContainer.appendChild(replyNickname);
 
-                const replySaid = util.timeElm(replyMsg.id, "said");
+                const replySaid = util.timeElm(replyMsg.id, true, replyMsg.states.length > 1);
                 replySaid.classList.add("message-time");
                 replyAvaContainer.appendChild(replySaid);
             });
