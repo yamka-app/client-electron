@@ -30,6 +30,7 @@
     "profile.mutual_groups": "Mutual groups",
     "profile.mutual_friends": "Mutual friends",
     "profile.activity": "Activity",
+    "profile.add_note": "click to add note",
 
     "group_create_box.create.title": "CREATE GROUP",
     "group_create_box.create.name": "Name",
@@ -143,8 +144,9 @@
     "member_area.contacts.title": "Contacts",
     "member_area.contacts.all": "All friends",
     "member_area.contacts.online": "Online friends",
-    "member_area.contacts.pending": "Pending requests",
-    "member_area.contacts.sent": "Sent requests",
+    "member_area.contacts.pending": "Incoming requests",
+    "member_area.contacts.sent": "Outgoing requests",
+    "member_area.contacts.blocked": "Blocked users",
     "member_area.contacts.send_rq": "Send request",
     "member_area.contacts.group": "Group members",
 
@@ -165,5 +167,24 @@
     "signup.password.medium": "medium",
     "signup.password.strong": "strong",
     "signup.confirm": "Sign up",
-    "signup.back": "Back"
+    "signup.back": "Back",
+
+    "tooltips.profile_tag": "You can't change your tag",
+    "tooltips.group_leave": "Leave the group forever",
+    "tooltips.go_main": "Go to the main screen",
+    "tooltips.e2ee_info": "Encryption info",
+    "tooltips.voice.join": "Join voice",
+    "tooltips.voice.leave": "Leave voice",
+    "tooltips.msg_section.text": "Add text",
+    "tooltips.msg_section.file": "Add file",
+    "tooltips.msg_section.code": "Add code",
+    "tooltips.msg_section.quote": "Add quote",
+    "tooltips.msg_section.poll": "Add poll",
+    "tooltips.contact_type.all": "All friends",
+    "tooltips.contact_type.online": "Online friends",
+    "tooltips.contact_type.pending": "Incoming requests",
+    "tooltips.contact_type.sent": "Outgoing requests",
+    "tooltips.contact_type.blocked": "Blocked users",
+    "tooltips.contact_type.send_rq": "Send friend request",
+    "tooltips.open_settings": "Click to open user settings"
 }

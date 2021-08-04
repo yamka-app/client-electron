@@ -30,6 +30,7 @@
     "profile.mutual_groups": "Общие группы",
     "profile.mutual_friends": "Общие друзья",
     "profile.activity": "Активность",
+    "profile.add_note": "кликните, чтобы добавить заметку",
 
     "group_create_box.create.title": "СОЗДАТЬ ГРУППУ",
     "group_create_box.create.name": "Название",
@@ -134,7 +135,7 @@
     "mfa_qr.line2": "Или введите/скопируйте код ниже вручную",
     "mfa_qr.ok": "Понятно",
 
-    "group_list.create_join": "Создать или присоединиться к группе",
+    "group_list.create_join": "Создать или вступить в группу",
 
     "message_area.header": "Вы достигли начала этого канала",
 
@@ -145,6 +146,7 @@
     "member_area.contacts.online": "Друзья в сети",
     "member_area.contacts.pending": "Входящие запросы",
     "member_area.contacts.sent": "Исходящие запросы",
+    "member_area.contacts.blocked": "Заблокированные пользователи",
     "member_area.contacts.send_rq": "Отправить запрос",
     "member_area.contacts.group": "Члены группы",
 
@@ -165,5 +167,24 @@
     "signup.password.medium": "средний",
     "signup.password.strong": "хороший",
     "signup.confirm": "Зарегистрироваться",
-    "signup.back": "Назад"
+    "signup.back": "Назад",
+
+    "tooltips.profile_tag": "Вы не можете сменить свой тэг",
+    "tooltips.group_leave": "Покинуть группу навсегда",
+    "tooltips.go_main": "Вернуться на главный экран",
+    "tooltips.e2ee_info": "Информация о шифровании",
+    "tooltips.voice.join": "Присоединиться к голосовому чату",
+    "tooltips.voice.leave": "Покинуть голосовой чат",
+    "tooltips.msg_section.text": "Добавить текст",
+    "tooltips.msg_section.file": "Добавить файл",
+    "tooltips.msg_section.code": "Добавить код",
+    "tooltips.msg_section.quote": "Добавить цитату",
+    "tooltips.msg_section.poll": "Добавить опрос",
+    "tooltips.contact_type.all": "Все друзья",
+    "tooltips.contact_type.online": "Друзья в сети",
+    "tooltips.contact_type.pending": "Входящие запросы",
+    "tooltips.contact_type.sent": "Исходящие запросы",
+    "tooltips.contact_type.blocked": "Заблокированные пользователи",
+    "tooltips.contact_type.send_rq": "Отправить запрос в друзья",
+    "tooltips.open_settings": "Нажмите, чтобы открыть настройки пользователя"
 }

@@ -122,7 +122,7 @@
             <div id="profile-nickname-container" class="flex-row">
               <span id="profile-nickname" class="user-nickname">loading</span>
               <span id="profile-tag" class="user-tag">#11111</span>
-              <input id="profile-note" class="user-note" placeholder="click to add note"/>
+              <input id="profile-note" class="user-note" x-key-ph="profile.add_note"/>
               <span id="profile-badges" class="flex-row"></span>
             </div>
           </div>
@@ -253,7 +253,7 @@
                       <span x-key="user_settings.profile.username"></span>
                       <div>
                         <input id="self-name-change"/>
-                        <span id="self-tag-settings" class="user-tag" x-tooltip="You can't change your tag"></span>
+                        <span id="self-tag-settings" class="user-tag" x-key-tt="tooltips.profile_tag"></span>
                       </div>
                     </div>
 
@@ -601,7 +601,7 @@
           <td id="channel-list-sidebar">
             <div id="channel-list-container" class="flex-col">
               <div id="channel-list-header" class="flex-row">
-                <button id="group-leave" class="icon-button cg-button" x-tooltip="Leave the group forever">
+                <button id="group-leave" class="icon-button cg-button" x-key-tt="tooltips.group_leave">
                   <img src="icons/leave_group.png"/>
                 </button>
                 <span id="group-name"></span>
@@ -627,12 +627,12 @@
               <div id="message-container-area" class="flex-col">
                 <div id="message-area-title">
                   <div class="flex-row">
-                    <button id="message-area-leave" class="icon-button cg-button" x-tooltip="Go to the main screen"><img src="icons/leave.png"></button>
-                    <button id="message-area-e2ee" class="icon-button" x-tooltip="Encryption info"><img src="icons/e2ee.png"></button>
-                    <button id="message-area-voice" class="icon-button cg-button" x-tooltip="Join voice"><img src="icons/voice.png"></button>
+                    <button id="message-area-leave" class="icon-button cg-button" x-key-tt="tooltips.go_main"><img src="icons/leave.png"></button>
+                    <button id="message-area-e2ee" class="icon-button" x-key-tt="tooltips.e2ee_info"><img src="icons/e2ee.png"></button>
+                    <button id="message-area-voice" class="icon-button cg-button" x-key-tt="tooltips.voice.join"><img src="icons/voice.png"></button>
                     <span id="voice-status"></span>
                     <button id="message-area-voice-disconnect" class="icon-button cg-button" style="display:none">
-                      <img src="icons/disconnect.png" x-tooltip="Leave voice"></button>
+                      <img src="icons/disconnect.png" x-key-tt="tooltips.voice.leave"></button>
                   </div>
                   <div id="voice-members">
                   </div>
@@ -650,11 +650,11 @@
                   <div id="message-input-container" class="input-container">
                     <!-- Message sections reside here -->
                     <div id="message-section-add-btns" class="flex-row">
-                      <button id="message-text-section-button"  class="icon-button cg-button" x-tooltip="Add text" ><img src="icons/add_text.png"></button>
-                      <button id="message-file-section-button"  class="icon-button cg-button" x-tooltip="Add file" ><img src="icons/add_file.png"></button>
-                      <button id="message-code-section-button"  class="icon-button cg-button" x-tooltip="Add code" ><img src="icons/add_code.png"></button>
-                      <button id="message-quote-section-button" class="icon-button cg-button" x-tooltip="Add quote"><img src="icons/add_quote.png"></button>
-                      <button id="message-poll-section-button"  class="icon-button cg-button" x-tooltip="Add poll" ><img src="icons/add_poll.png"></button>
+                      <button id="message-text-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.text" ><img src="icons/add_text.png"></button>
+                      <button id="message-file-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.file" ><img src="icons/add_file.png"></button>
+                      <button id="message-code-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.code" ><img src="icons/add_code.png"></button>
+                      <button id="message-quote-section-button" class="icon-button cg-button" x-key-tt="tooltips.msg_section.quote"><img src="icons/add_quote.png"></button>
+                      <button id="message-poll-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.poll" ><img src="icons/add_poll.png"></button>
                       <span id="message-editing"></span>
                       <span id="channel-typing"></span>
                       <div id="typing-dots" class="flex-row" style="display: none;">
@@ -677,16 +677,16 @@
           <td id="member-list-sidebar"><table style="border: none; border-spacing: 0; height: 100%; width: 100%">
             <tr style="height: fit-content;"><td id="member-list-friend-header" class="flex-row">
               <span x-key="member_area.contacts.title"></span>
-              <button id="friends-all"         class="icon-button cg-button" x-tooltip="All friends"><img src="icons/friend.png"/></button>
-              <button id="friends-online"      class="icon-button cg-button" x-tooltip="Online friends"><img src="icons/friend_online.png"/></button>
-              <button id="friends-pending-in"  class="icon-button cg-button" x-tooltip="Incoming requests">
+              <button id="friends-all"         class="icon-button cg-button" x-key-tt="tooltips.contact_type.all"><img src="icons/friend.png"/></button>
+              <button id="friends-online"      class="icon-button cg-button" x-key-tt="tooltips.contact_type.online"><img src="icons/friend_online.png"/></button>
+              <button id="friends-pending-in"  class="icon-button cg-button" x-key-tt="tooltips.contact_type.pending">
                 <img src="icons/friend_pending_in.png"/>
                 <div id="pin-cnt-container" class="bubble"><span id="pending-in-count">0</span></div>
               </button>
-              <button id="friends-pending-out" class="icon-button cg-button" x-tooltip="Outgoing requests"><img src="icons/friend_pending_out.png"/></button>
-              <button id="friends-blocked"     class="icon-button cg-button" x-tooltip="Blocked users"><img src="icons/ban.png"/></button>
+              <button id="friends-pending-out" class="icon-button cg-button" x-key-tt="tooltips.contact_type.sent"><img src="icons/friend_pending_out.png"/></button>
+              <button id="friends-blocked"     class="icon-button cg-button" x-key-tt="tooltips.contact_type.blocked"><img src="icons/ban.png"/></button>
 
-              <button id="friend-add"          class="icon-button cg-button" x-tooltip="Send friend request"><img src="icons/friend_add.png"/></button>
+              <button id="friend-add"          class="icon-button cg-button" x-key-tt="tooltips.contact_type.send_rq"><img src="icons/friend_add.png"/></button>
             </td></tr>
 
             <tr style="height: fit-content;"><td class="input-container" id="user-search-bar" style="display: none;">
@@ -704,7 +704,7 @@
 
             <tr><td id="user-info-bar">
               <div class="user-avatar-container">
-                <img id="self-avatar" class="user-avatar" x-tooltip="Click to open user settings"/>
+                <img id="self-avatar" class="user-avatar" x-key-tt="tooltips.open_settings"/>
                 <img id="self-status" class="user-online"/>
               </div>
 
