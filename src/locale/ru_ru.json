@@ -105,6 +105,8 @@
     "user_settings.developers.keylog": "Включить журнал ключей TLS (прочитайте документацию, громадная дыра в безопасности!)",
     "user_settings.developers.keylog.tooltip": "Временно отключено",
 
+    "user_settings.log_out.title": "ВЫЙТИ",
+
     "group_settings.general.title": "ОБЩИЕ",
     "group_settings.general.icon_change": "ВЫБРАТЬ",
     "group_settings.general.name": "Название",
@@ -127,5 +129,41 @@
 
     "group_settings.delete.title": "УДАЛИТЬ ГРУППУ",
 
-    "user_settings.log_out.title": "ВЫЙТИ"
+    "mfa_qr.title": "QR-КОД 2ФА",
+    "mfa_qr.line1": "Отсканируйте этот код в приложении генерации кодов на телефоне (например, Authy)",
+    "mfa_qr.line2": "Или введите/скопируйте код ниже вручную",
+    "mfa_qr.ok": "Понятно",
+
+    "group_list.create_join": "Создать или присоединиться к группе",
+
+    "message_area.header": "Вы достигли начала этого канала",
+
+    "message_input.e2ee_notice": "Этот канал сейчас проводит операции по настройке шифрования. Данный пользователь должен открыть его перед тем, как вы можете начать его использовать",
+
+    "member_area.contacts.title": "Контакты",
+    "member_area.contacts.all": "Все друзья",
+    "member_area.contacts.online": "Друзья в сети",
+    "member_area.contacts.pending": "Входящие запросы",
+    "member_area.contacts.sent": "Исходящие запросы",
+    "member_area.contacts.send_rq": "Отправить запрос",
+    "member_area.contacts.group": "Члены группы",
+
+    "login.email": "Почта",
+    "login.password": "Пароль",
+    "login.confirm": "Войти",
+    "login.back": "Назад",
+    "login.mfa.title": "Код 2ФА",
+    "login.mfa.confirm": "Войти",
+
+    "signup.name": "Имя пользователя",
+    "signup.required": "требуется",
+    "signup.email": "Электронная почта",
+    "signup.invalid": "неверна",
+    "signup.password": "Пароль",
+    "signup.password.too_short": "слишком короткий",
+    "signup.password.weak": "плохой",
+    "signup.password.medium": "средний",
+    "signup.password.strong": "хороший",
+    "signup.confirm": "Зарегистрироваться",
+    "signup.back": "Назад"
 }

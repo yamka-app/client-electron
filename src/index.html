@@ -588,12 +588,12 @@
 
         <div id="mfa-qr-banner-bg" class="darken-bg" style="display: none;">
           <div id="mfa-qr-banner">
-            <span style="margin-bottom: 20px;">2FA QR CODE</span>
+            <span style="margin-bottom: 20px;" x-key="mfa_qr.title"></span>
             <div id="mfa-qr-placeholder" style="margin-bottom: 20px;"></div>
-            <span>Scan this code in your code-generating app (i.e. Authy) on your phone</span>
-            <span>Or enter/copy this secret manually if using a different means of token generation:
-                <span id="mfa-code-manual"></span></span>
-            <button id="mfa-qr-ok" class="accent-button fill-width">OK</button>
+            <span x-key="mfa_qr.line1"></span>
+            <span x-key="mfa_qr.line2"></span>
+            <span id="mfa-code-manual"></span>
+            <button id="mfa-qr-ok" class="accent-button fill-width" x-key="mfa_qr.ok"></button>
           </div>
         </div>
 
@@ -620,7 +620,7 @@
                 <!-- Group panels reside here -->
                 <div class="group-action-panel" id="group-create-join-panel">
                   <img src="icons/group_add.png" class="cg-img">
-                  <span>Create or join a group</span>
+                  <span x-key="group_list.create_join"></span>
                 </div>
               </div>
 
@@ -641,7 +641,7 @@
                   <div id="message-area" class="flex-col">
                     <!-- Messages reside here -->
                     <div id="message-area-header">
-                      <p>You've reached the start of this channel</p>
+                      <p x-key="message_area.header"></p>
                     </div>
                   </div>
                 </div>
@@ -669,16 +669,14 @@
                   </div>
                 </div>
 
-                <div id="e2ee-placeholder" style="display: none;">
-                  This conversation is getting set up to use ecryption. This user needs to open this DM before you can start chatting
-                </div>
+                <div id="e2ee-placeholder" style="display: none;" x-key="message_input.e2ee_notice"></div>
               </div>
             </div>
           </td>
 
           <td id="member-list-sidebar"><table style="border: none; border-spacing: 0; height: 100%; width: 100%">
             <tr style="height: fit-content;"><td id="member-list-friend-header" class="flex-row">
-              CONTACTS
+              <span x-key="member_area.contacts.title"></span>
               <button id="friends-all"         class="icon-button cg-button" x-tooltip="All friends"><img src="icons/friend.png"/></button>
               <button id="friends-online"      class="icon-button cg-button" x-tooltip="Online friends"><img src="icons/friend_online.png"/></button>
               <button id="friends-pending-in"  class="icon-button cg-button" x-tooltip="Incoming requests">
@@ -693,16 +691,12 @@
 
             <tr style="height: fit-content;"><td class="input-container" id="user-search-bar" style="display: none;">
               <input id="user-search-input" class="fill-width" placeholder="username#00000"/>
-              <button id="friend-add-commit" class="apply-button fill-width">SEND REQUEST</button>
+              <button id="friend-add-commit" class="apply-button fill-width" x-key="member_area.contacts.send_rq"></button>
             </td></tr>
 
-            <tr style="height: fit-content;"><td id="member-list-friend-type">
-              ALL FRIENDS
-            </td></tr>
+            <tr style="height: fit-content;"><td id="member-list-friend-type" x-key="member_area.contacts.all"></td></tr>
 
-            <tr style="height: fit-content;"><td id="member-list-group-header" style="display: none;">
-              GROUP MEMBERS
-            </td></tr>
+            <tr style="height: fit-content;"><td id="member-list-group-header" style="display: none;" x-key="member_area.contacts.group"></td></tr>
 
             <tr><td id="member-list-bar" class="flex-col">
               <!-- All members reside here -->
@@ -714,7 +708,7 @@
                 <img id="self-status" class="user-online"/>
               </div>
 
-              <span id="self-status-text" class="user-status">status text</span>
+              <span id="self-status-text" class="user-status">loading</span>
               <div class="flex-row user-nickname-container">
                 <span id="self-nickname" class="user-nickname">loading</span>
                 <span id="self-tag" class="user-tag">#00000</span>
@@ -739,50 +733,48 @@
       </div></td></tr>
 
       <tr style="height: fit-content"><td style="padding: 0"><div id="login-form" style="display: none;" class="flex-col">
-        <span class="form-head">E-MAIL</span>
+        <span class="form-head" x-key="login.email"></span>
         <span class="input-container"><input id="login-email" style="margin-bottom: 10px;" class="fill-width"/></span>
   
-        <span class="form-head">PASSWORD</span>
+        <span class="form-head" x-key="login.password"></span>
         <span class="input-container" class="fill-width"><input id="login-password" type="password" class="fill-width"/></span>
   
-        <button id="login-button" class="accent-button fill-width">LOG IN</button>
-        <button id="login-back-button" class="fill-width">BACK</button>
+        <button id="login-button" class="accent-button fill-width" x-key="login.confirm"></button>
+        <button id="login-back-button" class="fill-width" x-key="login.back"></button>
       </div></td></tr>
 
       <tr style="height: fit-content"><td style="padding: 0"><div id="mfa-form" style="display: none;">
-        2FA CODE
+        <span x-key="login.mfa.title"></span>
         <br>
         <span class="input-container"><input id="login-mfa-code" style="margin-bottom: 10px;" class="fill-width"/></span>
         <br>
   
-        <button id="mfa-login-button" class="accent-button fill-width">LOG IN</button>
+        <button id="mfa-login-button" class="accent-button fill-width" x-key="login.mfa.confirm"></button>
       </div></td></tr>
 
       <tr style="height: fit-content"><td style="padding: 0"><div id="signup-form" style="display: none;">
-        <span class="form-head">USERNAME</span>
-        <label id="username-required" style="color: #aa3a3a; display: none;">REQUIRED</label>
+        <span class="form-head" x-key="signup.name"></span>
+        <span id="username-required" style="display: none;" x-key="signup.required"></span>
         <br>
         <span class="input-container"><input id="signup-username" style="margin-bottom: 10px;" class="fill-width"/></span>
         <br>
   
-        <span class="form-head">E-MAIL</span>
-        <label id="email-required" style="color: #aa3a3a; display: none;">INVALID</label>
+        <span class="form-head" x-key="signup.email"></span>
+        <span id="email-required" style="display: none;" x-key="signup.invalid"></span>
         <br>
         <span class="input-container"><input id="signup-email" style="margin-bottom: 10px;" class="fill-width"/></span>
         <br>
   
-        <span class="form-head">PASSWORD</span>
-        <label id="password-strength-text" style="-webkit-background-clip: text;"></label>
+        <span class="form-head" x-key="signup.password"></span>
+        <span id="password-strength-text" style="-webkit-background-clip: text;"></span>
         <br>
         <progress id="password-strength-meter" value="0" max="3" class="fill-width password-weak"></progress>
         <br>
         <span class="input-container"><input id="signup-password" type="password" class="fill-width"/></span>
         <br>
-
-        <!--<div class="h-captcha" data-sitekey="ab9931fb-9173-4aac-9f25-86f53f709396" data-theme="dark" data-callback="captchaSolved"></div>-->
   
-        <button id="signup-button" class="accent-button fill-width">SIGN UP</button>
-        <button id="signup-back-button" class="fill-width">BACK</button>
+        <button id="signup-button" class="accent-button fill-width" x-key="signup.confirm"></button>
+        <button id="signup-back-button" class="fill-width" x-key="signup.back"></button>
       </div></td></tr>
       
     </table>

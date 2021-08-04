@@ -935,34 +935,38 @@ function _rendererFunc() {
         // Reference components
         var strongRegex = new RegExp("^(?=.{10,})(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\\W).*$", "g");
         var mediumRegex = new RegExp("^(?=.{8,})(((?=.*[A-Z])(?=.*[a-z]))|((?=.*[A-Z])(?=.*[0-9]))|((?=.*[a-z])(?=.*[0-9]))).*$", "g");
-        const password              = (util.elmById("signup-password")         as HTMLInputElement).value;
-        const passwordStrengthText  = (util.elmById("password-strength-text")  as HTMLInputElement);
-        const passwordStrengthMeter = (util.elmById("password-strength-meter") as HTMLProgressElement);
+        const pswd     = (util.elmById("signup-password")         as HTMLInputElement).value;
+        const strText  = (util.elmById("password-strength-text")  as HTMLInputElement);
+        const strMeter = (util.elmById("password-strength-meter") as HTMLProgressElement);
 
         // Display the strength to the user
-        if(password.length === 0) {
-            passwordStrengthText.innerHTML = "";
-            passwordStrengthMeter.value = 0;
-        } else if(password.length < 6) {
-            passwordStrengthText.className = "password-weak";
-            passwordStrengthText.innerHTML = "TOO SHORT";
-            passwordStrengthMeter.value = 0;
-            passwordStrengthMeter.className = "fill-width " + "password-weak";
-        } else if(strongRegex.test(password)) {
-            passwordStrengthText.className = "password-strong";
-            passwordStrengthText.innerHTML = "STRONG";
-            passwordStrengthMeter.value = 3;
-            passwordStrengthMeter.className = "fill-width " + "password-strong";
-        } else if(mediumRegex.test(password)) {
-            passwordStrengthText.className = "password-medium";
-            passwordStrengthText.innerHTML = "MEDIUM";
-            passwordStrengthMeter.value = 2;
-            passwordStrengthMeter.className = "fill-width " + "password-medium";
+        if(pswd.length === 0) {
+            strText.innerHTML = "";
+            strMeter.value = 0;
+        } else if(pswd.length < 6) {
+            strText.className = "password-weak";
+            strText.setAttribute("x-key", "signup.password.too_short");
+            i18n.formatElement(strText);
+            strMeter.value = 0;
+            strMeter.className = "fill-width " + "password-weak";
+        } else if(strongRegex.test(pswd)) {
+            strText.className = "password-strong";
+            strText.setAttribute("x-key", "signup.password.strong");
+            i18n.formatElement(strText);
+            strMeter.value = 3;
+            strMeter.className = "fill-width " + "password-strong";
+        } else if(mediumRegex.test(pswd)) {
+            strText.className = "password-medium";
+            strText.setAttribute("x-key", "signup.password.medium");
+            i18n.formatElement(strText);
+            strMeter.value = 2;
+            strMeter.className = "fill-width " + "password-medium";
         } else {
-            passwordStrengthText.className = "password-weak";
-            passwordStrengthText.innerHTML = "WEAK";
-            passwordStrengthMeter.value = 1;
-            passwordStrengthMeter.className = "fill-width " + "password-weak";
+            strText.className = "password-weak";
+            strText.setAttribute("x-key", "signup.password.weak");
+            i18n.formatElement(strText);
+            strMeter.value = 1;
+            strMeter.className = "fill-width " + "password-weak";
         }
     };
 
@@ -978,21 +982,19 @@ function _rendererFunc() {
 
         if(!util.emailRegex.test(email)) {
             util.showElm(emailRequired);
-            emailRequired.style.color = "var(--red)";
             proceed = false;
         } else {
             util.hideElm(emailRequired);
         }
 
         if(password.length < 6) {
-            passwordStrengthText.style.color = "var(--red)";
-            passwordStrengthText.innerHTML = "TOO SHORT";
+            passwordStrengthText.setAttribute("x-key", "signup.password.too_short");
+            i18n.formatElement(passwordStrengthText);
             proceed = false;
         }
             
         if(username.length == 0) {
             util.showElm(nameRequired);
-            nameRequired.style.color = "var(--red)";
             proceed = false;
         } else {
             util.hideElm(nameRequired);

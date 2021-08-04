@@ -1349,3 +1349,9 @@ img.large-emoji {
     color:       var(--accent);
     font-size:   calc(var(--font-size) + 4pt);
 }
+
+
+
+#username-required, #email-required {
+    color: var(--red-color);
+}

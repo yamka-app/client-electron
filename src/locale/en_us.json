@@ -105,6 +105,8 @@
     "user_settings.developers.keylog": "Enable TLS key logging (read docs, major security hole!)",
     "user_settings.developers.keylog.tooltip": "Disabled temporarily",
 
+    "user_settings.log_out.title": "LOG OUT",
+
     "group_settings.general.title": "GENERAL",
     "group_settings.general.icon_change": "CHANGE",
     "group_settings.general.name": "Name",
@@ -127,5 +129,41 @@
 
     "group_settings.delete.title": "DELETE GROUP",
 
-    "user_settings.log_out.title": "LOG OUT"
+    "mfa_qr.title": "2FA QR CODE",
+    "mfa_qr.line1": "Scan this code in your code-generating app (e.g. Authy) on your phone",
+    "mfa_qr.line2": "Or enter/copy this secret manually:",
+    "mfa_qr.ok": "OK",
+
+    "group_list.create_join": "Create or join a group",
+
+    "message_area.header": "You've reached the start of this channel",
+
+    "message_input.e2ee_notice": "This channel is getting set up to use ecryption. This user needs to open this DM before you can start chatting",
+
+    "member_area.contacts.title": "Contacts",
+    "member_area.contacts.all": "All friends",
+    "member_area.contacts.online": "Online friends",
+    "member_area.contacts.pending": "Pending requests",
+    "member_area.contacts.sent": "Sent requests",
+    "member_area.contacts.send_rq": "Send request",
+    "member_area.contacts.group": "Group members",
+
+    "login.email": "Email",
+    "login.password": "Password",
+    "login.confirm": "Log in",
+    "login.back": "Back",
+    "login.mfa.title": "2FA code",
+    "login.mfa.confirm": "Log in",
+
+    "signup.name": "Username",
+    "signup.required": "required",
+    "signup.email": "Email",
+    "signup.invalid": "invalid",
+    "signup.password": "Password",
+    "signup.password.too_short": "too short",
+    "signup.password.weak": "weak",
+    "signup.password.medium": "medium",
+    "signup.password.strong": "strong",
+    "signup.confirm": "Sign up",
+    "signup.back": "Back"
 }
