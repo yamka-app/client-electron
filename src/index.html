@@ -479,32 +479,32 @@
               <button id="group-settings-exit" class="menu-exit"></button>
 
               <input id= "group-settings-section-general-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
-              <label for="group-settings-section-general-sel" class="settings-section-sel">GENERAL</label>
+              <label for="group-settings-section-general-sel" class="settings-section-sel" x-key="group_settings.general.title"></label>
 
               <input id= "group-settings-section-roles-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
-              <label for="group-settings-section-roles-sel" class="settings-section-sel">ROLES</label>
+              <label for="group-settings-section-roles-sel" class="settings-section-sel" x-key="group_settings.roles.title"></label>
 
               <input id= "group-settings-section-channels-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
-              <label for="group-settings-section-channels-sel" class="settings-section-sel">CHANNELS</label>
+              <label for="group-settings-section-channels-sel" class="settings-section-sel" x-key="group_settings.channels.title"></label>
 
               <input id= "group-settings-section-invites-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
-              <label for="group-settings-section-invites-sel" class="settings-section-sel">INVITES</label>
+              <label for="group-settings-section-invites-sel" class="settings-section-sel" x-key="group_settings.invites.title"></label>
 
               <input id= "group-settings-section-delete-sel" type="radio" name="group-settings-sections" class="settings-radio"/>
-              <label for="group-settings-section-delete-sel" class="settings-section-sel" style="color: var(--red-color);">DELETE GROUP</label>
+              <label for="group-settings-section-delete-sel" class="settings-section-sel" style="color: var(--red-color);" x-key="group_settings.delete.title"></label>
             </div>
 
             <div id="group-settings-section-general" class="settings-section group-settings-section">
               <div id="group-general-settings" class="settings-subsection">
-                <span class="settings-subsection-title">GENERAL</span>
+                <span class="settings-subsection-title" x-key="group_settings.general.title"></span>
                 <div class="flex-row">
                   <div id="group-icon-change-container">
                     <img id="group-icon-huge" class="group-icon-huge"/>
-                    <div id="group-icon-change">CHANGE</div>
+                    <div id="group-icon-change" x-key="group_settings.general.icon_change"></div>
                   </div>
                   <div id="group-settings-inputs">
                     <div class="group-setting-input-container">
-                      NAME
+                      <span x-key="group_settings.general.name"></span>
                       <input id="group-name-change"/>
                     </div>
                   </div>
@@ -514,7 +514,7 @@
 
             <div id="group-settings-section-channels" class="settings-section group-settings-section">
               <div class="settings-subsection">
-                <span class="settings-subsection-title">CHANNELS</span>
+                <span class="settings-subsection-title" x-key="group_settings.channels.title"></span>
                 <div class="flex-row">
                   <div class="flex-col">
                     <div id="group-settings-channel-list" class="flex-col">
@@ -524,17 +524,17 @@
                   </div>
                   <div id="group-settings-channel-settings" class="flex-col">
                     <div class="group-setting-input-container">
-                      NAME
+                      <span x-key="group_settings.channels.name"></span>
                       <input id="channel-name-change"/>
                     </div>
                     <div class="group-setting-input-container">
-                      VOICE
+                      <span x-key="group_settings.channels.voice"></span>
                       <label class="switch" style="margin-left: 0; margin-top: 2px;">
                         <input id="channel-voice-change" type="checkbox">
                         <span class="slider round"></span>
                       </label>
                     </div>
-                    <button id="channel-remove-button" class="danger-button">DELETE CHANNEL</button>
+                    <button id="channel-remove-button" class="danger-button" x-key="group_settings.channels.delete"></button>
                   </div>
                 </div>
               </div>
@@ -542,26 +542,26 @@
 
             <div id="group-settings-section-invites" class="settings-section group-settings-section">
               <div class="settings-subsection">
-                <span class="settings-subsection-title">INVITES</span>
+                <span class="settings-subsection-title" x-key="group_settings.invites.title"></span>
                 <div class="flex-col">
                   <div id="group-settings-invite-list" class="flex-col">
                     <!--Invites reside here-->
                   </div>
-                  <button id="invite-create-button" class="apply-button">CREATE INVITE</button>
+                  <button id="invite-create-button" class="apply-button" x-key="group_settings.invites.create"></button>
                 </div>
               </div>
               <div class="settings-subsection">
-                <span class="settings-subsection-title">BOTS</span>
+                <span class="settings-subsection-title" x-key="group_settings.invites.bots.title"></span>
                 <div class="flex-col">
-                  <input id="invite-bot-id" placeholder="Bot ID"></input>
-                  <button id="invite-bot-button" class="apply-button">INVITE BOT</button>
+                  <input id="invite-bot-id" x-key-ph="group_settings.invites.bots.id_ph"></input>
+                  <button id="invite-bot-button" class="apply-button" x-key="group_settings.invites.bots.invite"></button>
                 </div>
               </div>
             </div>
 
             <div id="group-settings-section-roles" class="settings-section group-settings-section">
               <div class="settings-subsection">
-                <span class="settings-subsection-title">ROLES</span>
+                <span class="settings-subsection-title" x-key="group_settings.roles.title"></span>
                 <div class="flex-row">
                   <div class="flex-col">
                     <button id="role-add-button" class="fill-width">+</button>
@@ -571,14 +571,14 @@
                   </div>
                   <div id="group-settings-role-settings" class="flex-col">
                     <div class="group-setting-input-container">
-                      NAME
+                      <span x-key="group_settings.roles.name"></span>
                       <input id="role-name-change"/>
                     </div>
                     <div class="group-setting-input-container">
-                      COLOR
+                      <span x-key="group_settings.roles.color"></span>
                       <input id="role-color-change" type="color"/>
                     </div>
-                    <button id="role-remove-button" class="danger-button">DELETE ROLE</button>
+                    <button id="role-remove-button" class="danger-button" x-key="group_settings.roles.delete"></button>
                   </div>
                 </div>
               </div>

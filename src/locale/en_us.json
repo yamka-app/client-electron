@@ -105,5 +105,27 @@
     "user_settings.developers.keylog": "Enable TLS key logging (read docs, major security hole!)",
     "user_settings.developers.keylog.tooltip": "Disabled temporarily",
 
+    "group_settings.general.title": "GENERAL",
+    "group_settings.general.icon_change": "CHANGE",
+    "group_settings.general.name": "Name",
+
+    "group_settings.roles.title": "ROLES",
+    "group_settings.roles.name": "Name",
+    "group_settings.roles.color": "Color",
+    "group_settings.roles.delete": "Delete role",
+
+    "group_settings.channels.title": "CHANNELS",
+    "group_settings.channels.name": "Name",
+    "group_settings.channels.voice": "Voice",
+    "group_settings.channels.delete": "Delete channel",
+
+    "group_settings.invites.title": "INVITES",
+    "group_settings.invites.create": "Create invite",
+    "group_settings.invites.bots.title": "BOTS",
+    "group_settings.invites.bots.id_ph": "Bot ID",
+    "group_settings.invites.bots.invite": "Add bot",
+
+    "group_settings.delete.title": "DELETE GROUP",
+
     "user_settings.log_out.title": "LOG OUT"
 }

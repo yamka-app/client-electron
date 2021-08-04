@@ -43,10 +43,10 @@
     "update_available.ignore": "Не обновлять",
     "update_available.notice": "Старые версии приложения в будущем могут перестать работать",
 
-    "email_unconfirmed": "Ваш адрес почты не подтверждён. Пожалуйста, следуйте инструкциям, высланным на него",
+    "email_unconfirmed": "Ваш адрес почты не подтверждён. Пожалуйста, следуйте инструкции, высланной на него",
 
     "user_settings.profile.title": "ПРОФИЛЬ",
-    "user_settings.profile.avatar_change": "ПОМЕНЯТЬ",
+    "user_settings.profile.avatar_change": "ВЫБРАТЬ",
     "user_settings.profile.username": "Имя пользователя",
     "user_settings.profile.status": "Статус",
     "user_settings.profile.status.online": "В сети",
@@ -104,6 +104,28 @@
     "user_settings.developers.title": "РАЗРАБОТЧИКАМ",
     "user_settings.developers.keylog": "Включить журнал ключей TLS (прочитайте документацию, громадная дыра в безопасности!)",
     "user_settings.developers.keylog.tooltip": "Временно отключено",
+
+    "group_settings.general.title": "ОБЩИЕ",
+    "group_settings.general.icon_change": "ВЫБРАТЬ",
+    "group_settings.general.name": "Название",
+
+    "group_settings.roles.title": "РОЛИ",
+    "group_settings.roles.name": "Название",
+    "group_settings.roles.color": "Цвет",
+    "group_settings.roles.delete": "Удалить роль",
+
+    "group_settings.channels.title": "КАНАЛЫ",
+    "group_settings.channels.name": "Название",
+    "group_settings.channels.voice": "Голосовой чат",
+    "group_settings.channels.delete": "Удалить канал",
+
+    "group_settings.invites.title": "ПРИГЛАШЕНИЯ",
+    "group_settings.invites.create": "Создать приглашение",
+    "group_settings.invites.bots.title": "БОТЫ",
+    "group_settings.invites.bots.id_ph": "ID бота",
+    "group_settings.invites.bots.invite": "Добавить бота",
+
+    "group_settings.delete.title": "УДАЛИТЬ ГРУППУ",
 
     "user_settings.log_out.title": "ВЫЙТИ"
 }
