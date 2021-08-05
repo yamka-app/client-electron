@@ -53,7 +53,7 @@
     "user_settings.profile.status.online": "В сети",
     "user_settings.profile.status.offline": "Не в сети",
     "user_settings.profile.status.idle": "Бездействие",
-    "user_settings.profile.status.focused": "Сфокусирован(а)",
+    "user_settings.profile.status.focused": "Сконцентрирован(а)",
     "user_settings.profile.status.focused.tooltip": "Вам будут приходить уведомления только о личных сообщениях",
     "user_settings.profile.status.dnd": "Не беспокоить",
     "user_settings.profile.status.dnd.tooltip": "Вам не будут приходить уведомления",

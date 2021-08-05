@@ -65,14 +65,14 @@ function createWindow() {
             maximizable: true,
             frame:       false,
             transparent: false,
-            minWidth:    1300,
+            minWidth:    1280,
             minHeight:   720,
             webPreferences: {
                 contextIsolation: false,
                 enableRemoteModule: true,
                 preload: path.join(__dirname, "../esnext/renderer/preload.js")
             },
-            width:  config?.bounds?.width  ?? 1300,
+            width:  config?.bounds?.width  ?? 1280,
             height: config?.bounds?.height ?? 720
         });
         mainWindow.loadFile("src/index.html");
