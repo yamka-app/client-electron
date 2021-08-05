@@ -398,10 +398,13 @@ label {
 }
 
 #user-info-bar {
-    background: var(--background);
+    border-top: 2px solid var(--background);
+    background: var(--bg-2);
+
     height: 48px;
-    width: 100%;
-    padding: 0;
+    width:  100%;
+
+    padding:  0;
     position: relative;
 }
 
@@ -963,6 +966,7 @@ textarea.code-input {
 
     font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
+    background:  var(--bg-2);
 
     justify-content: space-between;
 }

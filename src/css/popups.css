@@ -212,7 +212,6 @@ input[type="radio"].settings-radio:checked + label {
     padding:        10px;
 
     border-radius: 10px;
-    box-shadow:    var(--shadow);
     background:    var(--bg-3);
 }
 #agent-list > div:not(:nth-child(1)) {
