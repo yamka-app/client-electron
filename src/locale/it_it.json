@@ -12,10 +12,10 @@
     "connecting.tweet": "Mandaci un Tweet",
 
     "group_delete.warning": "ATTENZIONE!",
-    "group_delete.irreversible": "Quest'azione è IRREVERSIBILE! Non puoi ripristinare un gruppo che è stato cancellato!",
+    "group_delete.irreversible": "Quest'azione è IRREVERSIBILE! Non puoi ripristinare un gruppo che è stato eliminato!",
     "group_delete.tooltip": "Inserisci il nome del gruppo ($groupName) per confermare.",
     "group_delete.revert": "Annulla",
-    "group_delete.confirm": "Cancella il gruppo",
+    "group_delete.confirm": "Elimina il gruppo",
 
     "password_chg.current": "Password corrente",
     "password_chg.2fa": "Codice di autenticazione a due fattori",
@@ -35,7 +35,7 @@
     "group_create_box.create.title": "CREA GRUPPO",
     "group_create_box.create.name": "Nome",
     "group_create_box.create.button": "Crea",
-    "group_create_box.join.title": "Unisciti a gruppo",
+    "group_create_box.join.title": "Unisciti a un gruppo",
     "group_create_box.join.invite": "Codice d'invito",
     "group_create_box.join.button": "Unisciti",
 
@@ -52,7 +52,7 @@
     "user_settings.profile.status": "Stato",
     "user_settings.profile.status.online": "Online",
     "user_settings.profile.status.offline": "Offline",
-    "user_settings.profile.status.idle": "Idle",
+    "user_settings.profile.status.idle": "Non attivo",
     "user_settings.profile.status.focused": "Concentrato",
     "user_settings.profile.status.focused.tooltip": "Riceverai solo le notifiche dei DM",
     "user_settings.profile.status.dnd": "Non disturbare",
@@ -117,7 +117,7 @@
     "group_settings.roles.color": "Colore",
     "group_settings.roles.delete": "Elimina ruolo",
 
-    "group_settings.channels.title": "Canali",
+    "group_settings.channels.title": "CANALI",
     "group_settings.channels.name": "Nome",
     "group_settings.channels.voice": "Vocale",
     "group_settings.channels.delete": "Elimina canale",
@@ -170,7 +170,7 @@
     "signup.back": "Indietro",
 
     "tooltips.profile_tag": "Non puoi cambiare il tuo tag",
-    "tooltips.group_leave": "Lascia il gruppo",
+    "tooltips.group_leave": "Abbandona il gruppo",
     "tooltips.go_main": "Vai alla schermata principale",
     "tooltips.e2ee_info": "Impostazioni crittografia",
     "tooltips.voice.join": "Unisciti a chat vocale",
@@ -195,7 +195,7 @@
     "e2ee_info.setup": "Impostando la crittografia end-to-end.",
 
     "msg_time.format.normal": "$time $edited",
-    "msg_time.format.reply": "said $time $edited",
+    "msg_time.format.reply": "$time $edited",
     "msg_time.edited": "(modificato)",
     "msg_time.unit.y": "$val anni fa",
     "msg_time.unit.mo": "$val mesi fa",
@@ -215,6 +215,10 @@
     "context_menu.user.friend.add": "Invia richiesta d'amicizia",
     "context_menu.user.copy_id": "Copia ID",
 
-    "context_menu.group.leave": "Lascia",
-    "context_menu.group.copy_id": "Copia ID"
+    "context_menu.group.leave": "Abbandona gruppo",
+    "context_menu.group.copy_id": "Copy ID",
+    "msg_input.placeholder.text": "Sezione di testo",
+    "msg_input.placeholder.code": "Sezione di codice",
+    "msg_input.placeholder.quote": "Citazione",
+    "msg_input.placeholder.invite": "Sezione di invito"
 }
