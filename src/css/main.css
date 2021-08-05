@@ -838,12 +838,17 @@ textarea.message-input {
 
     font-family: Roboto;
 }
+textarea.message-quote-section {
+    background: var(--bg-3);
+}
 textarea.code-input {
-    font-family: JetBrainsMono;
-    border: none;
-    background: var(--background);
-    border-radius: 5px;
     padding: 5px;
+
+    font-family: JetBrainsMono;
+
+    border:        none;
+    border-radius: 5px;
+    background:    var(--background);
 }
 
 #message-send-button {

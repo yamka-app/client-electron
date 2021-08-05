@@ -27,6 +27,7 @@ import * as layout   from "./layout.js";
 import * as notif    from "./notif.js"
 import * as i18n     from "./i18n.js";
 import { addHoverText } from "../popups.js";
+import { setOptions } from "marked";
 
 // Creates a message box seen in the message area
 export function createMessage(state: entities.MessageState, short = false): HTMLElement | undefined {
@@ -781,7 +782,11 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
     // Play an animation
     util.triggerAppear(section);
     
+    section.onkeydown = (e) => {
+        util.stopPropagation(e);
+    };
     section.onkeypress = (e) => {
+        util.stopPropagation(e);
         // Send the message when pressing enter, insert a line break on shift+enter
         if(e.keyCode === 13 && !e.shiftKey) {
             util.stopPropagation(e);
