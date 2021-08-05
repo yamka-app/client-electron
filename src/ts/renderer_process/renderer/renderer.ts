@@ -265,7 +265,9 @@ function _rendererFunc() {
         // "Delete group" is not really a tab
         if(name == "group-settings-section-delete") {
             hideGroupSettings();
-            util.elmById("group-delete-name").innerHTML = escapeHtml(window.entityCache[window.viewingGroup].name);
+            i18n.formatElement(util.elmById("group-delete-name"), {
+                groupName: window.entityCache[window.viewingGroup].name
+            });
             util.triggerAppear(util.elmById("group-delete-box"), true);
             return;
         }
