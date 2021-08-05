@@ -16,18 +16,20 @@
   "author": "portasynthinca3",
   "license": "MIT",
   "build": {
-    "appId": "tk.yamka.desktopclient",
+    "appId": "app.yamka.desktopclient",
     "compression": "normal",
     "asar": true,
     "extends": null,
     "linux": {
       "target": "AppImage",
       "category": "Network",
-      "icon": "src/icons/icon.png"
+      "icon": "src/icons/icon.png",
+      "publish": ["github"]
     },
     "win": {
       "target": "nsis",
-      "icon": "src/icons/icon.png"
+      "icon": "src/icons/icon.png",
+      "publish": ["github"]
     },
     "nsis": {
       "oneClick": false

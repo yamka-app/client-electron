@@ -9,15 +9,24 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@master
+    - name: Checkout
+      uses: actions/checkout@master
       with:
         ref: master
-    - uses: actions/setup-node@master
+
+    - name: Setup Node
+      uses: actions/setup-node@master
       with:
         node-version: 14.16
-    - name: Install deps
+
+    - name: Install dependencies
       run: npm install
-    - name: Build
-      run: npm run dist
-    - name: Deploy
+
+    - name: Build and deploy to GitHub
+      uses: samuelmeuli/action-electron-builder@v1.6.0
+        with:
+          github_token: ${{ secrets.github_token }}
+          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+
+    - name: Deploy to website
       run: /home/portasynthinca3/yamka_electron_deploy.py
