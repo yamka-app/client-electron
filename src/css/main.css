@@ -413,12 +413,6 @@ label {
     padding: 0;
 }
 
-#member-list-sidebar {
-    background: var(--bg-2);
-    width: 250px;
-    padding: 0;
-}
-
 #member-list-friend-header,
 #member-list-friend-type,
 #member-list-group-header,
@@ -602,7 +596,8 @@ input.user-note:hover {
 .user-summary {
     position: relative;
 
-    height: 48px;
+    height:     48px;
+    min-height: 48px;
 
     margin: 8px 8px 0 8px;
     padding: 0;
@@ -1279,8 +1274,29 @@ img.large-emoji {
     top:      0;
     left:     0;
     right:    0;
-    
+
     height: 100%;
+}
+#member-list-sidebar {
+    position: relative;
+
+    width:   275px;
+    padding: 0;
+
+    background: var(--bg-2);
+}
+#member-list-container {
+    position: absolute;
+    top:      0;
+    left:     0;
+    right:    0;
+
+    width:  100%;
+    height: 100%;
+}
+#member-list-bar {
+    height: 100%;
+    overflow-y: scroll;
 }
 
 #channel-list-area {

@@ -600,9 +600,10 @@ export function createUserSummary(id: number, special?: string, showUnread: bool
     return elm;
 }
 
-export function createUserSummaryPlaceholder() {
+export function createUserSummaryPlaceholder(animDelay: number) {
     const div = document.createElement("div");
     div.classList.add("user-summary", "loading");
+    div.style.animationDelay = `${animDelay}ms`;
     return div;
 }
 

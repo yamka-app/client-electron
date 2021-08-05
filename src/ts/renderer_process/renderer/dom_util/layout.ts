@@ -226,7 +226,7 @@ export function appendMembersBottom(role: number, id_from: number, callback?: ()
     // Create placeholders
     const placeholders: HTMLDivElement[] = [];
     for(var i = 0; i < 50; i++) {
-        const p = domUtil.createUserSummaryPlaceholder();
+        const p = domUtil.createUserSummaryPlaceholder(i * 20);
         placeholders.push(p);
         memberList.appendChild(p);
     }
