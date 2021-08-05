@@ -35,9 +35,9 @@
     "group_create_box.create.title": "СОЗДАТЬ ГРУППУ",
     "group_create_box.create.name": "Название",
     "group_create_box.create.button": "Создать",
-    "group_create_box.join.title": "ПРИСОЕДИНИТЬСЯ К ГРУППЕ",
+    "group_create_box.join.title": "ВСТУПИТЬ В ГРУППУ",
     "group_create_box.join.invite": "Код приглашения",
-    "group_create_box.join.button": "Присоединиться",
+    "group_create_box.join.button": "Вступить",
 
     "update_available.title": "ДОСТУПНА НОВАЯ ВЕРСИЯ",
     "update_available.confirm": "Обновить",
