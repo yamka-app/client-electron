@@ -1266,12 +1266,20 @@ img.large-emoji {
 
 
 #channel-list-sidebar {
+    position: relative;
+
     width:   250px;
     padding: 0;
-    background: var(--background);
-    border-radius:    10px 0 0 0;
+
+    background:    var(--background);
+    border-radius: 10px 0 0 0;
 }
 #channel-list-container {
+    position: absolute;
+    top:      0;
+    left:     0;
+    right:    0;
+    
     height: 100%;
 }
 
