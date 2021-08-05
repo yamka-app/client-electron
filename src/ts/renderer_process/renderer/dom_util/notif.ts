@@ -35,9 +35,11 @@ export function show(text: string, img: string = "", color?: string,
         notif.appendChild(bar);
         notif.classList.add("hasProgress");
         bar.classList.add("thin");
-        return (val: number, max: number) => {
+        return (val: number, max: number, newText?: string) => {
             bar.value = val;
             bar.max = max;
+            if(newText !== undefined)
+                notif.innerHTML = `<span style="color: ${textColor}">${escapeHtml(newText)}</span>`;
             if(val === max)
                 triggerDisappear(notif, false, true)
         };

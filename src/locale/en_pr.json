@@ -221,5 +221,7 @@
     "msg_input.placeholder.text": "Text section",
     "msg_input.placeholder.code": "Code section",
     "msg_input.placeholder.quote": "Quote section",
-    "msg_input.placeholder.invite": "Invite section"
+    "msg_input.placeholder.invite": "Invite section",
+
+    "update_notice": "Downloadin' new ship: $prog% ($speed MiB/s)"
 }

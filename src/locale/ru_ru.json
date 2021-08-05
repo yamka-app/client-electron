@@ -221,5 +221,7 @@
     "msg_input.placeholder.text": "Текст",
     "msg_input.placeholder.code": "Код",
     "msg_input.placeholder.quote": "Цитата",
-    "msg_input.placeholder.invite": "Приглашение в группу"
+    "msg_input.placeholder.invite": "Приглашение в группу",
+
+    "update_notice": "Скачиваем обновление: $prog% ($speed МиБ/s)"
 }

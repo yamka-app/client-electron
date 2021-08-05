@@ -4,12 +4,12 @@
 
 import { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage } from "electron";
 import { initialize as remoteInit } from "@electron/remote/main";
-import zlib      from "zlib";
-import tmp       from "tmp";
-import path      from "path";
-import tls       from "tls";
-import fs        from "fs";
-// import sslkeylog from "sslkeylog";
+import { autoUpdater, UpdateInfo } from "electron-updater";
+import zlib from "zlib";
+import tmp  from "tmp";
+import path from "path";
+import tls  from "tls";
+import fs   from "fs";
 
 import DataTypes                       from "./protocol/dataTypes";
 import * as packets                    from "./protocol/packets";
@@ -127,6 +127,31 @@ app.on("ready", () => {
 
         webprotSendPacket(new packets.PingPacket(123));
     }, 20000);
+
+    // Check for updates
+    autoUpdater.on('update-available', (info: UpdateInfo) => {
+        ipcSend({ type: "update.available" });
+        console.log(`[upda] update available: ${info.version}`);
+    });
+    autoUpdater.on('update-not-available', () => {
+        console.log(`[upda] no update available`);
+    });
+    autoUpdater.on('error', (err) => {
+        console.log(`[upda] autoUpdater error: ${err}`);
+    });
+    autoUpdater.on('download-progress', (progress) => {
+        ipcSend({
+            type:    "update.progress",
+            percent: progress.percent,
+            speed:   progress.bytesPerSecond
+        });
+    });
+    autoUpdater.on('update-downloaded', () => {
+        console.log(`[upda] update downloaded, installing`);
+        autoUpdater.quitAndInstall();
+    });
+    autoUpdater.autoDownload = true;
+    autoUpdater.checkForUpdates();
 });
 
 process.on("exit", () => sweet.salty?.end());

@@ -792,6 +792,7 @@ function _rendererFunc() {
     }
 
     // Main process handler
+    var updProgressBar: (a: number, b: number, t: string) => void = null;
     function ipcRecv(evt: Event, arg: any) {
         if(["webprot.status", "webprot.trigger-reference",
             "webprot.packet-recv", "webprot.connected", "webprot.connecting", "webprot.disconnected",
@@ -894,6 +895,19 @@ function _rendererFunc() {
                     util.showElm(util.elmById("message-area-voice-disconnect"));
                 util.elmById("voice-status").innerHTML = escapeHtml(arg.status === "disconnected"
                     ? "" : `VOICE: ${arg.status.toUpperCase()}`);
+                break;
+
+            case "update.available":
+                updProgressBar = notif.show(i18n.format("update_notice", {
+                    prog: "0",
+                    speed: "0"
+                }), undefined, "background", undefined, true);
+                break;
+            case "update.progress":
+                updProgressBar(arg.percent, 100, i18n.format("update_notice", {
+                    prog: arg.percent.toFixed(1),
+                    speed: (arg.speed / 1024 / 1024).toFixed(1)
+                }));
                 break;
         }
     }

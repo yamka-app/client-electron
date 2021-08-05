@@ -221,5 +221,7 @@
     "msg_input.placeholder.text": "Sección de texto",
     "msg_input.placeholder.code": "Sección de código",
     "msg_input.placeholder.quote": "Sección de cita",
-    "msg_input.placeholder.invite": "Sección de invitaciones"
+    "msg_input.placeholder.invite": "Sección de invitaciones",
+
+    "update_notice": "Download dell'aggiornamento: $prog% ($speed MiB/s)"
 }

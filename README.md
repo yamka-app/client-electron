@@ -12,23 +12,16 @@
 ![](promo.png)
 
 :construction: Both the client the back end are in their aplha stage right now. :construction:\
-Latest version: **0.10.9**
+Latest version: **0.11.0**
 
 ## Build
 Do `npm start` to run the app without producing any artifacts:
 ```sh
 git clone https://github.com/yamka-app/client-electron.git
 cd client-electron
+sudo apt install libasound2-dev # or other package manager on other distros
 npm i
 npm start
-```
-
-Use this to produce `AppImage` and `exe` artifacts:
-```sh
-git clone https://github.com/yamka-app/client-electron.git
-cd client-electron
-npm i
-npm run dist
 ```
 
 ## Or download binaries
