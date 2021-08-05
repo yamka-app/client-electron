@@ -14,6 +14,10 @@
 :construction: Both the client the back end are in their aplha stage right now. :construction:\
 Latest version: **0.11.0**
 
+## Branches
+  - `master`: production. Please **do not** directly push code here
+  - `dev`: development. Please **do** push code here
+
 ## Build
 Do `npm start` to run the app without producing any artifacts:
 ```sh
