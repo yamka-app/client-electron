@@ -97,7 +97,7 @@ export function formatElement(elm: HTMLElement, args: dict = undefined) {
         elm.innerHTML = escapeHtml(format(elm.getAttribute("x-key"), args));
 
     if(elm.getAttribute("x-key-ph") !== null && (elm instanceof HTMLInputElement || elm instanceof HTMLTextAreaElement))
-        elm.placeholder = escapeHtml(format(elm.getAttribute("x-key-ph"), args));
+        elm.placeholder = format(elm.getAttribute("x-key-ph"), args);
 
     if(elm.getAttribute("x-key-tt") !== null) {
         elm.setAttribute("x-tooltip", format(elm.getAttribute("x-key-tt"), args));
