@@ -219,6 +219,6 @@
     "context_menu.group.copy_id": "Copy ID",
     "msg_input.placeholder.text": "Sezione di testo",
     "msg_input.placeholder.code": "Sezione di codice",
-    "msg_input.placeholder.quote": "Citazione",
+    "msg_input.placeholder.quote": "Sezione di citazione",
     "msg_input.placeholder.invite": "Sezione di invito"
 }

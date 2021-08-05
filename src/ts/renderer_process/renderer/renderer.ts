@@ -1468,7 +1468,13 @@ function _rendererFunc() {
     i18n.updateLocaleList();
     layout.addTooltips();
 
-    // copy own name and tag when clicked
+    // Focus on the last input field if in a group when a key has been pressed
+    document.onkeydown = (e) => {
+        if(window.viewingChan !== 0)
+            e.returnValue = domMsgUtil.focusOnLastInput();
+    };
+
+    // Copy own name and tag when clicked
     util.elmById("self-nickname").onclick = (e) => {
         e.preventDefault();
         util.stopPropagation(e);

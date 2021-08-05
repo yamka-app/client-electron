@@ -8,19 +8,21 @@
 const _modules = window["_modules"];
 const path   = _modules.path;
 const remote = _modules.remote;
+const fs     = _modules.fs;
 
-const { clipboard }      = _modules.electron;
+const { BrowserWindow, dialog }  = _modules.remote;
+const { clipboard, nativeImage } = _modules.electron;
 
-import * as util     from "../util.js";
-import * as packets  from "../../protocol.s/packets.s.js";
-import * as entities from "../../protocol.s/entities.s.js";
-import * as types    from "../../protocol.s/dataTypes.s.js";
-import * as layout   from "./layout.js";
-import * as msgUtil  from "./msg_util.js";
-import * as yGlobal  from "../yGlobal.js";
-import * as context  from "../context.js";
-import * as notif    from "./notif.js";
-import * as i18n     from "./i18n.js";
+import * as util        from "../util.js";
+import * as packets     from "../../protocol.s/packets.s.js";
+import * as entities    from "../../protocol.s/entities.s.js";
+import * as types       from "../../protocol.s/dataTypes.s.js";
+import * as layout      from "./layout.js";
+import * as msgUtil     from "./msg_util.js";
+import * as yGlobal     from "../yGlobal.js";
+import * as context     from "../context.js";
+import * as notif       from "./notif.js";
+import * as i18n        from "./i18n.js";
 import { addHoverText } from "../popups.js";
 
 // Show a floating message box
@@ -386,18 +388,31 @@ export function hideProfile() {
 export function showFloatingImage(id: number) {
     // Remove the old image
     const floatingImageBg = util.elmById("floating-image-bg");
-    var floatingImage = util.elmById("floating-image");
-    if(floatingImage)
-        floatingImage.remove();
+    var image = util.elmById("floating-image");
+    if(image)
+        image.remove();
 
     // Create the image
-    util.download(id, (blob) => {
-        floatingImage = document.createElement("img");
-        floatingImage.id = "floating-image";
-        (floatingImage as HTMLImageElement).src = "file://" + blob;
-        floatingImageBg.appendChild(floatingImage);
-        util.triggerAppear(floatingImage, true);
-    })
+    util.download(id, (path) => {
+        image = document.createElement("img");
+        image.id = "floating-image";
+        (image as HTMLImageElement).src = `file://${path}`;
+        floatingImageBg.appendChild(image);
+        util.triggerAppear(image, true);
+
+        // Add a context menu
+        context.addRightClickMenu(image, [
+            new context.ButtonEntry("Copy to clipboard", () =>
+                clipboard.writeImage(nativeImage.createFromPath(path))),
+            new context.ButtonEntry("Download", () => {
+                const savePath = dialog.showSaveDialogSync(BrowserWindow.getFocusedWindow(), {
+                    properties: ["showOverwriteConfirmation", "createDirectory"],
+                    defaultPath: `~/${(entityCache[id] as entities.File).name}`
+                });
+                fs.copyFileSync(path, savePath);
+            })
+        ]);
+    });
 }
 export function hideFloatingImage() {
     const floatingImage = util.elmById("floating-image");

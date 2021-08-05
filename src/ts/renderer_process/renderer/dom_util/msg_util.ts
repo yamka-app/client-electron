@@ -8,7 +8,6 @@
 const _modules = window["_modules"];
 const path           = _modules.path;
 const twemoji        = _modules.twemoji;
-const highlightBlock = _modules.highlightBlock;
 const nodeEmoji      = _modules.nodeEmoji;
 const blurhash       = _modules.blurhash;
 const remote         = _modules.remote;
@@ -248,12 +247,12 @@ function createFileSection(section: types.MessageSection) {
             dlBtn.onclick = (e) => {
                 e.stopPropagation();
                 // Ask where to save it
-                var filePath = dialog.showSaveDialogSync(BrowserWindow.getFocusedWindow(), {
+                const filePath = dialog.showSaveDialogSync(BrowserWindow.getFocusedWindow(), {
                     properties: ["showOverwriteConfirmation", "createDirectory"],
                     defaultPath: "~/" + file.name
                 });
                 // Don"t continue if the user decided not to
-                if(filePath == undefined)
+                if(filePath === undefined)
                     return;
 
                 // Download the file
@@ -1034,4 +1033,15 @@ export function setEmojiList(keys: string[], field?: HTMLInputElement, tokenIdx?
             setEmojiList([]);
         };
     }
+}
+
+export function focusOnLastInput() {
+    // reverse() is an in-place algorithm, hence we [...copy] the array
+    for(const section of [...window.msgSections].reverse()) {
+        if([types.MessageSectionType.TEXT, types.MessageSectionType.CODE, types.MessageSectionType.QUOTE].includes(section.type)) {
+            section.typeElm.focus();
+            return true;
+        }
+    }
+    return false;
 }
