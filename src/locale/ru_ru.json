@@ -216,5 +216,10 @@
     "context_menu.user.copy_id": "Скопировать ID",
 
     "context_menu.group.leave": "Покинуть",
-    "context_menu.group.copy_id": "Скопировать ID"
+    "context_menu.group.copy_id": "Скопировать ID",
+
+    "msg_input.placeholder.text": "Текст",
+    "msg_input.placeholder.code": "Код",
+    "msg_input.placeholder.quote": "Цитата",
+    "msg_input.placeholder.invite": "Приглашение в группу"
 }

@@ -21,6 +21,10 @@
     height: 36px;
     margin-right: 10px;
 }
+#language-list > div > span {
+    margin-left: auto;
+    color:       var(--foreground-1);
+}
 #language-list > div:hover,
 #language-list > div.selected {
     background: var(--bg-3);

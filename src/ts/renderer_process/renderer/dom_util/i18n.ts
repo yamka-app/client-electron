@@ -96,7 +96,7 @@ export function formatElement(elm: HTMLElement, args: dict = undefined) {
     if(elm.getAttribute("x-key") !== null)
         elm.innerHTML = escapeHtml(format(elm.getAttribute("x-key"), args));
 
-    if(elm.getAttribute("x-key-ph") !== null && elm instanceof HTMLInputElement)
+    if(elm.getAttribute("x-key-ph") !== null && (elm instanceof HTMLInputElement || elm instanceof HTMLTextAreaElement))
         elm.placeholder = escapeHtml(format(elm.getAttribute("x-key-ph"), args));
 
     if(elm.getAttribute("x-key-tt") !== null) {
@@ -124,9 +124,10 @@ export function updateLocaleList() {
 
     for(const locale of locales) {
         const elm = document.createElement("div");
+        const authors = "by " + locale.authors.join(", ");
         const title = locale.title === locale.title_en
-                ? `${locale.emoji} ${escapeHtml(locale.title)}`
-                : `${locale.emoji} ${escapeHtml(locale.title)} [${escapeHtml(locale.title_en)}]`;
+                ? `${locale.emoji} ${escapeHtml(locale.title)} <span>${authors}</span>`
+                : `${locale.emoji} ${escapeHtml(locale.title)} [${escapeHtml(locale.title_en)}] <span>${authors}</span>`;
         elm.innerHTML = nodeEmoji.emojify(title);
         twemoji.parse(elm, { folder: "svg", ext: ".svg" });
         elm.onclick = (e) => {

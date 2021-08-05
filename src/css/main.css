@@ -1106,7 +1106,6 @@ span.fg-1 {
 .message-text-section > pre {
     font-family:   Roboto;
     overflow-wrap: anywhere;
-    display:       flex;
     white-space:   pre-wrap;
     align-items:   center;
 }

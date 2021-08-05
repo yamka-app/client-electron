@@ -216,5 +216,10 @@
     "context_menu.user.copy_id": "Copy ID",
 
     "context_menu.group.leave": "Leave",
-    "context_menu.group.copy_id": "Copy ID"
+    "context_menu.group.copy_id": "Copy ID",
+
+    "msg_input.placeholder.text": "Text section",
+    "msg_input.placeholder.code": "Code section",
+    "msg_input.placeholder.quote": "Quote section",
+    "msg_input.placeholder.invite": "Invite section"
 }
