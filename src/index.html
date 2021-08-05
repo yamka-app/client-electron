@@ -647,25 +647,29 @@
                 </div>
                 
                 <div id="message-input-popup" class="flex-row">
-                  <div id="message-input-container" class="input-container">
-                    <!-- Message sections reside here -->
-                    <div id="message-section-add-btns" class="flex-row">
-                      <button id="message-text-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.text" ><img src="icons/add_text.png"></button>
-                      <button id="message-file-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.file" ><img src="icons/add_file.png"></button>
-                      <button id="message-code-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.code" ><img src="icons/add_code.png"></button>
-                      <button id="message-quote-section-button" class="icon-button cg-button" x-key-tt="tooltips.msg_section.quote"><img src="icons/add_quote.png"></button>
-                      <button id="message-poll-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.poll" ><img src="icons/add_poll.png"></button>
-                      <span id="message-editing"></span>
-                      <span id="channel-typing"></span>
-                      <div id="typing-dots" class="flex-row" style="display: none;">
-                        <div id="typing-dot-1"></div>
-                        <div id="typing-dot-2"></div>
-                        <div id="typing-dot-3"></div>
+                  <div id="message-input-container">
+                    <div id="message-input-top">
+                      <div id="message-section-add-btns" class="flex-row">
+                        <button id="message-text-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.text" ><img src="icons/add_text.png"></button>
+                        <button id="message-file-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.file" ><img src="icons/add_file.png"></button>
+                        <button id="message-code-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.code" ><img src="icons/add_code.png"></button>
+                        <button id="message-quote-section-button" class="icon-button cg-button" x-key-tt="tooltips.msg_section.quote"><img src="icons/add_quote.png"></button>
+                        <button id="message-poll-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.poll" ><img src="icons/add_poll.png"></button>
+                        <span id="message-editing"></span>
+                        <span id="channel-typing"></span>
+                        <div id="typing-dots" class="flex-row" style="display: none;">
+                          <div id="typing-dot-1"></div>
+                          <div id="typing-dot-2"></div>
+                          <div id="typing-dot-3"></div>
+                        </div>
+                        <button id="message-send-button" class="icon-button cg-button"><img src="icons/send.png"></button>
                       </div>
-                      <button id="message-send-button" class="icon-button cg-button"><img src="icons/send.png"></button>
+                      <div id="mention-list"></div>
+                      <div id="emoji-suggestions"></div>
                     </div>
-                    <div id="mention-list"></div>
-                    <div id="emoji-suggestions"></div>
+                    <div id="message-input-sections">
+                      <!-- Message sections reside here -->
+                    </div>
                   </div>
                 </div>
 

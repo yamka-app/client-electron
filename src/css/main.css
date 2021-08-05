@@ -379,12 +379,6 @@ progress.password-weak::-webkit-progress-value {
     text-shadow: 0 0 4px var(--red-trans);
 }
 
-.input-container {
-    box-sizing: border-box;
-    
-    width: 100%;
-}
-
 label {
     margin-left: 5px;
 }
@@ -815,14 +809,31 @@ input[type="color"] {
 
 
 #message-input-container {
+    position: relative;
+
     height:  fit-content;
     width:   100%;
     margin:  0 12px 20px 12px;
-    padding: 10px;
 
     border-radius: 10px;
     background:    var(--bg-2);
     box-shadow:    var(--shadow);
+
+    max-height: 50vh;
+    overflow: hidden auto;
+}
+#message-input-top {
+    position: sticky;
+    top:      0;
+    z-index:  100;
+
+    padding: 10px 10px 0 10px;
+
+    background:    var(--bg-2);
+    border-radius: 10px 10px 0 0;
+}
+#message-input-sections {
+    padding: 0 10px 10px 10px;
 }
 
 textarea.message-input {

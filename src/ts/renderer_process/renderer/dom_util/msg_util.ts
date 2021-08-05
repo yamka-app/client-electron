@@ -774,10 +774,12 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
 
     // Insert the section
     const container = util.elmById("message-input-container");
+    const sections = util.elmById("message-input-sections");
     const before = shouldInsert
-        ? container.lastChild.previousSibling
-        : container.lastChild;
-    container.insertBefore(section, before);
+        ? sections.lastChild.previousSibling
+        : sections.lastChild;
+    sections.insertBefore(section, before);
+    section.scrollIntoView({block: "end", behavior: "smooth"});
 
     // Play an animation
     util.triggerAppear(section);
@@ -823,7 +825,7 @@ export function removeInputSection(id: number) {
 
 // Resets the message input field
 export function resetMsgInput(fullReset: boolean =false) {
-    const container = util.elmById("message-input-container")
+    const container = util.elmById("message-input-sections")
 
     // Remove all sections
     for(var i = container.children.length - 1; i >= 0; i--) {
