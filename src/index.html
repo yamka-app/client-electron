@@ -82,18 +82,22 @@
       <div id="group-delete-box" class="flex-col">
         <h6 x-key="group_delete.warning"></h6>
         <p x-key="group_delete.irreversible"></p>
-        <button id="group-delete-revert" class="apply-button" x-key="group_delete.revert"></button>
         <p id="group-delete-name" x-key="group_delete.tooltip"></p>
         <input id="group-delete-name-input"/>
-        <button id="group-delete-confirm" class="danger-button" x-key="group_delete.confirm"></button>
+        <div class="button-row">
+          <button id="group-delete-confirm" class="danger-button" x-key="group_delete.confirm"></button>
+          <button id="group-delete-revert" class="apply-button" x-key="group_delete.revert"></button>
+        </div>
       </div>
     </div>
 
     <div id="contact-remove-box-bg" class="darken-bg" style="display: none;">
       <div id="contact-remove-box" class="flex-col">
         <span id="contact-remove-title"></span>
-        <button id="contact-remove-confirm" class="danger-button" x-key="yes"></button>
-        <button id="contact-remove-cancel" x-key="no"></button>
+        <div class="button-row">
+          <button id="contact-remove-confirm" class="danger-button" x-key="yes"></button>
+          <button id="contact-remove-cancel" x-key="no"></button>
+        </div>
       </div>
     </div>
 
@@ -102,16 +106,20 @@
         <input id="password-chg-current" type="password" x-key-ph="password_chg.current"/>
         <input id="password-chg-mfa" x-key-ph="password_chg.2fa"/>
         <input id="password-chg-new" x-key-ph="password_chg.new" type="password"/>
-        <button id="password-chg-ok" class="apply-button" x-key="password_chg.confirm"></button>
-        <button id="password-chg-cancel" x-key="password_chg.cancel"></button>
+        <div class="button-row">
+          <button id="password-chg-ok" class="apply-button" x-key="password_chg.confirm"></button>
+          <button id="password-chg-cancel" x-key="password_chg.cancel"></button>
+        </div>
       </div>
     </div>
 
     <div id="mfa-toggle-box-bg" class="darken-bg" style="display: none;">
       <div id="mfa-toggle-box" class="flex-col">
         <input id="mfa-toggle-password" type="password" x-key-ph="mfa_toggle.password"/>
-        <button id="mfa-toggle-ok" class="apply-button" x-key="mfa_toggle.confirm"></button>
-        <button id="mfa-toggle-cancel" x-key="mfa_toggle.cancel"></button>
+        <div class="button-row">
+          <button id="mfa-toggle-ok" class="apply-button" x-key="mfa_toggle.confirm"></button>
+          <button id="mfa-toggle-cancel" x-key="mfa_toggle.cancel"></button>
+        </div>
       </div>
     </div>
 

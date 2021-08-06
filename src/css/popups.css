@@ -383,7 +383,7 @@ input[type="radio"].settings-radio:checked + label {
 #mfa-toggle-box,
 #contact-remove-box,
 #group-create-box {
-    width: 300px;
+    width: 350px;
 }
 #group-delete-box {
     width:  fit-content;
@@ -566,4 +566,17 @@ input[type="radio"].settings-radio:checked + label {
 #mic-gain, #mic-thres {
     margin-left:  0;
     margin-right: 0;
+}
+
+
+
+.button-row {
+    display:        flex;
+    flex-direction: row;
+}
+.button-row > button {
+    flex: 1;
+}
+.button-row > button:not(:last-child) {
+    margin-right: 10px;
 }
