@@ -39,11 +39,6 @@
     "group_create_box.join.invite": "Invitation code",
     "group_create_box.join.button": "Join",
 
-    "update_available.title": "NEWER VERSION AVAILABLE",
-    "update_available.confirm": "Update",
-    "update_available.ignore": "Ignore",
-    "update_available.notice": "Older clients may get thrown out overboard in the future",
-
     "email_unconfirmed": "Yer email address be unconfirmed. Please check yer inbox fer instructions",
 
     "user_settings.profile.title": "PROFILE",

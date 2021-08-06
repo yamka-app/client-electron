@@ -40,15 +40,6 @@ export function showBox(header: string, text: string, showUpdate: boolean =false
     util.setElmVisibility(updButton, showUpdate);
 }
 
-// Show the update box
-export function showUpdBox(text: string) {
-    const box = util.elmById("update-popup");
-    util.elmById("update-popup-text").innerHTML = util.escapeHtml(text);
-    util.showElm(box);
-    box.classList.remove("sliding-in");
-    box.classList.add("sliding-in");
-}
-
 // Update info about self
 export function updateSelfStatus(status: number) {
     // Update the icon in the user bar

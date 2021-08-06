@@ -64,11 +64,8 @@ function _rendererFunc() {
     const __connect = () => ipcSend({
         action: "webprot.connect"
     });
-    setInterval(__connect, 2000);
     __connect();
-
-    setInterval(util.checkClientVersion, 600000); // 10 minutes
-    util.checkClientVersion();
+    setInterval(__connect, 2000);
 
     i18n.formatElement(util.elmById("client-version"), {
         ver: util.clientVersion,
@@ -1465,13 +1462,6 @@ function _rendererFunc() {
             group:  window.viewingGroup
         });
     };
-
-    util.elmById("update-popup-upd").onclick = (e) => {
-        shell.openExternal("https://yamka.app/download");
-        util.hideElm(util.elmById("update-popup"));
-    };
-    util.elmById("update-popup-ign").onclick = (e) =>
-        util.hideElm(util.elmById("update-popup"));
 
     notif.show("Editing and deleting messages in DMs is not "
              + "supported. Direct calls are not end-to-end "

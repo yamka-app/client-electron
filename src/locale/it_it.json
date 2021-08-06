@@ -39,11 +39,6 @@
     "group_create_box.join.invite": "Codice d'invito",
     "group_create_box.join.button": "Unisciti",
 
-    "update_available.title": "VERSIONE AGGIORNATA DISPONIBILE",
-    "update_available.confirm": "Aggiorna",
-    "update_available.ignore": "Ignora",
-    "update_available.notice": "Le versioni obsolete potrebbero non connettersi al server in futuro",
-
     "email_unconfirmed": "L'indirizzo mail non è confermato. Istruzioni inviate sulla casella di posta elettronica",
 
     "user_settings.profile.title": "PROFILO",

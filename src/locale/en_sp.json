@@ -39,11 +39,6 @@
     "group_create_box.join.invite": "Invitation code",
     "group_create_box.join.button": "Joineth",
 
-    "update_available.title": "NEWER VERSION AVAILABLE",
-    "update_available.confirm": "Updateth",
-    "update_available.ignore": "Ign're",
-    "update_available.notice": "Fusty'r clients may receiveth reject'd in the future",
-
     "email_unconfirmed": "Thy email addresseth is unconfirm'd.  Prithee checketh thy inbox f'r instructions",
 
     "user_settings.profile.title": "PROFILE",

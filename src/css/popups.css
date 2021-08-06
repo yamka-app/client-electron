@@ -337,8 +337,7 @@ input[type="radio"].settings-radio:checked + label {
 #floating-box,
 #password-chg-box,
 #mfa-toggle-box,
-#contact-remove-box,
-#update-popup {
+#contact-remove-box {
     z-index:  2500;
     position: fixed;
 
@@ -358,14 +357,6 @@ input[type="radio"].settings-radio:checked + label {
 
     font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
-}
-#update-popup {
-    position: absolute;
-    margin:   40px 20px;
-    bottom: unset; left: unset;
-}
-.sliding-in {
-    animation: slideIn 1s ease;
 }
 #floating-box {
     min-width: 25vw;

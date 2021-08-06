@@ -39,11 +39,6 @@
     "group_create_box.join.invite": "Код приглашения",
     "group_create_box.join.button": "Вступить",
 
-    "update_available.title": "ДОСТУПНА НОВАЯ ВЕРСИЯ",
-    "update_available.confirm": "Обновить",
-    "update_available.ignore": "Не обновлять",
-    "update_available.notice": "Старые версии приложения в будущем могут перестать работать",
-
     "email_unconfirmed": "Ваш адрес почты не подтверждён. Пожалуйста, следуйте инструкции, высланной на него",
 
     "user_settings.profile.title": "ПРОФИЛЬ",

@@ -116,24 +116,6 @@ export function triggerDisappear(element: HTMLElement, affectParent: boolean =fa
 // "document.getElementById" shorthand
 export const elmById = (id: string) => document.getElementById(id);
 
-// Check the client version
-export function checkClientVersion() {
-    console.log(`Retrieving the latest version number for platform "${remote.process.platform}"`);
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState === 4 && this.status === 200) {
-            const version = xhttp.responseText.replace(/^\s+|\s+$/g,"").trim();
-            console.log(`Newest version: ${version}`);
-            if(compareVersions(version, clientVersion) === 1)
-                domUtil.showUpdBox(`${clientVersion} → ${version}`);
-        } else if(this.readyState === 4) {
-            console.error("Unable to get the latest version");
-        }
-    };
-    xhttp.open("GET", `https://yamka.app/latest_version/${remote.process.platform}`, true);
-    xhttp.send();
-}
-
 // Converts an ID into a time string
 export function idToTime(id: number): string {
     const timestamp = (BigInt(id) >> BigInt(16)) + BigInt(1577836800000);

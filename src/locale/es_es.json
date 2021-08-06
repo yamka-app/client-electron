@@ -39,11 +39,6 @@
     "group_create_box.join.invite": "Codigo de invitación",
     "group_create_box.join.button": "Unirse",
 
-    "update_available.title": "NUEVA VERSIÓN DISPONIBLE",
-    "update_available.confirm": "Actualizar",
-    "update_available.ignore": "Ignorar por ahora",
-    "update_available.notice": "Clientes obsoletos pueden tener su conexión recharazada en el futuro",
-
     "email_unconfirmed": "Tu dirección de correo no ha sido confirmada. Comprueba tu bandeja de entrada.",
 
     "user_settings.profile.title": "PERFIL",

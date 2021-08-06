@@ -68,7 +68,7 @@ export function format(key: string, args: dict = {}) {
     if(str === key)
         console.warn(`No translation for "${key}" in "${localeName}"`);
 
-    for(let [k, v] of Object.entries(args))
+    for(const [k, v] of Object.entries(args))
         str = str.replace("$" + k, v);
 
     return str;
@@ -109,7 +109,7 @@ export function formatElements(root: any = document) {
     const lookFor = ["x-key", "x-key-ph", "x-key-tt"];
     var elements = [];
     for(const attr of lookFor)
-        elements = [...elements, ...root.querySelectorAll(`[${attr}]`)]
+        elements = [...elements, ...root.querySelectorAll(`[${attr}]`)];
     
     for(const elm of elements)
         formatElement(elm as HTMLElement);
