@@ -59,10 +59,13 @@
     text-align: right;
     width: 100%;
 
-    color: var(--foreground-2);
-    transition: color 0.1s ease, transform 0.1s ease;
+    color:         var(--foreground-2);
+    padding-right: 5px;
+    border-right:  2px solid transparent;
+    transition:    color 0.2s ease, border-right 0.2s ease;
+
     font-family: Montserrat, sans-serif;
-    font-size: 12px;
+    font-size:   12px;
 
     cursor: pointer;
 }
@@ -74,8 +77,8 @@ input[type="radio"].settings-radio {
     display: none;
 }
 input[type="radio"].settings-radio:checked + label {
-    color:     var(--foreground);
-    transform: translateX(5px);
+    color:        var(--foreground);
+    border-right: 2px solid var(--foreground);
 }
 
 .settings-section {
