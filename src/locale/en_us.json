@@ -135,6 +135,10 @@
     "message_area.header": "You've reached the start of this channel",
 
     "message_input.e2ee_notice": "This channel is getting set up to use ecryption. This user needs to open this DM before you can start chatting",
+    "message_input.editing": "Editing messsage",
+    "message_input.typing.singular": "$name is typing",
+    "message_input.typing.plural": "$name are typing",
+    "message_input.typing.number": "$num people are typing",
 
     "member_area.contacts.title": "Contacts",
     "member_area.contacts.all": "All friends",

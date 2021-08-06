@@ -135,6 +135,10 @@
     "message_area.header": "Вы достигли начала этого канала",
 
     "message_input.e2ee_notice": "Этот канал сейчас проводит операции по настройке шифрования. Данный пользователь должен открыть его перед тем, как вы можете начать его использовать",
+    "message_input.editing": "Редактирование сообщения",
+    "message_input.typing.singular": "$name печатает",
+    "message_input.typing.plural": "$name печатают",
+    "message_input.typing.number": "$num человек печатают",
 
     "member_area.contacts.title": "Контакты",
     "member_area.contacts.all": "Все друзья",

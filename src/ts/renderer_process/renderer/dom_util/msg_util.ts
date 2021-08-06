@@ -556,7 +556,7 @@ function editMessage(id: number) {
         notif.show("You are about to edit a message that contains at least one poll. "
             + " Polls can not be redacted after the fact", "icons/add_poll.png", "yellow");
 
-    util.elmById("message-editing").innerHTML = util.escapeHtml("Editing message");
+    util.elmById("message-editing").style.display = "";
 }
 
 // Creates an input message section
@@ -850,7 +850,7 @@ export function resetMsgInput(fullReset: boolean =false) {
         setTimeout(() => elm.value = "", 1);
         setTimeout(() => util.adjustTextAreaHeight(elm), 1);
 
-        util.elmById("message-editing").innerHTML = "";
+        util.elmById("message-editing").style.display = "none";
     }
 }
 

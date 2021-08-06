@@ -165,22 +165,32 @@ export function updMessageArea(updMessages = true) {
         appendMsgsTop(0xFFFFFFFFFFFFF, () => util.markRead(window.viewingChan, true), true);
 
     util.reqEntities([new packets.EntityGetRequest(entities.Channel.typeNum, window.viewingChan)], false, () => {
-        const channel = window.entityCache[window.viewingChan];
+        const channel = window.entityCache[window.viewingChan] as entities.Channel;
         // Show the list of people that are typing
-        const typingElm  = util.elmById("channel-typing");
+        const typingElm = util.elmById("channel-typing");
         const typingAnim = util.elmById("typing-dots");
+        // const typing = channel.typing;
         const typing = channel.typing.filter(x => x !== remote.getGlobal("sweet").self.id);
         util.reqEntities(typing.map(x => new packets.EntityGetRequest(entities.User.typeNum, x)), false, () => {
-            var content = "";
-            const verb = (typing.length === 1) ? "is" : "are";
-            if(typing.length > 0) {
-                content = "<b>" + typing.map(x => util.escapeHtml(window.entityCache[x].name))
-                    .join("</b>, <b>") + "</b> " + verb + " typing";
+            if(typing.length >= 5) {
+                typingElm.setAttribute("x-key", "message_input.typing.number");
+                i18n.formatElement(typingElm, {num: `${typing.length}`});
                 util.showElm(typingAnim);
-            } else {
+            } else if(typing.length > 1) {
+                typingElm.setAttribute("x-key", "message_input.typing.plural");
+                i18n.formatElement(typingElm, {
+                    name: typing.map(x => entityCache[x].name).join(", ")
+                });
+                util.showElm(typingAnim);
+            } else if(typing.length === 1) {
+                typingElm.setAttribute("x-key", "message_input.typing.singular");
+                i18n.formatElement(typingElm, {name: entityCache[typing[0]].name});
+                util.showElm(typingAnim);
+            } else { // 0
+                typingElm.setAttribute("x-key", "");
+                i18n.formatElement(typingElm, {});
                 util.hideElm(typingAnim);
             }
-            typingElm.innerHTML = content;
         });
     });
 }

@@ -135,6 +135,10 @@
     "message_area.header": "Inizio di questo canale",
 
     "message_input.e2ee_notice": "Impostando la crittografia end-to-end. L'altro utente deve aprire i DM prima di iniziare a chattare",
+    "message_input.editing": "Modifica del messaggio",
+    "message_input.typing.singular": "$name sta scrivendo",
+    "message_input.typing.plural": "$name stanno scrivendo",
+    "message_input.typing.number": "$num persone stanno scrivendo",
 
     "member_area.contacts.title": "Contatti",
     "member_area.contacts.all": "Tutti gli amici",

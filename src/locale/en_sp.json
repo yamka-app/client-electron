@@ -135,6 +135,10 @@
     "message_area.header": "Thee've hath reached the starteth of this channel",
 
     "message_input.e2ee_notice": "This channel is getting setteth up to useth ecryption.  This us'r needeth to ope this dm bef're thee can starteth chatting",
+    "message_input.editing": "Editing messsage",
+    "message_input.typing.singular": "$name is typing",
+    "message_input.typing.plural": "$name art typing",
+    "message_input.typing.number": "$num people art typing",
 
     "member_area.contacts.title": "Contacts",
     "member_area.contacts.all": "All cater-cousins",

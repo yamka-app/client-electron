@@ -866,13 +866,10 @@ textarea.code-input {
 }
 #channel-typing,
 #message-editing {
-    margin:      0 0 5px 5px;
+    margin:      0 3px 5px 5px;
     font-family: Montserrat, sans-serif;
-    color:       var(--foreground-2);
+    color:       var(--foreground);
     font-size:   calc(var(--font-size) - 0.5pt);
-}
-#channel-typing > b {
-    color: var(--foreground);
 }
 
 #typing-dots div {

@@ -135,6 +135,10 @@
     "message_area.header": "¡Bienvenido al principio de este canal!",
 
     "message_input.e2ee_notice": "Este canal esta siendo configurado para usar encriptación. El usuario necesita abrir sus mensajes privados antes de que empiezes a chatear",
+    "message_input.editing": "Editar mensaje",
+    "message_input.typing.singular": "$name está escribiendo",
+    "message_input.typing.plural": "$name están escribiendo",
+    "message_input.typing.number": "$num personas están escribiendo",
 
     "member_area.contacts.title": "Contactos",
     "member_area.contacts.all": "Todos los amigos",

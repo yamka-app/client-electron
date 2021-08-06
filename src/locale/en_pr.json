@@ -135,6 +135,10 @@
     "message_area.header": "Ye've reached the start o this here channel",
 
     "message_input.e2ee_notice": "This here channel be gettin' set to the sky to use ecryption. This here user needs to open this here dm before ye can start chattin'",
+    "message_input.editing": "Editin' messsage",
+    "message_input.typing.singular": "$name by typin'",
+    "message_input.typing.plural": "$name be typin'",
+    "message_input.typing.number": "$num people are typin'",
 
     "member_area.contacts.title": "Contacts",
     "member_area.contacts.all": "All mates",
