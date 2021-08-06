@@ -558,6 +558,11 @@ function editMessage(id: number) {
     util.showElm("message-editing");
 }
 
+export function stopEditingMessage() {
+    resetMsgInput();
+    util.hideElm("message-editing");
+}
+
 // Creates an input message section
 export function createInputSection(type: types.MessageSectionType, filename?: string, fileSize?: number) {
     // Some sections should get inserted before the last section
@@ -784,7 +789,8 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
     util.triggerAppear(section);
     
     section.onkeydown = (e) => {
-        util.stopPropagation(e);
+        if(e.keyCode !== 27)
+            util.stopPropagation(e);
     };
     section.onkeypress = (e) => {
         util.stopPropagation(e);

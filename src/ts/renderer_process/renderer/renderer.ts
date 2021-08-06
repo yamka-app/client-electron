@@ -1474,7 +1474,9 @@ function _rendererFunc() {
 
     // Focus on the last input field if in a group when a key has been pressed
     document.onkeydown = (e) => {
-        if(window.viewingChan !== 0)
+        if(e.keyCode === 27)
+            domMsgUtil.stopEditingMessage();
+        else if(window.viewingChan !== 0)
             e.returnValue = domMsgUtil.focusOnLastInput();
     };
 
