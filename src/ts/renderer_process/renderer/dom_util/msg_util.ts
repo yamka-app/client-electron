@@ -5,13 +5,15 @@
 // Message DOM utils
 // for the specific elements of the app's layout
 
-const _modules = window["_modules"];
-const path           = _modules.path;
-const twemoji        = _modules.twemoji;
-const nodeEmoji      = _modules.nodeEmoji;
-const blurhash       = _modules.blurhash;
-const remote         = _modules.remote;
-const fs             = _modules.fs;
+const _modules  = window["_modules"];
+const path      = _modules.path;
+const twemoji   = _modules.twemoji;
+const nodeEmoji = _modules.nodeEmoji;
+const blurhash  = _modules.blurhash;
+const remote    = _modules.remote;
+const fs        = _modules.fs;
+const prism     = _modules.prism;
+const prismLoad = _modules.prismLoadLangs;
 
 const { BrowserWindow, dialog } = remote;
 const { shell, clipboard }      = _modules.electron;
@@ -27,7 +29,13 @@ import * as layout   from "./layout.js";
 import * as notif    from "./notif.js"
 import * as i18n     from "./i18n.js";
 import { addHoverText } from "../popups.js";
-import { setOptions } from "marked";
+
+const langAliases = {
+    "x86asm":  "nasm",
+    "asmx86":  "nasm",
+    "6502asm": "asm6502",
+    "asm":     "nasm"
+};
 
 // Creates a message box seen in the message area
 export function createMessage(state: entities.MessageState, short = false): HTMLElement | undefined {
@@ -136,14 +144,35 @@ function createTextSection(section: types.MessageSection) {
     return elm;
 }
 
+function tryHighlight(elm: HTMLElement, text: string) {
+    const lines = text.split(/\n|\r|\r\n/);
+    if(!lines[0].startsWith("!!!!!"))
+        return false;
+    
+    var lang = lines[0].slice(5);
+    if(lang in langAliases) lang = langAliases[lang];
+    var langDef = prism.languages[lang];
+    // Try to load the language if it doesn't exist (yet)
+    if(langDef === undefined) {
+        prismLoad([lang]);
+        langDef = prism.languages[lang];
+    }
+    if(langDef === undefined)
+        return false;
+
+    elm.innerHTML = prism.highlight(lines.slice(1).join("\n"), langDef, lang);
+    return true;
+}
+
 function createCodeSection(section: types.MessageSection) {
     const wrapper = document.createElement("pre");
 
     const elm = document.createElement("pre");
     elm.classList.add("message-code-section");
-    elm.innerHTML = util.prepareMsgText(section.text);
-    // highlightBlock(elm);
     wrapper.appendChild(elm);
+
+    if(!tryHighlight(elm, section.text))
+        elm.innerHTML = util.prepareMsgText(section.text);
 
     const copyButton = document.createElement("button");
     copyButton.classList.add("icon-button", "cg-button");

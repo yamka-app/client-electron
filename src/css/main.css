@@ -72,7 +72,7 @@ span, pre {
 }
 
 code {
-    font-family: JetBrainsMono;
+    font-family: JetBrainsMono !important; /* PrismJS overrides that for no reason */
 }
 
 *::-webkit-scrollbar {
@@ -1147,7 +1147,8 @@ div.message-quote-section {
 
     font-family: JetBrainsMono;
     font-size:   var(--font-size);
-    background:  var(--bg-2);
+    background:  #222;
+    color:       #fff;
 
     user-select: text;
 }
