@@ -139,6 +139,7 @@
     "message_input.typing.singular": "$name is typing",
     "message_input.typing.plural": "$name art typing",
     "message_input.typing.number": "$num people art typing",
+    "message_input.editing.poll_notice": "Thou art about to edit a message yond enwheels at least one poll.  Prithee keepeth in mind yond aft'r thou art done editing this message the poll(s) shall receiveth rev'rt'd",
 
     "member_area.contacts.title": "Contacts",
     "member_area.contacts.all": "All cater-cousins",

@@ -139,6 +139,7 @@
     "message_input.typing.singular": "$name is typing",
     "message_input.typing.plural": "$name are typing",
     "message_input.typing.number": "$num people are typing",
+    "message_input.editing.poll_notice": "You are about to edit a message that contains at least one poll. Please keep in mind that after you're done editing this message the poll(s) will get reverted",
 
     "member_area.contacts.title": "Contacts",
     "member_area.contacts.all": "All friends",

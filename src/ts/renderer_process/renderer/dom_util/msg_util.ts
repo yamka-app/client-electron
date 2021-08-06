@@ -553,10 +553,9 @@ function editMessage(id: number) {
 
     // Display a warning if there are polls
     if(msg.latest.sections.some(x => x.type === types.MessageSectionType.POLL))
-        notif.show("You are about to edit a message that contains at least one poll. "
-            + " Polls can not be redacted after the fact", "icons/add_poll.png", "yellow");
+        notif.show(i18n.format("message_input.editing.poll_notice"), "yellow");
 
-    util.elmById("message-editing").style.display = "";
+    util.showElm("message-editing");
 }
 
 // Creates an input message section
@@ -850,7 +849,7 @@ export function resetMsgInput(fullReset: boolean =false) {
         setTimeout(() => elm.value = "", 1);
         setTimeout(() => util.adjustTextAreaHeight(elm), 1);
 
-        util.elmById("message-editing").style.display = "none";
+        util.hideElm("message-editing");
     }
 }
 

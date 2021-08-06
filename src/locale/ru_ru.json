@@ -139,6 +139,7 @@
     "message_input.typing.singular": "$name печатает",
     "message_input.typing.plural": "$name печатают",
     "message_input.typing.number": "$num человек печатают",
+    "message_input.editing.poll_notice": "Вы собираетесь отредактировать сообщение, содержащее опрос(ы). Он(и) будет/-ут восстановлены после того, как вы закончите редактировать это сообщение",
 
     "member_area.contacts.title": "Контакты",
     "member_area.contacts.all": "Все друзья",

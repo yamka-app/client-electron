@@ -139,6 +139,7 @@
     "message_input.typing.singular": "$name sta scrivendo",
     "message_input.typing.plural": "$name stanno scrivendo",
     "message_input.typing.number": "$num persone stanno scrivendo",
+    "message_input.editing.poll_notice": "Stai per modificare un messaggio che contiene almeno un sondaggio. Tieni presente che dopo aver modificato questo messaggio i sondaggi verranno ripristinati",
 
     "member_area.contacts.title": "Contatti",
     "member_area.contacts.all": "Tutti gli amici",

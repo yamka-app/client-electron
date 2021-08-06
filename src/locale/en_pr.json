@@ -139,6 +139,7 @@
     "message_input.typing.singular": "$name by typin'",
     "message_input.typing.plural": "$name be typin'",
     "message_input.typing.number": "$num people are typin'",
+    "message_input.editing.poll_notice": "Ye be about to edit a message that there contains at least one poll. Please keep in mind that there after ye be done editin' this here message the poll(s) will get reverted",
 
     "member_area.contacts.title": "Contacts",
     "member_area.contacts.all": "All mates",

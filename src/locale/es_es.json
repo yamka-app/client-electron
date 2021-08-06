@@ -139,6 +139,7 @@
     "message_input.typing.singular": "$name está escribiendo",
     "message_input.typing.plural": "$name están escribiendo",
     "message_input.typing.number": "$num personas están escribiendo",
+    "message_input.editing.poll_notice": "Está a punto de editar un mensaje que contiene al menos una encuesta. Tenga en cuenta que una vez que haya terminado de editar este mensaje, se revertirán las encuestas",
 
     "member_area.contacts.title": "Contactos",
     "member_area.contacts.all": "Todos los amigos",
