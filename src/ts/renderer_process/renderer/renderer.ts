@@ -29,6 +29,7 @@ import * as popups              from "./popups.js";
 import { configGet, configSet } from "./settings.js";
 import { commit }               from "./_git_commit.js";
 import * as i18n                from "./dom_util/i18n.js";
+import * as groupEmoji          from "./dom_util/group_emoji.js";
 
 import { reset, ipcSend, sendPacket, self } from "./yGlobal.js";
 
@@ -260,7 +261,7 @@ function _rendererFunc() {
     }
     function showGroupSettingsTab(name: string) {
         // "Delete group" is not really a tab
-        if(name == "group-settings-section-delete") {
+        if(name === "group-settings-section-delete") {
             hideGroupSettings();
             i18n.formatElement(util.elmById("group-delete-name"), {
                 groupName: window.entityCache[window.viewingGroup].name
@@ -270,12 +271,16 @@ function _rendererFunc() {
         }
 
         // Hide all sections
-        var sections = document.getElementsByClassName("group-settings-section") as HTMLCollectionOf<HTMLElement>;
-        for(const s of sections) util.hideElm(s);
+        const sections = document.getElementsByClassName("group-settings-section") as HTMLCollectionOf<HTMLElement>;
+        for(const s of sections)
+            util.hideElm(s);
 
         // Show the tab we need
         util.showElm(util.elmById(name));
         (util.elmById(name + "-sel") as HTMLInputElement).checked = true
+
+        if(name === "group-settings-section-emoji")
+            groupEmoji.updateEntries();
     }
 
     // Change info about self
@@ -1473,7 +1478,7 @@ function _rendererFunc() {
     layout.addTooltips();
 
     // Focus on the last input field if in a group when a key has been pressed
-    document.onkeydown = (e) => {
+    util.elmById("message-area").onkeydown = (e) => {
         if(e.keyCode === 27)
             domMsgUtil.stopEditingMessage();
         else if(window.viewingChan !== 0)

@@ -92,6 +92,7 @@ export class Group extends Entity {
     icon?:         number;
     invites?:      string[];
     everyoneRole?: number;
+    emoji:         number[];
 }
 
 export class Message extends Entity {
@@ -120,13 +121,14 @@ export class File extends Entity {
     __type_name = "File";
     static typeNum = 6;
 
-    name?:    string;
-    size?:    string;
-    preview?: string;
-    length?:  number;
+    name?:      string;
+    size?:      string;
+    preview?:   string;
+    length?:    number;
+    emojiName?: string;
 
     // only used in main-to-renderer communication
-    path?:            string;
+    __path?:          string;
     __scale?:         boolean;
     __encryptToChan?: number;
 

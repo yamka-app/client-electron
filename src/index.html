@@ -32,6 +32,7 @@
     <link rel="stylesheet" type="text/css" href="./css/hover_text.css">
     <link rel="stylesheet" type="text/css" href="./css/message_input.css">
     <link rel="stylesheet" type="text/css" href="./css/language_selector.css">
+    <link rel="stylesheet" type="text/css" href="./css/emoji_list.css">
     <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
 
     <link rel="stylesheet" href="../node_modules/prism-themes/themes/prism-material-oceanic.css">
@@ -54,6 +55,8 @@
     <script type="module" src="./js/esnext/renderer/dom_util/msg_util.js"></script>
     <script type="module" src="./js/esnext/renderer/dom_util/notif.js"></script>
     <script type="module" src="./js/esnext/renderer/dom_util/account_selector.js"></script>
+    <script type="module" src="./js/esnext/renderer/dom_util/i18n.js"></script>
+    <script type="module" src="./js/esnext/renderer/dom_util/group_emoji.js"></script>
   </head>
 
   <body>
@@ -484,6 +487,9 @@
               <input id= "group-settings-section-general-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
               <label for="group-settings-section-general-sel" class="settings-section-sel" x-key="group_settings.general.title"></label>
 
+              <input id= "group-settings-section-emoji-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
+              <label for="group-settings-section-emoji-sel" class="settings-section-sel" x-key="group_settings.emoji.title"></label>
+
               <input id= "group-settings-section-roles-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
               <label for="group-settings-section-roles-sel" class="settings-section-sel" x-key="group_settings.roles.title"></label>
 
@@ -498,7 +504,7 @@
             </div>
 
             <div id="group-settings-section-general" class="settings-section group-settings-section">
-              <div id="group-general-settings" class="settings-subsection">
+              <div class="settings-subsection">
                 <span class="settings-subsection-title" x-key="group_settings.general.title"></span>
                 <div class="flex-row">
                   <div id="group-icon-change-container">
@@ -511,6 +517,16 @@
                       <input id="group-name-change"/>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="group-settings-section-emoji" class="settings-section group-settings-section">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title" x-key="group_settings.emoji.title"></span>
+                <button id="group-emoji-add" class="icon-button cg-button" x-key-tt="group_settings.emoji.add"><img src="icons/add_emoji.png"></button>
+                <div id="group-emoji-list">
+
                 </div>
               </div>
             </div>

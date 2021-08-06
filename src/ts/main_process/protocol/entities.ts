@@ -209,6 +209,7 @@ export class Group extends Entity {
     icon?:         number;
     invites?:      string[];
     everyoneRole?: number;
+    emoji:         number[];
 
     constructor() {
         super([
@@ -220,6 +221,7 @@ export class Group extends Entity {
             new fields.NumField    ("icon", 8,         5),
             new fields.StrListField("invites",         6),
             new fields.NumField    ("everyoneRole", 8, 7),
+            new fields.NumListField("emoji", 8,        8),
         ]);
     }
 }
@@ -274,13 +276,14 @@ export class File extends Entity {
     __type_name = "File";
     typeNum = EntityType.FILE;
 
-    name?:    string;
-    size?:    string;
-    preview?: string;
-    length?:  number;
+    name?:      string;
+    size?:      string;
+    preview?:   string;
+    length?:    number;
+    emojiName?: string;
 
     // only used in main-to-renderer communication
-    path?:            string;
+    __path?:          string;
     __scale?:         boolean;
     __encryptToChan?: number;
 
@@ -291,6 +294,7 @@ export class File extends Entity {
             new fields.StrField("size",      2),
             new fields.StrField("preview",   3),
             new fields.NumField("length", 4, 4),
+            new fields.StrField("emojiName",  5),
         ]);
     }
 }

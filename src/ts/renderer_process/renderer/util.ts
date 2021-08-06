@@ -231,12 +231,13 @@ export function readableFileSize(fileSize: number): string {
 export function upload(filePath: string, onEnd: (id: number) => any,
             onProgressMade: (p: number, m: number) => any = (p, m) => null,
             onEncryptionKey: (keyhash: string) => any = (k) => null,
-            encrypt: boolean = true, scale: boolean = false) {
+            encrypt: boolean = true, scale: boolean = false, emojiName?: string) {
     const file = new entities.File();
     file.id = 0; file.length = fs.statSync(filePath).size;
-    file.path = filePath; file.name = path.basename(filePath);
+    file.__path = filePath; file.name = path.basename(filePath);
     file.__scale = scale;
     file.__encryptToChan = encrypt ? 1 : undefined;
+    file.emojiName = emojiName;
     sendPacket(new packets.EntitiesPacket([file]), (resp: packets.EntitiesPacket) => {
         // There's only a single entity in the packet
         onEnd(resp.entities[0].id);
