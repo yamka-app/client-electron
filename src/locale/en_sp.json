@@ -107,6 +107,14 @@
     "group_settings.general.icon_change": "CHANGETH",
     "group_settings.general.name": "Name",
 
+    "group_settings.emoji.title": "EMOJI",
+    "group_settings.emoji.add": "Addeth",
+    "group_settings.emoji.remove": "Fordid",
+    "group_settings.emoji.name_placeholder": "Name",
+    "group_settings.emoji.too_large": "This file is too large f'r an emoji.  The size limit is $limit, and this file is $size in size",
+    "group_settings.emoji.uploading": "Uploading...",
+    "group_settings.emoji.invl_name": "Invalid emoji name.  T shouldst only enwheel 1-32 alphanum'ric charact'rs and und'rsc'res",
+
     "group_settings.roles.title": "ROLES",
     "group_settings.roles.name": "Name",
     "group_settings.roles.color": "Col'r",

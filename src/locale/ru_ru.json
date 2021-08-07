@@ -107,6 +107,14 @@
     "group_settings.general.icon_change": "ВЫБРАТЬ",
     "group_settings.general.name": "Название",
 
+    "group_settings.emoji.title": "ЭМОДЗИ",
+    "group_settings.emoji.add": "Добавить",
+    "group_settings.emoji.remove": "Удалить",
+    "group_settings.emoji.name_placeholder": "Название",
+    "group_settings.emoji.too_large": "Этот файл слишком большой для эмодзи. Текущие ограничение по размеру - $limit, а этот файл весит $size",
+    "group_settings.emoji.uploading": "Загрузка файла...",
+    "group_settings.emoji.invl_name": "Неверное название эмодзи. Оно должно содержать 1-32 цифры, латинских буквы или нижних подчёркиваний",
+
     "group_settings.roles.title": "РОЛИ",
     "group_settings.roles.name": "Название",
     "group_settings.roles.color": "Цвет",

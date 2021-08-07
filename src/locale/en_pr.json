@@ -107,6 +107,14 @@
     "group_settings.general.icon_change": "CHANGE",
     "group_settings.general.name": "Name",
 
+    "group_settings.emoji.title": "EMOJI",
+    "group_settings.emoji.add": "Add",
+    "group_settings.emoji.remove": "Remove",
+    "group_settings.emoji.name_placeholder": "Name",
+    "group_settings.emoji.too_large": "This here file be too large fer an emoji. The size limit be $limit, an' this here file be $size in size",
+    "group_settings.emoji.uploading": "Uploadin'...",
+    "group_settings.emoji.invl_name": "Invalid emoji name. It should only contain 1-32 alphanumeric characters an' underscores",
+
     "group_settings.roles.title": "ROLES",
     "group_settings.roles.name": "Name",
     "group_settings.roles.color": "Color",

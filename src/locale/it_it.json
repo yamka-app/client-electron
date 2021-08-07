@@ -107,6 +107,14 @@
     "group_settings.general.icon_change": "CAMBIA",
     "group_settings.general.name": "Nome",
 
+    "group_settings.emoji.title": "EMOJI",
+    "group_settings.emoji.add": "Creare",
+    "group_settings.emoji.remove": "Elimina",
+    "group_settings.emoji.name_placeholder": "Nome",
+    "group_settings.emoji.too_large": "Questo file è troppo grande per un'emoji. Il limite di dimensione è $limit e questo file ha una dimensione di $size",
+    "group_settings.emoji.uploading": "Caricamento...",
+    "group_settings.emoji.invl_name": "Nome emoji non valido. Dovrebbe contenere solo 1-32 caratteri alfanumerici latini e trattini bassi",
+
     "group_settings.roles.title": "RUOLI",
     "group_settings.roles.name": "Nome",
     "group_settings.roles.color": "Colore",
