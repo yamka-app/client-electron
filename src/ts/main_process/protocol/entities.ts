@@ -276,11 +276,12 @@ export class File extends Entity {
     __type_name = "File";
     typeNum = EntityType.FILE;
 
-    name?:      string;
-    size?:      string;
-    preview?:   string;
-    length?:    number;
-    emojiName?: string;
+    name?:       string;
+    size?:       string;
+    preview?:    string;
+    length?:     number;
+    emojiName?:  string;
+    emojiGroup?: number;
 
     // only used in main-to-renderer communication
     __path?:          string;
@@ -289,12 +290,13 @@ export class File extends Entity {
 
     constructor() {
         super([
-            new fields.NumField("id", 8,     0),
-            new fields.StrField("name",      1),
-            new fields.StrField("size",      2),
-            new fields.StrField("preview",   3),
-            new fields.NumField("length", 4, 4),
-            new fields.StrField("emojiName",  5),
+            new fields.NumField("id", 8,         0),
+            new fields.StrField("name",          1),
+            new fields.StrField("size",          2),
+            new fields.StrField("preview",       3),
+            new fields.NumField("length", 4,     4),
+            new fields.StrField("emojiName",     5),
+            new fields.NumField("emojiGroup", 8, 6),
         ]);
     }
 }

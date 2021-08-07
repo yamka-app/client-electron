@@ -110,8 +110,10 @@
     "group_settings.emoji.title": "EMOJI",
     "group_settings.emoji.add": "Add",
     "group_settings.emoji.remove": "Remove",
-    "group_settings.emoji.name_placeholder": "name",
-    "group_settings.emoji.too_large": "This file is too large for an emoji. The size limit is $limitKiB, and this file is $sizeKiB in size",
+    "group_settings.emoji.name_placeholder": "Name",
+    "group_settings.emoji.too_large": "This file is too large for an emoji. The size limit is $limit, and this file is $size in size",
+    "group_settings.emoji.uploading": "Uploading...",
+    "group_settings.emoji.invl_name": "Invalid emoji name. It should only contain 1-32 alphanumeric characters and underscores",
 
     "group_settings.roles.title": "ROLES",
     "group_settings.roles.name": "Name",

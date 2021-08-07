@@ -121,11 +121,12 @@ export class File extends Entity {
     __type_name = "File";
     static typeNum = 6;
 
-    name?:      string;
-    size?:      string;
-    preview?:   string;
-    length?:    number;
-    emojiName?: string;
+    name?:       string;
+    size?:       string;
+    preview?:    string;
+    length?:     number;
+    emojiName?:  string;
+    emojiGroup?: number;
 
     // only used in main-to-renderer communication
     __path?:          string;

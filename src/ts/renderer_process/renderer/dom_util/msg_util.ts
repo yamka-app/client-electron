@@ -668,7 +668,7 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
                             util.reqEntities(emojiIds.map(x => new packets.EntityGetRequest(entities.File.typeNum, x)), false, (emoji: entities.File[]) => {
                                 if(!mentionLock) return;
                                 setEmojiList([
-                                    ...nodeEmoji.search(name).map(x => x.key).slice(0, 5),
+                                    ...nodeEmoji.search(name).map(x => x.key).slice(0, 10),
                                     ...emoji
                                 ], typeElm, tok);
                             });
@@ -1083,7 +1083,7 @@ export function setEmojiList(keys: (string|entities.File)[], field?: HTMLInputEl
             const tokens = field.value.split(" ");
             const before = tokens.filter((v, i, a) => i < tokenIdx).join(" ") + " ";
             const after  = tokens.filter((v, i, a) => i > tokenIdx).join(" ") + " ";
-            const fmt    = `${before}:${key instanceof entities.File ? "c" + key.id : key}:`;
+            const fmt    = `${before}:${key instanceof entities.File ? "!" + key.id : key}:`;
             const result = `${fmt}${after}`;
             field.value = result;
             field.selectionEnd = field.selectionStart = `${fmt} `.length;

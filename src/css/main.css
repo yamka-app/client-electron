@@ -1234,10 +1234,13 @@ iframe {
 }
 
 img.emoji {
-    width: 17px;
+    vertical-align: middle;
+    width:  20px;
+    height: 20px;
 }
 .large-emoji img.emoji {
-    width: 40px;
+    width:  40px;
+    height: 40px;
 }
 
 

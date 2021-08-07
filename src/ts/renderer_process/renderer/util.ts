@@ -30,7 +30,7 @@ export const clientDebug = true;
 export const escapeHtml: (t: any) => string = _escapeHtml;
 
 export const emailRegex = /(?:[a-z0-9!#$%&"*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&"*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/i;
-export const allEmojiRegex = /<pre>(\p{Emoji}| |((?<!\\):c[0-9]+:)|\r|\n|\r\n){1,20}<\/pre>/u;
+export const allEmojiRegex = /<pre>(\p{Emoji}| |((?<!\\):![0-9]+:)|\r|\n|\r\n){1,20}<\/pre>/u;
 
 // Kaomoji, yaaay!
 export const kaomoji: [string, string][] = [
@@ -423,7 +423,7 @@ export function formatMentions(elm: Element) {
 export function formatCustomEmoji(elm: Element) {
     if(elm instanceof HTMLPreElement || elm instanceof HTMLAnchorElement) {
         var text = elm.innerHTML;
-        const matches = Array.from(text.matchAll(/(?<!\\):c[0-9]+:/g))
+        const matches = Array.from(text.matchAll(/(?<!\\):![0-9]+:/g))
             // reverse the order
             .sort((a, b) => b.index - a.index)
             // parse IDs
@@ -443,8 +443,11 @@ export function formatCustomEmoji(elm: Element) {
             // assign images
             for(const match of matches) {
                 const id = match["id"];
+                const emoji = [...elm.querySelectorAll(`.emoji-custom-${id}`)];
+
+                // set paths
                 download(id, (path) => {
-                    for(const img of elm.querySelectorAll(`.emoji-custom-${id}`))
+                    for(const img of emoji)
                         (img as HTMLImageElement).src = path;
                 });
             }

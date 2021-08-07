@@ -4,12 +4,13 @@
 
 // Group emoji editor
 
-import * as util            from "../util.js";
-import { formatElement }    from "./i18n.js";
-import { Group, File }      from "../../protocol.s/entities.s.js";
-import { EntityGetRequest } from "../../protocol.s/packets.s.js";
+import * as util                 from "../util.js";
+import * as notif                from "./notif.js";
+import { format, formatElement } from "./i18n.js";
+import { Group, File }           from "../../protocol.s/entities.s.js";
+import { EntityGetRequest }      from "../../protocol.s/packets.s.js";
 
-const { remote: { BrowserWindow, dialog } } = window["_modules"];
+const { remote: { BrowserWindow, dialog }, fs } = window["_modules"];
 
 function createEntry(id: number) {
     const elm = document.createElement("div");
@@ -22,16 +23,26 @@ function createEntry(id: number) {
             <button x-key-tt="group_settings.emoji.remove" class="icon-button cg-button"><img src="icons/friend_remove.png"/></button>
         `;
 
+        // name changing
         const input = elm.querySelector("input");
         formatElement(input);
+        formatElement(elm.querySelector("button"));
         input.value = emoji.emojiName;
         input.onblur = (e) => {
-            const emoji = new File();
-            emoji.id = id;
-            emoji.emojiName = input.value;
-            util.putEntities([emoji]);
+            // check the name
+            if(!/([0-9]|_|[a-z]|[A-Z]){1,32}/.test(input.value)) {
+                notif.show(format("group_settings.emoji.invl_name"), "icons/ban.png", "red");
+                input.value = emoji.emojiName;
+                return;
+            }
+
+            const emojiUpd = new File();
+            emojiUpd.id = id;
+            emojiUpd.emojiName = input.value;
+            util.putEntities([emojiUpd]);
         };
 
+        // removal
         const remove = elm.querySelector("button");
         remove.onclick = (e) => {
             const group = new Group();
@@ -69,13 +80,27 @@ util.elmById("group-emoji-add").onclick = (e) => {
     if(filePath === undefined) return;
     filePath = filePath[0];
 
+    // check size
+    const size: number = fs.statSync(filePath).size;
+    if(size > 256 * 1024) {
+        notif.show(format("group_settings.emoji.too_large", {
+            limit: "256KiB",
+            size:  util.readableFileSize(size),
+        }), "icons/ban.png", "red");
+        return;
+    }
+
     // create the emoji
+    const progress = notif.show(format("group_settings.emoji.uploading"), undefined, "background", undefined, true);
     util.upload(filePath, (id) => {
+        progress(1, 1);
         // assign it to the group
         const group = new Group();
         group.id = window.viewingGroup;
         group.emoji = (entityCache[window.viewingGroup] as Group).emoji.concat(id);
         util.putEntities([group]);
         util.elmById("group-emoji-list").appendChild(createEntry(id));
-    }, undefined, undefined, false, false, "new_emoji");
+    }, (min, max) => {
+        progress(min, max + 1);
+    }, undefined, false, false, "new_emoji");
 };
