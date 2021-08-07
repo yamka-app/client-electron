@@ -71,7 +71,7 @@ export class Level1AliceHelloMsg extends Level1Msg {
 
     protected encodePayload() {
         const ephData = this.eph.export(pubkeyFormat);
-        const otpData = this.otp.export(pubkeyFormat);
+        const otpData = this.otp?.export(pubkeyFormat) ?? Buffer.from([]);
         return Buffer.concat([
             types.encNum(ephData.length, 2),
             ephData,
