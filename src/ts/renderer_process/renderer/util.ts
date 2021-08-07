@@ -24,7 +24,7 @@ const marked      = _modules.marked;
 const fs          = _modules.fs;
 const tinycolor   = _modules.tinycolor;
 
-export const clientVersion = "0.12.1";
+export const clientVersion = "0.12.2";
 export const clientDebug = true;
 
 export const escapeHtml: (t: any) => string = _escapeHtml;
