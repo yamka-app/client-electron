@@ -39,11 +39,6 @@
     "group_create_box.join.invite": "Invitation code",
     "group_create_box.join.button": "Join",
 
-    "update_available.title": "NEWER VERSION AVAILABLE",
-    "update_available.confirm": "Update",
-    "update_available.ignore": "Ignore",
-    "update_available.notice": "Older clients may get rejected in the future",
-
     "email_unconfirmed": "Your email address is unconfirmed. Please check your inbox for instructions",
 
     "user_settings.profile.title": "PROFILE",
@@ -112,6 +107,14 @@
     "group_settings.general.icon_change": "CHANGE",
     "group_settings.general.name": "Name",
 
+    "group_settings.emoji.title": "EMOJI",
+    "group_settings.emoji.add": "Add",
+    "group_settings.emoji.remove": "Remove",
+    "group_settings.emoji.name_placeholder": "Name",
+    "group_settings.emoji.too_large": "This file is too large for an emoji. The size limit is $limit, and this file is $size in size",
+    "group_settings.emoji.uploading": "Uploading...",
+    "group_settings.emoji.invl_name": "Invalid emoji name. It should only contain 1-32 alphanumeric characters and underscores",
+
     "group_settings.roles.title": "ROLES",
     "group_settings.roles.name": "Name",
     "group_settings.roles.color": "Color",
@@ -140,6 +143,11 @@
     "message_area.header": "You've reached the start of this channel",
 
     "message_input.e2ee_notice": "This channel is getting set up to use ecryption. This user needs to open this DM before you can start chatting",
+    "message_input.editing": "Editing messsage",
+    "message_input.typing.singular": "$name is typing",
+    "message_input.typing.plural": "$name are typing",
+    "message_input.typing.number": "$num people are typing",
+    "message_input.editing.poll_notice": "You are about to edit a message that contains at least one poll. Please keep in mind that after you're done editing this message the poll(s) will get reverted",
 
     "member_area.contacts.title": "Contacts",
     "member_area.contacts.all": "All friends",

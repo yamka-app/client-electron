@@ -39,11 +39,6 @@
     "group_create_box.join.invite": "Код приглашения",
     "group_create_box.join.button": "Вступить",
 
-    "update_available.title": "ДОСТУПНА НОВАЯ ВЕРСИЯ",
-    "update_available.confirm": "Обновить",
-    "update_available.ignore": "Не обновлять",
-    "update_available.notice": "Старые версии приложения в будущем могут перестать работать",
-
     "email_unconfirmed": "Ваш адрес почты не подтверждён. Пожалуйста, следуйте инструкции, высланной на него",
 
     "user_settings.profile.title": "ПРОФИЛЬ",
@@ -140,6 +135,11 @@
     "message_area.header": "Вы достигли начала этого канала",
 
     "message_input.e2ee_notice": "Этот канал сейчас проводит операции по настройке шифрования. Данный пользователь должен открыть его перед тем, как вы можете начать его использовать",
+    "message_input.editing": "Редактирование сообщения",
+    "message_input.typing.singular": "$name печатает",
+    "message_input.typing.plural": "$name печатают",
+    "message_input.typing.number": "$num человек печатают",
+    "message_input.editing.poll_notice": "Вы собираетесь отредактировать сообщение, содержащее опрос(ы). Он(и) будет/-ут восстановлены после того, как вы закончите редактировать это сообщение",
 
     "member_area.contacts.title": "Контакты",
     "member_area.contacts.all": "Все друзья",

@@ -32,8 +32,10 @@
     <link rel="stylesheet" type="text/css" href="./css/hover_text.css">
     <link rel="stylesheet" type="text/css" href="./css/message_input.css">
     <link rel="stylesheet" type="text/css" href="./css/language_selector.css">
+    <link rel="stylesheet" type="text/css" href="./css/emoji_list.css">
     <link id="theme-css" rel="stylesheet" type="text/css" href="themes/dark.css">
-    <link rel="stylesheet" href="../node_modules/highlight.js/styles/gruvbox-dark.css">
+
+    <link rel="stylesheet" href="../node_modules/prism-themes/themes/prism-material-oceanic.css">
 
     <script src="../node_modules/colorthief/dist/color-thief.umd.js"></script>
     <script src="./web-voice-processor.js"></script>
@@ -53,6 +55,8 @@
     <script type="module" src="./js/esnext/renderer/dom_util/msg_util.js"></script>
     <script type="module" src="./js/esnext/renderer/dom_util/notif.js"></script>
     <script type="module" src="./js/esnext/renderer/dom_util/account_selector.js"></script>
+    <script type="module" src="./js/esnext/renderer/dom_util/i18n.js"></script>
+    <script type="module" src="./js/esnext/renderer/dom_util/group_emoji.js"></script>
   </head>
 
   <body>
@@ -81,18 +85,22 @@
       <div id="group-delete-box" class="flex-col">
         <h6 x-key="group_delete.warning"></h6>
         <p x-key="group_delete.irreversible"></p>
-        <button id="group-delete-revert" class="apply-button" x-key="group_delete.revert"></button>
         <p id="group-delete-name" x-key="group_delete.tooltip"></p>
         <input id="group-delete-name-input"/>
-        <button id="group-delete-confirm" class="danger-button" x-key="group_delete.confirm"></button>
+        <div class="button-row">
+          <button id="group-delete-confirm" class="danger-button" x-key="group_delete.confirm"></button>
+          <button id="group-delete-revert" class="apply-button" x-key="group_delete.revert"></button>
+        </div>
       </div>
     </div>
 
     <div id="contact-remove-box-bg" class="darken-bg" style="display: none;">
       <div id="contact-remove-box" class="flex-col">
         <span id="contact-remove-title"></span>
-        <button id="contact-remove-confirm" class="danger-button" x-key="yes"></button>
-        <button id="contact-remove-cancel" x-key="no"></button>
+        <div class="button-row">
+          <button id="contact-remove-confirm" class="danger-button" x-key="yes"></button>
+          <button id="contact-remove-cancel" x-key="no"></button>
+        </div>
       </div>
     </div>
 
@@ -101,16 +109,20 @@
         <input id="password-chg-current" type="password" x-key-ph="password_chg.current"/>
         <input id="password-chg-mfa" x-key-ph="password_chg.2fa"/>
         <input id="password-chg-new" x-key-ph="password_chg.new" type="password"/>
-        <button id="password-chg-ok" class="apply-button" x-key="password_chg.confirm"></button>
-        <button id="password-chg-cancel" x-key="password_chg.cancel"></button>
+        <div class="button-row">
+          <button id="password-chg-ok" class="apply-button" x-key="password_chg.confirm"></button>
+          <button id="password-chg-cancel" x-key="password_chg.cancel"></button>
+        </div>
       </div>
     </div>
 
     <div id="mfa-toggle-box-bg" class="darken-bg" style="display: none;">
       <div id="mfa-toggle-box" class="flex-col">
         <input id="mfa-toggle-password" type="password" x-key-ph="mfa_toggle.password"/>
-        <button id="mfa-toggle-ok" class="apply-button" x-key="mfa_toggle.confirm"></button>
-        <button id="mfa-toggle-cancel" x-key="mfa_toggle.cancel"></button>
+        <div class="button-row">
+          <button id="mfa-toggle-ok" class="apply-button" x-key="mfa_toggle.confirm"></button>
+          <button id="mfa-toggle-cancel" x-key="mfa_toggle.cancel"></button>
+        </div>
       </div>
     </div>
 
@@ -159,14 +171,6 @@
         <input id="group-join-code" class="fill-width" x-key-ph="group_create_box.join.invite"/>
         <button id="group-join-ok" class="fill-width" x-key="group_create_box.join.button"></button>
       </div>
-    </div>
-
-    <div id="update-popup" class="flex-col" style="display: none;">
-      <span style="font-size: 15px;" x-key="update_available.title"></span>
-      <span id="update-popup-text">OLD → NEW</span>
-
-      <button id="update-popup-upd" class="accent-button fill-width" style="margin-top: 20px;" x-key="update_available.confirm"></button>
-      <button id="update-popup-ign" class="fill-width" style="margin-top: 10px;" x-key-tt="update_available.notice" x-key="update_available.ignore"></button>
     </div>
 
     <div id="message-history-bg" class="popup-bg" style="display: none;">
@@ -356,6 +360,8 @@
                   <a href="https://github.com/FlyingPotato-131">FlyingPotato_131</a>,
                   <a href="https://github.com/hetyh">hetyh</a>
                   and <a href="https://github.com/NOTNOTsergey">pySAr5</a> for testing</span>
+              <span><a href="https://github.com/StaticSaga">StaticSaga</a> and
+                  <a href="https://github.com/streaksu">streaksu</a> for Italian and Spanish locales</span>
 
               <p x-key="user_settings.about.created_by"></p>
               <span><a href="https://github.com/portasynthinca3">portasynthinca3</a></span>
@@ -481,6 +487,9 @@
               <input id= "group-settings-section-general-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
               <label for="group-settings-section-general-sel" class="settings-section-sel" x-key="group_settings.general.title"></label>
 
+              <input id= "group-settings-section-emoji-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
+              <label for="group-settings-section-emoji-sel" class="settings-section-sel" x-key="group_settings.emoji.title"></label>
+
               <input id= "group-settings-section-roles-sel" type="radio" name="group-settings-sections" class="settings-radio" checked="checked"/>
               <label for="group-settings-section-roles-sel" class="settings-section-sel" x-key="group_settings.roles.title"></label>
 
@@ -495,7 +504,7 @@
             </div>
 
             <div id="group-settings-section-general" class="settings-section group-settings-section">
-              <div id="group-general-settings" class="settings-subsection">
+              <div class="settings-subsection">
                 <span class="settings-subsection-title" x-key="group_settings.general.title"></span>
                 <div class="flex-row">
                   <div id="group-icon-change-container">
@@ -508,6 +517,16 @@
                       <input id="group-name-change"/>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="group-settings-section-emoji" class="settings-section group-settings-section">
+              <div class="settings-subsection">
+                <span class="settings-subsection-title" x-key="group_settings.emoji.title"></span>
+                <button id="group-emoji-add" class="icon-button cg-button" x-key-tt="group_settings.emoji.add"><img src="icons/add_emoji.png"></button>
+                <div id="group-emoji-list">
+
                 </div>
               </div>
             </div>
@@ -655,7 +674,7 @@
                         <button id="message-code-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.code" ><img src="icons/add_code.png"></button>
                         <button id="message-quote-section-button" class="icon-button cg-button" x-key-tt="tooltips.msg_section.quote"><img src="icons/add_quote.png"></button>
                         <button id="message-poll-section-button"  class="icon-button cg-button" x-key-tt="tooltips.msg_section.poll" ><img src="icons/add_poll.png"></button>
-                        <span id="message-editing"></span>
+                        <span id="message-editing" x-key="message_input.editing"></span>
                         <span id="channel-typing"></span>
                         <div id="typing-dots" class="flex-row" style="display: none;">
                           <div id="typing-dot-1"></div>

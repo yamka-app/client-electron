@@ -13,25 +13,24 @@ import * as i18n     from "./dom_util/i18n.js";
 import { sendPacket }   from "./yGlobal.js";
 import { configGet }    from "./settings.js";
 import { addHoverText } from "./popups.js";
+import { match } from "assert";
 
 const _modules = window["_modules"];
 
-const path            = _modules.path;
-const remote          = _modules.remote;
-const nodeEmoji       = _modules.nodeEmoji;
-const _escapeHtml     = _modules.escapeHtml;
-const marked          = _modules.marked;
-const compareVersions = _modules.compareVersions;
-const fs              = _modules.fs;
-const tinycolor       = _modules.tinycolor;
+const path        = _modules.path;
+const nodeEmoji   = _modules.nodeEmoji;
+const _escapeHtml = _modules.escapeHtml;
+const marked      = _modules.marked;
+const fs          = _modules.fs;
+const tinycolor   = _modules.tinycolor;
 
-export const clientVersion = "0.11.0";
+export const clientVersion = "0.12.0";
 export const clientDebug = true;
 
 export const escapeHtml: (t: any) => string = _escapeHtml;
 
 export const emailRegex = /(?:[a-z0-9!#$%&"*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&"*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/i;
-export const allEmojiRegex = /^<pre>(\p{Emoji}| ){1,20}<\/pre>$/gum;
+export const allEmojiRegex = /<pre>(\p{Emoji}| |((?<!\\):![0-9]+:)|\r|\n|\r\n){1,20}<\/pre>/u;
 
 // Kaomoji, yaaay!
 export const kaomoji: [string, string][] = [
@@ -115,24 +114,6 @@ export function triggerDisappear(element: HTMLElement, affectParent: boolean =fa
 
 // "document.getElementById" shorthand
 export const elmById = (id: string) => document.getElementById(id);
-
-// Check the client version
-export function checkClientVersion() {
-    console.log(`Retrieving the latest version number for platform "${remote.process.platform}"`);
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState === 4 && this.status === 200) {
-            const version = xhttp.responseText.replace(/^\s+|\s+$/g,"").trim();
-            console.log(`Newest version: ${version}`);
-            if(compareVersions(version, clientVersion) === 1)
-                domUtil.showUpdBox(`${clientVersion} → ${version}`);
-        } else if(this.readyState === 4) {
-            console.error("Unable to get the latest version");
-        }
-    };
-    xhttp.open("GET", `https://yamka.app/latest_version/${remote.process.platform}`, true);
-    xhttp.send();
-}
 
 // Converts an ID into a time string
 export function idToTime(id: number): string {
@@ -249,12 +230,13 @@ export function readableFileSize(fileSize: number): string {
 export function upload(filePath: string, onEnd: (id: number) => any,
             onProgressMade: (p: number, m: number) => any = (p, m) => null,
             onEncryptionKey: (keyhash: string) => any = (k) => null,
-            encrypt: boolean = true, scale: boolean = false) {
+            encrypt: boolean = true, scale: boolean = false, emojiName?: string) {
     const file = new entities.File();
     file.id = 0; file.length = fs.statSync(filePath).size;
-    file.path = filePath; file.name = path.basename(filePath);
+    file.__path = filePath; file.name = path.basename(filePath);
     file.__scale = scale;
     file.__encryptToChan = encrypt ? 1 : undefined;
+    file.emojiName = emojiName;
     sendPacket(new packets.EntitiesPacket([file]), (resp: packets.EntitiesPacket) => {
         // There's only a single entity in the packet
         onEnd(resp.entities[0].id);
@@ -403,7 +385,7 @@ export function processMentions(txt: string) {
 }
 
 export function formatMentions(elm: Element) {
-    if(elm instanceof HTMLSpanElement || elm instanceof HTMLAnchorElement) {
+    if(elm instanceof HTMLPreElement || elm instanceof HTMLAnchorElement) {
         var text = elm.innerHTML;
         const matches = Array.from(text.matchAll(/(?<!\\)@[0-9]+/g))
             // reverse the order
@@ -436,6 +418,46 @@ export function formatMentions(elm: Element) {
 
     for(const child of [...elm.children])
         formatMentions(child);
+}
+
+export function formatCustomEmoji(elm: Element) {
+    if(elm instanceof HTMLPreElement || elm instanceof HTMLAnchorElement) {
+        var text = elm.innerHTML;
+        const matches = Array.from(text.matchAll(/(?<!\\):![0-9]+:/g))
+            // reverse the order
+            .sort((a, b) => b.index - a.index)
+            // parse IDs
+            .map(x => { x["id"] = parseInt(x[0].slice(2, -1)); return x; });
+        
+        reqEntities(matches.map(x => new packets.EntityGetRequest(entities.File.typeNum, x["id"])), false, () => {
+            for(const match of matches) {
+                const mText = match[0];
+                const idx = match.index;
+                const before = text.substring(0, idx);
+                const after = text.substring(idx + mText.length);
+                const file = (entityCache[match["id"]] as entities.File);
+                text = `${before}<img alt=":${file.emojiName}:" class="emoji emoji-custom-${file.id}">${after}`;
+            }
+            elm.innerHTML = text;
+
+            // assign images
+            for(const match of matches) {
+                const id = match["id"];
+                const emoji = [...elm.querySelectorAll(`.emoji-custom-${id}`)];
+
+                // set paths
+                download(id, (path) => {
+                    for(const img of emoji)
+                        (img as HTMLImageElement).src = path;
+                });
+            }
+        });
+
+        return;
+    }
+
+    for(const child of [...elm.children])
+        formatCustomEmoji(child);
 }
 
 // Color operations

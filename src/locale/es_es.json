@@ -39,11 +39,6 @@
     "group_create_box.join.invite": "Codigo de invitación",
     "group_create_box.join.button": "Unirse",
 
-    "update_available.title": "NUEVA VERSIÓN DISPONIBLE",
-    "update_available.confirm": "Actualizar",
-    "update_available.ignore": "Ignorar por ahora",
-    "update_available.notice": "Clientes obsoletos pueden tener su conexión recharazada en el futuro",
-
     "email_unconfirmed": "Tu dirección de correo no ha sido confirmada. Comprueba tu bandeja de entrada.",
 
     "user_settings.profile.title": "PERFIL",
@@ -140,6 +135,11 @@
     "message_area.header": "¡Bienvenido al principio de este canal!",
 
     "message_input.e2ee_notice": "Este canal esta siendo configurado para usar encriptación. El usuario necesita abrir sus mensajes privados antes de que empiezes a chatear",
+    "message_input.editing": "Editar mensaje",
+    "message_input.typing.singular": "$name está escribiendo",
+    "message_input.typing.plural": "$name están escribiendo",
+    "message_input.typing.number": "$num personas están escribiendo",
+    "message_input.editing.poll_notice": "Está a punto de editar un mensaje que contiene al menos una encuesta. Tenga en cuenta que una vez que haya terminado de editar este mensaje, se revertirán las encuestas",
 
     "member_area.contacts.title": "Contactos",
     "member_area.contacts.all": "Todos los amigos",

@@ -29,6 +29,7 @@ import * as popups              from "./popups.js";
 import { configGet, configSet } from "./settings.js";
 import { commit }               from "./_git_commit.js";
 import * as i18n                from "./dom_util/i18n.js";
+import * as groupEmoji          from "./dom_util/group_emoji.js";
 
 import { reset, ipcSend, sendPacket, self } from "./yGlobal.js";
 
@@ -64,11 +65,8 @@ function _rendererFunc() {
     const __connect = () => ipcSend({
         action: "webprot.connect"
     });
-    setInterval(__connect, 2000);
     __connect();
-
-    setInterval(util.checkClientVersion, 600000); // 10 minutes
-    util.checkClientVersion();
+    setInterval(__connect, 2000);
 
     i18n.formatElement(util.elmById("client-version"), {
         ver: util.clientVersion,
@@ -263,7 +261,7 @@ function _rendererFunc() {
     }
     function showGroupSettingsTab(name: string) {
         // "Delete group" is not really a tab
-        if(name == "group-settings-section-delete") {
+        if(name === "group-settings-section-delete") {
             hideGroupSettings();
             i18n.formatElement(util.elmById("group-delete-name"), {
                 groupName: window.entityCache[window.viewingGroup].name
@@ -273,12 +271,16 @@ function _rendererFunc() {
         }
 
         // Hide all sections
-        var sections = document.getElementsByClassName("group-settings-section") as HTMLCollectionOf<HTMLElement>;
-        for(const s of sections) util.hideElm(s);
+        const sections = document.getElementsByClassName("group-settings-section") as HTMLCollectionOf<HTMLElement>;
+        for(const s of sections)
+            util.hideElm(s);
 
         // Show the tab we need
         util.showElm(util.elmById(name));
         (util.elmById(name + "-sel") as HTMLInputElement).checked = true
+
+        if(name === "group-settings-section-emoji")
+            groupEmoji.updateEntries();
     }
 
     // Change info about self
@@ -1466,13 +1468,6 @@ function _rendererFunc() {
         });
     };
 
-    util.elmById("update-popup-upd").onclick = (e) => {
-        shell.openExternal("https://yamka.app/download");
-        util.hideElm(util.elmById("update-popup"));
-    };
-    util.elmById("update-popup-ign").onclick = (e) =>
-        util.hideElm(util.elmById("update-popup"));
-
     notif.show("Editing and deleting messages in DMs is not "
              + "supported. Direct calls are not end-to-end "
              + "encrypted.", undefined, "yellow");
@@ -1483,8 +1478,10 @@ function _rendererFunc() {
     layout.addTooltips();
 
     // Focus on the last input field if in a group when a key has been pressed
-    document.onkeydown = (e) => {
-        if(window.viewingChan !== 0)
+    util.elmById("message-area").onkeydown = (e) => {
+        if(e.keyCode === 27)
+            domMsgUtil.stopEditingMessage();
+        else if(window.viewingChan !== 0)
             e.returnValue = domMsgUtil.focusOnLastInput();
     };
 

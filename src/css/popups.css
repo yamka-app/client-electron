@@ -59,10 +59,13 @@
     text-align: right;
     width: 100%;
 
-    color: var(--foreground-2);
-    transition: color 0.1s ease, transform 0.1s ease;
+    color:         var(--foreground-2);
+    padding-right: 5px;
+    border-right:  2px solid transparent;
+    transition:    color 0.2s ease, border-right 0.2s ease;
+
     font-family: Montserrat, sans-serif;
-    font-size: 12px;
+    font-size:   12px;
 
     cursor: pointer;
 }
@@ -74,8 +77,8 @@ input[type="radio"].settings-radio {
     display: none;
 }
 input[type="radio"].settings-radio:checked + label {
-    color:     var(--foreground);
-    transform: translateX(5px);
+    color:        var(--foreground);
+    border-right: 2px solid var(--foreground);
 }
 
 .settings-section {
@@ -337,8 +340,7 @@ input[type="radio"].settings-radio:checked + label {
 #floating-box,
 #password-chg-box,
 #mfa-toggle-box,
-#contact-remove-box,
-#update-popup {
+#contact-remove-box {
     z-index:  2500;
     position: fixed;
 
@@ -358,14 +360,6 @@ input[type="radio"].settings-radio:checked + label {
 
     font-family: Montserrat, sans-serif;
     font-size:   var(--font-size);
-}
-#update-popup {
-    position: absolute;
-    margin:   40px 20px;
-    bottom: unset; left: unset;
-}
-.sliding-in {
-    animation: slideIn 1s ease;
 }
 #floating-box {
     min-width: 25vw;
@@ -389,7 +383,7 @@ input[type="radio"].settings-radio:checked + label {
 #mfa-toggle-box,
 #contact-remove-box,
 #group-create-box {
-    width: 300px;
+    width: 350px;
 }
 #group-delete-box {
     width:  fit-content;
@@ -572,4 +566,17 @@ input[type="radio"].settings-radio:checked + label {
 #mic-gain, #mic-thres {
     margin-left:  0;
     margin-right: 0;
+}
+
+
+
+.button-row {
+    display:        flex;
+    flex-direction: row;
+}
+.button-row > button {
+    flex: 1;
+}
+.button-row > button:not(:last-child) {
+    margin-right: 10px;
 }

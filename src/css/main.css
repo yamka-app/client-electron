@@ -72,7 +72,7 @@ span, pre {
 }
 
 code {
-    font-family: JetBrainsMono;
+    font-family: JetBrainsMono !important; /* PrismJS overrides that for no reason */
 }
 
 *::-webkit-scrollbar {
@@ -271,6 +271,7 @@ button.icon-button {
     transition: filter 0.1s ease, transform 0.1s ease;
     box-shadow: var(--shadow);
 
+    width:      fit-content;
     border:     none;
     box-shadow: none;
     padding:    5px;
@@ -866,13 +867,10 @@ textarea.code-input {
 }
 #channel-typing,
 #message-editing {
-    margin:      0 0 5px 5px;
+    margin:      0 3px 5px 5px;
     font-family: Montserrat, sans-serif;
-    color:       var(--foreground-2);
+    color:       var(--foreground);
     font-size:   calc(var(--font-size) - 0.5pt);
-}
-#channel-typing > b {
-    color: var(--foreground);
 }
 
 #typing-dots div {
@@ -1150,7 +1148,8 @@ div.message-quote-section {
 
     font-family: JetBrainsMono;
     font-size:   var(--font-size);
-    background:  var(--bg-2);
+    background:  #222;
+    color:       #fff;
 
     user-select: text;
 }
@@ -1235,10 +1234,13 @@ iframe {
 }
 
 img.emoji {
-    width: 17px;
+    vertical-align: middle;
+    width:  20px;
+    height: 20px;
 }
-img.large-emoji {
-    width: 40px;
+.large-emoji img.emoji {
+    width:  40px;
+    height: 40px;
 }
 
 

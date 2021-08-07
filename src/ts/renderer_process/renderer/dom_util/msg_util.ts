@@ -5,13 +5,15 @@
 // Message DOM utils
 // for the specific elements of the app's layout
 
-const _modules = window["_modules"];
-const path           = _modules.path;
-const twemoji        = _modules.twemoji;
-const nodeEmoji      = _modules.nodeEmoji;
-const blurhash       = _modules.blurhash;
-const remote         = _modules.remote;
-const fs             = _modules.fs;
+const _modules  = window["_modules"];
+const path      = _modules.path;
+const twemoji   = _modules.twemoji;
+const nodeEmoji = _modules.nodeEmoji;
+const blurhash  = _modules.blurhash;
+const remote    = _modules.remote;
+const fs        = _modules.fs;
+const prism     = _modules.prism;
+const prismLoad = _modules.prismLoadLangs;
 
 const { BrowserWindow, dialog } = remote;
 const { shell, clipboard }      = _modules.electron;
@@ -27,7 +29,13 @@ import * as layout   from "./layout.js";
 import * as notif    from "./notif.js"
 import * as i18n     from "./i18n.js";
 import { addHoverText } from "../popups.js";
-import { setOptions } from "marked";
+
+const langAliases = {
+    "x86asm":  "nasm",
+    "asmx86":  "nasm",
+    "6502asm": "asm6502",
+    "asm":     "nasm"
+};
 
 // Creates a message box seen in the message area
 export function createMessage(state: entities.MessageState, short = false): HTMLElement | undefined {
@@ -126,14 +134,36 @@ function createTextSection(section: types.MessageSection) {
     elm.innerHTML = text;
     twemoji.parse(elm, { folder: "svg", ext: ".svg" });
     util.formatMentions(elm);
+    util.formatCustomEmoji(elm);
     // If the text cosists of emojis only, increase their size
-    if(util.allEmojiRegex.test(text)) {
-        const emojis = elm.getElementsByTagName("img");
-        for(const emoji of emojis)
-            emoji.classList.add("large-emoji");
+    if(util.allEmojiRegex.test(text.trim())) {
+        console.log(elm, "passed", text.trim());
+        elm.classList.add("large-emoji");
+    } else {
+        console.log(elm, "failed", text.trim());
     }
 
     return elm;
+}
+
+function tryHighlight(elm: HTMLElement, text: string) {
+    const lines = text.split(/\n|\r|\r\n/);
+    if(!lines[0].startsWith("!!!!!"))
+        return false;
+    
+    var lang = lines[0].slice(5);
+    if(lang in langAliases) lang = langAliases[lang];
+    var langDef = prism.languages[lang];
+    // Try to load the language if it doesn't exist (yet)
+    if(langDef === undefined) {
+        prismLoad([lang]);
+        langDef = prism.languages[lang];
+    }
+    if(langDef === undefined)
+        return false;
+
+    elm.innerHTML = prism.highlight(lines.slice(1).join("\n"), langDef, lang);
+    return true;
 }
 
 function createCodeSection(section: types.MessageSection) {
@@ -141,9 +171,10 @@ function createCodeSection(section: types.MessageSection) {
 
     const elm = document.createElement("pre");
     elm.classList.add("message-code-section");
-    elm.innerHTML = util.prepareMsgText(section.text);
-    // highlightBlock(elm);
     wrapper.appendChild(elm);
+
+    if(!tryHighlight(elm, section.text))
+        elm.innerHTML = util.prepareMsgText(section.text);
 
     const copyButton = document.createElement("button");
     copyButton.classList.add("icon-button", "cg-button");
@@ -553,10 +584,14 @@ function editMessage(id: number) {
 
     // Display a warning if there are polls
     if(msg.latest.sections.some(x => x.type === types.MessageSectionType.POLL))
-        notif.show("You are about to edit a message that contains at least one poll. "
-            + " Polls can not be redacted after the fact", "icons/add_poll.png", "yellow");
+        notif.show(i18n.format("message_input.editing.poll_notice"), "yellow");
 
-    util.elmById("message-editing").innerHTML = util.escapeHtml("Editing message");
+    util.showElm("message-editing");
+}
+
+export function stopEditingMessage() {
+    resetMsgInput();
+    util.hideElm("message-editing");
 }
 
 // Creates an input message section
@@ -621,9 +656,23 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
                             setMentionList(users, typeElm, tok);
                         });
                         break;
+
                     case ":":
-                        if(!mentionLock) return;
-                        setEmojiSuggestions(name, typeElm, tok);
+                        yGlobal.sendPacket(new packets.SearchPacket(
+                            packets.SearchTarget.GROUP_EMOJI,
+                            viewingGroup,
+                            name),
+                        (r: packets.Packet) => {
+                            if(!(r instanceof packets.SearchResultPacket)) return;
+                            const emojiIds = r.list;
+                            util.reqEntities(emojiIds.map(x => new packets.EntityGetRequest(entities.File.typeNum, x)), false, (emoji: entities.File[]) => {
+                                if(!mentionLock) return;
+                                setEmojiList([
+                                    ...nodeEmoji.search(name).map(x => x.key).slice(0, 10),
+                                    ...emoji
+                                ], typeElm, tok);
+                            });
+                        });
                         break;
                 }
             };
@@ -785,7 +834,8 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
     util.triggerAppear(section);
     
     section.onkeydown = (e) => {
-        util.stopPropagation(e);
+        if(e.keyCode !== 27)
+            util.stopPropagation(e);
     };
     section.onkeypress = (e) => {
         util.stopPropagation(e);
@@ -850,7 +900,7 @@ export function resetMsgInput(fullReset: boolean =false) {
         setTimeout(() => elm.value = "", 1);
         setTimeout(() => util.adjustTextAreaHeight(elm), 1);
 
-        util.elmById("message-editing").innerHTML = "";
+        util.hideElm("message-editing");
     }
 }
 
@@ -1000,18 +1050,12 @@ export function setMentionList(userIds: number[], field?: HTMLInputElement, toke
                 field.selectionEnd = field.selectionStart = `${before}@${user.id} `.length;
                 field.focus();
                 setMentionList([]);
-                setEmojiList([]);
             };
         }
     });
 }
 
-export function setEmojiSuggestions(start: string, field?: HTMLInputElement, tokenIdx?: number) {
-    setEmojiList(nodeEmoji.search(start).map(x => x.key), field, tokenIdx);
-}
-
-export function setEmojiList(keys: string[], field?: HTMLInputElement, tokenIdx?: number) {
-    keys = keys.slice(0, 10); // limit length
+export function setEmojiList(keys: (string|entities.File)[], field?: HTMLInputElement, tokenIdx?: number) {
     const list = util.elmById("emoji-suggestions");
 
     // kill all children :>
@@ -1020,8 +1064,15 @@ export function setEmojiList(keys: string[], field?: HTMLInputElement, tokenIdx?
     for(const key of keys) {
         const elm  = document.createElement("span");
 
-        elm.innerHTML = nodeEmoji.emojify(`:${key}: ${key}`);
-        twemoji.parse(elm, { folder: "svg", ext: ".svg" });
+        if(key instanceof entities.File) { // group-sepcific emoji
+            elm.innerHTML = `<img /> ${key.emojiName}`;
+            util.download(key.id, (path) => {
+                elm.querySelector("img").src = `file://${path}`;
+            });
+        } else { // normal emoji
+            elm.innerHTML = nodeEmoji.emojify(`:${key}: ${key}`);
+            twemoji.parse(elm, { folder: "svg", ext: ".svg" });
+        }
 
         list.appendChild(elm);
 
@@ -1032,11 +1083,11 @@ export function setEmojiList(keys: string[], field?: HTMLInputElement, tokenIdx?
             const tokens = field.value.split(" ");
             const before = tokens.filter((v, i, a) => i < tokenIdx).join(" ") + " ";
             const after  = tokens.filter((v, i, a) => i > tokenIdx).join(" ") + " ";
-            const result = `${before}:${key}:${after}`;
+            const fmt    = `${before}:${key instanceof entities.File ? "!" + key.id : key}:`;
+            const result = `${fmt}${after}`;
             field.value = result;
-            field.selectionEnd = field.selectionStart = `${before}:${key}: `.length;
+            field.selectionEnd = field.selectionStart = `${fmt} `.length;
             field.focus();
-            setMentionList([]);
             setEmojiList([]);
         };
     }

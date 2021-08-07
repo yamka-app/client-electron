@@ -39,11 +39,6 @@
     "group_create_box.join.invite": "Invitation code",
     "group_create_box.join.button": "Join",
 
-    "update_available.title": "NEWER VERSION AVAILABLE",
-    "update_available.confirm": "Update",
-    "update_available.ignore": "Ignore",
-    "update_available.notice": "Older clients may get thrown out overboard in the future",
-
     "email_unconfirmed": "Yer email address be unconfirmed. Please check yer inbox fer instructions",
 
     "user_settings.profile.title": "PROFILE",
@@ -140,6 +135,11 @@
     "message_area.header": "Ye've reached the start o this here channel",
 
     "message_input.e2ee_notice": "This here channel be gettin' set to the sky to use ecryption. This here user needs to open this here dm before ye can start chattin'",
+    "message_input.editing": "Editin' messsage",
+    "message_input.typing.singular": "$name by typin'",
+    "message_input.typing.plural": "$name be typin'",
+    "message_input.typing.number": "$num people are typin'",
+    "message_input.editing.poll_notice": "Ye be about to edit a message that there contains at least one poll. Please keep in mind that there after ye be done editin' this here message the poll(s) will get reverted",
 
     "member_area.contacts.title": "Contacts",
     "member_area.contacts.all": "All mates",

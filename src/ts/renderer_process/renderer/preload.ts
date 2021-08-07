@@ -14,11 +14,11 @@ _modules["nodeEmoji"]       = require("node-emoji");
 _modules["twemoji"]         = require("twemoji");
 _modules["fs"]              = require("fs");
 _modules["qrcode"]          = require("qrcode");
-_modules["highlightBlock"]  = require("highlight.js").highlightBlock;
 _modules["blurhash"]        = require("blurhash");
-_modules["compareVersions"] = require("compare-versions");
 _modules["tinycolor"]       = require("tinycolor2");
 _modules["os"]              = require("os");
+_modules["prism"]           = require("prismjs");
+_modules["prismLoadLangs"]  = require("prismjs/components/index");
 
 window["_modules"] = _modules;
 window["__dirname"] = _modules["path"].join(__dirname, "../../../");

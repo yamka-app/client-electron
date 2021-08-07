@@ -162,7 +162,7 @@ app.on("window-all-closed", () => { windowCreated = false; });
 const webprotSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
-    version:              12,
+    version:              13,
     supportsComp:         true,
     compressionThreshold: 512,
     fileChunkSize:        1024 * 4
@@ -517,16 +517,16 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
 
     if(packet instanceof packets.EntitiesPacket) {
         for(const entity of packet.entities) {
-            if(!(entity instanceof entities.File))
+            if(!(entity instanceof entities.File) || entity.__path === undefined)
                 continue;
 
             const seq = packet.seq;
 
             // If the renderer asked us to scale the image down, do exactly that
-            var actualPath = entity.path;
+            var actualPath = entity.__path;
             if(entity.__scale) {
                 const resizedPath = path.join(tmpDir, "_ava_temp.png");
-                const img = nativeImage.createFromPath(entity.path);
+                const img = nativeImage.createFromPath(entity.__path);
                 img.resize({ width: 128, height: 128 });
                 fs.writeFileSync(resizedPath, img.toPNG());
                 actualPath = resizedPath;

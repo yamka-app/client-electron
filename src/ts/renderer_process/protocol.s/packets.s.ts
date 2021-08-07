@@ -256,7 +256,8 @@ export class ContactsManagePacket extends SimpleFieldPacket {
 export enum SearchTarget {
     USER         = 0,
     GROUP        = 1,
-    GROUP_MEMBER = 2
+    GROUP_MEMBER = 2,
+    GROUP_EMOJI  = 3
 }
 export class SearchPacket extends SimpleFieldPacket {
     typeNum = 14;
