@@ -12,7 +12,7 @@
 ![](promo.png)
 
 :construction: Both the client the back end are in their aplha stage right now. :construction:\
-Latest version: **0.12.1**
+Latest version: **0.12.2**
 
 ## Branches
   - `master`: production. Please **do not** directly push code here

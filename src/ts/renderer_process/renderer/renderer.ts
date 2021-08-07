@@ -1226,6 +1226,12 @@ function _rendererFunc() {
         ipcSend({ action: "tasty.disconnect", channel: window.voiceChan });
     };
 
+    for(const popup of document.querySelectorAll(".darken-bg > *")) {
+        popup.addEventListener("keydown", (e) => {
+            util.stopPropagation(e);
+        });
+    }
+
     // Message section buttons
     util.elmById("message-text-section-button").onclick = (e) =>
         domMsgUtil.createInputSection(types.MessageSectionType.TEXT);
@@ -1296,7 +1302,10 @@ function _rendererFunc() {
             hideUserSettings();
             hideGroupCreateBox();
             hideGroupSettings();
+            domMsgUtil.stopEditingMessage();
             util.triggerDisappear(util.elmById("password-chg-box"), true);
+        } else if(window.viewingChan !== 0) {
+            e.returnValue = domMsgUtil.focusOnLastInput();
         }
     }
     util.elmById("message-code-section-button").onclick = (e) =>
@@ -1476,14 +1485,6 @@ function _rendererFunc() {
     i18n.loadLocale(configGet("locale"));
     i18n.updateLocaleList();
     layout.addTooltips();
-
-    // Focus on the last input field if in a group when a key has been pressed
-    util.elmById("message-area").onkeydown = (e) => {
-        if(e.keyCode === 27)
-            domMsgUtil.stopEditingMessage();
-        else if(window.viewingChan !== 0)
-            e.returnValue = domMsgUtil.focusOnLastInput();
-    };
 
     // Copy own name and tag when clicked
     util.elmById("self-nickname").onclick = (e) => {
