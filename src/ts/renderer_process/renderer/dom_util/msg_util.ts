@@ -134,11 +134,13 @@ function createTextSection(section: types.MessageSection) {
     elm.innerHTML = text;
     twemoji.parse(elm, { folder: "svg", ext: ".svg" });
     util.formatMentions(elm);
+    util.formatCustomEmoji(elm);
     // If the text cosists of emojis only, increase their size
-    if(util.allEmojiRegex.test(text)) {
-        const emojis = elm.getElementsByTagName("img");
-        for(const emoji of emojis)
-            emoji.classList.add("large-emoji");
+    if(util.allEmojiRegex.test(text.trim())) {
+        console.log(elm, "passed", text.trim());
+        elm.classList.add("large-emoji");
+    } else {
+        console.log(elm, "failed", text.trim());
     }
 
     return elm;
@@ -654,9 +656,23 @@ export function createInputSection(type: types.MessageSectionType, filename?: st
                             setMentionList(users, typeElm, tok);
                         });
                         break;
+
                     case ":":
-                        if(!mentionLock) return;
-                        setEmojiSuggestions(name, typeElm, tok);
+                        yGlobal.sendPacket(new packets.SearchPacket(
+                            packets.SearchTarget.GROUP_EMOJI,
+                            viewingGroup,
+                            name),
+                        (r: packets.Packet) => {
+                            if(!(r instanceof packets.SearchResultPacket)) return;
+                            const emojiIds = r.list;
+                            util.reqEntities(emojiIds.map(x => new packets.EntityGetRequest(entities.File.typeNum, x)), false, (emoji: entities.File[]) => {
+                                if(!mentionLock) return;
+                                setEmojiList([
+                                    ...nodeEmoji.search(name).map(x => x.key).slice(0, 5),
+                                    ...emoji
+                                ], typeElm, tok);
+                            });
+                        });
                         break;
                 }
             };
@@ -1034,18 +1050,12 @@ export function setMentionList(userIds: number[], field?: HTMLInputElement, toke
                 field.selectionEnd = field.selectionStart = `${before}@${user.id} `.length;
                 field.focus();
                 setMentionList([]);
-                setEmojiList([]);
             };
         }
     });
 }
 
-export function setEmojiSuggestions(start: string, field?: HTMLInputElement, tokenIdx?: number) {
-    setEmojiList(nodeEmoji.search(start).map(x => x.key), field, tokenIdx);
-}
-
-export function setEmojiList(keys: string[], field?: HTMLInputElement, tokenIdx?: number) {
-    keys = keys.slice(0, 10); // limit length
+export function setEmojiList(keys: (string|entities.File)[], field?: HTMLInputElement, tokenIdx?: number) {
     const list = util.elmById("emoji-suggestions");
 
     // kill all children :>
@@ -1054,8 +1064,15 @@ export function setEmojiList(keys: string[], field?: HTMLInputElement, tokenIdx?
     for(const key of keys) {
         const elm  = document.createElement("span");
 
-        elm.innerHTML = nodeEmoji.emojify(`:${key}: ${key}`);
-        twemoji.parse(elm, { folder: "svg", ext: ".svg" });
+        if(key instanceof entities.File) { // group-sepcific emoji
+            elm.innerHTML = `<img /> ${key.emojiName}`;
+            util.download(key.id, (path) => {
+                elm.querySelector("img").src = `file://${path}`;
+            });
+        } else { // normal emoji
+            elm.innerHTML = nodeEmoji.emojify(`:${key}: ${key}`);
+            twemoji.parse(elm, { folder: "svg", ext: ".svg" });
+        }
 
         list.appendChild(elm);
 
@@ -1066,11 +1083,11 @@ export function setEmojiList(keys: string[], field?: HTMLInputElement, tokenIdx?
             const tokens = field.value.split(" ");
             const before = tokens.filter((v, i, a) => i < tokenIdx).join(" ") + " ";
             const after  = tokens.filter((v, i, a) => i > tokenIdx).join(" ") + " ";
-            const result = `${before}:${key}:${after}`;
+            const fmt    = `${before}:${key instanceof entities.File ? "c" + key.id : key}:`;
+            const result = `${fmt}${after}`;
             field.value = result;
-            field.selectionEnd = field.selectionStart = `${before}:${key}: `.length;
+            field.selectionEnd = field.selectionStart = `${fmt} `.length;
             field.focus();
-            setMentionList([]);
             setEmojiList([]);
         };
     }

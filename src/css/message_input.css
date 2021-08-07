@@ -20,6 +20,8 @@
     cursor: pointer;
 }
 #emoji-suggestions > span > img {
+    width:  16px;
+    height: 16px;
     margin-right: 5px;
 }
 #emoji-suggestions > span:hover {

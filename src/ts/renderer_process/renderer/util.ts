@@ -13,6 +13,7 @@ import * as i18n     from "./dom_util/i18n.js";
 import { sendPacket }   from "./yGlobal.js";
 import { configGet }    from "./settings.js";
 import { addHoverText } from "./popups.js";
+import { match } from "assert";
 
 const _modules = window["_modules"];
 
@@ -31,7 +32,7 @@ export const clientDebug = true;
 export const escapeHtml: (t: any) => string = _escapeHtml;
 
 export const emailRegex = /(?:[a-z0-9!#$%&"*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&"*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/i;
-export const allEmojiRegex = /^<pre>(\p{Emoji}| ){1,20}<\/pre>$/gum;
+export const allEmojiRegex = /<pre>(\p{Emoji}| |((?<!\\):c[0-9]+:)|\r|\n|\r\n){1,20}<\/pre>/u;
 
 // Kaomoji, yaaay!
 export const kaomoji: [string, string][] = [
@@ -386,7 +387,7 @@ export function processMentions(txt: string) {
 }
 
 export function formatMentions(elm: Element) {
-    if(elm instanceof HTMLSpanElement || elm instanceof HTMLAnchorElement) {
+    if(elm instanceof HTMLPreElement || elm instanceof HTMLAnchorElement) {
         var text = elm.innerHTML;
         const matches = Array.from(text.matchAll(/(?<!\\)@[0-9]+/g))
             // reverse the order
@@ -419,6 +420,43 @@ export function formatMentions(elm: Element) {
 
     for(const child of [...elm.children])
         formatMentions(child);
+}
+
+export function formatCustomEmoji(elm: Element) {
+    if(elm instanceof HTMLPreElement || elm instanceof HTMLAnchorElement) {
+        var text = elm.innerHTML;
+        const matches = Array.from(text.matchAll(/(?<!\\):c[0-9]+:/g))
+            // reverse the order
+            .sort((a, b) => b.index - a.index)
+            // parse IDs
+            .map(x => { x["id"] = parseInt(x[0].slice(2, -1)); return x; });
+        
+        reqEntities(matches.map(x => new packets.EntityGetRequest(entities.File.typeNum, x["id"])), false, () => {
+            for(const match of matches) {
+                const mText = match[0];
+                const idx = match.index;
+                const before = text.substring(0, idx);
+                const after = text.substring(idx + mText.length);
+                const file = (entityCache[match["id"]] as entities.File);
+                text = `${before}<img alt=":${file.emojiName}:" class="emoji emoji-custom-${file.id}">${after}`;
+            }
+            elm.innerHTML = text;
+
+            // assign images
+            for(const match of matches) {
+                const id = match["id"];
+                download(id, (path) => {
+                    for(const img of elm.querySelectorAll(`.emoji-custom-${id}`))
+                        (img as HTMLImageElement).src = path;
+                });
+            }
+        });
+
+        return;
+    }
+
+    for(const child of [...elm.children])
+        formatCustomEmoji(child);
 }
 
 // Color operations

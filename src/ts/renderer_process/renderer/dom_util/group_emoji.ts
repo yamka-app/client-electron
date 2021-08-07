@@ -17,7 +17,7 @@ function createEntry(id: number) {
 
     util.download(id, (path) => {
         elm.innerHTML = `
-            <img src="${path}"/>
+            <img src="file://${path}"/>
             <input x-key-ph="group_settings.emoji.name_placeholder"></input>
             <button x-key-tt="group_settings.emoji.remove" class="icon-button cg-button"><img src="icons/friend_remove.png"/></button>
         `;
