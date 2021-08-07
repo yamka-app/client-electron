@@ -15,7 +15,6 @@ _modules["twemoji"]         = require("twemoji");
 _modules["fs"]              = require("fs");
 _modules["qrcode"]          = require("qrcode");
 _modules["blurhash"]        = require("blurhash");
-_modules["compareVersions"] = require("compare-versions");
 _modules["tinycolor"]       = require("tinycolor2");
 _modules["os"]              = require("os");
 _modules["prism"]           = require("prismjs");

@@ -17,14 +17,12 @@ import { match } from "assert";
 
 const _modules = window["_modules"];
 
-const path            = _modules.path;
-const remote          = _modules.remote;
-const nodeEmoji       = _modules.nodeEmoji;
-const _escapeHtml     = _modules.escapeHtml;
-const marked          = _modules.marked;
-const compareVersions = _modules.compareVersions;
-const fs              = _modules.fs;
-const tinycolor       = _modules.tinycolor;
+const path        = _modules.path;
+const nodeEmoji   = _modules.nodeEmoji;
+const _escapeHtml = _modules.escapeHtml;
+const marked      = _modules.marked;
+const fs          = _modules.fs;
+const tinycolor   = _modules.tinycolor;
 
 export const clientVersion = "0.11.0";
 export const clientDebug = true;
