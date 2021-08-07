@@ -51,6 +51,7 @@ import {
     EntityType
 } from "../entities";
 import { MessageSection, MessageSectionType } from "../dataTypes";
+import { SSL_OP_TLS_BLOCK_PADDING_BUG } from "constants";
 
 const PREKEY_EXPIRATION = 12 * 3600 * 1000; // 12 hours
 const OTPREKEY_STOCK = 32;
@@ -267,9 +268,17 @@ export default class SaltyClient {
         const { added, removed } = SaltyClient.keyArrDiff(fingerprints, this.keys.otprekeys);
         console.log(`[salty] ${added.length} unseen keys, ${removed.length} used keys`);
 
-        // Remove old keys
-        for(const k of removed)
-            this.keys.otprekeys = this.keys.otprekeys.filter(x => x.fingerprint() !== k);
+        // Mark old keys as stale
+        var newStale = 0;
+        for(const k of removed) {
+            for(const localKey of this.keys.otprekeys) {
+                if(localKey.fingerprint() === k) {
+                    localKey.stale = true;
+                    newStale++;
+                }
+            }
+        }
+        console.log(`[salty] ${newStale} one-time prekeys marked as stale`);
 
         // Communicate with other agents to retrieve the private parts of new keys
         if(added.length !== 0)
@@ -297,57 +306,60 @@ export default class SaltyClient {
             this.cb.entityGet([
                 new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDSIGN),
                 new EntityGetRequest(EntityType.USER, uid, EntityKeyType.IDENTITY),
-                new EntityGetRequest(EntityType.USER, uid, EntityKeyType.PREKEY),
-                new EntityGetRequest(EntityType.USER, uid, EntityKeyType.OTPREKEY)
-            ], ([idsp, idkp, pkp, otkp]) => {
-                // Save the keys (verify them with the signature identity key)
-                state.idSign   = (idsp as User).idsignKey  .toKeyObj();
-                state.identity = (idkp as User).identityKey.toKeyObj(state.idSign);
-                const prek   = (pkp  as User).prekey   .toKeyObj(state.idSign);
-                const otprek = (otkp as User).otprekey?.toKeyObj(state.idSign); // may be undefined
-    
-                // Generate an ephemeral key pair and perform 3-4 Diffie-Hellmans
-                state.eph = KeyPair.generate();
-                const dh1 = crypto.diffieHellman({ // IK_A - SPK_B
-                    privateKey: this.keys.identity.priv,
-                    publicKey:  prek
-                });
-                const dh2 = crypto.diffieHellman({ // EK_A - IK_B
-                    privateKey: state.eph.priv,
-                    publicKey:  state.identity
-                });
-                const dh3 = crypto.diffieHellman({ // EK_A - SPK_B
-                    privateKey: state.eph.priv,
-                    publicKey:  prek
-                });
-                var dh4 = Buffer.from([]);
-                if(otprek !== undefined)
-                    dh4 = crypto.diffieHellman({ // EK_A - OPK_B
-                        privateKey: state.eph.priv,
-                        publicKey:  otprek
+                new EntityGetRequest(EntityType.USER, uid, EntityKeyType.PREKEY)
+            ], ([idsp, idkp, pkp]) => {
+                // Request the one-time prekey too
+                this.cb.entityGet([new EntityGetRequest(EntityType.USER, uid, EntityKeyType.OTPREKEY)], (otkp_arr) => {
+                    const otkp = otkp_arr === undefined ? undefined : otkp_arr[0];
+                    // Save the keys (verify them with the signature identity key)
+                    state.idSign   = (idsp as User).idsignKey.toKeyObj();
+                    state.identity = (idkp as User).identityKey.toKeyObj(state.idSign);
+                    const prek   = (pkp  as User).prekey.toKeyObj(state.idSign);
+                    const otprek = (otkp as User)?.otprekey?.toKeyObj(state.idSign); // may be undefined
+        
+                    // Generate an ephemeral key pair and perform 3-4 Diffie-Hellmans
+                    state.eph = KeyPair.generate();
+                    const dh1 = crypto.diffieHellman({ // IK_A - SPK_B
+                        privateKey: this.keys.identity.priv,
+                        publicKey:  prek
                     });
+                    const dh2 = crypto.diffieHellman({ // EK_A - IK_B
+                        privateKey: state.eph.priv,
+                        publicKey:  state.identity
+                    });
+                    const dh3 = crypto.diffieHellman({ // EK_A - SPK_B
+                        privateKey: state.eph.priv,
+                        publicKey:  prek
+                    });
+                    var dh4 = Buffer.from([]);
+                    if(otprek !== undefined)
+                        dh4 = crypto.diffieHellman({ // EK_A - OPK_B
+                            privateKey: state.eph.priv,
+                            publicKey:  otprek
+                        });
+        
+                    // Calculate the shared secret key and store all keys
+                    state.sk = SaltyClient.x3dhKdf(Buffer.concat([dh1, dh2, dh3, dh4]));
+                    const ad = Buffer.concat([
+                        state.identity.export(pubkeyFormat),
+                        this.keys.identity.pub.export(pubkeyFormat)
+                    ]);
+                    const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
+                    state.ratchet = new DHRatchet(keyBase, state.sk, ad);
+                    state.ratchet.step(prek);
+                    this.conv[`${cid}`] = state;
+                    this.dumpConv(cid);
+        
+                    // Send an initial message
+                    const msg = new Message();
+                    msg.channel = cid;
+                    msg.latest = new MessageState();
+                    msg.latest.encrypted = new Level1AliceHelloMsg(state.eph.pub, otprek,
+                            new Level2AliceHelloMsg(state.ratchet.keyPair.pub, 123).encode(state.ratchet)).encode();
+                    this.cb.entityPut([msg]);
     
-                // Calculate the shared secret key and store all keys
-                state.sk = SaltyClient.x3dhKdf(Buffer.concat([dh1, dh2, dh3, dh4]));
-                const ad = Buffer.concat([
-                    state.identity.export(pubkeyFormat),
-                    this.keys.identity.pub.export(pubkeyFormat)
-                ]);
-                const keyBase = path.join(app.getPath("appData"), "yamka", `msg_keys_${this.uid}_${cid}`);
-                state.ratchet = new DHRatchet(keyBase, state.sk, ad);
-                state.ratchet.step(prek);
-                this.conv[`${cid}`] = state;
-                this.dumpConv(cid);
-    
-                // Send an initial message
-                const msg = new Message();
-                msg.channel = cid;
-                msg.latest = new MessageState();
-                msg.latest.encrypted = new Level1AliceHelloMsg(state.eph.pub, otprek,
-                        new Level2AliceHelloMsg(state.ratchet.keyPair.pub, 123).encode(state.ratchet)).encode();
-                this.cb.entityPut([msg]);
-
-                success();
+                    success();
+                });
             });
         });
     }
@@ -358,6 +370,9 @@ export default class SaltyClient {
         const pair = this.keys.otprekeys.find(x => x.fingerprint() === fingerprint(pub));
         if(pair === undefined)
             throw new Error("Received one-time prekey is not in the local list");
+        if(pair.stale)
+            this.keys.otprekeys = this.keys.otprekeys.filter(x => x !== pair);
+        console.log("[salty] removed stale otp");
         return pair.priv;
     }
 
