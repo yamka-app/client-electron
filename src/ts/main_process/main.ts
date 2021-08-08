@@ -131,13 +131,13 @@ app.on("ready", () => {
     // Check for updates
     autoUpdater.on('update-available', (info: UpdateInfo) => {
         ipcSend({ type: "update.available" });
-        console.log(`[upda] update available: ${info.version}`);
+        console.log(`[updater] update available: ${info.version}`);
     });
     autoUpdater.on('update-not-available', () => {
-        console.log(`[upda] no update available`);
+        console.log(`[updater] no update available`);
     });
     autoUpdater.on('error', (err) => {
-        console.log(`[upda] autoUpdater error: ${err}`);
+        console.log(`[updater] autoUpdater error: ${err}`);
     });
     autoUpdater.on('download-progress', (progress) => {
         ipcSend({
@@ -147,7 +147,7 @@ app.on("ready", () => {
         });
     });
     autoUpdater.on('update-downloaded', () => {
-        console.log(`[upda] update downloaded, installing`);
+        console.log(`[updater] update downloaded, installing`);
         autoUpdater.quitAndInstall();
     });
     autoUpdater.autoDownload = true;
@@ -167,6 +167,11 @@ const webprotSettings = {
     compressionThreshold: 512,
     fileChunkSize:        1024 * 4
 };
+
+if(process.env["CANARY"] === "1") {
+    console.log("[sweet] overriding port (1746 -> 2746) because CANARY=1 was set");
+    webprotSettings.port = 2746;
+}
 
 const sweet: {
     connected:  boolean,
@@ -370,6 +375,7 @@ function webprotData(bytes: Buffer) {
                     ent.latest.sections = await sweet.salty.processMsg(ent.channel,
                             sweet.dmChanRev[ent.channel], ent.id, sweet.dmChanSt[ent.channel],
                             ent.latest.encrypted);
+                    sweet.dmChanSt[ent.channel] = sweet.salty.e2eeStatus(ent.channel, ent.lcid);
                     const chanUpd = new entities.Channel();
                     chanUpd.id = ent.channel;
                     chanUpd.__e2eeReady = sweet.dmChanSt[ent.channel] >= SessionStatus.BOB_READY;
