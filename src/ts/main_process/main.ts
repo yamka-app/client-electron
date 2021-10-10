@@ -618,7 +618,7 @@ function webprotConnect(force: boolean =false) {
             webprotSendBytes(bytes);
         });
         sweet.queue = [];
-    })
+    });
 
     // Register some events
     sweet.socket.on("data", webprotData);
