@@ -32,6 +32,7 @@ npm start
 [...on our website](https://yamka.app/download)
 
 ## Credits
+  - Hosting kindly provided by [FossHost](https://fosshost.org)
   - End-to-End Encryption scheme invented by [Signal](https://www.signal.org/docs)
   - Icons by [Icons8](https://icons8.com)
   - [Twemoji](https://twemoji.twitter.com) by Twitter
