@@ -92,7 +92,7 @@
     "user_settings.about.donate": "Пожертвовать деньги",
     "user_settings.about.technologies": "ТЕХНОЛОГИИ",
     "user_settings.about.technologies.lin_win_clients": "Клиенты под Linux и Windows: Electron, TypeScript",
-    "user_settings.about.technologies.backend": "Серверная часть: Erlang/OTP, Apache Cassandra, GlusterFS",
+    "user_settings.about.technologies.backend": "Серверная часть: Erlang/OTP, ScyllaDB, GlusterFS",
     "user_settings.about.technologies.website": "Веб-сайт: nginx",
     "user_settings.about.credits": "БЛАГОДАРНОСТЬ",
     "user_settings.about.created_by": "ПРОЕКТ СОЗДАН",

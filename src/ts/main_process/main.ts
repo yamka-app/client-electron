@@ -163,7 +163,6 @@ const webprotSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
     version:              13,
-    supportsComp:         true,
     compressionThreshold: 512,
     fileChunkSize:        1024 * 4
 };
@@ -176,7 +175,7 @@ if(process.env["CANARY"] === "1") {
 const sweet: {
     connected:  boolean,
     connecting: boolean,
-    socket:     any,
+    socket:     tls.TLSSocket,
     seqId:      number,
     queue:      Buffer[],
     selfId:     number,
@@ -594,7 +593,8 @@ function webprotConnect(force: boolean =false) {
     var timeStart = new Date().getTime();
     sweet.socket = tls.connect({
         host: webprotSettings.host,
-        port: webprotSettings.port
+        port: webprotSettings.port,
+        ALPNProtocols: ["aboba"], // Asynchronous Binary Object-Based API, the name of the base technology behind Sweet
     }, () => {
         // We have connected
         const timeEnd = new Date().getTime();
@@ -609,9 +609,8 @@ function webprotConnect(force: boolean =false) {
         sweet.connected = true;
         sweet.connecting = false;
 
-        // Tell the server our protocol version
-        // and the fact that we support compression
-        webprotSendPacket(new packets.IdentificationPacket(webprotSettings.version, webprotSettings.supportsComp))
+        // Send protocol version
+        sweet.socket.write(Buffer.from([0, webprotSettings.version]));
 
         // Send the packets in the queue
         sweet.queue.forEach((bytes) => {
