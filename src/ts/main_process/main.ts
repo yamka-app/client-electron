@@ -131,13 +131,13 @@ app.on("ready", () => {
     // Check for updates
     autoUpdater.on('update-available', (info: UpdateInfo) => {
         ipcSend({ type: "update.available" });
-        console.log(`[upda] update available: ${info.version}`);
+        console.log(`[updater] update available: ${info.version}`);
     });
     autoUpdater.on('update-not-available', () => {
-        console.log(`[upda] no update available`);
+        console.log(`[updater] no update available`);
     });
     autoUpdater.on('error', (err) => {
-        console.log(`[upda] autoUpdater error: ${err}`);
+        console.log(`[updater] autoUpdater error: ${err}`);
     });
     autoUpdater.on('download-progress', (progress) => {
         ipcSend({
@@ -147,7 +147,7 @@ app.on("ready", () => {
         });
     });
     autoUpdater.on('update-downloaded', () => {
-        console.log(`[upda] update downloaded, installing`);
+        console.log(`[updater] update downloaded, installing`);
         autoUpdater.quitAndInstall();
     });
     autoUpdater.autoDownload = true;
@@ -163,15 +163,19 @@ const webprotSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
     version:              13,
-    supportsComp:         true,
     compressionThreshold: 512,
     fileChunkSize:        1024 * 4
 };
 
+if(process.env["CANARY"] === "1") {
+    console.log("[sweet] overriding port (1746 -> 2746) because CANARY=1 was set");
+    webprotSettings.port = 2746;
+}
+
 const sweet: {
     connected:  boolean,
     connecting: boolean,
-    socket:     any,
+    socket:     tls.TLSSocket,
     seqId:      number,
     queue:      Buffer[],
     selfId:     number,
@@ -370,6 +374,7 @@ function webprotData(bytes: Buffer) {
                     ent.latest.sections = await sweet.salty.processMsg(ent.channel,
                             sweet.dmChanRev[ent.channel], ent.id, sweet.dmChanSt[ent.channel],
                             ent.latest.encrypted);
+                    sweet.dmChanSt[ent.channel] = sweet.salty.e2eeStatus(ent.channel, ent.lcid);
                     const chanUpd = new entities.Channel();
                     chanUpd.id = ent.channel;
                     chanUpd.__e2eeReady = sweet.dmChanSt[ent.channel] >= SessionStatus.BOB_READY;
@@ -588,7 +593,8 @@ function webprotConnect(force: boolean =false) {
     var timeStart = new Date().getTime();
     sweet.socket = tls.connect({
         host: webprotSettings.host,
-        port: webprotSettings.port
+        port: webprotSettings.port,
+        ALPNProtocols: ["aboba"], // Asynchronous Binary Object-Based API, the name of the base technology behind Sweet
     }, () => {
         // We have connected
         const timeEnd = new Date().getTime();
@@ -603,16 +609,15 @@ function webprotConnect(force: boolean =false) {
         sweet.connected = true;
         sweet.connecting = false;
 
-        // Tell the server our protocol version
-        // and the fact that we support compression
-        webprotSendPacket(new packets.IdentificationPacket(webprotSettings.version, webprotSettings.supportsComp))
+        // Send protocol version
+        sweet.socket.write(Buffer.from([0, webprotSettings.version]));
 
         // Send the packets in the queue
         sweet.queue.forEach((bytes) => {
             webprotSendBytes(bytes);
         });
         sweet.queue = [];
-    })
+    });
 
     // Register some events
     sweet.socket.on("data", webprotData);

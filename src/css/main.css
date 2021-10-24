@@ -729,9 +729,13 @@ input.user-note:hover {
 .radio-switch input[type="radio"] {
     display: none;
 }
+.radio-switch input[type="radio"] + label {
+    border-bottom: 1px solid transparent;
+    transition: color 0.25s, border-bottom 0.25s;
+}
 .radio-switch input[type="radio"]:checked + label {
     color: var(--foreground);
-    transition: color 0.25s;
+    border-bottom: 1px solid var(--foreground);
 }
 
 

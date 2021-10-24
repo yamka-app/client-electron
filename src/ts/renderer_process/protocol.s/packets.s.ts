@@ -303,15 +303,6 @@ export class BotInvitePacket extends SimpleFieldPacket {
     constructor(b?: number, g?: number) { super(); this.bot = b; this.group = g; }
 }
 
-export class IdentificationPacket extends SimpleFieldPacket {
-    typeNum = 18;
-
-    protocol:            number;
-    supportsCompression: boolean;
-
-    constructor(p?: number, sc?: boolean) { super(); this.protocol = p; this.supportsCompression = sc; }
-}
-
 export class ClientIdentityPacket extends SimpleFieldPacket {
     typeNum = 19;
 

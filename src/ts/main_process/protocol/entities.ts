@@ -230,11 +230,12 @@ export class Message extends Entity {
     __type_name = "Message";
     typeNum = EntityType.MESSAGE;
 
-    id:       number;
-    states:   number[];
-    channel:  number;
-    sender:   number;
-    latest:   MessageState;
+    id:      number;
+    states:  number[];
+    channel: number;
+    sender:  number;
+    latest:  MessageState;
+    lcid:    number;
 
     constructor() {
         super([
@@ -243,6 +244,7 @@ export class Message extends Entity {
             new fields.NumField    ("channel", 8, 2),
             new fields.NumField    ("sender", 8,  3),
             new fields.EntityField ("latest",     4),
+            new fields.NumField    ("lcid", 4,    5)
         ]);
     }
 }

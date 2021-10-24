@@ -92,7 +92,7 @@
     "user_settings.about.donate": "Dona",
     "user_settings.about.technologies": "TECNOLOGIE",
     "user_settings.about.technologies.lin_win_clients": "Client Linux e Windows: Electron, TypeScript",
-    "user_settings.about.technologies.backend": "Backend: Erlang/OTP, Apache Cassandra e GlusterFS",
+    "user_settings.about.technologies.backend": "Backend: Erlang/OTP, ScyllaDB e GlusterFS",
     "user_settings.about.technologies.website": "Sito: nginx",
     "user_settings.about.credits": "CREDITS",
     "user_settings.about.created_by": "CREATO DA",

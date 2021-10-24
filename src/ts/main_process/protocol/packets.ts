@@ -70,7 +70,7 @@ export class Packet {
             new InviteResolvePacket(),
             new BotCreatePacket(),
             new BotInvitePacket(),
-            new IdentificationPacket(),
+            undefined,
             new ClientIdentityPacket(),
             new VoiceJoinPacket()
         ][type];
@@ -495,21 +495,6 @@ export class BotInvitePacket extends SimpleFieldPacket {
             new fields.NumField("group", 8)
         ]);
         this.bot = b; this.group = g;
-    }
-}
-
-export class IdentificationPacket extends SimpleFieldPacket {
-    typeNum = 18;
-
-    protocol:            number;
-    supportsCompression: boolean;
-
-    constructor(p?: number, sc?: boolean) {
-        super([
-            new fields.NumField("protocol", 4),
-            new fields.BoolField("supportsCompression")
-        ]);
-        this.protocol = p; this.supportsCompression = sc;
     }
 }
 
