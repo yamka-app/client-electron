@@ -159,17 +159,17 @@ app.on("window-all-closed", () => { windowCreated = false; });
 
 // =========================================== PROTOCOL SECTION
 
-const webprotSettings = {
+const sweetSettings = {
     host:                 "api.yamka.app",
     port:                 1746,
-    version:              13,
+    version:              14,
     compressionThreshold: 512,
     fileChunkSize:        1024 * 4
 };
 
 if(process.env["CANARY"] === "1") {
     console.log("[sweet] overriding port (1746 -> 2746) because CANARY=1 was set");
-    webprotSettings.port = 2746;
+    sweetSettings.port = 2746;
 }
 
 const sweet: {
@@ -480,7 +480,7 @@ function webprotSendPacket(packet: packets.Packet, type?: string, ref?: number, 
     const encodeAndSend = () => {
         var buf = packet.encode();
         // Compress the data
-        const compressed = buf.length >= webprotSettings.compressionThreshold;
+        const compressed = buf.length >= sweetSettings.compressionThreshold;
         if(compressed) buf = zlib.gzipSync(buf);
 
         // Add a compression header
@@ -585,15 +585,15 @@ function webprotConnect(force: boolean =false) {
     sweet.socket?.end();
 
     // Initiate a TLS connection to the server
-    const logMessage = `[sweet] connecting to ${webprotSettings.host}:${webprotSettings.port} with protocol version ${webprotSettings.version}`;
+    const logMessage = `[sweet] connecting to ${sweetSettings.host}:${sweetSettings.port} with protocol version ${sweetSettings.version}`;
     console.log(logMessage);
     ipcSend({ type: "webprot.status", message: logMessage });
     ipcSend({ type: "webprot.connecting" });
 
     var timeStart = new Date().getTime();
     sweet.socket = tls.connect({
-        host: webprotSettings.host,
-        port: webprotSettings.port,
+        host: sweetSettings.host,
+        port: sweetSettings.port,
         ALPNProtocols: ["aboba"], // Asynchronous Binary Object-Based API, the name of the base technology behind Sweet
     }, () => {
         // We have connected
@@ -610,7 +610,7 @@ function webprotConnect(force: boolean =false) {
         sweet.connecting = false;
 
         // Send protocol version
-        sweet.socket.write(Buffer.from([0, webprotSettings.version]));
+        sweet.socket.write(Buffer.from([0, sweetSettings.version]));
 
         // Send the packets in the queue
         sweet.queue.forEach((bytes) => {
