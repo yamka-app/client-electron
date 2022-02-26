@@ -51,7 +51,7 @@
     "node-emoji": "^1.10.0",
     "opusscript": "0.0.8",
     "prism-themes": "^1.8.0",
-    "prismjs": "^1.25.0",
+    "prismjs": "^1.27.0",
     "qrcode": "^1.4.4",
     "reflect-metadata": "^0.1.13",
     "remark": "^13.0.0",
