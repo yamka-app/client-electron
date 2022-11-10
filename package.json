@@ -68,7 +68,7 @@
     "@types/node-microphone": "^0.1.0",
     "@types/tinycolor2": "^1.4.2",
     "@types/tmp": "^0.2.0",
-    "electron": "^13.5.1",
+    "electron": "^18.3.7",
     "electron-builder": "^22.9.1",
     "rollup": "^2.36.2",
     "ts-loader": "^8.0.14",
